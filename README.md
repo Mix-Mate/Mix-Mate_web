@@ -30,12 +30,12 @@
 
 ## 2. 설치할 프로그램
 
-| 프로그램 | 권장 기준 |
-| --- | --- |
-| Node.js | 24 LTS |
-| pnpm | 10.x |
-| Git | 최신 안정 버전 |
-| VS Code | 최신 안정 버전 |
+| 프로그램 | 권장 기준 | 설치 |
+| --- | --- | --- |
+| Node.js | 24 LTS | [다운로드](https://nodejs.org/ko/download) |
+| pnpm | 10.x | `npm install -g pnpm` |
+| Git | 최신 안정 버전 | [다운로드](https://git-scm.com/install/windows) |
+| VS Code | 최신 안정 버전 | [다운로드](https://code.visualstudio.com/download?_exp_download=fb315fc982) |
 
 ## 7. 주요 화면 구성
 
