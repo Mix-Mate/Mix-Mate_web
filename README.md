@@ -5,14 +5,20 @@
 | <img src="https://avatars.githubusercontent.com/Koo134o" height="100"/> <br> [고민경](https://github.com/Koo134o) | <img src="https://avatars.githubusercontent.com/moonchanju" height="100"/> <br> [문찬주](https://github.com/moonchanju) | <img src="https://avatars.githubusercontent.com/pdar124" height="100"/> <br> [박다래](https://github.com/pdar124) | <img src="https://avatars.githubusercontent.com/BaekSeungBin" height="100"/> <br> [백승빈](https://github.com/BaekSeungBin) | <img src="https://avatars.githubusercontent.com/KDWorld81" height="100"/> <br> 👑[곽동욱](https://github.com/KDWorld81)👑 | <img src="https://avatars.githubusercontent.com/meoooogus" height="100"/> <br> [김대현](https://github.com/meoooogus) |
 
 
+---
 
+## 커밋 컨벤션
 
-
-
-
+feat : 새로운 기능 추가
+fix : 버그 수정
+docs : 문서 수정
+style : 코드 포맷팅, 세미콜론 누락, 코드 변경이 없는 경우
+refactor : 코드 리펙토링
+test : 테스트 코드, 리펙토링 테스트 코드 추가
+chore : 빌드 업무 수정, 패키지 매니저 수정
 
 ---
-## 1. 구성
+## 구성
 
 | 영역 | 사용할 기술 | 용도 |
 | --- | --- | --- |
@@ -28,7 +34,7 @@
 | 소스 관리 | GitHub | 버전 관리와 Vercel 자동 배포 |
 | 테스트 | Vitest + Testing Library + Playwright | 컴포넌트와 사용자 흐름 검증 |
 
-## 2. 설치할 프로그램
+## 설치할 프로그램
 
 | 프로그램 | 권장 기준 | 설치 |
 | --- | --- | --- |
@@ -37,7 +43,7 @@
 | Git | 최신 안정 버전 | [다운로드](https://git-scm.com/install/windows) |
 | VS Code | 최신 안정 버전 | [다운로드](https://code.visualstudio.com/download?_exp_download=fb315fc982) |
 
-## 7. 주요 화면 구성
+## 주요 화면 구성
 
 ### 공통 화면
 
