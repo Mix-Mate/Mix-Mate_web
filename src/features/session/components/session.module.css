@@ -1,6 +1,6 @@
 .content {
   display: flex;
-  min-height: calc(100dvh - 120px);
+  min-height: calc(100dvh - 80px);
   flex-direction: column;
   gap: 12px;
   padding: 20px;
@@ -209,7 +209,7 @@
 
 @media (min-width: 520px) {
   .content {
-    min-height: 904px;
+    min-height: 944px;
   }
 }
 

@@ -8,20 +8,6 @@ import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuer
 import UM01LeaveGroupDialog from "@/modals/user/UM01LeaveGroupDialog";
 import styles from "./U02UserHomeScreen.module.css";
 
-function SystemStatusBar() {
-  return (
-    <div className={styles.systemBar} aria-hidden="true">
-      <span>9:41</span>
-      <span className={styles.signal}>
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-    </div>
-  );
-}
-
 export default function U02UserHomeScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -48,8 +34,6 @@ export default function U02UserHomeScreen() {
         data-testid="user-home"
         data-scenario={snapshot.scenario}
       >
-        <SystemStatusBar />
-
         <header className={styles.header}>
           <button
             type="button"
