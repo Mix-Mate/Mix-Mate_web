@@ -1,0 +1,71 @@
+import {
+  ChevronRight,
+  Dices,
+  Users,
+  UsersRound,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import styles from "./session.module.css";
+
+interface SessionMenuGridProps {
+  groupId: string;
+  onNavigate: (href: string) => void;
+}
+
+interface SessionMenuItem {
+  title: string;
+  screenId: string;
+  href: string;
+  icon: LucideIcon;
+}
+
+export default function SessionMenuGrid({
+  groupId,
+  onNavigate,
+}: SessionMenuGridProps) {
+  const menuItems: SessionMenuItem[] = [
+    {
+      title: "같은 조 보기",
+      screenId: "S-20",
+      href: `/groups/${groupId}/team`,
+      icon: UsersRound,
+    },
+    {
+      title: "참가자 목록",
+      screenId: "S-08",
+      href: `/groups/${groupId}/participants`,
+      icon: Users,
+    },
+    {
+      title: "함께 즐기기",
+      screenId: "S-21",
+      href: `/groups/${groupId}/play`,
+      icon: Dices,
+    },
+  ];
+
+  return (
+    <nav className={styles.menuList} aria-label="사용자 메뉴">
+      {menuItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button
+            key={item.screenId}
+            type="button"
+            className={styles.menuCard}
+            onClick={() => onNavigate(item.href)}
+          >
+            <span className={styles.menuIcon}>
+              <Icon aria-hidden="true" size={20} strokeWidth={1.8} />
+            </span>
+            <span className={styles.menuText}>
+              <strong>{item.title}</strong>
+              <small>{item.screenId}</small>
+            </span>
+            <ChevronRight aria-hidden="true" size={20} strokeWidth={1.8} />
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
