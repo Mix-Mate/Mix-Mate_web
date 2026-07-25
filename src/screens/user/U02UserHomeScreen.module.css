@@ -16,48 +16,6 @@
   color: #18181b;
 }
 
-.systemBar {
-  display: flex;
-  height: 40px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background: #f4f4f5;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 24px;
-}
-
-.signal {
-  display: flex;
-  height: 22px;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.signal i {
-  display: block;
-  width: 4px;
-  border-radius: 2px;
-  background: #18181b;
-}
-
-.signal i:nth-child(1) {
-  height: 10px;
-}
-
-.signal i:nth-child(2) {
-  height: 14px;
-}
-
-.signal i:nth-child(3) {
-  height: 18px;
-}
-
-.signal i:nth-child(4) {
-  height: 22px;
-}
-
 .header {
   display: grid;
   height: 80px;
