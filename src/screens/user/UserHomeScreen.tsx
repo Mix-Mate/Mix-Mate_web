@@ -6,9 +6,9 @@ import { useCallback, useState } from "react";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import UM01LeaveGroupDialog from "@/modals/user/UM01LeaveGroupDialog";
-import styles from "./U02UserHomeScreen.module.css";
+import styles from "./UserHomeScreen.module.css";
 
-export default function U02UserHomeScreen() {
+export default function UserHomeScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
