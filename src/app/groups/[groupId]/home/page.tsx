@@ -1,5 +1,5 @@
-import U02UserHomeScreen from "@/screens/user/U02UserHomeScreen";
+import UserHomeScreen from "@/screens/user/UserHomeScreen";
 
 export default function UserHomePage() {
-  return <U02UserHomeScreen />;
+  return <UserHomeScreen />;
 }
