@@ -71,7 +71,10 @@ export default function UserSessionContent({
           <button
             type="button"
             className={styles.secondaryAction}
-            onClick={() => onNavigate(`/groups/${groupId}/team?round=1`)}
+            onClick={() => {
+              // TODO(team-history-integration): 이전 조 기록 페이지가 완성되면 이 전용 경로에서 연결한다.
+              onNavigate(`/groups/${groupId}/team/history`);
+            }}
           >
             <History aria-hidden="true" size={20} strokeWidth={1.8} />
             이전 조 기록 보기
