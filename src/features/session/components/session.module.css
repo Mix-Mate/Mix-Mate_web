@@ -1,9 +1,9 @@
 .content {
   display: flex;
-  min-height: calc(100dvh - 80px);
+  height: 732px;
   flex-direction: column;
   gap: 12px;
-  padding: 20px;
+  padding: 16px;
   background: #fcfcff;
 }
 
@@ -12,7 +12,7 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 16px;
-  padding: 20px 24px;
+  padding: 18px 20px;
   border: 1.6px solid #bfdbfe;
   border-radius: 20px;
   background: linear-gradient(165deg, #eff6ff 0%, #dbeafe 100%);
@@ -46,7 +46,7 @@
   display: block;
   color: #1e40af;
   font-family: "Noto Sans KR", sans-serif;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.4px;
   line-height: 42px;
@@ -187,13 +187,13 @@
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 5px;
+  padding: 0 8px;
   border: 1.6px solid #e4e4e7;
   border-radius: 20px;
   background: #fff;
   color: #3b82c4;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 24px;
   white-space: nowrap;
@@ -205,30 +205,4 @@
 
 .dangerAction {
   color: #e37d7f;
-}
-
-@media (min-width: 520px) {
-  .content {
-    min-height: 944px;
-  }
-}
-
-@media (max-width: 390px) {
-  .content {
-    padding: 16px;
-  }
-
-  .statusCard {
-    padding: 18px 20px;
-  }
-
-  .statusCard strong {
-    font-size: 28px;
-  }
-
-  .secondaryAction {
-    gap: 5px;
-    padding: 0 8px;
-    font-size: 14px;
-  }
 }

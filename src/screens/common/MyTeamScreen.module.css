@@ -1,6 +1,8 @@
 .viewport {
   display: flex;
-  min-height: 100dvh;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
   align-items: flex-start;
   justify-content: center;
   background: #eef0f5;
@@ -8,9 +10,8 @@
 
 .phone {
   position: relative;
-  width: 100%;
-  max-width: 375px;
-  min-height: 100dvh;
+  width: 375px;
+  height: 812px;
   overflow: hidden;
   background: #fbfbfd;
   color: #172b3d;
@@ -103,17 +104,17 @@
 
 .content {
   display: flex;
-  min-height: calc(100dvh - 128px);
+  height: 684px;
   flex-direction: column;
   align-items: center;
-  padding: clamp(72px, 18.72dvh, 152px) 16px 32px;
+  padding: 152px 16px 32px;
   background: #fbfbfd;
 }
 
 .assignmentOrb {
   display: flex;
-  width: min(87.47vw, 328px);
-  height: min(87.47vw, 328px);
+  width: 328px;
+  height: 328px;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
@@ -161,30 +162,4 @@
   letter-spacing: -0.2px;
   line-height: 20px;
   text-align: center;
-}
-
-@media (min-width: 430px) {
-  .phone {
-    min-height: 812px;
-    margin: 24px 0;
-    border: 1px solid #e4e7eb;
-    border-radius: 20px;
-    box-shadow: 0 24px 70px rgba(24, 24, 27, 0.12);
-  }
-}
-
-@media (max-height: 680px) {
-  .content {
-    padding-top: 64px;
-  }
-}
-
-@media (max-width: 330px) {
-  .header {
-    padding-inline: 8px 12px;
-  }
-
-  .header h1 {
-    font-size: 14px;
-  }
 }

@@ -1,6 +1,8 @@
 .viewport {
   display: flex;
-  min-height: 100dvh;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
   align-items: flex-start;
   justify-content: center;
   background: #eef0f5;
@@ -8,9 +10,8 @@
 
 .phone {
   position: relative;
-  width: 100%;
-  max-width: 468px;
-  min-height: 100dvh;
+  width: 375px;
+  height: 812px;
   overflow: hidden;
   background: #fff;
   color: #18181b;
@@ -19,17 +20,17 @@
 .header {
   display: grid;
   height: 80px;
-  grid-template-columns: 56px minmax(0, 1fr) auto;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  padding: 0 16px 2px;
+  padding: 0 12px 2px 8px;
   border-bottom: 1.6px solid #e4e4e7;
   background: #fff;
 }
 
 .backButton {
   display: grid;
-  width: 56px;
+  width: 48px;
   height: 56px;
   cursor: pointer;
   place-items: center;
@@ -45,7 +46,7 @@
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  font-size: 26px;
+  font-size: 21px;
   font-weight: 600;
   line-height: 39px;
   text-overflow: ellipsis;
@@ -76,29 +77,4 @@
   font-size: 14px;
   text-align: center;
   box-shadow: 0 12px 36px rgba(24, 24, 27, 0.22);
-}
-
-@media (min-width: 520px) {
-  .phone {
-    min-height: 1024px;
-    margin: 24px 0;
-    border: 1px solid #e4e4e7;
-    border-radius: 32px;
-    box-shadow: 0 24px 70px rgba(24, 24, 27, 0.12);
-  }
-}
-
-@media (max-width: 390px) {
-  .header {
-    grid-template-columns: 48px minmax(0, 1fr) auto;
-    padding-inline: 8px 12px;
-  }
-
-  .backButton {
-    width: 48px;
-  }
-
-  .header h1 {
-    font-size: 21px;
-  }
 }
