@@ -1,0 +1,158 @@
+.tabs {
+  display: grid;
+  width: 375px;
+  height: 56px;
+  grid-template-columns: repeat(3, 125px);
+  border-bottom: 1px solid #e5e8ec;
+  background: #fff;
+}
+
+.tab,
+.activeTab {
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  color: #a4a8af;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+}
+
+.activeTab {
+  color: #1b2632;
+  font-weight: 600;
+}
+
+.activeTab::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: #15202b;
+  content: "";
+}
+
+.teamPanel {
+  width: 343px;
+}
+
+.panelHeader {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.panelHeader h2,
+.panelHeader span {
+  margin: 0;
+}
+
+.panelHeader h2 {
+  color: #1d2a36;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.panelHeader span {
+  color: #a4aab2;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.infoBanner {
+  display: flex;
+  height: 64px;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #edf6ff;
+  color: #4288c8;
+}
+
+.infoBanner svg {
+  flex: 0 0 16px;
+  margin-top: 1px;
+}
+
+.infoBanner p {
+  margin: 0;
+  color: #667f95;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.memberList {
+  margin: 12px 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e0e5eb;
+  border-radius: 18px;
+  background: #fff;
+  list-style: none;
+}
+
+.memberItem + .memberItem {
+  border-top: 1px solid #e9edf1;
+}
+
+.memberButton {
+  display: flex;
+  width: 100%;
+  height: 70px;
+  cursor: pointer;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: #fff;
+  color: #68717c;
+  text-align: left;
+}
+
+.memberButton:hover {
+  background: #f8fbff;
+}
+
+.memberAvatar {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.memberText {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.memberText strong {
+  color: #1d2a36;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.memberText small {
+  overflow: hidden;
+  color: #939aa3;
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -65,49 +65,19 @@
   line-height: 16px;
 }
 
-.tabs {
-  display: grid;
-  height: 56px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 1px solid #e5e8ec;
-  background: #fff;
-}
-
-.tab,
-.activeTab {
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  background: transparent;
-  color: #a4a8af;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-align: center;
-}
-
-.activeTab {
-  color: #1b2632;
-  font-weight: 600;
-}
-
-.activeTab::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: #15202b;
-  content: "";
-}
-
 .content {
   display: flex;
   height: 684px;
   flex-direction: column;
   align-items: center;
   padding: 152px 16px 32px;
+  background: #fbfbfd;
+}
+
+.membersContent {
+  width: 375px;
+  height: 684px;
+  padding: 20px 16px 32px;
   background: #fbfbfd;
 }
 
