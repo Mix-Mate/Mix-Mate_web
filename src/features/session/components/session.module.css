@@ -1,6 +1,6 @@
 .content {
   display: flex;
-  height: 732px;
+  height: 740px;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
@@ -93,7 +93,9 @@
   border: 2px solid #bbbbc1;
   border-radius: 24px;
   background: #fff;
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .assignmentCard:hover {
@@ -133,7 +135,9 @@
   border-radius: 20px;
   background: #fff;
   text-align: left;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .menuCard:hover {

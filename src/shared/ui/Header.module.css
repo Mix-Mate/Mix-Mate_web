@@ -1,0 +1,50 @@
+.header {
+  display: grid;
+  width: 375px;
+  height: 72px;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e5e8ec;
+  background: #fff;
+}
+
+.backButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  place-items: center;
+  padding: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #273746;
+}
+
+.backButton:hover {
+  background: #f4f4f5;
+}
+
+.header h1 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #172b3d;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.25px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roleBadge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f4f0ff;
+  color: #7956ef;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+}
