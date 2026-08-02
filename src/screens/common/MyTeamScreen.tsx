@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamMemberSummary } from "@/features/team/types/team.types";
+import Header from "@/shared/ui/Header";
 import styles from "./MyTeamScreen.module.css";
 
 export default function MyTeamScreen() {
@@ -36,18 +36,12 @@ export default function MyTeamScreen() {
         data-testid="my-team-screen"
         data-scenario={snapshot.scenario}
       >
-        <header className={styles.header}>
-          <button
-            type="button"
-            className={styles.backButton}
-            onClick={() => router.push(`/groups/${params.groupId}/home`)}
-            aria-label="사용자 홈으로 이동"
-          >
-            <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.7} />
-          </button>
-          <h1>{snapshot.groupName}</h1>
-          <span className={styles.roleBadge}>{snapshot.roleLabel}</span>
-        </header>
+        <Header
+          title={snapshot.groupName}
+          roleLabel={snapshot.roleLabel}
+          onBack={() => router.push(`/groups/${params.groupId}/home`)}
+          backLabel="사용자 홈으로 이동"
+        />
 
         <TeamSectionTabs
           groupId={params.groupId}
@@ -82,10 +76,7 @@ export default function MyTeamScreen() {
           </div>
         ) : (
           <div className={styles.membersContent}>
-            <MyTeamPanel
-              team={team}
-              onMemberSelect={handleMemberSelect}
-            />
+            <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
           </div>
         )}
       </section>
