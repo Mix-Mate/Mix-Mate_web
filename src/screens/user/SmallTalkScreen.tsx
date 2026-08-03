@@ -8,6 +8,7 @@ import TopicCategoryList from "@/features/play/components/TopicCategoryList";
 import TopicRecommendationCard from "@/features/play/components/TopicRecommendationCard";
 import { useRandomTopicQuery } from "@/features/play/hooks/useRandomTopicQuery";
 import type { TopicCategory } from "@/features/play/types/play.types";
+import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
 const categories: TopicCategory[] = [
@@ -54,13 +55,9 @@ export default function SmallTalkScreen() {
         />
         <TopicRecommendationCard topic={topic} />
 
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={refetch}
-        >
+        <Button className={styles.primaryButton} onClick={refetch}>
           다른 주제 추천받기
-        </button>
+        </Button>
       </section>
     </PlayScreenLayout>
   );

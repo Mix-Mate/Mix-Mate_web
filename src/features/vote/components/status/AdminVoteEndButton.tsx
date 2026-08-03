@@ -1,3 +1,4 @@
+import Button from "@/shared/ui/Button";
 import styles from "./VoteStatus.module.css";
 
 interface AdminVoteEndButtonProps {
@@ -10,13 +11,12 @@ export default function AdminVoteEndButton({
   onEnd,
 }: AdminVoteEndButtonProps) {
   return (
-    <button
-      type="button"
+    <Button
       className={styles.adminEndButton}
       disabled={disabled}
       onClick={onEnd}
     >
       투표 종료하기
-    </button>
+    </Button>
   );
 }

@@ -2,6 +2,7 @@
 
 import { Info } from "lucide-react";
 import { useState } from "react";
+import Button from "@/shared/ui/Button";
 import type { AttendanceChoice } from "../../types/vote.types";
 import styles from "../vote.module.css";
 import AttendanceOptionCard from "./AttendanceOptionCard";
@@ -68,19 +69,13 @@ export default function AttendanceVoteForm({
         </p>
       )}
 
-      {isSubmitted && (
-        <p className={styles.voteComplete} role="status">
-          투표가 완료되었습니다.
-        </p>
-      )}
-
-      <button
+      <Button
         type="submit"
         className={styles.submitButton}
         disabled={selectedChoice === null || locked}
       >
         {isSubmitted ? "투표 완료됨" : "투표 완료하기"}
-      </button>
+      </Button>
     </form>
   );
 }
