@@ -14,7 +14,6 @@ interface SessionMenuGridProps {
 
 interface SessionMenuItem {
   title: string;
-  screenId: string;
   href: string;
   icon: LucideIcon;
 }
@@ -26,20 +25,17 @@ export default function SessionMenuGrid({
   const menuItems: SessionMenuItem[] = [
     {
       title: "같은 조 보기",
-      screenId: "S-20",
       href: `/groups/${groupId}/team?tab=members`,
       icon: UsersRound,
     },
     {
       title: "참가자 목록",
-      screenId: "S-08",
       // TODO(participants-integration): 참가자 목록 담당자의 페이지가 완성되면 이 경로에서 연결된다.
       href: `/groups/${groupId}/participants`,
       icon: Users,
     },
     {
       title: "함께 즐기기",
-      screenId: "S-21",
       href: `/groups/${groupId}/play`,
       icon: Dices,
     },
@@ -51,7 +47,7 @@ export default function SessionMenuGrid({
         const Icon = item.icon;
         return (
           <button
-            key={item.screenId}
+            key={item.href}
             type="button"
             className={styles.menuCard}
             onClick={() => onNavigate(item.href)}
@@ -61,7 +57,6 @@ export default function SessionMenuGrid({
             </span>
             <span className={styles.menuText}>
               <strong>{item.title}</strong>
-              <small>{item.screenId}</small>
             </span>
             <ChevronRight aria-hidden="true" size={20} strokeWidth={1.8} />
           </button>

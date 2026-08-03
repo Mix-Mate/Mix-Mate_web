@@ -1,0 +1,318 @@
+.mvpScreen,
+.attendanceScreen {
+  display: flex;
+  width: 343px;
+  height: 708px;
+  flex-direction: column;
+}
+
+.introCard {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 22px;
+  border: 1px solid #e0e5eb;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(31, 48, 66, 0.035);
+}
+
+.introIcon {
+  color: #d58a00;
+}
+
+.introCard h2,
+.introCard p,
+.attendanceQuestion h2,
+.attendanceQuestion p,
+.selectionNotice,
+.attendanceInfo,
+.formError {
+  margin: 0;
+}
+
+.introCard h2 {
+  margin-top: 8px;
+  color: #252d36;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 23px;
+}
+
+.introCard p {
+  margin-top: 6px;
+  color: #7f8892;
+  font-size: 11px;
+  line-height: 18px;
+  word-break: keep-all;
+}
+
+.ruleNotice {
+  display: flex;
+  min-height: 68px;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: #eaf4ff;
+  color: #418bd1;
+}
+
+.ruleNotice svg {
+  flex: 0 0 16px;
+  margin-top: 1px;
+}
+
+.ruleNotice p {
+  margin: 0;
+  color: #647c92;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.mvpForm {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.candidateList {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e0e5eb;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.candidateItem {
+  display: flex;
+  height: 70px;
+  cursor: pointer;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: #fff;
+  transition: background 120ms ease;
+}
+
+.candidateItem + .candidateItem {
+  border-top: 1px solid #e9edf1;
+}
+
+.candidateItem:hover,
+.selectedCandidate {
+  background: #f2f7ff;
+}
+
+.candidateList:disabled .candidateItem {
+  cursor: default;
+}
+
+.candidateText {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.candidateText strong {
+  color: #26313c;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.candidateText small {
+  color: #929aa4;
+  font-size: 11px;
+  line-height: 17px;
+}
+
+.radioMark {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border: 1.5px solid #c8cfd7;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.selectedCandidate .radioMark {
+  border-color: #3789dc;
+}
+
+.radioMark span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #3789dc;
+}
+
+.selectionNotice {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 0 14px;
+  border: 1px solid #9dceff;
+  border-radius: 12px;
+  color: #3a89d3;
+  font-size: 11px;
+  line-height: 18px;
+}
+
+.selectionNotice span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3a89d3;
+}
+
+.formError {
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.formError {
+  background: #fff1f2;
+  color: #d14f5a;
+}
+
+.submitButton {
+  margin-top: auto;
+}
+
+.attendanceForm {
+  display: flex;
+  width: 343px;
+  height: 708px;
+  flex-direction: column;
+  padding-top: 122px;
+}
+
+.attendanceQuestion {
+  text-align: center;
+}
+
+.attendanceQuestion h2 {
+  color: #202a34;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.attendanceQuestion p {
+  margin-top: 4px;
+  color: #929aa4;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.attendanceOptions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.attendanceOption {
+  display: flex;
+  height: 180px;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  border: 1.5px solid #aeb7c2;
+  border-radius: 16px;
+  background: #fff;
+  color: #4c5661;
+}
+
+.attendanceOptions:disabled .attendanceOption {
+  cursor: default;
+}
+
+.selectedAttendance {
+  border-color: #3789dc;
+  background: #eef6ff;
+  color: #286eaf;
+}
+
+.selectedAbsentAttendance {
+  border-color: #e05252;
+  background: #fff2f2;
+  color: #c44242;
+}
+
+.optionMark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid #aeb7c2;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.selectedAttendance .optionMark {
+  border-color: #3789dc;
+  color: #3789dc;
+}
+
+.selectedAbsentAttendance .optionMark {
+  border-color: #e05252;
+  color: #e05252;
+}
+
+.attendanceOption strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.attendanceInfo {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #eaf4ff;
+  color: #617990;
+  font-size: 12px;
+  line-height: 19px;
+}
+
+.attendanceInfo svg {
+  flex: 0 0 15px;
+  color: #418bd1;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
