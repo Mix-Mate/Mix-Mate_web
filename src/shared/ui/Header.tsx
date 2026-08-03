@@ -6,6 +6,7 @@ interface HeaderProps {
   roleLabel: string;
   onBack: () => void;
   backLabel?: string;
+  badgeTone?: "role" | "status";
 }
 
 export default function Header({
@@ -13,6 +14,7 @@ export default function Header({
   roleLabel,
   onBack,
   backLabel = "이전 화면으로 이동",
+  badgeTone = "role",
 }: HeaderProps) {
   return (
     <header className={styles.header}>
@@ -25,7 +27,13 @@ export default function Header({
         <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.7} />
       </button>
       <h1>{title}</h1>
-      <span className={styles.roleBadge}>{roleLabel}</span>
+      <span
+        className={`${styles.roleBadge} ${
+          badgeTone === "status" ? styles.statusBadge : ""
+        }`}
+      >
+        {roleLabel}
+      </span>
     </header>
   );
 }

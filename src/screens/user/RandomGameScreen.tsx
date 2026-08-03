@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import GameRecommendationCard from "@/features/play/components/GameRecommendationCard";
 import styles from "@/features/play/components/play.module.css";
 import { useRandomGameQuery } from "@/features/play/hooks/useRandomGameQuery";
+import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
 export default function RandomGameScreen() {
@@ -33,13 +34,9 @@ export default function RandomGameScreen() {
 
         <GameRecommendationCard game={game} />
 
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={refetch}
-        >
+        <Button className={styles.primaryButton} onClick={refetch}>
           다른 게임 추천받기
-        </button>
+        </Button>
       </section>
     </PlayScreenLayout>
   );

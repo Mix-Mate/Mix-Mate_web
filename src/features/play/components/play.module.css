@@ -215,19 +215,7 @@
 
 .primaryButton {
   width: 311px;
-  height: 58px;
-  flex: 0 0 58px;
-  cursor: pointer;
   margin: 16px auto 0;
-  border-radius: 12px;
-  background: #2e73db;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.primaryButton:hover {
-  background: #2567c9;
 }
 
 .topicScreen .primaryButton,

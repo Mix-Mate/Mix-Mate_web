@@ -4,6 +4,7 @@ import { Scale } from "lucide-react";
 import { useParams } from "next/navigation";
 import styles from "@/features/play/components/play.module.css";
 import { useRandomTopicQuery } from "@/features/play/hooks/useRandomTopicQuery";
+import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
 export default function BalanceGameScreen() {
@@ -37,13 +38,9 @@ export default function BalanceGameScreen() {
           <div className={styles.choiceCard}>{choices[1]}</div>
         </article>
 
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={refetch}
-        >
+        <Button className={styles.primaryButton} onClick={refetch}>
           다른 주제 추천받기
-        </button>
+        </Button>
       </section>
     </PlayScreenLayout>
   );
