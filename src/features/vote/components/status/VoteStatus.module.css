@@ -1,0 +1,264 @@
+.statusScreen {
+  display: flex;
+  width: 343px;
+  height: 708px;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.statusScreen::-webkit-scrollbar {
+  display: none;
+}
+
+.progressSection {
+  flex: 0 0 auto;
+}
+
+.progressCard {
+  padding: 15px 14px 20px;
+  border: 1px solid #dfe4ea;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(31, 48, 66, 0.035);
+}
+
+.progressCard h2,
+.statusListSection h2,
+.progressCount,
+.allComplete,
+.waitingNotice {
+  margin: 0;
+}
+
+.progressCard h2 {
+  color: #2a333d;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 19px;
+}
+
+.statusListSection h2 {
+  color: #2a333d;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.progressCount {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.progressCount strong {
+  color: #19232d;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 40px;
+}
+
+.progressCount span {
+  color: #5f6872;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  margin-top: 9px;
+  border-radius: 999px;
+  background: #e6e8ec;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #3789dc;
+  transition: width 200ms ease;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.summaryButton {
+  display: flex;
+  height: 72px;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.summaryGrid strong {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 27px;
+}
+
+.summaryGrid span {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.attendanceSummary {
+  background: #eef6ff;
+  color: #2f7dca;
+}
+
+.absenceSummary {
+  background: #fff1f1;
+  color: #e05252;
+}
+
+.pendingSummary {
+  background: #f7f8fa;
+  color: #4c5661;
+}
+
+.selectedAttendanceSummary {
+  border-color: #3789dc;
+  box-shadow: 0 0 0 1px rgba(55, 137, 220, 0.08);
+}
+
+.selectedAbsenceSummary {
+  border-color: #e05252;
+  box-shadow: 0 0 0 1px rgba(224, 82, 82, 0.08);
+}
+
+.selectedPendingSummary {
+  border-color: #7e8792;
+  box-shadow: 0 0 0 1px rgba(126, 135, 146, 0.08);
+}
+
+.statusListSection {
+  margin-top: 16px;
+}
+
+.statusList {
+  margin: 8px 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #dfe4ea;
+  border-radius: 14px;
+  background: #fff;
+  list-style: none;
+}
+
+.statusItem {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 11px;
+  padding: 0 14px;
+}
+
+.statusItem + .statusItem {
+  border-top: 1px solid #ebedf0;
+}
+
+.statusItem strong {
+  flex: 1;
+  color: #303942;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 19px;
+}
+
+.waitingBadge {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #f1f2f4;
+  color: #848c95;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+}
+
+.attendanceIcon,
+.absenceIcon {
+  flex: 0 0 18px;
+}
+
+.attendanceIcon {
+  color: #3789dc;
+}
+
+.absenceIcon {
+  color: #e05252;
+}
+
+.allComplete {
+  margin-top: 8px;
+  padding: 18px 14px;
+  border: 1px solid #cce8d7;
+  border-radius: 14px;
+  background: #edf8f1;
+  color: #278250;
+  font-size: 12px;
+  line-height: 19px;
+  text-align: center;
+}
+
+.waitingNotice {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  background: #fff9e8;
+  color: #6c6251;
+  font-size: 12px;
+  line-height: 19px;
+  word-break: keep-all;
+}
+
+.waitingNotice svg {
+  flex: 0 0 17px;
+  color: #dc8100;
+}
+
+.adminEndButton {
+  width: 100%;
+  height: 52px;
+  cursor: pointer;
+  margin-top: auto;
+  border-radius: 12px;
+  background: #2e73db;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.adminEndButton:disabled {
+  cursor: not-allowed;
+  background: #cbd6e5;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
