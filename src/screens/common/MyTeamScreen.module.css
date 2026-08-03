@@ -1,0 +1,91 @@
+.viewport {
+  display: flex;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  background: #eef0f5;
+}
+
+.phone {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  overflow: hidden;
+  background: #fbfbfd;
+  color: #172b3d;
+}
+
+.content {
+  display: flex;
+  height: 684px;
+  flex-direction: column;
+  align-items: center;
+  padding: 152px 16px 32px;
+  background: #fbfbfd;
+}
+
+.membersContent {
+  width: 375px;
+  height: 684px;
+  padding: 20px 16px 32px;
+  background: #fbfbfd;
+}
+
+.assignmentOrb {
+  display: flex;
+  width: 328px;
+  height: 328px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px 4px;
+  border: 1px solid rgba(218, 239, 255, 0.8);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 50% 15%,
+      rgba(255, 255, 255, 0.98),
+      transparent 52%
+    ),
+    linear-gradient(160deg, #fbfeff 3%, #eff8ff 56%, #dfeeff 100%);
+  color: #163750;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 9px 18px rgba(173, 198, 255, 0.2);
+}
+
+.assignmentOrb span,
+.assignmentOrb strong {
+  margin: 0;
+  transform: translate(-2px, -12px);
+}
+
+.assignmentOrb span {
+  margin-bottom: 4px;
+  color: #173b55;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.25px;
+  line-height: 24px;
+}
+
+.assignmentOrb strong {
+  color: #15354d;
+  font-size: 96px;
+  font-weight: 700;
+  letter-spacing: -5px;
+  line-height: 1;
+}
+
+.statusText {
+  margin: 28px 0 0;
+  color: #2f82c5;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 20px;
+  text-align: center;
+}

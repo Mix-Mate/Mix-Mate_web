@@ -113,9 +113,3 @@
     opacity: 0;
   }
 }
-
-@media (min-width: 520px) {
-  .scrim {
-    border-radius: 32px;
-  }
-}

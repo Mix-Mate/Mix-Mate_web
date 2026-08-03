@@ -27,12 +27,13 @@ export default function SessionMenuGrid({
     {
       title: "같은 조 보기",
       screenId: "S-20",
-      href: `/groups/${groupId}/team`,
+      href: `/groups/${groupId}/team?tab=members`,
       icon: UsersRound,
     },
     {
       title: "참가자 목록",
       screenId: "S-08",
+      // TODO(participants-integration): 참가자 목록 담당자의 페이지가 완성되면 이 경로에서 연결된다.
       href: `/groups/${groupId}/participants`,
       icon: Users,
     },
