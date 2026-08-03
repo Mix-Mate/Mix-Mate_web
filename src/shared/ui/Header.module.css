@@ -48,3 +48,9 @@
   font-weight: 600;
   line-height: 16px;
 }
+
+.statusBadge {
+  border: 1px solid #b9dcff;
+  background: #f7fbff;
+  color: #3789d5;
+}
