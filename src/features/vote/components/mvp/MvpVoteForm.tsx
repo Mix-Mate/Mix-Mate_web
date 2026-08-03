@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/shared/ui/Button";
 import type { MvpCandidate } from "../../types/vote.types";
 import styles from "../vote.module.css";
 import MvpCandidateList from "./MvpCandidateList";
@@ -59,13 +60,13 @@ export default function MvpVoteForm({
         </p>
       )}
 
-      <button
+      <Button
         type="submit"
         className={styles.submitButton}
         disabled={!canContinue}
       >
         다음 - 2차 참여 여부 투표 →
-      </button>
+      </Button>
     </form>
   );
 }

@@ -237,20 +237,7 @@
 }
 
 .adminEndButton {
-  width: 100%;
-  height: 52px;
-  cursor: pointer;
   margin-top: auto;
-  border-radius: 12px;
-  background: #2e73db;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.adminEndButton:disabled {
-  cursor: not-allowed;
-  background: #cbd6e5;
 }
 
 .visuallyHidden {

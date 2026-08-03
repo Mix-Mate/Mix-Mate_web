@@ -30,8 +30,7 @@
 .attendanceQuestion p,
 .selectionNotice,
 .attendanceInfo,
-.formError,
-.voteComplete {
+.formError {
   margin: 0;
 }
 
@@ -180,8 +179,7 @@
   background: #3a89d3;
 }
 
-.formError,
-.voteComplete {
+.formError {
   margin-top: 10px;
   padding: 9px 12px;
   border-radius: 10px;
@@ -195,32 +193,8 @@
   color: #d14f5a;
 }
 
-.voteComplete {
-  background: #edf8f1;
-  color: #278250;
-}
-
 .submitButton {
-  width: 343px;
-  height: 58px;
-  flex: 0 0 58px;
-  cursor: pointer;
   margin-top: auto;
-  border-radius: 12px;
-  background: #2e73db;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.submitButton:hover:not(:disabled) {
-  background: #2567c9;
-}
-
-.submitButton:disabled {
-  cursor: not-allowed;
-  background: #cbd6e5;
-  color: #f8fafc;
 }
 
 .attendanceForm {
