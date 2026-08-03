@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import UM01LeaveGroupDialog from "@/modals/user/UM01LeaveGroupDialog";
+import Header from "@/shared/ui/Header";
 import styles from "./UserHomeScreen.module.css";
 
 export default function UserHomeScreen() {
@@ -34,18 +34,11 @@ export default function UserHomeScreen() {
         data-testid="user-home"
         data-scenario={snapshot.scenario}
       >
-        <header className={styles.header}>
-          <button
-            type="button"
-            className={styles.backButton}
-            onClick={() => router.back()}
-            aria-label="이전 화면으로 이동"
-          >
-            <ArrowLeft aria-hidden="true" size={32} strokeWidth={2} />
-          </button>
-          <h1>{snapshot.groupName}</h1>
-          <span className={styles.roleBadge}>{snapshot.roleLabel}</span>
-        </header>
+        <Header
+          title={snapshot.groupName}
+          roleLabel={snapshot.roleLabel}
+          onBack={() => router.back()}
+        />
 
         <UserSessionContent
           groupId={params.groupId}
