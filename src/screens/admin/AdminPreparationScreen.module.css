@@ -1,0 +1,99 @@
+.viewport {
+  display: flex;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  background: #eef0f5;
+}
+
+.phone {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 26px;
+  background: #fcfcff;
+  color: #18181b;
+}
+
+.statusBar {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #f4f4f5;
+  color: #18181b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signalBars {
+  display: flex;
+  height: 18px;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.signalBars i {
+  display: block;
+  width: 3px;
+  border-radius: 2px;
+  background: #18181b;
+}
+
+.signalBars i:nth-child(1) {
+  height: 8px;
+}
+
+.signalBars i:nth-child(2) {
+  height: 11px;
+}
+
+.signalBars i:nth-child(3) {
+  height: 14px;
+}
+
+.signalBars i:nth-child(4) {
+  height: 18px;
+}
+
+.content {
+  display: flex;
+  height: 706px;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  padding: 16px;
+  background: #fcfcff;
+}
+
+.toast {
+  position: absolute;
+  right: 20px;
+  bottom: 76px;
+  left: 20px;
+  z-index: 20;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #18181b;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(24, 24, 27, 0.22);
+}
+
+@media (max-width: 374px) {
+  .viewport,
+  .phone {
+    width: 100vw;
+  }
+
+  .phone {
+    border-radius: 0;
+  }
+}
