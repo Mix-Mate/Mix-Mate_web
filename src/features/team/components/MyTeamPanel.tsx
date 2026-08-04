@@ -22,7 +22,7 @@ export default function MyTeamPanel({
       </header>
 
       <div className={styles.infoBanner}>
-        <Info aria-hidden="true" size={16} strokeWidth={1.8} />
+        <Info aria-hidden="true" size={18} strokeWidth={1.8} />
         <p>
           현재 자리에서 같은 조로 배정된 멤버입니다.
           <br />

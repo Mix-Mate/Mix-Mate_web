@@ -36,7 +36,7 @@ export default function SmallTalkScreen() {
       <section className={styles.topicScreen}>
         <header className={styles.featureCard}>
           <span className={styles.featureIcon}>
-            <MessageCircle aria-hidden="true" size={24} strokeWidth={1.7} />
+            <MessageCircle aria-hidden="true" size={26} strokeWidth={1.7} />
           </span>
           <span className={styles.featureText}>
             <strong>스몰토크 주제 추천</strong>
@@ -48,16 +48,18 @@ export default function SmallTalkScreen() {
           </span>
         </header>
 
-        <TopicCategoryList
-          categories={categories}
-          activeCategory={activeCategory}
-          onSelect={setActiveCategory}
-        />
-        <TopicRecommendationCard topic={topic} />
+        <div className={styles.topicContentCard}>
+          <TopicCategoryList
+            categories={categories}
+            activeCategory={activeCategory}
+            onSelect={setActiveCategory}
+          />
+          <TopicRecommendationCard topic={topic} />
 
-        <Button className={styles.primaryButton} onClick={refetch}>
-          다른 주제 추천받기
-        </Button>
+          <Button className={styles.primaryButton} onClick={refetch}>
+            다른 주제 추천받기
+          </Button>
+        </div>
       </section>
     </PlayScreenLayout>
   );
