@@ -20,7 +20,7 @@ export default function RandomGameScreen() {
       <section className={styles.recommendationScreen}>
         <header className={styles.featureCard}>
           <span className={styles.featureIcon}>
-            <Shuffle aria-hidden="true" size={24} strokeWidth={1.7} />
+            <Shuffle aria-hidden="true" size={26} strokeWidth={1.7} />
           </span>
           <span className={styles.featureText}>
             <strong>랜덤 술게임</strong>
@@ -32,11 +32,13 @@ export default function RandomGameScreen() {
           </span>
         </header>
 
-        <GameRecommendationCard game={game} />
+        <div className={styles.gameContentCard}>
+          <GameRecommendationCard game={game} />
 
-        <Button className={styles.primaryButton} onClick={refetch}>
-          다른 게임 추천받기
-        </Button>
+          <Button className={styles.primaryButton} onClick={refetch}>
+            다른 게임 추천받기
+          </Button>
+        </div>
       </section>
     </PlayScreenLayout>
   );
