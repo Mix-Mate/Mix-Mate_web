@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 import VoteCompletionWatcher from "@/features/vote/components/status/VoteCompletionWatcher";
 import VoteProgressCard from "@/features/vote/components/status/VoteProgressCard";
 import styles from "@/features/vote/components/status/VoteStatus.module.css";
@@ -12,6 +12,7 @@ import type { VoteStatusFilter } from "@/features/vote/types/vote.types";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteStatusScreen() {
+  const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const { data, isComplete } = useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =
@@ -33,6 +34,9 @@ export default function VoteStatusScreen() {
       emptyMessage: "모든 참가자가 투표를 완료했습니다.",
     },
   }[selectedFilter];
+  const showVoteResult = useCallback(() => {
+    router.replace(`/groups/${params.groupId}/votes/result`);
+  }, [params.groupId, router]);
 
   return (
     <VoteScreenLayout
@@ -65,7 +69,10 @@ export default function VoteStatusScreen() {
           </p>
         )}
 
-        <VoteCompletionWatcher isComplete={isComplete} />
+        <VoteCompletionWatcher
+          isComplete={isComplete}
+          onComplete={showVoteResult}
+        />
       </section>
     </VoteScreenLayout>
   );

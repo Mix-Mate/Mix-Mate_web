@@ -23,3 +23,9 @@
   padding: 16px;
   background: #fbfbfd;
 }
+
+.flushContent {
+  height: 740px;
+  padding: 0;
+  background: #fcfcff;
+}
