@@ -24,7 +24,7 @@ export default function Header({
         onClick={onBack}
         aria-label={backLabel}
       >
-        <ChevronLeft aria-hidden="true" size={20} strokeWidth={1.7} />
+        <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
       </button>
       <h1>{title}</h1>
       {roleLabel && (

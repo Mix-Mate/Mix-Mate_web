@@ -9,6 +9,7 @@ interface AvatarProps {
   fallback?: string;
   backgroundColor?: string;
   size?: number;
+  shape?: "circle" | "rounded";
 }
 
 export default function Avatar({
@@ -17,6 +18,7 @@ export default function Avatar({
   fallback,
   backgroundColor = "#94a3b8",
   size = 40,
+  shape = "circle",
 }: AvatarProps) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const showImage = Boolean(src) && failedSrc !== src;
@@ -24,7 +26,7 @@ export default function Avatar({
 
   return (
     <span
-      className={styles.avatar}
+      className={`${styles.avatar} ${styles[shape]}`}
       style={{
         width: size,
         height: size,

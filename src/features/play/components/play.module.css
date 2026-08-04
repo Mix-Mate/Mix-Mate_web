@@ -8,8 +8,14 @@
   flex-direction: column;
 }
 
+.recommendationScreen,
+.topicScreen,
+.balanceScreen {
+  gap: 13px;
+}
+
 .menuIntro {
-  padding: 0 4px 4px;
+  text-align: center;
 }
 
 .menuIntro h2,
@@ -24,62 +30,68 @@
 }
 
 .menuIntro h2 {
-  color: #252d36;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a1a1aa;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.menuIntro h2::before,
+.menuIntro h2::after {
+  height: 1px;
+  flex: 1;
+  background: #e4e4e7;
+  content: "";
 }
 
 .menuIntro p {
-  margin-top: 2px;
-  color: #9aa1aa;
-  font-size: 11px;
-  line-height: 17px;
+  margin-top: 7px;
+  color: #71717a;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .menuCards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .menuCard {
   display: flex;
   width: 343px;
-  min-height: 104px;
+  min-height: 107px;
   cursor: pointer;
   align-items: center;
-  gap: 14px;
-  padding: 16px 14px;
-  border: 1px solid #e2e7ed;
-  border-radius: 16px;
+  gap: 13px;
+  padding: 19px;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
   background: #fff;
-  color: #1f2933;
-  box-shadow: 0 4px 12px rgba(28, 46, 64, 0.035);
+  color: #18181b;
   text-align: left;
 }
 
 .menuCard:hover {
-  border-color: #cbdced;
+  border-color: #bfdbfe;
   background: #fbfdff;
-}
-
-.menuCard > svg {
-  flex: 0 0 auto;
-  color: #a3aab2;
 }
 
 .menuIcon,
 .featureIcon {
   display: grid;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 53px;
+  height: 53px;
+  flex: 0 0 53px;
   place-items: center;
-  border-radius: 14px;
-  background: #edf6ff;
-  color: #3f8bd3;
+  border-radius: 16px;
+  background: #eff6ff;
+  color: #3b82f6;
 }
 
 .menuText,
@@ -88,101 +100,129 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 4px;
 }
 
-.menuText strong,
-.featureText strong {
-  color: #252d36;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 21px;
+.menuText strong {
+  color: #18181b;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
 }
 
-.menuText small,
-.featureText span {
-  color: #929aa4;
-  font-size: 11px;
-  line-height: 17px;
+.menuText small {
+  color: #52525b;
+  font-size: 13px;
+  line-height: 20px;
+  word-break: keep-all;
 }
 
 .featureCard {
   display: flex;
   width: 343px;
-  min-height: 112px;
+  min-height: 117px;
+  flex: 0 0 117px;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 16px;
+  gap: 18px;
+  padding: 18px 21px;
+  border-radius: 23px;
   background: #fff;
-  box-shadow: 0 5px 16px rgba(31, 48, 66, 0.055);
+  box-shadow: 0 2px 8px rgba(60, 70, 180, 0.07);
+}
+
+.featureText strong {
+  color: #16172b;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.featureText span {
+  padding-top: 3px;
+  color: #9090a8;
+  font-size: 15px;
+  line-height: 23px;
+  word-break: keep-all;
+}
+
+.gameContentCard,
+.topicContentCard,
+.balanceContentCard {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 18px 21px;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(60, 70, 180, 0.07);
 }
 
 .gameRecommendation {
+  min-height: 0;
   flex: 1;
-  margin-top: 12px;
-  padding: 22px 20px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 5px 16px rgba(31, 48, 66, 0.055);
 }
 
 .gameRecommendation h2 {
-  color: #232b34;
-  font-size: 18px;
+  color: #16172b;
+  font-size: 20px;
   font-weight: 700;
-  line-height: 26px;
+  line-height: 30px;
 }
 
 .gameTitle {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
 }
 
 .gameTitleIcon {
   display: grid;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 17px;
   background: #fff0e8;
   color: #ff7650;
 }
 
 .gameSection {
-  margin-top: 22px;
+  margin-top: 16px;
+}
+
+.gameSection + .gameSection {
+  padding-top: 10px;
+  border-top: 1px solid #e4e4e7;
 }
 
 .gameSection h3 {
-  color: #87909a;
-  font-size: 11px;
+  color: #9090a8;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 17px;
+  line-height: 20px;
 }
 
 .compositionList,
 .stepList {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   padding: 0;
-  color: #68717c;
-  font-size: 11px;
-  line-height: 19px;
+  color: #52525b;
+  font-size: 13px;
+  line-height: 24px;
   list-style: none;
 }
 
 .compositionList li {
   position: relative;
-  padding-left: 14px;
+  padding-left: 18px;
 }
 
 .compositionList li::before {
   position: absolute;
-  top: 7px;
+  top: 10px;
   left: 0;
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #ff7650;
   content: "";
@@ -191,142 +231,144 @@
 .stepList {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 
 .stepList li {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .stepList span {
   display: grid;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
   place-items: center;
   border-radius: 50%;
   background: #eef2ff;
-  color: #6c70e8;
-  font-size: 10px;
+  color: #5b67f8;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .primaryButton {
-  width: 311px;
-  margin: 16px auto 0;
-}
-
-.topicScreen .primaryButton,
-.balanceScreen .primaryButton {
+  width: 100%;
+  height: 59px;
+  flex: 0 0 59px;
   margin-top: auto;
+  border-radius: 18px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 27px;
 }
 
 .categorySection {
-  margin-top: 18px;
+  margin: 0;
 }
 
 .categorySection h2 {
-  color: #242d36;
-  font-size: 14px;
+  color: #16172b;
+  font-size: 19px;
   font-weight: 700;
-  line-height: 21px;
+  line-height: 29px;
 }
 
 .categoryList {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 10px;
+  margin-top: 13px;
 }
 
 .category,
 .activeCategory {
-  height: 34px;
+  height: 42px;
   cursor: pointer;
-  border: 1px solid #dce2e9;
+  border: 1.5px solid #e4e4e7;
   border-radius: 999px;
   background: #fff;
-  color: #707983;
-  font-size: 10px;
-  font-weight: 500;
+  color: #9090a8;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .activeCategory {
-  border-color: #2934c8;
-  background: #2934c8;
+  border-color: #1d24c2;
+  background: #1d24c2;
   color: #fff;
-  font-weight: 700;
 }
 
 .topicRecommendation {
   display: flex;
-  min-height: 150px;
+  min-height: 154px;
   flex-direction: column;
-  justify-content: center;
-  margin-top: 18px;
-  padding: 20px;
-  border-radius: 14px;
-  background: #eaf4ff;
-  text-align: center;
+  margin-top: 28px;
+  padding: 15px 18px;
+  border-radius: 16px;
+  background: #eff6ff;
 }
 
 .topicRecommendation > span {
-  color: #3c86d4;
-  font-size: 11px;
+  color: #5b67f8;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 17px;
+  letter-spacing: 0.5px;
+  line-height: 22px;
 }
 
 .topicRecommendation p {
-  margin-top: 12px;
-  color: #334252;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 25px;
+  display: grid;
+  min-height: 82px;
+  margin-top: 6px;
+  color: #16172b;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 32px;
+  place-items: center;
+  text-align: center;
   word-break: keep-all;
 }
 
 .balanceQuestion {
   display: flex;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  margin-top: 12px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 5px 16px rgba(31, 48, 66, 0.055);
+  gap: 13px;
+  margin: 0;
 }
 
 .choiceCard {
   display: grid;
-  width: 295px;
-  height: 135px;
+  width: 100%;
+  height: 142px;
+  flex: 0 0 142px;
   place-items: center;
-  padding: 18px;
-  border: 1px solid #d9e7f6;
-  border-radius: 12px;
-  background: #edf6ff;
-  color: #26384a;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 28px;
+  padding: 20px;
+  border: 1px solid #bfdbfe;
+  border-radius: 13px;
+  background: #eff6ff;
+  color: #16172b;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 31px;
   text-align: center;
   white-space: pre-line;
 }
 
 .versusBadge {
   display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
   place-items: center;
   border-radius: 50%;
-  background: #2934c8;
+  background: #1d24c2;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }

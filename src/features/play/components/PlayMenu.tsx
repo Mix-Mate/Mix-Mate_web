@@ -1,4 +1,4 @@
-import { ChevronRight, MessageCircle, Scale, Shuffle } from "lucide-react";
+import { MessageCircle, Scale, Shuffle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import styles from "./play.module.css";
 
@@ -55,13 +55,12 @@ export default function PlayMenu({ groupId, onNavigate }: PlayMenuProps) {
               onClick={() => onNavigate(`/groups/${groupId}/play/${item.path}`)}
             >
               <span className={styles.menuIcon}>
-                <Icon aria-hidden="true" size={24} strokeWidth={1.7} />
+                <Icon aria-hidden="true" size={26} strokeWidth={1.7} />
               </span>
               <span className={styles.menuText}>
                 <strong>{item.title}</strong>
                 <small>{item.description}</small>
               </span>
-              <ChevronRight aria-hidden="true" size={18} strokeWidth={1.7} />
             </button>
           );
         })}
