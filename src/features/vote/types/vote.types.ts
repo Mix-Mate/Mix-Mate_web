@@ -51,3 +51,25 @@ export interface VoteProgressContext {
   absenceMembers: VoteStatusMember[];
   pendingMembers: VoteStatusMember[];
 }
+
+export interface MvpResultMember {
+  memberId: string;
+  memberName: string;
+  profileImage: string | null;
+  avatarInitial: string;
+  avatarColor: string;
+  rank: number;
+  voteCount: number;
+  teamNumber: number;
+  gradeLabel: string;
+  mbti: string;
+}
+
+export interface VoteResultContext {
+  status: VoteStatus;
+  teamNumber: number;
+  teamMvp: MvpResultMember;
+  overallRanking: MvpResultMember[];
+  attendanceCount: number;
+  totalCount: number;
+}
