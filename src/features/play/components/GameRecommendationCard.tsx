@@ -13,7 +13,7 @@ export default function GameRecommendationCard({
     <article className={styles.gameRecommendation} aria-live="polite">
       <header className={styles.gameTitle}>
         <span className={styles.gameTitleIcon}>
-          <Mic2 aria-hidden="true" size={24} strokeWidth={1.7} />
+          <Mic2 aria-hidden="true" size={28} strokeWidth={1.7} />
         </span>
         <h2>{game.title}</h2>
       </header>

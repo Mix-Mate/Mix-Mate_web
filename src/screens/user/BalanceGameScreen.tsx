@@ -20,7 +20,7 @@ export default function BalanceGameScreen() {
       <section className={styles.balanceScreen}>
         <header className={styles.featureCard}>
           <span className={styles.featureIcon}>
-            <Scale aria-hidden="true" size={24} strokeWidth={1.7} />
+            <Scale aria-hidden="true" size={26} strokeWidth={1.7} />
           </span>
           <span className={styles.featureText}>
             <strong>밸런스 게임</strong>
@@ -32,15 +32,17 @@ export default function BalanceGameScreen() {
           </span>
         </header>
 
-        <article className={styles.balanceQuestion} aria-live="polite">
-          <div className={styles.choiceCard}>{choices[0]}</div>
-          <span className={styles.versusBadge}>VS</span>
-          <div className={styles.choiceCard}>{choices[1]}</div>
-        </article>
+        <div className={styles.balanceContentCard}>
+          <article className={styles.balanceQuestion} aria-live="polite">
+            <div className={styles.choiceCard}>{choices[0]}</div>
+            <span className={styles.versusBadge}>VS</span>
+            <div className={styles.choiceCard}>{choices[1]}</div>
+          </article>
 
-        <Button className={styles.primaryButton} onClick={refetch}>
-          다른 주제 추천받기
-        </Button>
+          <Button className={styles.primaryButton} onClick={refetch}>
+            다른 주제 추천받기
+          </Button>
+        </div>
       </section>
     </PlayScreenLayout>
   );
