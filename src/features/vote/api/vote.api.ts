@@ -14,7 +14,9 @@ import type {
   AttendanceVoteSubmission,
   MvpVoteContext,
   MvpVoteSubmission,
+  MvpResultMember,
   VoteProgressContext,
+  VoteResultContext,
   VoteStatus,
   VoteStatusMember,
 } from "../types/vote.types";
@@ -61,6 +63,78 @@ const absenceMemberMocks: VoteStatusMember[] = [
 const pendingMemberMocks: VoteStatusMember[] = [
   createVoteStatusMember("han-sohee", "한소희", "PENDING"),
   createVoteStatusMember("ryu-doyeon", "류도연", "PENDING", "#8f98a3"),
+];
+
+function createMvpResultMember(
+  memberId: string,
+  memberName: string,
+  avatarInitial: string,
+  avatarColor: string,
+  rank: number,
+  voteCount: number,
+  teamNumber: number,
+  gradeLabel: string,
+  mbti: string,
+): MvpResultMember {
+  return {
+    memberId,
+    memberName,
+    profileImage: null,
+    avatarInitial,
+    avatarColor,
+    rank,
+    voteCount,
+    teamNumber,
+    gradeLabel,
+    mbti,
+  };
+}
+
+const mvpResultMocks: MvpResultMember[] = [
+  createMvpResultMember(
+    "lee-seoyeon",
+    "이서연",
+    "이",
+    "#dbeafe",
+    1,
+    5,
+    1,
+    "신입",
+    "INFP",
+  ),
+  createMvpResultMember(
+    "han-sohee",
+    "한소희",
+    "한",
+    "#dbeafe",
+    2,
+    3,
+    4,
+    "3학년",
+    "ISTP",
+  ),
+  createMvpResultMember(
+    "jeong-hyunwoo",
+    "정현우",
+    "정",
+    "#dbeafe",
+    2,
+    3,
+    2,
+    "2학년",
+    "ENTP",
+  ),
+  createMvpResultMember(
+    "hwang-minjun",
+    "황민준",
+    "황",
+    "#dbeafe",
+    4,
+    1,
+    3,
+    "3학년",
+    "ISFJ",
+  ),
 ];
 
 function getSubmissionKey(groupId: string, memberId: string) {
@@ -176,6 +250,19 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
     attendanceMembers,
     absenceMembers,
     pendingMembers,
+  };
+}
+
+export function getVoteResultContext(groupId: string): VoteResultContext {
+  const progress = getVoteProgressContext(groupId);
+
+  return {
+    status: "CLOSED",
+    teamNumber: myTeamMock.teamNumber,
+    teamMvp: mvpResultMocks[0],
+    overallRanking: mvpResultMocks,
+    attendanceCount: Math.max(8, progress.attendanceCount),
+    totalCount: progress.totalCount,
   };
 }
 
