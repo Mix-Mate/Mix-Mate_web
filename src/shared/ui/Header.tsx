@@ -6,7 +6,7 @@ interface HeaderProps {
   roleLabel?: string;
   onBack: () => void;
   backLabel?: string;
-  badgeTone?: "role" | "status";
+  badgeTone?: "role" | "status" | "admin";
 }
 
 export default function Header({
@@ -31,7 +31,7 @@ export default function Header({
         <span
           className={`${styles.roleBadge} ${
             badgeTone === "status" ? styles.statusBadge : ""
-          }`}
+          } ${badgeTone === "admin" ? styles.adminBadge : ""}`.trim()}
         >
           {roleLabel}
         </span>

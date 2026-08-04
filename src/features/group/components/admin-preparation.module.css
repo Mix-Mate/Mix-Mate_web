@@ -1,0 +1,201 @@
+.summaryCard {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 136px;
+  flex: 0 0 136px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.statusBadge {
+  margin: 0;
+  padding: 2px 12px;
+  border-radius: 10px;
+  background: #fffbeb;
+  color: #d97706;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.inviteCard {
+  display: flex;
+  width: 100%;
+  min-height: 74px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8faff;
+  color: #2563eb;
+  text-align: left;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.inviteCard:hover {
+  border-color: #93c5fd;
+  background: #f3f7ff;
+}
+
+.inviteCard:focus-visible,
+.assignmentButton:focus-visible,
+.secondaryButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.inviteInfo,
+.copyAction,
+.assignmentButton strong,
+.secondaryActions,
+.secondaryButton {
+  display: flex;
+  align-items: center;
+}
+
+.inviteInfo {
+  gap: 13px;
+}
+
+.inviteIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.inviteText {
+  display: flex;
+  flex-direction: column;
+}
+
+.inviteText small {
+  color: #94a3b8;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.inviteText strong {
+  color: #1d4ed8;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  line-height: 30px;
+}
+
+.copyAction {
+  gap: 6px;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 16px;
+}
+
+.assignmentButton {
+  position: relative;
+  display: flex;
+  width: 320px;
+  height: 320px;
+  flex: 0 0 320px;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid rgba(229, 249, 255, 0.9);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 42% 36%,
+    #fff 0%,
+    #f4f9ff 32%,
+    #e8f3fe 62%,
+    #daeafa 100%
+  );
+  color: #1f3950;
+  box-shadow:
+    inset 0 -7px 20px rgba(139, 92, 246, 0.08),
+    inset 0 3px 13px rgba(255, 255, 255, 0.7),
+    0 10px 33px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.assignmentButton:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 -7px 20px rgba(139, 92, 246, 0.08),
+    inset 0 3px 13px rgba(255, 255, 255, 0.7),
+    0 14px 38px rgba(31, 57, 80, 0.12);
+}
+
+.assignmentButton > span {
+  color: #1a3f57;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 25px;
+}
+
+.assignmentButton strong {
+  gap: 8px;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+  line-height: 38px;
+}
+
+.secondaryActions {
+  width: 100%;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.secondaryButton {
+  height: 50px;
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  background: #fff;
+  color: #3b82c4;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background 140ms ease;
+}
+
+.secondaryButton:hover {
+  background: #fafafa;
+}
+
+.deleteButton {
+  color: #e37d7f;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
