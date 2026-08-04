@@ -4,7 +4,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
-import UM01LeaveGroupDialog from "@/modals/user/UM01LeaveGroupDialog";
+import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
 import Header from "@/shared/ui/Header";
 import styles from "./UserHomeScreen.module.css";
 
