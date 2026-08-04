@@ -12,6 +12,8 @@ interface VoteScreenLayoutProps {
   status: VoteStatus;
   backHref: string;
   testId: string;
+  showStatusBadge?: boolean;
+  flushContent?: boolean;
 }
 
 export default function VoteScreenLayout({
@@ -20,6 +22,8 @@ export default function VoteScreenLayout({
   status,
   backHref,
   testId,
+  showStatusBadge = true,
+  flushContent = false,
 }: VoteScreenLayoutProps) {
   const router = useRouter();
 
@@ -28,11 +32,23 @@ export default function VoteScreenLayout({
       <section className={styles.phone} data-testid={testId}>
         <Header
           title={title}
-          roleLabel={status === "OPEN" ? "투표 진행 중" : "투표 마감"}
+          roleLabel={
+            showStatusBadge
+              ? status === "OPEN"
+                ? "투표 진행 중"
+                : "투표 마감"
+              : undefined
+          }
           badgeTone="status"
           onBack={() => router.push(backHref)}
         />
-        <div className={styles.content}>{children}</div>
+        <div
+          className={`${styles.content} ${
+            flushContent ? styles.flushContent : ""
+          }`}
+        >
+          {children}
+        </div>
       </section>
     </main>
   );
