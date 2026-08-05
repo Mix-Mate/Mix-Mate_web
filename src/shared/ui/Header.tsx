@@ -6,7 +6,8 @@ interface HeaderProps {
   roleLabel?: string;
   onBack: () => void;
   backLabel?: string;
-  badgeTone?: "role" | "status";
+  badgeTone?: "role" | "status" | "admin";
+  compact?: boolean;
 }
 
 export default function Header({
@@ -15,9 +16,12 @@ export default function Header({
   onBack,
   backLabel = "이전 화면으로 이동",
   badgeTone = "role",
+  compact = false,
 }: HeaderProps) {
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${compact ? styles.compact : ""}`.trim()}
+    >
       <button
         type="button"
         className={styles.backButton}
@@ -31,7 +35,7 @@ export default function Header({
         <span
           className={`${styles.roleBadge} ${
             badgeTone === "status" ? styles.statusBadge : ""
-          }`}
+          } ${badgeTone === "admin" ? styles.adminBadge : ""}`.trim()}
         >
           {roleLabel}
         </span>

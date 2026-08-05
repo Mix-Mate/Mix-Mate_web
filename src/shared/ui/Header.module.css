@@ -10,6 +10,10 @@
   background: #fff;
 }
 
+.compact {
+  height: 64px;
+}
+
 .backButton {
   display: grid;
   width: 44px;
@@ -53,4 +57,9 @@
   border: 1px solid #b9dcff;
   background: #f7fbff;
   color: #3789d5;
+}
+
+.adminBadge {
+  background: #eff6ff;
+  color: #3b82c4;
 }
