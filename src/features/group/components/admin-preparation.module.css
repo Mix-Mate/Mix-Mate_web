@@ -1,27 +1,62 @@
 .summaryCard {
   position: relative;
-  display: flex;
   width: 100%;
   height: 136px;
   flex: 0 0 136px;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px 14px;
+  padding: 49px 20px 10px;
   border: 1px solid #e4e4e7;
   border-radius: 20px;
   background: #fff;
 }
 
+.summaryHeader {
+  position: absolute;
+  top: 13px;
+  right: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .statusBadge {
   margin: 0;
-  padding: 2px 12px;
+  padding: 2px 10px;
   border-radius: 10px;
   background: #fffbeb;
   color: #d97706;
   font-size: 13px;
   font-weight: 700;
   line-height: 20px;
+  white-space: nowrap;
+}
+
+.editSummaryButton {
+  display: flex;
+  height: 24px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #06abd9;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: transform 100ms ease;
+}
+
+.editSummaryButton:active {
+  transform: scale(0.97);
+}
+
+.editSummaryButton svg {
+  flex: 0 0 auto;
+  color: #18181b;
 }
 
 .inviteCard {
@@ -49,7 +84,8 @@
 
 .inviteCard:focus-visible,
 .assignmentButton:focus-visible,
-.secondaryButton:focus-visible {
+.secondaryButton:focus-visible,
+.editSummaryButton:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
 }
@@ -163,6 +199,10 @@
   width: 100%;
   gap: 10px;
   margin-top: auto;
+}
+
+.flowActions {
+  margin-top: 0;
 }
 
 .secondaryButton {

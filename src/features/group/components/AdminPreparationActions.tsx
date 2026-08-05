@@ -1,16 +1,26 @@
-import { ArrowRight, Trash2, UserRoundCog } from "lucide-react";
+import { ArrowRight, UserRoundCog } from "lucide-react";
+import type { ReactNode } from "react";
 import styles from "./admin-preparation.module.css";
+
+interface SecondaryAction {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  tone?: "default" | "danger";
+}
 
 interface AdminPreparationActionsProps {
   onStartAssignment: () => void;
-  onRequestDelete: () => void;
+  secondaryAction: SecondaryAction;
   onEditProfile: () => void;
+  footerPlacement?: "bottom" | "flow";
 }
 
 export default function AdminPreparationActions({
   onStartAssignment,
-  onRequestDelete,
+  secondaryAction,
   onEditProfile,
+  footerPlacement = "bottom",
 }: AdminPreparationActionsProps) {
   return (
     <>
@@ -26,14 +36,20 @@ export default function AdminPreparationActions({
         </strong>
       </button>
 
-      <div className={styles.secondaryActions}>
+      <div
+        className={`${styles.secondaryActions} ${
+          footerPlacement === "flow" ? styles.flowActions : ""
+        }`.trim()}
+      >
         <button
           type="button"
-          className={`${styles.secondaryButton} ${styles.deleteButton}`}
-          onClick={onRequestDelete}
+          className={`${styles.secondaryButton} ${
+            secondaryAction.tone === "danger" ? styles.deleteButton : ""
+          }`.trim()}
+          onClick={secondaryAction.onClick}
         >
-          <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />
-          그룹 삭제하기
+          {secondaryAction.icon}
+          {secondaryAction.label}
         </button>
         <button
           type="button"
