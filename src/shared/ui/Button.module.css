@@ -14,12 +14,13 @@
   transition:
     border-color 120ms ease,
     background 120ms ease,
-    color 120ms ease;
+    color 120ms ease,
+    transform 100ms ease;
 }
 
 .primary {
   --button-background: #2e73db;
-  --button-hover: #2567c9;
+  --button-active: #2567c9;
   --button-border: transparent;
   --button-color: #fff;
   --button-focus: #89bfff;
@@ -27,7 +28,7 @@
 
 .danger {
   --button-background: #e05252;
-  --button-hover: #cc4141;
+  --button-active: #cc4141;
   --button-border: transparent;
   --button-color: #fff;
   --button-focus: #f3a1a1;
@@ -35,14 +36,15 @@
 
 .secondary {
   --button-background: #fff;
-  --button-hover: #f4f7fa;
+  --button-active: #f4f7fa;
   --button-border: #cbd5df;
   --button-color: #4c5661;
   --button-focus: #89bfff;
 }
 
-.button:hover:not(:disabled) {
-  background: var(--button-hover);
+.button:active:not(:disabled) {
+  background: var(--button-active);
+  transform: scale(0.985);
 }
 
 .button:focus-visible {

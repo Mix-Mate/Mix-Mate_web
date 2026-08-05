@@ -106,8 +106,11 @@
   border-top: 1px solid #e9edf1;
 }
 
-.candidateItem:hover,
 .selectedCandidate {
+  background: #f2f7ff;
+}
+
+.candidateList:not(:disabled) .candidateItem:active {
   background: #f2f7ff;
 }
 

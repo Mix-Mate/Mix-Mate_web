@@ -125,10 +125,14 @@
   background: #fff;
   color: #68717c;
   text-align: left;
+  transition:
+    background 120ms ease,
+    transform 100ms ease;
 }
 
-.memberButton:hover {
+.memberButton:active {
   background: #f8fbff;
+  transform: scale(0.99);
 }
 
 .memberText {
