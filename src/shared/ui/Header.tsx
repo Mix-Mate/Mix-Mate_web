@@ -7,6 +7,7 @@ interface HeaderProps {
   onBack: () => void;
   backLabel?: string;
   badgeTone?: "role" | "status" | "admin";
+  compact?: boolean;
 }
 
 export default function Header({
@@ -15,9 +16,12 @@ export default function Header({
   onBack,
   backLabel = "이전 화면으로 이동",
   badgeTone = "role",
+  compact = false,
 }: HeaderProps) {
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${compact ? styles.compact : ""}`.trim()}
+    >
       <button
         type="button"
         className={styles.backButton}

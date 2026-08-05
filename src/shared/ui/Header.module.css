@@ -10,6 +10,10 @@
   background: #fff;
 }
 
+.compact {
+  height: 64px;
+}
+
 .backButton {
   display: grid;
   width: 44px;
