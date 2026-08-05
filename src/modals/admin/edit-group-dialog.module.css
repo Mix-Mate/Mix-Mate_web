@@ -1,0 +1,233 @@
+.scrim {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(24, 24, 27, 0.6);
+  animation: fadeIn 160ms ease-out;
+}
+
+.bottomSheet {
+  width: 100%;
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  padding: 16px 24px 24px;
+  border-radius: 30px 30px 0 0;
+  background: #fff;
+  box-shadow: 0 -16px 48px rgba(24, 24, 27, 0.2);
+  animation: slideUp 220ms ease-out;
+}
+
+.sheetHandle {
+  display: block;
+  width: 48px;
+  height: 4px;
+  margin: 0 auto 22px;
+  border-radius: 999px;
+  background: #d4d4d8;
+}
+
+.dialogHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.editIcon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid #93c5fd;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #f7fbff 0%, #e7f2ff 100%);
+  color: #2563eb;
+}
+
+.dialogHeader h2 {
+  margin: 14px 0 0;
+  color: #18181b;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.7px;
+  line-height: 39px;
+}
+
+.dialogHeader p {
+  margin: 2px 0 0;
+  color: #71717a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.form {
+  margin-top: 20px;
+}
+
+.fieldGroup + .fieldGroup {
+  margin-top: 14px;
+}
+
+.fieldGroup label,
+.labelRow {
+  color: #52525b;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.fieldGroup label > span {
+  color: #ef4444;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.labelRow small {
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.fieldGroup input,
+.fieldGroup textarea {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  border: 1px solid #c5c7cc;
+  border-radius: 15px;
+  background: #fafafa;
+  color: #27272a;
+  font: inherit;
+  font-size: 16px;
+  outline: none;
+  box-shadow: inset 4px 0 0 #c5c7cc;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.fieldGroup input {
+  height: 48px;
+  padding: 0 16px 0 20px;
+}
+
+.fieldGroup textarea {
+  min-height: 78px;
+  resize: none;
+  padding: 12px 16px 12px 20px;
+  line-height: 24px;
+}
+
+.fieldGroup input::placeholder,
+.fieldGroup textarea::placeholder {
+  color: #a1a1aa;
+}
+
+.fieldGroup input:focus,
+.fieldGroup textarea:focus {
+  border-color: #60a5fa;
+  background: #fff;
+  box-shadow:
+    inset 4px 0 0 #3b82c4,
+    0 0 0 3px rgba(59, 130, 196, 0.13);
+}
+
+.fieldGroup input[aria-invalid="true"],
+.fieldGroup textarea[aria-invalid="true"] {
+  border-color: #fca5a5;
+  box-shadow: inset 4px 0 0 #ef4444;
+}
+
+.fieldError {
+  display: block;
+  margin: 4px 2px 0;
+  color: #dc2626;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.submitError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #f4f4f5;
+}
+
+.cancelButton,
+.saveButton {
+  height: 58px;
+  cursor: pointer;
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  transition:
+    background 140ms ease,
+    transform 100ms ease;
+}
+
+.cancelButton {
+  border: 1px solid #e4e4e7;
+  background: #f4f4f5;
+  color: #52525b;
+}
+
+.saveButton {
+  background: linear-gradient(135deg, #3b82c4 0%, #2e73db 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(37, 99, 168, 0.18);
+}
+
+.cancelButton:active:not(:disabled) {
+  background: #e9e9ec;
+  transform: scale(0.98);
+}
+
+.saveButton:active:not(:disabled) {
+  background: linear-gradient(135deg, #3177b9 0%, #1f5792 100%);
+  transform: scale(0.98);
+}
+
+.cancelButton:focus-visible,
+.saveButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+}
