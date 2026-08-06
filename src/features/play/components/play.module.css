@@ -75,11 +75,16 @@
   background: #fff;
   color: #18181b;
   text-align: left;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease,
+    transform 100ms ease;
 }
 
-.menuCard:hover {
+.menuCard:active {
   border-color: #bfdbfe;
   background: #fbfdff;
+  transform: scale(0.99);
 }
 
 .menuIcon,

@@ -24,10 +24,14 @@
   border-radius: 10px;
   background: transparent;
   color: #273746;
+  transition:
+    background 120ms ease,
+    transform 100ms ease;
 }
 
-.backButton:hover {
-  background: #f4f4f5;
+.backButton:active {
+  background: #e9e9ec;
+  transform: scale(0.94);
 }
 
 .header h1 {
