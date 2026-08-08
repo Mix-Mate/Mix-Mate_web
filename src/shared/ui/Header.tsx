@@ -7,6 +7,7 @@ interface HeaderProps {
   onBack: () => void;
   backLabel?: string;
   compact?: boolean;
+  smallTitle?: boolean;
 }
 
 export default function Header({
@@ -15,10 +16,13 @@ export default function Header({
   onBack,
   backLabel = "이전 화면으로 이동",
   compact = false,
+  smallTitle = false,
 }: HeaderProps) {
   return (
     <header
-      className={`${styles.header} ${compact ? styles.compact : ""}`.trim()}
+      className={`${styles.header} ${compact ? styles.compact : ""} ${
+        smallTitle ? styles.smallTitle : ""
+      }`.trim()}
     >
       <button
         type="button"
