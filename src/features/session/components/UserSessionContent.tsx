@@ -35,6 +35,11 @@ export default function UserSessionContent({
       <SessionStatusCard
         eyebrow={snapshot.statusEyebrow}
         status={snapshot.statusLabel}
+        onClick={
+          isAdmin && snapshot.permissions.canEndRound
+            ? () => onNavigate(`/groups/${groupId}/admin/progress`)
+            : undefined
+        }
       />
 
       {isAssigned ? (
