@@ -1,5 +1,5 @@
-import AdminProgressScreen from "@/screens/admin/AdminProgressScreen";
+import ProgressScreen from "@/screens/admin/ProgressScreen";
 
 export default function AdminProgressPage() {
-  return <AdminProgressScreen />;
+  return <ProgressScreen />;
 }
