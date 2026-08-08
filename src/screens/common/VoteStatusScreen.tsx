@@ -3,6 +3,8 @@
 import { AlertTriangle } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import { getMockGroupRole } from "@/features/session/utils/session-navigation";
+import AdminVoteEndButton from "@/features/vote/components/status/AdminVoteEndButton";
 import VoteCompletionWatcher from "@/features/vote/components/status/VoteCompletionWatcher";
 import VoteProgressCard from "@/features/vote/components/status/VoteProgressCard";
 import styles from "@/features/vote/components/status/VoteStatus.module.css";
@@ -16,6 +18,7 @@ export default function VoteStatusScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const isAdmin = getMockGroupRole(searchParams) === "ADMIN";
   const { data, isComplete } = useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =
     useState<VoteStatusFilter>("PENDING");
@@ -44,6 +47,14 @@ export default function VoteStatusScreen() {
       ),
     );
   }, [params.groupId, router, searchParams]);
+  const showAdminVoteEnd = useCallback(() => {
+    router.push(
+      withSessionContext(
+        `/groups/${params.groupId}/admin/votes/end`,
+        searchParams,
+      ),
+    );
+  }, [params.groupId, router, searchParams]);
 
   return (
     <VoteScreenLayout
@@ -52,7 +63,10 @@ export default function VoteStatusScreen() {
       backHref={`/groups/${params.groupId}/home`}
       testId="vote-status-screen"
     >
-      <section className={styles.statusScreen}>
+      <section
+        className={styles.statusScreen}
+        data-role={isAdmin ? "ADMIN" : "USER"}
+      >
         <VoteProgressCard
           totalCount={data.totalCount}
           completedCount={data.completedCount}
@@ -72,8 +86,14 @@ export default function VoteStatusScreen() {
         {!isComplete && (
           <p className={styles.waitingNotice}>
             <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-            미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다.
+            {isAdmin
+              ? "미투표자가 있습니다. 관리자가 수동으로 투표를 종료할 수 있습니다."
+              : "미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다."}
           </p>
+        )}
+
+        {isAdmin && !isComplete && (
+          <AdminVoteEndButton onEnd={showAdminVoteEnd} />
         )}
 
         <VoteCompletionWatcher
