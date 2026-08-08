@@ -3,6 +3,10 @@
 import type { ReactNode } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import {
+  getMockGroupRole,
+  withSessionContext,
+} from "@/features/session/utils/session-navigation";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import Header from "@/shared/ui/Header";
 import styles from "./PlayScreen.module.css";
@@ -23,6 +27,7 @@ export default function PlayScreenLayout({
   const searchParams = useSearchParams();
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
+    getMockGroupRole(searchParams),
   );
 
   return (
@@ -31,17 +36,23 @@ export default function PlayScreenLayout({
         className={styles.phone}
         data-testid={testId}
         data-scenario={snapshot.scenario}
+        data-role={snapshot.role}
       >
         <Header
           title={snapshot.groupName}
           roleLabel={snapshot.roleLabel}
-          onBack={() => router.push(backHref)}
+          badgeTone={snapshot.role === "ADMIN" ? "admin" : "role"}
+          onBack={() =>
+            router.push(withSessionContext(backHref, searchParams))
+          }
         />
 
         <TeamSectionTabs
           groupId={params.groupId}
           activeSection="play"
-          onNavigate={(href) => router.push(href)}
+          onNavigate={(href) =>
+            router.push(withSessionContext(href, searchParams))
+          }
         />
 
         <div className={styles.content}>{children}</div>
