@@ -63,7 +63,12 @@ export default function UserHomeScreen() {
       return;
     }
 
-    router.replace(`/groups/${params.groupId}/home`);
+    router.replace(
+      withSessionContext(
+        `/groups/${params.groupId}/completed`,
+        searchParams,
+      ),
+    );
   }, [endRound, params.groupId, router, searchParams, snapshot.round]);
 
   return (
