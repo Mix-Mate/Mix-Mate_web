@@ -10,6 +10,7 @@ import {
   withSessionContext,
 } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
+import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
 import Header from "@/shared/ui/Header";
 import styles from "./UserHomeScreen.module.css";
@@ -33,6 +34,8 @@ export default function UserHomeScreen() {
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [leaveCompleted, setLeaveCompleted] = useState(false);
   const isAdmin = snapshot.role === "ADMIN";
+  const postVoteDialogOpen =
+    isAdmin && searchParams.get("dialog") === "post-vote";
 
   const closeLeaveDialog = useCallback(() => {
     setLeaveDialogOpen(false);
@@ -70,6 +73,18 @@ export default function UserHomeScreen() {
       ),
     );
   }, [endRound, params.groupId, router, searchParams, snapshot.round]);
+
+  const continueToRoundTwo = useCallback(() => {
+    router.replace(
+      `/groups/${params.groupId}/admin/round-2/preparation?scenario=round2-waiting&role=admin`,
+    );
+  }, [params.groupId, router]);
+
+  const finishGroup = useCallback(() => {
+    router.replace(
+      withSessionContext(`/groups/${params.groupId}/completed`, searchParams),
+    );
+  }, [params.groupId, router, searchParams]);
 
   return (
     <main className={styles.viewport}>
@@ -115,6 +130,12 @@ export default function UserHomeScreen() {
           error={endRoundError}
           onClose={closeEndRoundDialog}
           onConfirm={confirmEndRound}
+        />
+
+        <PostVoteDecisionDialog
+          open={postVoteDialogOpen}
+          onContinue={continueToRoundTwo}
+          onFinish={finishGroup}
         />
       </section>
     </main>
