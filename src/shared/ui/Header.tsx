@@ -8,6 +8,7 @@ interface HeaderProps {
   backLabel?: string;
   badgeTone?: "role" | "status" | "admin";
   compact?: boolean;
+  smallTitle?: boolean;
 }
 
 export default function Header({
@@ -17,10 +18,13 @@ export default function Header({
   backLabel = "이전 화면으로 이동",
   badgeTone = "role",
   compact = false,
+  smallTitle = false,
 }: HeaderProps) {
   return (
     <header
-      className={`${styles.header} ${compact ? styles.compact : ""}`.trim()}
+      className={`${styles.header} ${compact ? styles.compact : ""} ${
+        smallTitle ? styles.smallTitle : ""
+      }`.trim()}
     >
       <button
         type="button"

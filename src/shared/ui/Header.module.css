@@ -47,6 +47,12 @@
   white-space: nowrap;
 }
 
+.smallTitle h1 {
+  color: #18181b;
+  font-size: 16px;
+  line-height: 24px;
+}
+
 .roleBadge {
   padding: 3px 10px;
   border-radius: 10px;
