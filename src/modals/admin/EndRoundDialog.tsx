@@ -59,9 +59,19 @@ export default function EndRoundDialog({
         <div className={styles.message}>
           <h2 id="end-round-title">{round}차 술자리를 종료할까요?</h2>
           <p id="end-round-description">
-            현재 진행 중인 술자리를 마감하고
-            <br />
-            다음 단계로 이동합니다.
+            {round === 1 ? (
+              <>
+                현재 진행 중인 술자리를 마감하고
+                <br />
+                다음 단계로 이동합니다.
+              </>
+            ) : (
+              <>
+                현재 진행 중인 2차 술자리를 마감하고
+                <br />
+                모임을 최종 종료합니다.
+              </>
+            )}
           </p>
           <strong className={styles.warning}>
             <CircleAlert aria-hidden="true" size={18} strokeWidth={1.8} />

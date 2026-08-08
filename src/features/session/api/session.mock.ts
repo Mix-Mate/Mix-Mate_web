@@ -79,7 +79,9 @@ export function getMockUserSession(
     roleLabel: "관리자",
     permissions: {
       canLeaveGroup: false,
-      canEndRound: snapshot.scenario === "round1-active",
+      canEndRound:
+        snapshot.scenario === "round1-active" ||
+        snapshot.scenario === "round2-active",
     },
   };
 }
