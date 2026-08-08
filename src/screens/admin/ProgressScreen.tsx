@@ -8,9 +8,9 @@ import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuer
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import Header from "@/shared/ui/Header";
-import styles from "./AdminProgressScreen.module.css";
+import styles from "./ProgressScreen.module.css";
 
-export default function AdminProgressScreen() {
+export default function ProgressScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
