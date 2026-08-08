@@ -36,7 +36,6 @@ export default function UserHomeScreen() {
       >
         <Header
           title={snapshot.groupName}
-          roleLabel={snapshot.roleLabel}
           onBack={() => router.back()}
         />
 

@@ -32,14 +32,13 @@ export default function VoteScreenLayout({
       <section className={styles.phone} data-testid={testId}>
         <Header
           title={title}
-          roleLabel={
+          statusLabel={
             showStatusBadge
               ? status === "OPEN"
                 ? "투표 진행 중"
                 : "투표 마감"
               : undefined
           }
-          badgeTone="status"
           onBack={() => router.push(backHref)}
         />
         <div
