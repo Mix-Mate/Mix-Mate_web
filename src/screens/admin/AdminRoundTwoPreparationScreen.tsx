@@ -73,8 +73,6 @@ export default function AdminRoundTwoPreparationScreen() {
       >
         <Header
           title={group.name}
-          roleLabel={group.roleLabel}
-          badgeTone="admin"
           onBack={() => router.back()}
         />
 

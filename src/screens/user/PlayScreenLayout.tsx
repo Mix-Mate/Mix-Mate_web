@@ -34,7 +34,6 @@ export default function PlayScreenLayout({
       >
         <Header
           title={snapshot.groupName}
-          roleLabel={snapshot.roleLabel}
           onBack={() => router.push(backHref)}
         />
 

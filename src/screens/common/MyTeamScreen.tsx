@@ -38,7 +38,6 @@ export default function MyTeamScreen() {
       >
         <Header
           title={snapshot.groupName}
-          roleLabel={snapshot.roleLabel}
           onBack={() => router.push(`/groups/${params.groupId}/home`)}
           backLabel="사용자 홈으로 이동"
         />
