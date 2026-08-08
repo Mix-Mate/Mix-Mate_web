@@ -1,7 +1,10 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { withSessionContext } from "@/features/session/utils/session-navigation";
+import {
+  getMockGroupRole,
+  withSessionContext,
+} from "@/features/session/utils/session-navigation";
 import VoteResultContent from "@/features/vote/components/result/VoteResultContent";
 import { useVoteResultQuery } from "@/features/vote/hooks/useVoteResultQuery";
 import VoteScreenLayout from "./VoteScreenLayout";
@@ -11,7 +14,11 @@ export default function VoteResultScreen() {
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
   const { data } = useVoteResultQuery(params.groupId);
+  const isAdmin = getMockGroupRole(searchParams) === "ADMIN";
   const homeHref = `/groups/${params.groupId}/home`;
+  const resultHomeHref = isAdmin
+    ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
+    : `${homeHref}?scenario=round2-waiting&role=user`;
 
   return (
     <VoteScreenLayout
@@ -24,9 +31,7 @@ export default function VoteResultScreen() {
     >
       <VoteResultContent
         result={data}
-        onHome={() =>
-          router.push(withSessionContext(homeHref, searchParams))
-        }
+        onHome={() => router.replace(resultHomeHref)}
       />
     </VoteScreenLayout>
   );
