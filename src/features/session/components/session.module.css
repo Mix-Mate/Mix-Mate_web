@@ -106,6 +106,70 @@
   line-height: 24px;
 }
 
+.roundTwoWaitingContent .statusCard {
+  gap: 13px;
+  padding: 14px 20px;
+  border-radius: 17px;
+  background: linear-gradient(165deg, #eff6ff 0%, #73afff 100%);
+}
+
+.roundTwoWaitingContent .statusDot {
+  width: 13px;
+  height: 13px;
+  flex-basis: 13px;
+}
+
+.roundTwoWaitingContent .statusCard p {
+  font-size: 13px;
+  letter-spacing: 0.65px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .statusCard strong {
+  font-size: 26px;
+  line-height: 35px;
+}
+
+.roundTwoWaitingContent .waitingCard {
+  min-height: 386px;
+  flex: 0 0 386px;
+  border-radius: 20px;
+}
+
+.roundTwoWaitingContent .waitingCard svg {
+  width: 23px;
+  height: 23px;
+}
+
+.roundTwoWaitingContent .waitingCard strong {
+  margin-top: 7px;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.roundTwoWaitingContent .waitingCard p {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .footerActions {
+  margin-top: 0;
+  padding-top: 3px;
+}
+
+.roundTwoWaitingContent .secondaryAction {
+  height: 50px;
+  border-radius: 17px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .secondaryAction svg {
+  width: 15px;
+  height: 15px;
+}
+
 .assignmentCard {
   display: flex;
   width: 100%;
