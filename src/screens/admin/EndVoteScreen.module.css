@@ -1,0 +1,193 @@
+.viewport {
+  display: flex;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  background: #eef0f5;
+}
+
+.phone {
+  position: relative;
+  display: flex;
+  width: 375px;
+  height: 812px;
+  overflow: hidden;
+  flex-direction: column;
+  background: #fcfcff;
+  color: #18181b;
+}
+
+.content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 16px 16px;
+  overflow-y: auto;
+  background: #fcfcff;
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 0 2px;
+  color: #52525b;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.summaryCard {
+  display: flex;
+  min-height: 75px;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.summaryIcon {
+  display: grid;
+  width: 66px;
+  flex: 0 0 66px;
+  place-items: center;
+  background: #dbeafe;
+  color: #60a5fa;
+}
+
+.summaryContent {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.summaryValue {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summaryValue small {
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.summaryValue strong {
+  color: #18181b;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.summaryDescription {
+  color: #a1a1aa;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.infoCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 13px;
+  background: #eff6ff;
+}
+
+.infoCard > svg {
+  flex: 0 0 17px;
+  margin-top: 1px;
+  color: #2563eb;
+}
+
+.infoCard h2,
+.infoCard p {
+  margin: 0;
+}
+
+.infoCard h2 {
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.infoCard p {
+  margin-top: 3px;
+  color: #27272a;
+  font-size: 13px;
+  line-height: 21px;
+  word-break: keep-all;
+}
+
+.infoCard p strong {
+  font-weight: 700;
+}
+
+.footer {
+  display: grid;
+  flex: 0 0 98px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  border-top: 1px solid #e4e4e7;
+  background: #fff;
+}
+
+.cancelButton,
+.endButton {
+  height: 58px;
+  cursor: pointer;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+  transition: transform 100ms ease;
+}
+
+.cancelButton {
+  border: 1px solid #e4e4e7;
+  background: #f4f4f5;
+  color: #27272a;
+}
+
+.endButton {
+  background: #ef4444;
+  color: #fff;
+}
+
+.cancelButton:active,
+.endButton:active {
+  transform: scale(0.98);
+}
+
+.cancelButton:focus-visible,
+.endButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+@media (max-width: 374px) {
+  .viewport,
+  .phone {
+    width: 100vw;
+  }
+}
