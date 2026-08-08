@@ -1,20 +1,27 @@
 "use client";
 
 import { Info, Trophy } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import MvpVoteForm from "@/features/vote/components/mvp/MvpVoteForm";
 import styles from "@/features/vote/components/vote.module.css";
 import { useMvpVote } from "@/features/vote/hooks/useMvpVote";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function MvpVoteScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const { context, error, submit } = useMvpVote(params.groupId);
 
   const handleSubmit = (candidateId: string) => {
     if (context.hasSubmitted || submit(candidateId)) {
-      router.push(`/groups/${params.groupId}/votes/attendance`);
+      router.push(
+        withSessionContext(
+          `/groups/${params.groupId}/votes/attendance`,
+          searchParams,
+        ),
+      );
     }
   };
 
