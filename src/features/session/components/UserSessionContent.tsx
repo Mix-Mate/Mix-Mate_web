@@ -27,10 +27,13 @@ export default function UserSessionContent({
 }: UserSessionContentProps) {
   const isAssigned = snapshot.teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
+  const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
 
   return (
     <div
-      className={`${styles.content} ${isAdmin ? styles.adminContent : ""}`.trim()}
+      className={`${styles.content} ${isAdmin ? styles.adminContent : ""} ${
+        isRoundTwoWaiting ? styles.roundTwoWaitingContent : ""
+      }`.trim()}
     >
       <SessionStatusCard
         eyebrow={snapshot.statusEyebrow}
