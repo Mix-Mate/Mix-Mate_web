@@ -53,13 +53,18 @@ export default function UserHomeScreen() {
 
     setEndRoundDialogOpen(false);
 
-    if (result.nextStatus === "ROUND_2_PREPARING") {
-      router.push(`/groups/${params.groupId}/admin/round-2/preparation`);
+    if (result.nextStatus === "VOTING") {
+      router.replace(
+        withSessionContext(
+          `/groups/${params.groupId}/votes/mvp`,
+          searchParams,
+        ),
+      );
       return;
     }
 
     router.replace(`/groups/${params.groupId}/home`);
-  }, [endRound, params.groupId, router, snapshot.round]);
+  }, [endRound, params.groupId, router, searchParams, snapshot.round]);
 
   return (
     <main className={styles.viewport}>
