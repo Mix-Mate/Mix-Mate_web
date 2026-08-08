@@ -2,6 +2,10 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import {
+  getMockGroupRole,
+  withSessionContext,
+} from "@/features/session/utils/session-navigation";
 import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
@@ -15,6 +19,7 @@ export default function MyTeamScreen() {
   const searchParams = useSearchParams();
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
+    getMockGroupRole(searchParams),
   );
   const { data: team } = useMyTeamQuery(params.groupId);
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
@@ -35,17 +40,24 @@ export default function MyTeamScreen() {
         className={styles.phone}
         data-testid="my-team-screen"
         data-scenario={snapshot.scenario}
+        data-role={snapshot.role}
       >
         <Header
           title={snapshot.groupName}
-          onBack={() => router.push(`/groups/${params.groupId}/home`)}
+          onBack={() =>
+            router.push(
+              withSessionContext(`/groups/${params.groupId}/home`, searchParams),
+            )
+          }
           backLabel="사용자 홈으로 이동"
         />
 
         <TeamSectionTabs
           groupId={params.groupId}
           activeSection={activeTab}
-          onNavigate={(href) => router.push(href)}
+          onNavigate={(href) =>
+            router.push(withSessionContext(href, searchParams))
+          }
         />
 
         {activeTab === "team" ? (
