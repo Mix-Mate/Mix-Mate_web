@@ -12,6 +12,6 @@ export async function endGroupRound(
   return {
     groupId,
     endedRound: round,
-    nextStatus: round === 1 ? "ROUND_2_PREPARING" : "COMPLETED",
+    nextStatus: round === 1 ? "VOTING" : "FINISHED",
   };
 }
