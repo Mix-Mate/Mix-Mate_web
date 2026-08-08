@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import VoteCompletionWatcher from "@/features/vote/components/status/VoteCompletionWatcher";
 import VoteProgressCard from "@/features/vote/components/status/VoteProgressCard";
@@ -9,11 +9,13 @@ import styles from "@/features/vote/components/status/VoteStatus.module.css";
 import VoteStatusList from "@/features/vote/components/status/VoteStatusList";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import type { VoteStatusFilter } from "@/features/vote/types/vote.types";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteStatusScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const { data, isComplete } = useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =
     useState<VoteStatusFilter>("PENDING");
@@ -35,8 +37,13 @@ export default function VoteStatusScreen() {
     },
   }[selectedFilter];
   const showVoteResult = useCallback(() => {
-    router.replace(`/groups/${params.groupId}/votes/result`);
-  }, [params.groupId, router]);
+    router.replace(
+      withSessionContext(
+        `/groups/${params.groupId}/votes/result`,
+        searchParams,
+      ),
+    );
+  }, [params.groupId, router, searchParams]);
 
   return (
     <VoteScreenLayout

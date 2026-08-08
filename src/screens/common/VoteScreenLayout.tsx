@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import type { VoteStatus } from "@/features/vote/types/vote.types";
 import Header from "@/shared/ui/Header";
 import styles from "./VoteScreen.module.css";
@@ -26,6 +27,7 @@ export default function VoteScreenLayout({
   flushContent = false,
 }: VoteScreenLayoutProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   return (
     <main className={styles.viewport}>
@@ -40,7 +42,9 @@ export default function VoteScreenLayout({
               : undefined
           }
           badgeTone="status"
-          onBack={() => router.push(backHref)}
+          onBack={() =>
+            router.push(withSessionContext(backHref, searchParams))
+          }
         />
         <div
           className={`${styles.content} ${
