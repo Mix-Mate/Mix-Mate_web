@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import AttendanceVoteForm from "@/features/vote/components/attendance/AttendanceVoteForm";
 import styles from "@/features/vote/components/vote.module.css";
 import { useAttendanceVote } from "@/features/vote/hooks/useAttendanceVote";
@@ -10,6 +11,7 @@ import VoteScreenLayout from "./VoteScreenLayout";
 export default function AttendanceVoteScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const { context: mvpContext } = useMvpVote(params.groupId);
   const { context, error, submit } = useAttendanceVote(
     params.groupId,
@@ -18,7 +20,12 @@ export default function AttendanceVoteScreen() {
 
   const handleSubmit = (choice: Parameters<typeof submit>[0]) => {
     if (submit(choice)) {
-      router.push(`/groups/${params.groupId}/votes/status`);
+      router.push(
+        withSessionContext(
+          `/groups/${params.groupId}/votes/status`,
+          searchParams,
+        ),
+      );
     }
   };
 

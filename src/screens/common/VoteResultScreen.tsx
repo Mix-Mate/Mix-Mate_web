@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import VoteResultContent from "@/features/vote/components/result/VoteResultContent";
 import { useVoteResultQuery } from "@/features/vote/hooks/useVoteResultQuery";
 import VoteScreenLayout from "./VoteScreenLayout";
@@ -8,6 +9,7 @@ import VoteScreenLayout from "./VoteScreenLayout";
 export default function VoteResultScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const { data } = useVoteResultQuery(params.groupId);
   const homeHref = `/groups/${params.groupId}/home`;
 
@@ -20,7 +22,12 @@ export default function VoteResultScreen() {
       showStatusBadge={false}
       flushContent
     >
-      <VoteResultContent result={data} onHome={() => router.push(homeHref)} />
+      <VoteResultContent
+        result={data}
+        onHome={() =>
+          router.push(withSessionContext(homeHref, searchParams))
+        }
+      />
     </VoteScreenLayout>
   );
 }
