@@ -3,19 +3,17 @@ import styles from "./Header.module.css";
 
 interface HeaderProps {
   title: string;
-  roleLabel?: string;
+  statusLabel?: string;
   onBack: () => void;
   backLabel?: string;
-  badgeTone?: "role" | "status" | "admin";
   compact?: boolean;
 }
 
 export default function Header({
   title,
-  roleLabel,
+  statusLabel,
   onBack,
   backLabel = "이전 화면으로 이동",
-  badgeTone = "role",
   compact = false,
 }: HeaderProps) {
   return (
@@ -31,14 +29,8 @@ export default function Header({
         <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
       </button>
       <h1>{title}</h1>
-      {roleLabel && (
-        <span
-          className={`${styles.roleBadge} ${
-            badgeTone === "status" ? styles.statusBadge : ""
-          } ${badgeTone === "admin" ? styles.adminBadge : ""}`.trim()}
-        >
-          {roleLabel}
-        </span>
+      {statusLabel && (
+        <span className={styles.statusBadge}>{statusLabel}</span>
       )}
     </header>
   );

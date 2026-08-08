@@ -103,8 +103,6 @@ export default function AdminPreparationScreen() {
         
         <Header
           title={group.name}
-          roleLabel={group.roleLabel}
-          badgeTone="admin"
           onBack={() => router.back()}
           compact
         />

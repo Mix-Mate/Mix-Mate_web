@@ -47,23 +47,13 @@
   white-space: nowrap;
 }
 
-.roleBadge {
+.statusBadge {
   padding: 3px 10px;
+  border: 1px solid #b9dcff;
   border-radius: 10px;
-  background: #f4f0ff;
-  color: #7956ef;
+  background: #f7fbff;
+  color: #3789d5;
   font-size: 13px;
   font-weight: 700;
   line-height: 20px;
-}
-
-.statusBadge {
-  border: 1px solid #b9dcff;
-  background: #f7fbff;
-  color: #3789d5;
-}
-
-.adminBadge {
-  background: #eff6ff;
-  color: #3b82c4;
 }
