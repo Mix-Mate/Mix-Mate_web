@@ -29,5 +29,5 @@ export interface UserHomeSnapshot {
 export interface EndRoundResult {
   groupId: string;
   endedRound: GroupRound;
-  nextStatus: "ROUND_2_PREPARING" | "COMPLETED";
+  nextStatus: "VOTING" | "FINISHED";
 }
