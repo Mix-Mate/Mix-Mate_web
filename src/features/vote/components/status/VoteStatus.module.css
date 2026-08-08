@@ -238,6 +238,12 @@
 
 .adminEndButton {
   margin-top: auto;
+  border-radius: 16px;
+  --button-background: #f74545;
+  --button-active: #df3838;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
 }
 
 .visuallyHidden {
