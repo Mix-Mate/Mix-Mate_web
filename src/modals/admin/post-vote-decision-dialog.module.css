@@ -1,0 +1,127 @@
+.scrim {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(9, 9, 11, 0.55);
+  animation: fadeIn 160ms ease-out;
+}
+
+.bottomSheet {
+  display: flex;
+  width: 100%;
+  min-height: 488px;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid #e4e4e7;
+  border-radius: 30px 30px 0 0;
+  background: #fff;
+  box-shadow: 0 20px 66px rgba(15, 23, 42, 0.1);
+  animation: slideUp 220ms ease-out;
+}
+
+.sheetHandle {
+  display: block;
+  width: 59px;
+  height: 7px;
+  margin: 16px auto 0;
+  border-radius: 4px;
+  background: #e4e4e7;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 24px 26px;
+  text-align: center;
+}
+
+.completeIcon {
+  display: grid;
+  width: 105px;
+  height: 105px;
+  margin-bottom: 20px;
+  place-items: center;
+  border: 1px solid #bfdbfe;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
+.content h2,
+.content p {
+  margin: 0;
+}
+
+.content h2 {
+  color: #18181b;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 37px;
+  letter-spacing: -0.5px;
+}
+
+.content p {
+  margin-top: 10px;
+  color: #71717a;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 16px 16px 15px;
+  border-top: 1px solid #e4e4e7;
+  background: #fff;
+}
+
+.continueButton,
+.finishButton {
+  height: 58px;
+  cursor: pointer;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+  transition: transform 100ms ease;
+}
+
+.continueButton {
+  background: #ef4444;
+}
+
+.finishButton {
+  background: #256ad3;
+}
+
+.continueButton:active,
+.finishButton:active {
+  transform: scale(0.98);
+}
+
+.continueButton:focus-visible,
+.finishButton:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+}
