@@ -4,7 +4,6 @@ export interface TeamMemberSummary {
   id: string;
   name: string;
   department: string;
-  profileImage: string | null;
   avatarInitial: string;
   avatarColor: string;
   profileVisibility: ProfileVisibility;

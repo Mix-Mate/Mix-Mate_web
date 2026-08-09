@@ -12,7 +12,6 @@ export default function VoteStatusItem({ member }: VoteStatusItemProps) {
     <li className={styles.statusItem}>
       <Avatar
         name={member.memberName}
-        src={member.profileImage}
         fallback={member.avatarInitial}
         backgroundColor={member.avatarColor}
         size={28}
