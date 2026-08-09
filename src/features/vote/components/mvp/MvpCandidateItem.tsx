@@ -32,7 +32,6 @@ export default function MvpCandidateItem({
       />
       <Avatar
         name={candidate.name}
-        src={candidate.profileImage}
         fallback={candidate.avatarInitial}
         backgroundColor={candidate.avatarColor}
         size={44}

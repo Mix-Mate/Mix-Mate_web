@@ -34,7 +34,6 @@ export interface AttendanceVoteSubmission {
 export interface VoteStatusMember {
   memberId: string;
   memberName: string;
-  profileImage: string | null;
   avatarInitial: string;
   avatarColor: string;
   attendanceStatus: VoteStatusFilter;
@@ -55,7 +54,6 @@ export interface VoteProgressContext {
 export interface MvpResultMember {
   memberId: string;
   memberName: string;
-  profileImage: string | null;
   avatarInitial: string;
   avatarColor: string;
   rank: number;

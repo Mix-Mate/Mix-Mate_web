@@ -38,7 +38,6 @@ function createVoteStatusMember(
   return {
     memberId,
     memberName,
-    profileImage: null,
     avatarInitial: memberName.charAt(0),
     avatarColor,
     attendanceStatus,
@@ -79,7 +78,6 @@ function createMvpResultMember(
   return {
     memberId,
     memberName,
-    profileImage: null,
     avatarInitial,
     avatarColor,
     rank,
@@ -220,7 +218,6 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
     const currentStatusMember: VoteStatusMember = {
       memberId: currentMember.id,
       memberName: currentMember.name,
-      profileImage: currentMember.profileImage,
       avatarInitial: currentMember.avatarInitial,
       avatarColor: currentMember.avatarColor,
       attendanceStatus: hasCompleted
