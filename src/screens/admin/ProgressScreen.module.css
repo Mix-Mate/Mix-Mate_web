@@ -1,0 +1,128 @@
+.viewport {
+  display: flex;
+  width: 375px;
+  height: 812px;
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  background: #eef0f5;
+}
+
+.phone {
+  position: relative;
+  display: flex;
+  width: 375px;
+  height: 812px;
+  overflow: hidden;
+  flex-direction: column;
+  background: #fcfcff;
+  color: #18181b;
+}
+
+.content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 16px 16px;
+  overflow-y: auto;
+  background: #fcfcff;
+}
+
+.statusCard {
+  flex: 0 0 auto;
+  padding: 17px 19px;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.statusCard p,
+.statusCard strong {
+  margin: 0;
+}
+
+.statusCard p {
+  color: #52525b;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statusRow strong {
+  color: #18181b;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 35px;
+}
+
+.progressBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.progressBadge span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82c4;
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25px;
+}
+
+.progressCard {
+  flex: 0 0 auto;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.footer {
+  flex: 0 0 98px;
+  padding: 16px 16px 14px;
+  border-top: 1px solid #e4e4e7;
+  background: #fff;
+}
+
+.endButton {
+  width: 100%;
+  height: 58px;
+  cursor: pointer;
+  border-radius: 16px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+  transition: transform 100ms ease;
+}
+
+.endButton:active {
+  transform: scale(0.98);
+}
+
+.endButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}

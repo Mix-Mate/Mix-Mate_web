@@ -16,7 +16,7 @@ export default function AdminVoteEndButton({
       disabled={disabled}
       onClick={onEnd}
     >
-      투표 종료하기
+      전체 투표 종료하기
     </Button>
   );
 }

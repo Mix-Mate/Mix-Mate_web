@@ -42,7 +42,7 @@ export default function SessionMenuGrid({
   ];
 
   return (
-    <nav className={styles.menuList} aria-label="사용자 메뉴">
+    <nav className={styles.menuList} aria-label="그룹 홈 메뉴">
       {menuItems.map((item) => {
         const Icon = item.icon;
         return (
