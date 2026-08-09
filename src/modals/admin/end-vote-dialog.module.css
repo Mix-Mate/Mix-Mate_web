@@ -1,0 +1,146 @@
+.scrim {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(9, 9, 11, 0.55);
+  animation: fadeIn 160ms ease-out;
+}
+
+.bottomSheet {
+  display: flex;
+  width: 100%;
+  min-height: 488px;
+  flex-direction: column;
+  padding: 16px 26px 26px;
+  border-radius: 36px 36px 0 0;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
+  animation: slideUp 220ms ease-out;
+}
+
+.sheetHandle {
+  display: block;
+  width: 46px;
+  height: 5px;
+  margin: 0 auto 32px;
+  border-radius: 999px;
+  background: #d4d4d8;
+}
+
+.endIcon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 38px;
+  place-items: center;
+  border: 1px solid #fecaca;
+  border-radius: 23px;
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.message h2,
+.message p {
+  margin: 0;
+}
+
+.message h2 {
+  color: #18181b;
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 42px;
+  letter-spacing: -0.65px;
+}
+
+.message p {
+  margin-top: 13px;
+  color: #71717a;
+  font-size: 20px;
+  line-height: 34px;
+}
+
+.warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 13px;
+  background: #fff1f2;
+  color: #ef4444;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 27px;
+}
+
+.error {
+  display: block;
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #f4f4f5;
+}
+
+.cancelButton,
+.endButton {
+  height: 58px;
+  cursor: pointer;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+  transition: transform 100ms ease;
+}
+
+.cancelButton {
+  border: 1px solid #e4e4e7;
+  background: #f4f4f5;
+  color: #52525b;
+}
+
+.endButton {
+  background: #ef4444;
+  color: #fff;
+}
+
+.cancelButton:active,
+.endButton:active {
+  transform: scale(0.98);
+}
+
+.cancelButton:focus-visible,
+.endButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.cancelButton:disabled,
+.endButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+}

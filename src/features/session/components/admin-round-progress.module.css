@@ -1,0 +1,111 @@
+.timeline {
+  width: 100%;
+  margin: 0;
+  padding: 18px 18px 14px;
+  list-style: none;
+}
+
+.step {
+  display: grid;
+  min-height: 65px;
+  grid-template-columns: 33px minmax(0, 1fr) auto;
+  column-gap: 16px;
+  align-items: start;
+  color: #18181b;
+}
+
+.step:last-child {
+  min-height: 42px;
+}
+
+.markerColumn {
+  position: relative;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+
+.step:not(:last-child) .markerColumn::after {
+  position: absolute;
+  top: 35px;
+  bottom: 0;
+  left: 50%;
+  border-left: 2px dashed #d4d4d8;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.completed .markerColumn::after {
+  border-left-style: solid;
+  border-left-color: #3b82c4;
+}
+
+.marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 33px;
+  height: 33px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4e4e7;
+  color: #a1a1aa;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.completed .marker {
+  background: #a6d3fd;
+  color: #fff;
+}
+
+.current .marker {
+  background: #4455ef;
+  color: #fff;
+}
+
+.stepText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+.stepText strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stepText small {
+  overflow: hidden;
+  color: #a1a1aa;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upcoming .stepText strong {
+  color: #a1a1aa;
+}
+
+.currentBadge {
+  margin-top: 2px;
+  padding: 3px 9px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  white-space: nowrap;
+}

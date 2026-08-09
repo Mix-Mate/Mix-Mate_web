@@ -21,6 +21,29 @@
     0 2px 3px rgba(37, 99, 235, 0.08);
 }
 
+.statusCardButton {
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 100ms ease;
+}
+
+.statusCardButton:active {
+  border-color: #93c5fd;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    0 5px 12px rgba(37, 99, 235, 0.12);
+  transform: scale(0.99);
+}
+
+.statusCardButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
 .statusDot {
   width: 16px;
   height: 16px;
@@ -81,6 +104,70 @@
   font-family: Inter, sans-serif;
   font-size: 15px;
   line-height: 24px;
+}
+
+.roundTwoWaitingContent .statusCard {
+  gap: 13px;
+  padding: 14px 20px;
+  border-radius: 17px;
+  background: linear-gradient(165deg, #eff6ff 0%, #73afff 100%);
+}
+
+.roundTwoWaitingContent .statusDot {
+  width: 13px;
+  height: 13px;
+  flex-basis: 13px;
+}
+
+.roundTwoWaitingContent .statusCard p {
+  font-size: 13px;
+  letter-spacing: 0.65px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .statusCard strong {
+  font-size: 26px;
+  line-height: 35px;
+}
+
+.roundTwoWaitingContent .waitingCard {
+  min-height: 386px;
+  flex: 0 0 386px;
+  border-radius: 20px;
+}
+
+.roundTwoWaitingContent .waitingCard svg {
+  width: 23px;
+  height: 23px;
+}
+
+.roundTwoWaitingContent .waitingCard strong {
+  margin-top: 7px;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.roundTwoWaitingContent .waitingCard p {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .footerActions {
+  margin-top: 0;
+  padding-top: 3px;
+}
+
+.roundTwoWaitingContent .secondaryAction {
+  height: 50px;
+  border-radius: 17px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.roundTwoWaitingContent .secondaryAction svg {
+  width: 15px;
+  height: 15px;
 }
 
 .assignmentCard {
@@ -187,6 +274,15 @@
   padding-top: 4px;
 }
 
+.adminContent .footerActions {
+  margin-top: 0;
+}
+
+.adminContent .secondaryAction {
+  height: 50px;
+  border-radius: 17px;
+}
+
 .secondaryAction {
   display: flex;
   min-width: 0;
@@ -217,4 +313,33 @@
 
 .dangerAction {
   color: #e37d7f;
+}
+
+.endRoundButton {
+  display: flex;
+  width: 100%;
+  height: 50px;
+  flex: 0 0 50px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: auto;
+  border: 1px solid #e4e4e7;
+  border-radius: 17px;
+  background: #f63b3e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  transition: transform 100ms ease;
+}
+
+.endRoundButton:active {
+  transform: scale(0.98);
+}
+
+.endRoundButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
 }

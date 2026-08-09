@@ -203,6 +203,7 @@ export function submitAttendanceVote(input: AttendanceVoteSubmission) {
 }
 
 export function getVoteProgressContext(groupId: string): VoteProgressContext {
+  const status = getVoteStatus(groupId);
   const submissionKey = getSubmissionKey(groupId, currentMemberId);
   const hasCompleted =
     mvpSubmissions.has(submissionKey) &&
@@ -236,12 +237,21 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
     }
   }
 
+  if (status === "CLOSED") {
+    absenceMembers.push(
+      ...pendingMembers.splice(0).map((member) => ({
+        ...member,
+        attendanceStatus: "ABSENT" as const,
+      })),
+    );
+  }
+
   const attendanceCount = attendanceMembers.length;
   const absenceCount = absenceMembers.length;
   const pendingCount = pendingMembers.length;
 
   return {
-    status: getVoteStatus(groupId),
+    status,
     totalCount: attendanceCount + absenceCount + pendingCount,
     completedCount: attendanceCount + absenceCount,
     attendanceCount,
@@ -268,4 +278,11 @@ export function getVoteResultContext(groupId: string): VoteResultContext {
 
 export function setMockVoteStatus(groupId: string, status: VoteStatus) {
   voteStatuses.set(groupId, status);
+}
+
+export async function endGroupVote(groupId: string) {
+  await new Promise((resolve) => setTimeout(resolve, 450));
+  setMockVoteStatus(groupId, "CLOSED");
+
+  return getVoteProgressContext(groupId);
 }

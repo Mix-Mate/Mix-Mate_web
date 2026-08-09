@@ -1,10 +1,12 @@
 import type {
+  GroupRole,
   UserHomeScenario,
   UserHomeSnapshot,
 } from "../types/session.types";
 
 const baseSnapshot = {
   groupName: "2026 SW 동아리 MT",
+  role: "USER",
   roleLabel: "사용자",
   statusEyebrow: "진행 상태 확인",
 } as const;
@@ -13,41 +15,73 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
   "round1-waiting": {
     ...baseSnapshot,
     scenario: "round1-waiting",
+    round: 1,
     statusLabel: "1차 술자리 중",
     teamNumber: null,
     teamHistoryAvailable: false,
-    canLeaveGroup: true,
+    permissions: {
+      canLeaveGroup: true,
+      canEndRound: false,
+    },
   },
   "round1-active": {
     ...baseSnapshot,
     scenario: "round1-active",
+    round: 1,
     statusLabel: "1차 술자리 중",
     teamNumber: 3,
     teamHistoryAvailable: false,
-    canLeaveGroup: false,
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound: false,
+    },
   },
   "round2-waiting": {
     ...baseSnapshot,
     scenario: "round2-waiting",
+    round: 2,
     statusLabel: "2차 술자리 중",
     teamNumber: null,
     teamHistoryAvailable: true,
-    canLeaveGroup: false,
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound: false,
+    },
   },
   "round2-active": {
     ...baseSnapshot,
     scenario: "round2-active",
+    round: 2,
     statusLabel: "2차 술자리 중",
     teamNumber: 5,
     teamHistoryAvailable: true,
-    canLeaveGroup: false,
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound: false,
+    },
   },
 };
 
-export function getMockUserSession(scenario?: string): UserHomeSnapshot {
-  if (scenario && scenario in snapshots) {
-    return snapshots[scenario as UserHomeScenario];
-  }
+export function getMockUserSession(
+  scenario?: string,
+  role: GroupRole = "USER",
+): UserHomeSnapshot {
+  const snapshot =
+    scenario && scenario in snapshots
+      ? snapshots[scenario as UserHomeScenario]
+      : snapshots["round1-active"];
 
-  return snapshots["round1-active"];
+  if (role === "USER") return snapshot;
+
+  return {
+    ...snapshot,
+    role: "ADMIN",
+    roleLabel: "관리자",
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound:
+        snapshot.scenario === "round1-active" ||
+        snapshot.scenario === "round2-active",
+    },
+  };
 }

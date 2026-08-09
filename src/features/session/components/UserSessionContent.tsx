@@ -1,6 +1,7 @@
 import {
   Clock3,
   History,
+  Power,
   Trash2,
   UserRoundPen,
 } from "lucide-react";
@@ -14,6 +15,7 @@ interface UserSessionContentProps {
   snapshot: UserHomeSnapshot;
   onNavigate: (href: string) => void;
   onRequestLeave: () => void;
+  onRequestEndRound: () => void;
 }
 
 export default function UserSessionContent({
@@ -21,14 +23,26 @@ export default function UserSessionContent({
   snapshot,
   onNavigate,
   onRequestLeave,
+  onRequestEndRound,
 }: UserSessionContentProps) {
   const isAssigned = snapshot.teamNumber !== null;
+  const isAdmin = snapshot.role === "ADMIN";
+  const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
 
   return (
-    <div className={styles.content}>
+    <div
+      className={`${styles.content} ${isAdmin ? styles.adminContent : ""} ${
+        isRoundTwoWaiting ? styles.roundTwoWaitingContent : ""
+      }`.trim()}
+    >
       <SessionStatusCard
         eyebrow={snapshot.statusEyebrow}
         status={snapshot.statusLabel}
+        onClick={
+          isAdmin && snapshot.round === 1 && snapshot.permissions.canEndRound
+            ? () => onNavigate(`/groups/${groupId}/admin/progress`)
+            : undefined
+        }
       />
 
       {isAssigned ? (
@@ -56,7 +70,7 @@ export default function UserSessionContent({
       )}
 
       <div className={styles.footerActions}>
-        {snapshot.canLeaveGroup && (
+        {snapshot.permissions.canLeaveGroup && (
           <button
             type="button"
             className={`${styles.secondaryAction} ${styles.dangerAction}`}
@@ -90,6 +104,17 @@ export default function UserSessionContent({
           내 프로필 수정
         </button>
       </div>
+
+      {snapshot.permissions.canEndRound && (
+        <button
+          type="button"
+          className={styles.endRoundButton}
+          onClick={onRequestEndRound}
+        >
+          <Power aria-hidden="true" size={21} strokeWidth={1.9} />
+          {snapshot.round}차 술자리 종료
+        </button>
+      )}
     </div>
   );
 }
