@@ -32,7 +32,6 @@ export default function MvpResultTable({ ranking }: MvpResultTableProps) {
             <span className={styles.rankAvatar}>
               <Avatar
                 name={member.memberName}
-                src={member.profileImage}
                 fallback={member.avatarInitial}
                 backgroundColor={member.avatarColor}
                 size={54}

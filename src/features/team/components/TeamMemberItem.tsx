@@ -21,7 +21,6 @@ export default function TeamMemberItem({
       >
         <Avatar
           name={member.name}
-          src={member.profileImage}
           fallback={member.avatarInitial}
           backgroundColor={member.avatarColor}
           size={46}
