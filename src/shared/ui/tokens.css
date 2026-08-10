@@ -1,0 +1,9 @@
+:root {
+  --color-app-background: #eef0f5;
+  --color-surface: #fcfcff;
+  --color-text: #18181b;
+  --color-border: #e4e4e7;
+  --color-danger: #ef4444;
+  --mobile-frame-width: 375px;
+  --mobile-frame-height: 812px;
+}

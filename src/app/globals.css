@@ -1,9 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=42dot+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap");
+@import "../shared/ui/tokens.css";
 
 :root {
   color-scheme: light;
-  --background: #eef0f5;
-  --foreground: #18181b;
+  --background: var(--color-app-background);
+  --foreground: var(--color-text);
 }
 
 * {

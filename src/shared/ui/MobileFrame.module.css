@@ -1,0 +1,18 @@
+.viewport {
+  display: flex;
+  width: var(--mobile-frame-width);
+  height: var(--mobile-frame-height);
+  margin: 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  background: var(--color-app-background);
+}
+
+.phone {
+  position: relative;
+  width: var(--mobile-frame-width);
+  height: var(--mobile-frame-height);
+  overflow: hidden;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
