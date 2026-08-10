@@ -12,7 +12,10 @@ import {
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./UserHomeScreen.module.css";
 
 export default function UserHomeScreen() {
@@ -58,84 +61,72 @@ export default function UserHomeScreen() {
 
     if (result.nextStatus === "VOTING") {
       router.replace(
-        withSessionContext(
-          `/groups/${params.groupId}/votes/mvp`,
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
       );
       return;
     }
 
     router.replace(
-      withSessionContext(
-        `/groups/${params.groupId}/completed`,
-        searchParams,
-      ),
+      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
     );
   }, [endRound, params.groupId, router, searchParams, snapshot.round]);
 
   const continueToRoundTwo = useCallback(() => {
     router.replace(
-      `/groups/${params.groupId}/admin/round-2/preparation?scenario=round2-waiting&role=admin`,
+      `${groupRoutes.adminRoundTwoPreparation(params.groupId)}?scenario=round2-waiting&role=admin`,
     );
   }, [params.groupId, router]);
 
   const finishGroup = useCallback(() => {
     router.replace(
-      withSessionContext(`/groups/${params.groupId}/completed`, searchParams),
+      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
     );
   }, [params.groupId, router, searchParams]);
 
   return (
-    <main className={styles.viewport}>
-      <section
-        className={styles.phone}
-        data-testid="user-home"
-        data-scenario={snapshot.scenario}
-        data-role={snapshot.role}
-      >
-        <Header
-          title={snapshot.groupName}
-          onBack={() => router.back()}
-        />
+    <MobileFrame
+      data-testid="user-home"
+      data-scenario={snapshot.scenario}
+      data-role={snapshot.role}
+    >
+      <Header title={snapshot.groupName} onBack={() => router.back()} />
 
-        <UserSessionContent
-          groupId={params.groupId}
-          snapshot={snapshot}
-          onNavigate={(href) =>
-            router.push(withSessionContext(href, searchParams))
-          }
-          onRequestLeave={() => setLeaveDialogOpen(true)}
-          onRequestEndRound={() => setEndRoundDialogOpen(true)}
-        />
+      <UserSessionContent
+        groupId={params.groupId}
+        snapshot={snapshot}
+        onNavigate={(href) =>
+          router.push(withSessionContext(href, searchParams))
+        }
+        onRequestLeave={() => setLeaveDialogOpen(true)}
+        onRequestEndRound={() => setEndRoundDialogOpen(true)}
+      />
 
-        {leaveCompleted && (
-          <div className={styles.toast} role="status">
-            Mock 환경에서 그룹 탈퇴가 처리됐습니다.
-          </div>
-        )}
+      {leaveCompleted && (
+        <Toast className={styles.toast}>
+          Mock 환경에서 그룹 탈퇴가 처리됐습니다.
+        </Toast>
+      )}
 
-        <UM01LeaveGroupDialog
-          open={leaveDialogOpen}
-          onClose={closeLeaveDialog}
-          onConfirm={confirmLeave}
-        />
+      <UM01LeaveGroupDialog
+        open={leaveDialogOpen}
+        onClose={closeLeaveDialog}
+        onConfirm={confirmLeave}
+      />
 
-        <EndRoundDialog
-          open={endRoundDialogOpen}
-          round={snapshot.round}
-          isEnding={isEndingRound}
-          error={endRoundError}
-          onClose={closeEndRoundDialog}
-          onConfirm={confirmEndRound}
-        />
+      <EndRoundDialog
+        open={endRoundDialogOpen}
+        round={snapshot.round}
+        isEnding={isEndingRound}
+        error={endRoundError}
+        onClose={closeEndRoundDialog}
+        onConfirm={confirmEndRound}
+      />
 
-        <PostVoteDecisionDialog
-          open={postVoteDialogOpen}
-          onContinue={continueToRoundTwo}
-          onFinish={finishGroup}
-        />
-      </section>
-    </main>
+      <PostVoteDecisionDialog
+        open={postVoteDialogOpen}
+        onContinue={continueToRoundTwo}
+        onFinish={finishGroup}
+      />
+    </MobileFrame>
   );
 }

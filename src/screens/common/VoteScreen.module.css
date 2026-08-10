@@ -1,19 +1,4 @@
-.viewport {
-  display: flex;
-  width: 375px;
-  height: 812px;
-  margin: 0 auto;
-  align-items: flex-start;
-  justify-content: center;
-  background: #eef0f5;
-}
-
 .phone {
-  position: relative;
-  width: 375px;
-  height: 812px;
-  overflow: hidden;
-  background: #fcfcff;
   color: #172b3d;
 }
 

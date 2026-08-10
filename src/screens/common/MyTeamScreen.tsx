@@ -10,7 +10,9 @@ import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamMemberSummary } from "@/features/team/types/team.types";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./MyTeamScreen.module.css";
 
 export default function MyTeamScreen() {
@@ -35,62 +37,60 @@ export default function MyTeamScreen() {
   };
 
   return (
-    <main className={styles.viewport}>
-      <section
-        className={styles.phone}
-        data-testid="my-team-screen"
-        data-scenario={snapshot.scenario}
-        data-role={snapshot.role}
-      >
-        <Header
-          title={snapshot.groupName}
-          onBack={() =>
-            router.push(
-              withSessionContext(`/groups/${params.groupId}/home`, searchParams),
-            )
-          }
-          backLabel="사용자 홈으로 이동"
-        />
+    <MobileFrame
+      className={styles.phone}
+      data-testid="my-team-screen"
+      data-scenario={snapshot.scenario}
+      data-role={snapshot.role}
+    >
+      <Header
+        title={snapshot.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(groupRoutes.home(params.groupId), searchParams),
+          )
+        }
+        backLabel="사용자 홈으로 이동"
+      />
 
-        <TeamSectionTabs
-          groupId={params.groupId}
-          activeSection={activeTab}
-          onNavigate={(href) =>
-            router.push(withSessionContext(href, searchParams))
-          }
-        />
+      <TeamSectionTabs
+        groupId={params.groupId}
+        activeSection={activeTab}
+        onNavigate={(href) =>
+          router.push(withSessionContext(href, searchParams))
+        }
+      />
 
-        {activeTab === "team" ? (
-          <div className={styles.content}>
-            <section
-              className={styles.assignmentOrb}
-              aria-label={
-                snapshot.teamNumber === null
-                  ? "아직 조가 배정되지 않았습니다"
-                  : `${snapshot.teamNumber}조에 배정되었습니다`
-              }
-            >
-              <span>나 몇 조?</span>
-              <strong>
-                {snapshot.teamNumber === null
-                  ? "배정 전"
-                  : `${snapshot.teamNumber}조`}
-              </strong>
-            </section>
+      {activeTab === "team" ? (
+        <div className={styles.content}>
+          <section
+            className={styles.assignmentOrb}
+            aria-label={
+              snapshot.teamNumber === null
+                ? "아직 조가 배정되지 않았습니다"
+                : `${snapshot.teamNumber}조에 배정되었습니다`
+            }
+          >
+            <span>나 몇 조?</span>
+            <strong>
+              {snapshot.teamNumber === null
+                ? "배정 전"
+                : `${snapshot.teamNumber}조`}
+            </strong>
+          </section>
 
-            <p
-              className={styles.statusText}
-              aria-label={`현재 진행 상태: ${snapshot.statusLabel}`}
-            >
-              진행 상태 · {snapshot.statusLabel}
-            </p>
-          </div>
-        ) : (
-          <div className={styles.membersContent}>
-            <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
-          </div>
-        )}
-      </section>
-    </main>
+          <p
+            className={styles.statusText}
+            aria-label={`현재 진행 상태: ${snapshot.statusLabel}`}
+          >
+            진행 상태 · {snapshot.statusLabel}
+          </p>
+        </div>
+      ) : (
+        <div className={styles.membersContent}>
+          <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
+        </div>
+      )}
+    </MobileFrame>
   );
 }

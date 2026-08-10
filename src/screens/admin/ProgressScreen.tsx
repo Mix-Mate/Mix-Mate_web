@@ -7,7 +7,9 @@ import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutatio
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./ProgressScreen.module.css";
 
 export default function ProgressScreen() {
@@ -27,7 +29,7 @@ export default function ProgressScreen() {
 
   const goHome = useCallback(() => {
     router.push(
-      withSessionContext(`/groups/${params.groupId}/home`, searchParams),
+      withSessionContext(groupRoutes.home(params.groupId), searchParams),
     );
   }, [params.groupId, router, searchParams]);
 
@@ -43,10 +45,7 @@ export default function ProgressScreen() {
 
     if (result.nextStatus === "VOTING") {
       router.replace(
-        withSessionContext(
-          `/groups/${params.groupId}/votes/mvp`,
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
       );
       return;
     }
@@ -55,57 +54,50 @@ export default function ProgressScreen() {
   }, [endRound, goHome, params.groupId, router, searchParams]);
 
   return (
-    <main className={styles.viewport}>
-      <section
-        className={styles.phone}
-        data-testid="admin-progress"
-        data-group-id={params.groupId}
-      >
-        <Header
-          title="진행 현황 보기"
-          onBack={goHome}
-          compact
-          smallTitle
-        />
+    <MobileFrame
+      className={styles.phone}
+      data-testid="admin-progress"
+      data-group-id={params.groupId}
+    >
+      <Header title="진행 현황 보기" onBack={goHome} compact smallTitle />
 
-        <div className={styles.content}>
-          <section className={styles.statusCard} aria-label="현재 진행 상태">
-            <p>현재 진행 상태</p>
-            <div className={styles.statusRow}>
-              <strong>{snapshot.statusLabel}</strong>
-              <span className={styles.progressBadge}>
-                <span aria-hidden="true" />
-                진행 중
-              </span>
-            </div>
-          </section>
+      <div className={styles.content}>
+        <section className={styles.statusCard} aria-label="현재 진행 상태">
+          <p>현재 진행 상태</p>
+          <div className={styles.statusRow}>
+            <strong>{snapshot.statusLabel}</strong>
+            <span className={styles.progressBadge}>
+              <span aria-hidden="true" />
+              진행 중
+            </span>
+          </div>
+        </section>
 
-          <h2 className={styles.sectionTitle}>진행 순서</h2>
+        <h2 className={styles.sectionTitle}>진행 순서</h2>
 
-          <section className={styles.progressCard}>
-            <AdminRoundProgress />
-          </section>
-        </div>
+        <section className={styles.progressCard}>
+          <AdminRoundProgress />
+        </section>
+      </div>
 
-        <footer className={styles.footer}>
-          <button
-            type="button"
-            className={styles.endButton}
-            onClick={() => setEndRoundDialogOpen(true)}
-          >
-            1차 술자리 종료하기
-          </button>
-        </footer>
+      <footer className={styles.footer}>
+        <button
+          type="button"
+          className={styles.endButton}
+          onClick={() => setEndRoundDialogOpen(true)}
+        >
+          1차 술자리 종료하기
+        </button>
+      </footer>
 
-        <EndRoundDialog
-          open={endRoundDialogOpen}
-          round={1}
-          isEnding={isEndingRound}
-          error={endRoundError}
-          onClose={closeEndRoundDialog}
-          onConfirm={confirmEndRound}
-        />
-      </section>
-    </main>
+      <EndRoundDialog
+        open={endRoundDialogOpen}
+        round={1}
+        isEnding={isEndingRound}
+        error={endRoundError}
+        onClose={closeEndRoundDialog}
+        onConfirm={confirmEndRound}
+      />
+    </MobileFrame>
   );
 }

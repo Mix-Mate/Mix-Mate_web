@@ -1,33 +1,6 @@
-.viewport {
-  display: flex;
-  width: 375px;
-  height: 812px;
-  margin: 0 auto;
-  align-items: flex-start;
-  justify-content: center;
-  background: #eef0f5;
-}
-
-.phone {
-  position: relative;
-  width: 375px;
-  height: 812px;
-  overflow: hidden;
-  background: #fcfcff;
-  color: #18181b;
-}
-
 .toast {
-  position: absolute;
-  right: 20px;
-  bottom: 84px;
-  left: 20px;
-  z-index: 5;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background: #18181b;
-  color: #fff;
-  font-size: 14px;
-  text-align: center;
-  box-shadow: 0 12px 36px rgba(24, 24, 27, 0.22);
+  --toast-bottom: 84px;
+  --toast-z-index: 5;
+  --toast-padding: 14px 18px;
+  --toast-border-radius: 16px;
 }

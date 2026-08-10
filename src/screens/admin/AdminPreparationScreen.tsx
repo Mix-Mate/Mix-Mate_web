@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import AdminGroupSummary from "@/features/group/components/AdminGroupSummary";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -11,7 +11,11 @@ import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMut
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import AM02DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
+import useToast from "@/shared/hooks/useToast";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./AdminPreparationScreen.module.css";
 
 export default function AdminPreparationScreen() {
@@ -36,20 +40,7 @@ export default function AdminPreparationScreen() {
   const [editDialogOpen, setEditDialogOpen] = useState(
     searchParams.get("dialog") === "edit",
   );
-  const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    };
-  }, []);
-
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
-  }, []);
+  const { message: toast, showToast } = useToast();
 
   const editInitialValues = useMemo<UpdateGroupInput>(
     () => ({
@@ -94,67 +85,57 @@ export default function AdminPreparationScreen() {
   );
 
   return (
-    <main className={styles.viewport}>
-      <section
-        className={styles.phone}
-        data-testid="admin-preparation"
-        data-group-id={group.id}
-      >
-        
-        <Header
-          title={group.name}
-          onBack={() => router.back()}
-          compact
+    <MobileFrame
+      className={styles.phone}
+      viewportClassName={styles.viewport}
+      data-testid="admin-preparation"
+      data-group-id={group.id}
+    >
+      <Header title={group.name} onBack={() => router.back()} compact />
+
+      <div className={`${styles.content} ${styles.firstRoundContent}`}>
+        <AdminGroupSummary
+          statusLabel={group.statusLabel}
+          inviteCode={group.inviteCode}
+          participantCount={group.participantCount}
+          onCopy={copyInviteCode}
+          onEditGroup={() => setEditDialogOpen(true)}
         />
-
-        <div className={`${styles.content} ${styles.firstRoundContent}`}>
-          <AdminGroupSummary
-            statusLabel={group.statusLabel}
-            inviteCode={group.inviteCode}
-            participantCount={group.participantCount}
-            onCopy={copyInviteCode}
-            onEditGroup={() => setEditDialogOpen(true)}
-          />
-          <AdminPreparationActions
-            onStartAssignment={() =>
-              router.push(`/groups/${params.groupId}/admin/assignments/1/setup`)
-            }
-            secondaryAction={{
-              icon: <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />,
-              label: "그룹 삭제하기",
-              onClick: () => setDeleteDialogOpen(true),
-              tone: "danger",
-            }}
-            onEditProfile={() =>
-              router.push(`/groups/${params.groupId}/profile/edit`)
-            }
-            footerPlacement="flow"
-          />
-        </div>
-
-        {toast && (
-          <div className={styles.toast} role="status">
-            {toast}
-          </div>
-        )}
-
-        <AM02DeleteGroupDialog
-          open={deleteDialogOpen}
-          isDeleting={isDeleting}
-          error={deleteError}
-          onClose={() => setDeleteDialogOpen(false)}
-          onConfirm={confirmDelete}
+        <AdminPreparationActions
+          onStartAssignment={() =>
+            router.push(groupRoutes.adminAssignmentSetup(params.groupId, 1))
+          }
+          secondaryAction={{
+            icon: <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />,
+            label: "그룹 삭제하기",
+            onClick: () => setDeleteDialogOpen(true),
+            tone: "danger",
+          }}
+          onEditProfile={() =>
+            router.push(groupRoutes.profileEdit(params.groupId))
+          }
+          footerPlacement="flow"
         />
+      </div>
 
-        <EditGroupDialog
-          open={editDialogOpen}
-          initialValues={editInitialValues}
-          isSaving={isSaving}
-          error={updateError}
-          onClose={() => setEditDialogOpen(false)}
-          onSubmit={handleUpdateGroup}
-        />
-      </section>
-    </main>
+      {toast && <Toast className={styles.toast}>{toast}</Toast>}
+
+      <AM02DeleteGroupDialog
+        open={deleteDialogOpen}
+        isDeleting={isDeleting}
+        error={deleteError}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDelete}
+      />
+
+      <EditGroupDialog
+        open={editDialogOpen}
+        initialValues={editInitialValues}
+        isSaving={isSaving}
+        error={updateError}
+        onClose={() => setEditDialogOpen(false)}
+        onSubmit={handleUpdateGroup}
+      />
+    </MobileFrame>
   );
 }
