@@ -62,7 +62,7 @@ const absenceMemberMocks: VoteStatusMember[] = [
 
 const pendingMemberMocks: VoteStatusMember[] = [
   createVoteStatusMember("han-sohee", "한소희", "PENDING"),
-  createVoteStatusMember("ryu-doyeon", "류도연", "PENDING", "#8f98a3"),
+  createVoteStatusMember("ryu-dohyeon", "류도현", "PENDING", "#8f98a3"),
 ];
 
 function createMvpResultMember(
@@ -250,6 +250,7 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
 
   return {
     status,
+    currentMemberId,
     totalCount: attendanceCount + absenceCount + pendingCount,
     completedCount: attendanceCount + absenceCount,
     attendanceCount,

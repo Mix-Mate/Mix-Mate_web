@@ -3,11 +3,12 @@
 }
 
 .bottomSheet {
-  --bottom-sheet-padding: 16px 26px 26px;
+  --bottom-sheet-padding: 0 26px 26px;
   --bottom-sheet-border-radius: 36px 36px 0 0;
 
+  position: relative;
   display: flex;
-  min-height: 488px;
+  height: 504px;
   flex-direction: column;
   text-align: center;
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
@@ -16,14 +17,17 @@
 .sheetHandle {
   --bottom-sheet-handle-width: 46px;
   --bottom-sheet-handle-height: 5px;
-  --bottom-sheet-handle-margin: 0 auto 32px;
+  --bottom-sheet-handle-margin: 16px auto;
+
+  flex: 0 0 5px;
 }
 
 .endIcon {
   display: grid;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 38px;
+  width: 71px;
+  height: 71px;
+  flex: 0 0 71px;
+  margin: 0 auto;
   place-items: center;
   border: 1px solid #fecaca;
   border-radius: 23px;
@@ -37,49 +41,130 @@
 }
 
 .message h2 {
+  margin-top: 13px;
   color: #18181b;
-  font-size: 27px;
+  font-size: 23px;
   font-weight: 700;
-  line-height: 42px;
-  letter-spacing: -0.65px;
+  line-height: 34px;
+  letter-spacing: -0.25px;
 }
 
 .message p {
-  margin-top: 13px;
+  margin-top: 6px;
   color: #71717a;
-  font-size: 20px;
-  line-height: 34px;
+  font-size: 14px;
+  line-height: 23px;
 }
 
-.warning {
-  display: inline-flex;
+.message p strong {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  flex: 0 0 1px;
+  margin-top: 22px;
+  background: #f4f4f5;
+}
+
+.pendingSection {
+  min-height: 0;
+  text-align: left;
+}
+
+.pendingSection h3 {
+  margin: 20px 0 12px;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 19px;
+  letter-spacing: 0.6px;
+}
+
+.pendingList {
+  display: flex;
+  max-height: 139px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex-direction: column;
+  gap: 11px;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.pendingList::-webkit-scrollbar {
+  display: none;
+}
+
+.pendingMember {
+  display: flex;
+  height: 64px;
+  flex: 0 0 64px;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 8px 14px;
-  border: 1px solid #fecaca;
-  border-radius: 13px;
+  padding: 0 12px 0 16px;
+  border: 1px solid #f4f4f5;
+  border-radius: 16px;
+  background: #fafafa;
+}
+
+.avatar {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 39px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4d4d8 0%, #a1a1aa 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.pendingMember > strong {
+  min-width: 0;
+  margin-left: 13px;
+  overflow: hidden;
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.absenceBadge {
+  display: inline-grid;
+  min-width: 67px;
+  height: 28px;
+  margin-left: auto;
+  place-items: center;
+  border: 1px solid #fecdd3;
+  border-radius: 999px;
   background: #fff1f2;
   color: #ef4444;
-  font-size: 17px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 27px;
+  line-height: 18px;
+  white-space: nowrap;
 }
 
 .error {
   display: block;
-  margin-top: 8px;
+  margin: 7px 0 -14px;
   color: #dc2626;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 18px;
 }
 
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 11px;
   margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #f4f4f5;
 }
 
 .cancelButton,
