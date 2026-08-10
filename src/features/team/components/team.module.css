@@ -67,27 +67,7 @@
 }
 
 .infoBanner {
-  display: flex;
-  height: 66px;
-  align-items: flex-start;
-  gap: 10px;
   margin-top: 13px;
-  padding: 11px 15px;
-  border-radius: 16px;
-  background: #eff6ff;
-  color: #3b82c4;
-}
-
-.infoBanner svg {
-  flex: 0 0 18px;
-  margin-top: 1px;
-}
-
-.infoBanner p {
-  margin: 0;
-  color: #374151;
-  font-size: 13px;
-  line-height: 21px;
 }
 
 .memberList {

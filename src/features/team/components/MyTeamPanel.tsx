@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import InfoBanner from "@/shared/ui/InfoBanner";
 import type { MyTeamData, TeamMemberSummary } from "../types/team.types";
 import TeamMemberList from "./TeamMemberList";
 import styles from "./team.module.css";
@@ -21,14 +21,13 @@ export default function MyTeamPanel({
         </span>
       </header>
 
-      <div className={styles.infoBanner}>
-        <Info aria-hidden="true" size={18} strokeWidth={1.8} />
+      <InfoBanner className={styles.infoBanner}>
         <p>
-          현재 자리에서 같은 조로 배정된 멤버입니다.
+          현재 회차에서 같은 조로 배정된 멤버입니다.
           <br />
           멤버를 탭하면 프로필을 확인할 수 있습니다.
         </p>
-      </div>
+      </InfoBanner>
 
       <TeamMemberList members={team.members} onSelect={onMemberSelect} />
     </section>
