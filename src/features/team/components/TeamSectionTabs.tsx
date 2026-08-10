@@ -1,4 +1,4 @@
-import styles from "./team.module.css";
+import TabNavigation from "@/shared/ui/TabNavigation";
 
 type TeamSection = "team" | "members" | "play";
 
@@ -28,22 +28,11 @@ export default function TeamSectionTabs({
   ];
 
   return (
-    <nav className={styles.tabs} aria-label="그룹 메뉴">
-      {sections.map((section) => {
-        const isActive = section.id === activeSection;
-
-        return (
-          <button
-            key={section.id}
-            type="button"
-            className={isActive ? styles.activeTab : styles.tab}
-            aria-current={isActive ? "page" : undefined}
-            onClick={() => onNavigate(section.href)}
-          >
-            {section.label}
-          </button>
-        );
-      })}
-    </nav>
+    <TabNavigation
+      items={sections}
+      activeItemId={activeSection}
+      ariaLabel="그룹 메뉴"
+      onSelect={(section) => onNavigate(section.href)}
+    />
   );
 }

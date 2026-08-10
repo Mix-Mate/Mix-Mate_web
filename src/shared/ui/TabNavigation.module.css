@@ -1,0 +1,43 @@
+.tabs {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  align-items: stretch;
+  border-bottom: 1px solid #e4e4e7;
+  background: #fff;
+}
+
+.tab {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+  flex: 1;
+  padding: 0;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25px;
+  text-align: center;
+}
+
+.activeTab {
+  color: #18181b;
+}
+
+.activeTab::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: #18181b;
+  content: "";
+}
+
+.tab:focus-visible {
+  z-index: 1;
+  outline: 2px solid #60a5fa;
+  outline-offset: -2px;
+}
