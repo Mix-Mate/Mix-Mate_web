@@ -6,6 +6,7 @@ import MvpVoteForm from "@/features/vote/components/mvp/MvpVoteForm";
 import styles from "@/features/vote/components/vote.module.css";
 import { useMvpVote } from "@/features/vote/hooks/useMvpVote";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function MvpVoteScreen() {
@@ -18,7 +19,7 @@ export default function MvpVoteScreen() {
     if (context.hasSubmitted || submit(candidateId)) {
       router.push(
         withSessionContext(
-          `/groups/${params.groupId}/votes/attendance`,
+          groupRoutes.attendanceVote(params.groupId),
           searchParams,
         ),
       );
@@ -29,7 +30,7 @@ export default function MvpVoteScreen() {
     <VoteScreenLayout
       title="MVP 투표"
       status={context.status}
-      backHref={`/groups/${params.groupId}/home`}
+      backHref={groupRoutes.home(params.groupId)}
       testId="mvp-vote-screen"
     >
       <section className={styles.mvpScreen}>

@@ -8,6 +8,7 @@ import TopicCategoryList from "@/features/play/components/TopicCategoryList";
 import TopicRecommendationCard from "@/features/play/components/TopicRecommendationCard";
 import { useRandomTopicQuery } from "@/features/play/hooks/useRandomTopicQuery";
 import type { TopicCategory } from "@/features/play/types/play.types";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
@@ -30,7 +31,7 @@ export default function SmallTalkScreen() {
 
   return (
     <PlayScreenLayout
-      backHref={`/groups/${params.groupId}/play`}
+      backHref={groupRoutes.play(params.groupId)}
       testId="small-talk-screen"
     >
       <section className={styles.topicScreen}>

@@ -1,4 +1,5 @@
 import TabNavigation from "@/shared/ui/TabNavigation";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 
 type TeamSection = "team" | "members" | "play";
 
@@ -18,13 +19,13 @@ export default function TeamSectionTabs({
     label: string;
     href: string;
   }> = [
-    { id: "team", label: "내 조", href: `/groups/${groupId}/team` },
+    { id: "team", label: "내 조", href: groupRoutes.team(groupId) },
     {
       id: "members",
       label: "멤버",
-      href: `/groups/${groupId}/team?tab=members`,
+      href: groupRoutes.teamMembers(groupId),
     },
-    { id: "play", label: "함께 즐기기", href: `/groups/${groupId}/play` },
+    { id: "play", label: "함께 즐기기", href: groupRoutes.play(groupId) },
   ];
 
   return (

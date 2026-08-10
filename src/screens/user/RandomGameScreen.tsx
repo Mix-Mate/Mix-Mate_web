@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import GameRecommendationCard from "@/features/play/components/GameRecommendationCard";
 import styles from "@/features/play/components/play.module.css";
 import { useRandomGameQuery } from "@/features/play/hooks/useRandomGameQuery";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
@@ -14,7 +15,7 @@ export default function RandomGameScreen() {
 
   return (
     <PlayScreenLayout
-      backHref={`/groups/${params.groupId}/play`}
+      backHref={groupRoutes.play(params.groupId)}
       testId="random-game-screen"
     >
       <section className={styles.recommendationScreen}>

@@ -7,6 +7,7 @@ import {
 } from "@/features/session/utils/session-navigation";
 import VoteResultContent from "@/features/vote/components/result/VoteResultContent";
 import { useVoteResultQuery } from "@/features/vote/hooks/useVoteResultQuery";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteResultScreen() {
@@ -15,7 +16,7 @@ export default function VoteResultScreen() {
   const searchParams = useSearchParams();
   const { data } = useVoteResultQuery(params.groupId);
   const isAdmin = getMockGroupRole(searchParams) === "ADMIN";
-  const homeHref = `/groups/${params.groupId}/home`;
+  const homeHref = groupRoutes.home(params.groupId);
   const resultHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
     : `${homeHref}?scenario=round2-waiting&role=user`;
