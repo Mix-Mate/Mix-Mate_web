@@ -1,30 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback } from "react";
+import useAsyncMutation from "@/shared/hooks/useAsyncMutation";
 import { deleteGroup } from "../api/group.api";
 
 export function useDeleteGroupMutation() {
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const deleteGroupAction = useCallback(async (groupId: string) => {
+    await deleteGroup(groupId);
+    return true;
+  }, []);
 
-  const mutate = async (groupId: string) => {
-    setIsPending(true);
-    setError(null);
-
-    try {
-      await deleteGroup(groupId);
-      return true;
-    } catch (deleteError) {
-      setError(
-        deleteError instanceof Error
-          ? deleteError.message
-          : "그룹을 삭제하지 못했습니다.",
-      );
-      return false;
-    } finally {
-      setIsPending(false);
-    }
-  };
-
-  return { mutate, isPending, error };
+  return useAsyncMutation(deleteGroupAction, {
+    fallbackErrorMessage: "그룹을 삭제하지 못했습니다.",
+    fallbackResult: false,
+  });
 }

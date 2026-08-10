@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import type { VoteStatus } from "@/features/vote/types/vote.types";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./VoteScreen.module.css";
 
 interface VoteScreenLayoutProps {
@@ -30,29 +31,25 @@ export default function VoteScreenLayout({
   const searchParams = useSearchParams();
 
   return (
-    <main className={styles.viewport}>
-      <section className={styles.phone} data-testid={testId}>
-        <Header
-          title={title}
-          statusLabel={
-            showStatusBadge
-              ? status === "OPEN"
-                ? "투표 진행 중"
-                : "투표 마감"
-              : undefined
-          }
-          onBack={() =>
-            router.push(withSessionContext(backHref, searchParams))
-          }
-        />
-        <div
-          className={`${styles.content} ${
-            flushContent ? styles.flushContent : ""
-          }`}
-        >
-          {children}
-        </div>
-      </section>
-    </main>
+    <MobileFrame className={styles.phone} data-testid={testId}>
+      <Header
+        title={title}
+        statusLabel={
+          showStatusBadge
+            ? status === "OPEN"
+              ? "투표 진행 중"
+              : "투표 마감"
+            : undefined
+        }
+        onBack={() => router.push(withSessionContext(backHref, searchParams))}
+      />
+      <div
+        className={`${styles.content} ${
+          flushContent ? styles.flushContent : ""
+        }`}
+      >
+        {children}
+      </div>
+    </MobileFrame>
   );
 }

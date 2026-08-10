@@ -1,10 +1,5 @@
-import {
-  Clock3,
-  History,
-  Power,
-  Trash2,
-  UserRoundPen,
-} from "lucide-react";
+import { Clock3, History, Power, Trash2, UserRoundPen } from "lucide-react";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import type { UserHomeSnapshot } from "../types/session.types";
 import SessionMenuGrid from "./SessionMenuGrid";
 import SessionStatusCard from "./SessionStatusCard";
@@ -40,7 +35,7 @@ export default function UserSessionContent({
         status={snapshot.statusLabel}
         onClick={
           isAdmin && snapshot.round === 1 && snapshot.permissions.canEndRound
-            ? () => onNavigate(`/groups/${groupId}/admin/progress`)
+            ? () => onNavigate(groupRoutes.adminProgress(groupId))
             : undefined
         }
       />
@@ -50,7 +45,7 @@ export default function UserSessionContent({
           <button
             type="button"
             className={styles.assignmentCard}
-            onClick={() => onNavigate(`/groups/${groupId}/team`)}
+            onClick={() => onNavigate(groupRoutes.team(groupId))}
           >
             <span>나 몇 조?</span>
             <strong>배정 결과 확인하기 →</strong>
@@ -87,7 +82,7 @@ export default function UserSessionContent({
             className={styles.secondaryAction}
             onClick={() => {
               // TODO(team-history-integration): 이전 조 기록 페이지가 완성되면 이 전용 경로에서 연결한다.
-              onNavigate(`/groups/${groupId}/team/history`);
+              onNavigate(groupRoutes.teamHistory(groupId));
             }}
           >
             <History aria-hidden="true" size={20} strokeWidth={1.8} />
@@ -98,10 +93,10 @@ export default function UserSessionContent({
         <button
           type="button"
           className={styles.secondaryAction}
-          onClick={() => onNavigate(`/groups/${groupId}/profile/edit`)}
+          onClick={() => onNavigate(groupRoutes.profileEdit(groupId))}
         >
-          <UserRoundPen aria-hidden="true" size={20} strokeWidth={1.8} />
-          내 프로필 수정
+          <UserRoundPen aria-hidden="true" size={20} strokeWidth={1.8} />내
+          프로필 수정
         </button>
       </div>
 

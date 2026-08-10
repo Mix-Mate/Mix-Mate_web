@@ -4,6 +4,7 @@ import { Scale } from "lucide-react";
 import { useParams } from "next/navigation";
 import styles from "@/features/play/components/play.module.css";
 import { useRandomTopicQuery } from "@/features/play/hooks/useRandomTopicQuery";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import PlayScreenLayout from "./PlayScreenLayout";
 
@@ -14,7 +15,7 @@ export default function BalanceGameScreen() {
 
   return (
     <PlayScreenLayout
-      backHref={`/groups/${params.groupId}/play`}
+      backHref={groupRoutes.play(params.groupId)}
       testId="balance-game-screen"
     >
       <section className={styles.balanceScreen}>

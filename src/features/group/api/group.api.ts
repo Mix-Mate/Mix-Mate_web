@@ -1,4 +1,5 @@
 import type { UpdateGroupInput } from "../types/group.types";
+import { mockDelay } from "@/shared/api/mockDelay";
 import {
   adminGroupPreparationMock,
   adminRoundTwoPreparationMock,
@@ -19,7 +20,7 @@ export function getAdminRoundTwoPreparation(groupId: string) {
 }
 
 export async function updateGroup(groupId: string, input: UpdateGroupInput) {
-  await new Promise((resolve) => setTimeout(resolve, 450));
+  await mockDelay();
 
   return {
     id: groupId,
@@ -29,5 +30,5 @@ export async function updateGroup(groupId: string, input: UpdateGroupInput) {
 
 export async function deleteGroup(groupId: string) {
   void groupId;
-  await new Promise((resolve) => setTimeout(resolve, 350));
+  await mockDelay(350);
 }

@@ -1,13 +1,11 @@
-import type {
-  EndRoundResult,
-  GroupRound,
-} from "../types/session.types";
+import type { EndRoundResult, GroupRound } from "../types/session.types";
+import { mockDelay } from "@/shared/api/mockDelay";
 
 export async function endGroupRound(
   groupId: string,
   round: GroupRound,
 ): Promise<EndRoundResult> {
-  await new Promise((resolve) => setTimeout(resolve, 450));
+  await mockDelay();
 
   return {
     groupId,

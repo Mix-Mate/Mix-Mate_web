@@ -1,5 +1,6 @@
 import { MessageCircle, Scale, Shuffle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./play.module.css";
 
 interface PlayMenuProps {
@@ -52,7 +53,9 @@ export default function PlayMenu({ groupId, onNavigate }: PlayMenuProps) {
               key={item.path}
               type="button"
               className={styles.menuCard}
-              onClick={() => onNavigate(`/groups/${groupId}/play/${item.path}`)}
+              onClick={() =>
+                onNavigate(groupRoutes.playActivity(groupId, item.path))
+              }
             >
               <span className={styles.menuIcon}>
                 <Icon aria-hidden="true" size={26} strokeWidth={1.7} />

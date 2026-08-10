@@ -6,6 +6,7 @@ import AttendanceVoteForm from "@/features/vote/components/attendance/Attendance
 import styles from "@/features/vote/components/vote.module.css";
 import { useAttendanceVote } from "@/features/vote/hooks/useAttendanceVote";
 import { useMvpVote } from "@/features/vote/hooks/useMvpVote";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function AttendanceVoteScreen() {
@@ -22,7 +23,7 @@ export default function AttendanceVoteScreen() {
     if (submit(choice)) {
       router.push(
         withSessionContext(
-          `/groups/${params.groupId}/votes/status`,
+          groupRoutes.voteStatus(params.groupId),
           searchParams,
         ),
       );
@@ -33,7 +34,7 @@ export default function AttendanceVoteScreen() {
     <VoteScreenLayout
       title="2차 참여 여부"
       status={context.status}
-      backHref={`/groups/${params.groupId}/votes/mvp`}
+      backHref={groupRoutes.mvpVote(params.groupId)}
       testId="attendance-vote-screen"
     >
       <section className={styles.attendanceScreen}>

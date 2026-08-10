@@ -1,0 +1,39 @@
+.scrim {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: var(--bottom-sheet-scrim-background, rgba(24, 24, 27, 0.62));
+  animation: fadeIn 160ms ease-out;
+}
+
+.sheet {
+  width: 100%;
+  padding: var(--bottom-sheet-padding, 16px 24px 24px);
+  border-radius: var(--bottom-sheet-border-radius, 28px 28px 0 0);
+  background: #fff;
+  animation: slideUp 220ms ease-out;
+}
+
+.handle {
+  display: block;
+  width: var(--bottom-sheet-handle-width, 48px);
+  height: var(--bottom-sheet-handle-height, 4px);
+  margin: var(--bottom-sheet-handle-margin, 0 auto 26px);
+  border-radius: var(--bottom-sheet-handle-radius, 999px);
+  background: var(--bottom-sheet-handle-background, #d4d4d8);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+}

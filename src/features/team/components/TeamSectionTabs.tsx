@@ -1,4 +1,5 @@
-import styles from "./team.module.css";
+import TabNavigation from "@/shared/ui/TabNavigation";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 
 type TeamSection = "team" | "members" | "play";
 
@@ -18,32 +19,21 @@ export default function TeamSectionTabs({
     label: string;
     href: string;
   }> = [
-    { id: "team", label: "내 조", href: `/groups/${groupId}/team` },
+    { id: "team", label: "내 조", href: groupRoutes.team(groupId) },
     {
       id: "members",
       label: "멤버",
-      href: `/groups/${groupId}/team?tab=members`,
+      href: groupRoutes.teamMembers(groupId),
     },
-    { id: "play", label: "함께 즐기기", href: `/groups/${groupId}/play` },
+    { id: "play", label: "함께 즐기기", href: groupRoutes.play(groupId) },
   ];
 
   return (
-    <nav className={styles.tabs} aria-label="그룹 메뉴">
-      {sections.map((section) => {
-        const isActive = section.id === activeSection;
-
-        return (
-          <button
-            key={section.id}
-            type="button"
-            className={isActive ? styles.activeTab : styles.tab}
-            aria-current={isActive ? "page" : undefined}
-            onClick={() => onNavigate(section.href)}
-          >
-            {section.label}
-          </button>
-        );
-      })}
-    </nav>
+    <TabNavigation
+      items={sections}
+      activeItemId={activeSection}
+      ariaLabel="그룹 메뉴"
+      onSelect={(section) => onNavigate(section.href)}
+    />
   );
 }

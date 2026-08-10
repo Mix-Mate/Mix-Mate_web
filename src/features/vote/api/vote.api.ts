@@ -1,4 +1,5 @@
 import { myTeamMock } from "@/features/team/api/team.mock";
+import { mockDelay } from "@/shared/api/mockDelay";
 import {
   assertEligibleCandidate,
   assertNotSubmitted,
@@ -278,7 +279,7 @@ export function setMockVoteStatus(groupId: string, status: VoteStatus) {
 }
 
 export async function endGroupVote(groupId: string) {
-  await new Promise((resolve) => setTimeout(resolve, 450));
+  await mockDelay();
   setMockVoteStatus(groupId, "CLOSED");
 
   return getVoteProgressContext(groupId);

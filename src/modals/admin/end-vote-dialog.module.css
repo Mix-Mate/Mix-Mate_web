@@ -1,33 +1,22 @@
 .scrim {
-  position: absolute;
-  z-index: 20;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  background: rgba(9, 9, 11, 0.55);
-  animation: fadeIn 160ms ease-out;
+  --bottom-sheet-scrim-background: rgba(9, 9, 11, 0.55);
 }
 
 .bottomSheet {
+  --bottom-sheet-padding: 16px 26px 26px;
+  --bottom-sheet-border-radius: 36px 36px 0 0;
+
   display: flex;
-  width: 100%;
   min-height: 488px;
   flex-direction: column;
-  padding: 16px 26px 26px;
-  border-radius: 36px 36px 0 0;
-  background: #fff;
   text-align: center;
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
-  animation: slideUp 220ms ease-out;
 }
 
 .sheetHandle {
-  display: block;
-  width: 46px;
-  height: 5px;
-  margin: 0 auto 32px;
-  border-radius: 999px;
-  background: #d4d4d8;
+  --bottom-sheet-handle-width: 46px;
+  --bottom-sheet-handle-height: 5px;
+  --bottom-sheet-handle-margin: 0 auto 32px;
 }
 
 .endIcon {
@@ -130,17 +119,4 @@
 .endButton:disabled {
   cursor: wait;
   opacity: 0.65;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(32px);
-    opacity: 0;
-  }
 }

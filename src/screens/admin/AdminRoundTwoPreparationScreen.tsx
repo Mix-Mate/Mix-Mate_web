@@ -2,14 +2,18 @@
 
 import { History } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
 import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
 import { useAdminRoundTwoPreparationQuery } from "@/features/group/hooks/useAdminRoundTwoPreparationQuery";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
+import useToast from "@/shared/hooks/useToast";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./AdminPreparationScreen.module.css";
 
 export default function AdminRoundTwoPreparationScreen() {
@@ -22,20 +26,7 @@ export default function AdminRoundTwoPreparationScreen() {
   const [editDialogOpen, setEditDialogOpen] = useState(
     searchParams.get("dialog") === "edit",
   );
-  const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    };
-  }, []);
-
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
-  }, []);
+  const { message: toast, showToast } = useToast();
 
   const closeEditDialog = useCallback(() => {
     setEditDialogOpen(false);
@@ -65,58 +56,50 @@ export default function AdminRoundTwoPreparationScreen() {
   );
 
   return (
-    <main className={styles.viewport}>
-      <section
-        className={styles.phone}
-        data-testid="admin-round-two-preparation"
-        data-group-id={group.id}
-      >
-        <Header
-          title={group.name}
-          onBack={() => router.back()}
+    <MobileFrame
+      className={styles.phone}
+      viewportClassName={styles.viewport}
+      data-testid="admin-round-two-preparation"
+      data-group-id={group.id}
+    >
+      <Header title={group.name} onBack={() => router.back()} />
+
+      <div className={styles.content}>
+        <RoundTwoStatusCard
+          eyebrow="진행 상태 확인"
+          statusLabel={group.statusLabel}
+          onEditGroup={() => setEditDialogOpen(true)}
         />
 
-        <div className={styles.content}>
-          <RoundTwoStatusCard
-            eyebrow="진행 상태 확인"
-            statusLabel={group.statusLabel}
-            onEditGroup={() => setEditDialogOpen(true)}
-          />
-
-          <AdminPreparationActions
-            onStartAssignment={() =>
-              router.push(`/groups/${params.groupId}/admin/assignments/2/setup`)
-            }
-            secondaryAction={{
-              icon: <History aria-hidden="true" size={17} strokeWidth={1.8} />,
-              label: "2차 참가자 명단 보기",
-              onClick: () =>
-                router.push(
-                  `/groups/${params.groupId}/admin/round-2/participants`,
-                ),
-            }}
-            onEditProfile={() =>
-              router.push(`/groups/${params.groupId}/profile/edit`)
-            }
-            footerPlacement="flow"
-          />
-        </div>
-
-        {toast && (
-          <div className={styles.toast} role="status">
-            {toast}
-          </div>
-        )}
-
-        <EditGroupDialog
-          open={editDialogOpen}
-          initialValues={editInitialValues}
-          isSaving={isPending}
-          error={error}
-          onClose={closeEditDialog}
-          onSubmit={handleUpdateGroup}
+        <AdminPreparationActions
+          onStartAssignment={() =>
+            router.push(groupRoutes.adminAssignmentSetup(params.groupId, 2))
+          }
+          secondaryAction={{
+            icon: <History aria-hidden="true" size={17} strokeWidth={1.8} />,
+            label: "2차 참가자 명단 보기",
+            onClick: () =>
+              router.push(
+                groupRoutes.adminRoundTwoParticipants(params.groupId),
+              ),
+          }}
+          onEditProfile={() =>
+            router.push(groupRoutes.profileEdit(params.groupId))
+          }
+          footerPlacement="flow"
         />
-      </section>
-    </main>
+      </div>
+
+      {toast && <Toast className={styles.toast}>{toast}</Toast>}
+
+      <EditGroupDialog
+        open={editDialogOpen}
+        initialValues={editInitialValues}
+        isSaving={isPending}
+        error={error}
+        onClose={closeEditDialog}
+        onSubmit={handleUpdateGroup}
+      />
+    </MobileFrame>
   );
 }

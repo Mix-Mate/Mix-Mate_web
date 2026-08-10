@@ -1,29 +1,5 @@
-.scrim {
-  position: absolute;
-  z-index: 20;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  background: rgba(24, 24, 27, 0.62);
-  animation: fadeIn 160ms ease-out;
-}
-
 .bottomSheet {
-  width: 100%;
-  padding: 16px 24px 24px;
-  border-radius: 28px 28px 0 0;
-  background: #fff;
   text-align: center;
-  animation: slideUp 220ms ease-out;
-}
-
-.sheetHandle {
-  display: block;
-  width: 48px;
-  height: 4px;
-  margin: 0 auto 26px;
-  border-radius: 999px;
-  background: #d4d4d8;
 }
 
 .leaveIcon {
@@ -99,17 +75,4 @@
 .leaveButton {
   background: #ef4444;
   color: #fff;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(32px);
-    opacity: 0;
-  }
 }

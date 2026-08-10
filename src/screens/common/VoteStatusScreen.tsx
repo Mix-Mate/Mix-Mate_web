@@ -12,6 +12,7 @@ import VoteStatusList from "@/features/vote/components/status/VoteStatusList";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import type { VoteStatusFilter } from "@/features/vote/types/vote.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteStatusScreen() {
@@ -41,16 +42,13 @@ export default function VoteStatusScreen() {
   }[selectedFilter];
   const showVoteResult = useCallback(() => {
     router.replace(
-      withSessionContext(
-        `/groups/${params.groupId}/votes/result`,
-        searchParams,
-      ),
+      withSessionContext(groupRoutes.voteResult(params.groupId), searchParams),
     );
   }, [params.groupId, router, searchParams]);
   const showAdminVoteEnd = useCallback(() => {
     router.push(
       withSessionContext(
-        `/groups/${params.groupId}/admin/votes/end`,
+        groupRoutes.adminVoteEnd(params.groupId),
         searchParams,
       ),
     );
@@ -60,7 +58,7 @@ export default function VoteStatusScreen() {
     <VoteScreenLayout
       title="투표 현황"
       status={data.status}
-      backHref={`/groups/${params.groupId}/home`}
+      backHref={groupRoutes.home(params.groupId)}
       testId="vote-status-screen"
     >
       <section
