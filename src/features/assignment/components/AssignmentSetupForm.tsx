@@ -14,6 +14,8 @@ import type {
 } from "../types/assignment.types";
 import styles from "./assignment.module.css";
 
+const MIN_MEMBERS_PER_GROUP = 2;
+
 function getPerGroupRangeLabel(participantCount: number, groupCount: number) {
   if (groupCount <= 0) return "-명";
 
@@ -21,6 +23,10 @@ function getPerGroupRangeLabel(participantCount: number, groupCount: number) {
   const remainder = participantCount % groupCount;
 
   return remainder === 0 ? `${base}명` : `${base}~${base + 1}명`;
+}
+
+function getMaxGroupCount(participantCount: number) {
+  return Math.max(1, Math.floor(participantCount / MIN_MEMBERS_PER_GROUP));
 }
 
 interface AssignmentSetupFormProps {
@@ -35,7 +41,10 @@ export default function AssignmentSetupForm({
   onSubmit,
 }: AssignmentSetupFormProps) {
   const participantCount = getParticipantPool().length;
-  const [groupCount, setGroupCount] = useState(3);
+  const maxGroupCount = getMaxGroupCount(participantCount);
+  const [groupCount, setGroupCount] = useState(() =>
+    Math.min(3, maxGroupCount),
+  );
   const [conditionKeys, setConditionKeys] = useState<AssignmentConditionKey[]>(
     () =>
       assignmentConditionOptions
@@ -63,7 +72,11 @@ export default function AssignmentSetupForm({
         <h2 className={styles.setupHeading}>조 편성 설정</h2>
 
         <div className={styles.setupCard}>
-          <GroupCountStepper value={groupCount} onChange={setGroupCount} />
+          <GroupCountStepper
+            value={groupCount}
+            max={maxGroupCount}
+            onChange={setGroupCount}
+          />
           <div className={styles.divider} />
           <p className={styles.perGroupText}>
             <span>조당</span>
