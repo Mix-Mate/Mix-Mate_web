@@ -4,11 +4,11 @@
   flex: 0 0 58px;
   cursor: pointer;
   border: 1px solid var(--button-border);
-  border-radius: 12px;
+  border-radius: 16.429px;
   background: var(--button-background);
   color: var(--button-color);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 21px;
   transition:
@@ -19,7 +19,7 @@
 }
 
 .primary {
-  --button-background: #2e73db;
+  --button-background: #3b82c4;
   --button-active: #2567c9;
   --button-border: transparent;
   --button-color: #fff;
