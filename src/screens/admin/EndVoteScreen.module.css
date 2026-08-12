@@ -169,7 +169,7 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 374px) {
+@media (max-width: 389px) {
   .viewport,
   .phone {
     width: 100vw;
