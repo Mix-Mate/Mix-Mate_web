@@ -1,7 +1,7 @@
 .statusScreen {
   display: flex;
-  width: 343px;
-  height: 708px;
+  width: 358px;
+  height: 740px;
   flex-direction: column;
   overflow-y: auto;
   scrollbar-width: none;
