@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
-import Button from "@/shared/ui/Button";
+import styles from "./assignment.module.css";
 
 interface GroupCountStepperProps {
   value: number;
@@ -17,26 +17,29 @@ export default function GroupCountStepper({
   onChange,
 }: GroupCountStepperProps) {
   return (
-    <div role="group" aria-label="조 개수 설정">
-      <Button
+    <div className={styles.stepperRow} role="group" aria-label="조 개수 설정">
+      <button
         type="button"
-        variant="secondary"
+        className={styles.stepButton}
         aria-label="조 개수 줄이기"
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
-        <Minus aria-hidden="true" size={18} />
-      </Button>
-      <span aria-live="polite">{value}조</span>
-      <Button
+        <Minus aria-hidden="true" size={20} strokeWidth={2.4} />
+      </button>
+      <p className={styles.countText} aria-live="polite">
+        <span>{value}</span>
+        <small>개 조</small>
+      </p>
+      <button
         type="button"
-        variant="secondary"
+        className={styles.stepButton}
         aria-label="조 개수 늘리기"
         disabled={value >= max}
         onClick={() => onChange(value + 1)}
       >
-        <Plus aria-hidden="true" size={18} />
-      </Button>
+        <Plus aria-hidden="true" size={20} strokeWidth={2.4} />
+      </button>
     </div>
   );
 }
