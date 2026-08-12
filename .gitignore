@@ -52,3 +52,6 @@ next-env.d.ts
 
 # claude code
 .claude/
+
+# personal dev notes (개인 참고용 문서, 팀 공유 대상 아님)
+docs/private/
