@@ -12,7 +12,7 @@ interface GroupCountStepperProps {
 
 export default function GroupCountStepper({
   value,
-  min = 1,
+  min = 2,
   max = 20,
   onChange,
 }: GroupCountStepperProps) {

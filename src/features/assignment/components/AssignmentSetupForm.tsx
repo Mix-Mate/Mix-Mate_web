@@ -15,6 +15,7 @@ import type {
 import styles from "./assignment.module.css";
 
 const MIN_MEMBERS_PER_GROUP = 2;
+const MIN_GROUP_COUNT = 2;
 
 function getPerGroupRangeLabel(participantCount: number, groupCount: number) {
   if (groupCount <= 0) return "-명";
@@ -26,7 +27,10 @@ function getPerGroupRangeLabel(participantCount: number, groupCount: number) {
 }
 
 function getMaxGroupCount(participantCount: number) {
-  return Math.max(1, Math.floor(participantCount / MIN_MEMBERS_PER_GROUP));
+  return Math.max(
+    MIN_GROUP_COUNT,
+    Math.floor(participantCount / MIN_MEMBERS_PER_GROUP),
+  );
 }
 
 interface AssignmentSetupFormProps {
