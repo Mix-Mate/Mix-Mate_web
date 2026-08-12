@@ -52,6 +52,7 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
     label: "고정 멤버 유지",
     description: "지정한 멤버는 그대로 유지",
     defaultEnabled: false,
+    locked: true,
   },
 ];
 
@@ -80,8 +81,12 @@ export default function AssignmentConditionList({
               role="switch"
               aria-checked={isOn}
               aria-label={option.label}
+              disabled={option.locked}
               className={clsx(styles.toggle, isOn && styles.toggleOn)}
-              onClick={() => onToggle(option.key)}
+              onClick={() => {
+                if (option.locked) return;
+                onToggle(option.key);
+              }}
             >
               <span className={styles.toggleKnob} />
             </button>

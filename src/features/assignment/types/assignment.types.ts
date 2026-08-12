@@ -17,6 +17,7 @@ export interface AssignmentConditionOption {
   label: string;
   description: string;
   defaultEnabled: boolean;
+  locked?: boolean;
 }
 
 export interface AssignmentSetupInput {

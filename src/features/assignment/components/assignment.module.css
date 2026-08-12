@@ -189,6 +189,11 @@
   background: #256ad3;
 }
 
+.toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .toggleKnob {
   position: absolute;
   top: 3px;
