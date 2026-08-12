@@ -26,11 +26,7 @@ export default function AssignmentSetupScreen() {
 
   return (
     <MobileFrame data-testid="assignment-setup-screen" data-round={round}>
-      <Header
-        title={group.name}
-        statusLabel={group.roleLabel}
-        onBack={() => router.back()}
-      />
+      <Header title={group.name} onBack={() => router.back()} />
 
       <TabNavigation
         items={[
