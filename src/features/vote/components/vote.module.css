@@ -1,8 +1,8 @@
 .mvpScreen,
 .attendanceScreen {
   display: flex;
-  width: 343px;
-  height: 708px;
+  width: 358px;
+  height: 740px;
   flex-direction: column;
 }
 
@@ -202,8 +202,8 @@
 
 .attendanceForm {
   display: flex;
-  width: 343px;
-  height: 708px;
+  width: 358px;
+  height: 740px;
   flex-direction: column;
   padding-top: 122px;
 }
