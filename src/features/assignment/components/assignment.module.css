@@ -34,8 +34,9 @@
 
 .stepperRow {
   display: flex;
+  width: 100%;
   align-items: center;
-  gap: 13px;
+  justify-content: space-between;
 }
 
 .stepButton {
