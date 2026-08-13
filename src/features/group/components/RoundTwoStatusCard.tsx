@@ -4,7 +4,7 @@ import styles from "./admin-preparation.module.css";
 interface RoundTwoStatusCardProps {
   eyebrow: string;
   statusLabel: string;
-  onEditGroup: () => void;
+  onEditGroup?: () => void;
   showEditButton?: boolean;
 }
 
@@ -21,7 +21,7 @@ export default function RoundTwoStatusCard({
         <small>{eyebrow}</small>
         <strong>{statusLabel}</strong>
       </span>
-      {showEditButton && (
+      {showEditButton && onEditGroup && (
         <button
           type="button"
           className={styles.editGroupButton}

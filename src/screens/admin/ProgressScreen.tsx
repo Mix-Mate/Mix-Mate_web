@@ -27,7 +27,6 @@ export default function ProgressScreen() {
     error: endRoundError,
   } = useEndRoundMutation();
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const goHome = useCallback(() => {
     router.push(
@@ -67,7 +66,6 @@ export default function ProgressScreen() {
         <RoundTwoStatusCard
           eyebrow="진행 상태 확인"
           statusLabel={snapshot.statusLabel}
-          onEditGroup={() => setEditDialogOpen(true)}
           showEditButton={false}
         />
 
