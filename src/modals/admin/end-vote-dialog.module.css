@@ -110,20 +110,6 @@
   background: #fafafa;
 }
 
-.avatar {
-  display: grid;
-  width: 39px;
-  height: 39px;
-  flex: 0 0 39px;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #d4d4d8 0%, #a1a1aa 100%);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 22px;
-}
-
 .pendingMember > strong {
   min-width: 0;
   margin-left: 13px;
@@ -169,39 +155,24 @@
 
 .cancelButton,
 .endButton {
-  height: 58px;
-  cursor: pointer;
   border-radius: 16px;
   font-size: 18px;
   font-weight: 600;
   line-height: 27px;
-  transition: transform 100ms ease;
 }
 
 .cancelButton {
-  border: 1px solid #e4e4e7;
-  background: #f4f4f5;
-  color: #52525b;
+  --button-background: #f4f4f5;
+  --button-active: #e4e4e7;
+  --button-border: var(--color-border);
+  --button-color: #52525b;
+  --button-focus: #60a5fa;
 }
 
 .endButton {
-  background: #ef4444;
-  color: #fff;
-}
-
-.cancelButton:active,
-.endButton:active {
-  transform: scale(0.98);
-}
-
-.cancelButton:focus-visible,
-.endButton:focus-visible {
-  outline: 2px solid #60a5fa;
-  outline-offset: 2px;
-}
-
-.cancelButton:disabled,
-.endButton:disabled {
-  cursor: wait;
-  opacity: 0.65;
+  --button-background: var(--color-danger);
+  --button-active: #dc2626;
+  --button-border: transparent;
+  --button-color: #fff;
+  --button-focus: #60a5fa;
 }

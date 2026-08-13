@@ -2,7 +2,9 @@
 
 import { TriangleAlert } from "lucide-react";
 import type { VoteStatusMember } from "@/features/vote/types/vote.types";
+import Avatar from "@/shared/ui/Avatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Button from "@/shared/ui/Button";
 import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
@@ -54,9 +56,12 @@ export default function EndVoteDialog({
         <ul className={styles.pendingList}>
           {pendingMembers.map((member) => (
             <li className={styles.pendingMember} key={member.memberId}>
-              <span className={styles.avatar} aria-hidden="true">
-                {member.avatarInitial}
-              </span>
+              <Avatar
+                name={member.memberName}
+                fallback={member.avatarInitial}
+                backgroundColor={member.avatarColor}
+                size={39}
+              />
               <strong>{member.memberName}</strong>
               <span className={styles.absenceBadge}>불참 처리</span>
             </li>
@@ -71,22 +76,22 @@ export default function EndVoteDialog({
       )}
 
       <div className={styles.actions}>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           className={styles.cancelButton}
           onClick={onClose}
           disabled={isEnding}
         >
           취소
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="danger"
           className={styles.endButton}
           onClick={onConfirm}
           disabled={isEnding}
         >
           {isEnding ? "종료 중..." : "지금 종료하기"}
-        </button>
+        </Button>
       </div>
     </BottomSheetDialog>
   );
