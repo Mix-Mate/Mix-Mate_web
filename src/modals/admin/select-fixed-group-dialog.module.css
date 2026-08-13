@@ -1,0 +1,42 @@
+.sheet {
+  padding: 24px 20px 28px;
+}
+
+.title {
+  margin: 0 0 4px;
+  color: #18181b;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.description {
+  margin: 0 0 16px;
+  color: #71717a;
+  font-size: 13px;
+}
+
+.groupList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.groupButton {
+  height: 52px;
+  cursor: pointer;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 14px;
+  background: #fff;
+  color: #27272a;
+  font-size: 15px;
+  font-weight: 700;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.groupButton:active {
+  border-color: #3b82c4;
+  background: #eff6ff;
+  color: #3b82c4;
+}
