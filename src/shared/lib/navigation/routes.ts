@@ -22,6 +22,12 @@ export const groupRoutes = {
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
   adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>
     `${groupBase(groupId)}/admin/assignments/${round}/setup`,
+  adminAssignmentFixedMembers: (groupId: string, round: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/assignments/${round}/fixed-members`,
+  adminAssignmentProcessing: (groupId: string, round: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/assignments/${round}/processing`,
+  adminAssignmentResult: (groupId: string, round: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/assignments/${round}/result`,
   adminRoundTwoPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/round-2/preparation`,
   adminRoundTwoParticipants: (groupId: string) =>
