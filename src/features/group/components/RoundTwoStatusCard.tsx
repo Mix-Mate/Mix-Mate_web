@@ -5,12 +5,14 @@ interface RoundTwoStatusCardProps {
   eyebrow: string;
   statusLabel: string;
   onEditGroup: () => void;
+  showEditButton?: boolean;
 }
 
 export default function RoundTwoStatusCard({
   eyebrow,
   statusLabel,
   onEditGroup,
+  showEditButton = true,
 }: RoundTwoStatusCardProps) {
   return (
     <section className={styles.roundTwoStatusCard} aria-label="그룹 진행 상태">
@@ -19,14 +21,16 @@ export default function RoundTwoStatusCard({
         <small>{eyebrow}</small>
         <strong>{statusLabel}</strong>
       </span>
-      <button
-        type="button"
-        className={styles.editGroupButton}
-        onClick={onEditGroup}
-        aria-label="그룹 정보 편집"
-      >
-        <SquarePen aria-hidden="true" size={18} strokeWidth={2} />
-      </button>
+      {showEditButton && (
+        <button
+          type="button"
+          className={styles.editGroupButton}
+          onClick={onEditGroup}
+          aria-label="그룹 정보 편집"
+        >
+          <SquarePen aria-hidden="true" size={18} strokeWidth={2} />
+        </button>
+      )}
     </section>
   );
 }
