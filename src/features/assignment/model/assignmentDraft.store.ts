@@ -27,3 +27,7 @@ export function saveAssignmentSetupDraft(
 ) {
   getOrCreateDraft(groupId, round).setup = setup;
 }
+
+export function getAssignmentSetupDraft(groupId: string, round: number) {
+  return getOrCreateDraft(groupId, round).setup;
+}
