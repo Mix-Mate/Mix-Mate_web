@@ -6,6 +6,7 @@ interface ProfileTextFieldProps {
   onChange: (value: string) => void;
   required?: boolean;
   inputMode?: "text" | "numeric";
+  disabled?: boolean;
 }
 
 export default function ProfileTextField({
@@ -14,6 +15,7 @@ export default function ProfileTextField({
   onChange,
   required = false,
   inputMode = "text",
+  disabled = false,
 }: ProfileTextFieldProps) {
   return (
     <label className={styles.field}>
@@ -25,6 +27,7 @@ export default function ProfileTextField({
         className={styles.textInput}
         value={value}
         inputMode={inputMode}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
       />
     </label>

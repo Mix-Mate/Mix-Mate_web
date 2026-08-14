@@ -11,6 +11,7 @@ interface ProfileChipFieldProps<TValue extends string> {
   options: ProfileChipOption<TValue>[];
   onChange: (value: TValue) => void;
   required?: boolean;
+  disabled?: boolean;
 }
 
 export default function ProfileChipField<TValue extends string>({
@@ -19,6 +20,7 @@ export default function ProfileChipField<TValue extends string>({
   options,
   onChange,
   required = false,
+  disabled = false,
 }: ProfileChipFieldProps<TValue>) {
   return (
     <div className={styles.field}>
@@ -27,12 +29,13 @@ export default function ProfileChipField<TValue extends string>({
         {required && <strong> *</strong>}
       </span>
 
-      <div className={styles.chipGroup}>
+      <div className={disabled ? styles.disabledChipGroup : styles.chipGroup}>
         {options.map((option) => (
           <button
             key={option.value}
             type="button"
             className={value === option.value ? styles.activeChip : ""}
+            disabled={disabled}
             onClick={() => onChange(option.value)}
           >
             {option.label}

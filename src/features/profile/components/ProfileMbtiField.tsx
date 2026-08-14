@@ -8,6 +8,7 @@ import styles from "@/screens/common/EditMyProfileScreen.module.css";
 interface ProfileMbtiFieldProps {
   value: ProfileMbti;
   onChange: (value: ProfileMbti) => void;
+  disabled?: boolean;
 }
 
 const mbtiOptions: ProfileMbti[] = [
@@ -32,6 +33,7 @@ const mbtiOptions: ProfileMbti[] = [
 export default function ProfileMbtiField({
   value,
   onChange,
+  disabled = false,
 }: ProfileMbtiFieldProps) {
   const [open, setOpen] = useState(false);
 
@@ -42,7 +44,10 @@ export default function ProfileMbtiField({
       <button
         type="button"
         className={styles.selectField}
-        onClick={() => setOpen(true)}
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setOpen(true);
+        }}
       >
         {value}
       </button>

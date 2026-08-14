@@ -4,7 +4,9 @@ import { useState } from "react";
 import type {
   EditableGroupProfile,
   MyGroupProfile,
+  ProfileGender,
   ProfileGrade,
+  ProfilePosition,
 } from "../types/profile.types";
 import ProfileChipField from "./ProfileChipField";
 import ProfileMbtiField from "./ProfileMbtiField";
@@ -30,6 +32,21 @@ const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "4학년", value: "FOURTH" },
 ];
 
+const genderOptions: { label: string; value: ProfileGender }[] = [
+  { label: "남", value: "MALE" },
+  { label: "여", value: "FEMALE" },
+];
+
+const newMemberOptions = [
+  { label: "신입", value: "NEW" },
+  { label: "기존", value: "EXISTING" },
+];
+
+const positionOptions: { label: string; value: ProfilePosition }[] = [
+  { label: "일반", value: "MEMBER" },
+  { label: "운영진", value: "STAFF" },
+];
+
 export default function GroupProfileForm({
   mode,
   initialProfile,
@@ -41,6 +58,7 @@ export default function GroupProfileForm({
     displayName: initialProfile.displayName,
     major: initialProfile.major,
     grade: initialProfile.grade,
+    gender: initialProfile.gender,
     mbti: initialProfile.mbti,
     age: initialProfile.age,
     instaId: initialProfile.instaId,
@@ -69,7 +87,7 @@ export default function GroupProfileForm({
     >
       <div className={styles.formBody}>
         <GenderAvatar
-          gender={initialProfile.gender === "MALE" ? "male" : "female"}
+          gender={profile.gender === "MALE" ? "male" : "female"}
           name={profile.displayName}
           size={52}
           className={styles.profileAvatar}
@@ -79,6 +97,7 @@ export default function GroupProfileForm({
           label="이름"
           value={profile.displayName}
           required
+          disabled
           onChange={(value) => updateField("displayName", value)}
         />
 
@@ -86,17 +105,45 @@ export default function GroupProfileForm({
           label="학년"
           value={profile.grade}
           options={gradeOptions}
+          disabled
           onChange={(value) => updateField("grade", value)}
+        />
+
+        <ProfileChipField
+          label="성별"
+          value={profile.gender}
+          options={genderOptions}
+          required
+          disabled
+          onChange={(value) => updateField("gender", value)}
         />
 
         <ProfileTextField
           label="소속 (학과·팀 등)"
           value={profile.major}
+          disabled
           onChange={(value) => updateField("major", value)}
+        />
+
+        <ProfileChipField
+          label="신입 여부"
+          value={initialProfile.isNew ? "NEW" : "EXISTING"}
+          options={newMemberOptions}
+          disabled
+          onChange={() => undefined}
+        />
+
+        <ProfileChipField
+          label="직급"
+          value={initialProfile.position}
+          options={positionOptions}
+          disabled
+          onChange={() => undefined}
         />
 
         <ProfileMbtiField
           value={profile.mbti}
+          disabled
           onChange={(value) => updateField("mbti", value)}
         />
 
