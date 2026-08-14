@@ -41,6 +41,7 @@ export interface VoteStatusMember {
 
 export interface VoteProgressContext {
   status: VoteStatus;
+  currentMemberId: string;
   totalCount: number;
   completedCount: number;
   attendanceCount: number;

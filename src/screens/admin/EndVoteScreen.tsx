@@ -27,6 +27,9 @@ export default function EndVoteScreen() {
     error: endVoteError,
   } = useEndVoteMutation();
   const [endVoteDialogOpen, setEndVoteDialogOpen] = useState(false);
+  const pendingMembers = data.pendingMembers.filter(
+    (member) => member.memberId !== data.currentMemberId,
+  );
 
   const showVoteStatus = useCallback(() => {
     router.push(
@@ -130,6 +133,7 @@ export default function EndVoteScreen() {
 
       <EndVoteDialog
         open={endVoteDialogOpen}
+        pendingMembers={pendingMembers}
         isEnding={isEndingVote}
         error={endVoteError}
         onClose={closeEndVoteDialog}

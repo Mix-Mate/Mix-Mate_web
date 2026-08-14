@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
 import AdminRoundProgress from "@/features/session/components/AdminRoundProgress";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
@@ -62,20 +63,20 @@ export default function ProgressScreen() {
       <Header title="진행 현황 보기" onBack={goHome} compact smallTitle />
 
       <div className={styles.content}>
-        <section className={styles.statusCard} aria-label="현재 진행 상태">
-          <p>현재 진행 상태</p>
-          <div className={styles.statusRow}>
-            <strong>{snapshot.statusLabel}</strong>
-            <span className={styles.progressBadge}>
-              <span aria-hidden="true" />
-              진행 중
-            </span>
+        <RoundTwoStatusCard
+          eyebrow="진행 상태 확인"
+          statusLabel={snapshot.statusLabel}
+          showEditButton={false}
+        />
+
+        <section
+          className={styles.progressCard}
+          aria-labelledby="event-status-title"
+        >
+          <div className={styles.progressHeading}>
+            <p>Event Status</p>
+            <h2 id="event-status-title">지금 진행 상황</h2>
           </div>
-        </section>
-
-        <h2 className={styles.sectionTitle}>진행 순서</h2>
-
-        <section className={styles.progressCard}>
           <AdminRoundProgress />
         </section>
       </div>

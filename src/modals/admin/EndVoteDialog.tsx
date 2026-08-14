@@ -1,11 +1,15 @@
 "use client";
 
-import { CircleAlert, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import type { VoteStatusMember } from "@/features/vote/types/vote.types";
+import Avatar from "@/shared/ui/Avatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Button from "@/shared/ui/Button";
 import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
   open: boolean;
+  pendingMembers: VoteStatusMember[];
   isEnding?: boolean;
   error?: string | null;
   onClose: () => void;
@@ -14,6 +18,7 @@ interface EndVoteDialogProps {
 
 export default function EndVoteDialog({
   open,
+  pendingMembers,
   isEnding = false,
   error,
   onClose,
@@ -31,44 +36,62 @@ export default function EndVoteDialog({
       closeDisabled={isEnding}
     >
       <span className={styles.endIcon} aria-hidden="true">
-        <TriangleAlert size={34} strokeWidth={1.9} />
+        <TriangleAlert size={32} strokeWidth={2.2} />
       </span>
 
       <div className={styles.message}>
-        <h2 id="end-vote-title">투표를 강제 종료 할까요?</h2>
+        <h2 id="end-vote-title">미투표자가 있습니다</h2>
         <p id="end-vote-description">
-          종료하면 미투표자가
-          <br />
-          모두 2차 불참자로 처리됩니다.
+          종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
         </p>
-        <strong className={styles.warning}>
-          <CircleAlert aria-hidden="true" size={20} strokeWidth={1.8} />이
-          종료는 되돌릴 수 없습니다
-        </strong>
-        {error && (
-          <span className={styles.error} role="alert">
-            {error}
-          </span>
-        )}
       </div>
 
+      <div className={styles.divider} aria-hidden="true" />
+
+      <section
+        className={styles.pendingSection}
+        aria-labelledby="pending-members-title"
+      >
+        <h3 id="pending-members-title">미투표자 {pendingMembers.length}명</h3>
+        <ul className={styles.pendingList}>
+          {pendingMembers.map((member) => (
+            <li className={styles.pendingMember} key={member.memberId}>
+              <Avatar
+                name={member.memberName}
+                fallback={member.avatarInitial}
+                backgroundColor={member.avatarColor}
+                size={39}
+              />
+              <strong>{member.memberName}</strong>
+              <span className={styles.absenceBadge}>불참 처리</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {error && (
+        <span className={styles.error} role="alert">
+          {error}
+        </span>
+      )}
+
       <div className={styles.actions}>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           className={styles.cancelButton}
           onClick={onClose}
           disabled={isEnding}
         >
           취소
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="danger"
           className={styles.endButton}
           onClick={onConfirm}
           disabled={isEnding}
         >
           {isEnding ? "종료 중..." : "지금 종료하기"}
-        </button>
+        </Button>
       </div>
     </BottomSheetDialog>
   );
