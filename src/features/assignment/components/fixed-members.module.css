@@ -246,6 +246,7 @@
   background: #fff;
 }
 
-.footer > * {
-  flex: 1;
+.footer > button {
+  flex: 1 1 0;
+  min-width: 0;
 }
