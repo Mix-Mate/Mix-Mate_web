@@ -1,6 +1,5 @@
 import clsx from "clsx";
-import Avatar from "@/shared/ui/Avatar";
-import { getAvatarColor } from "./avatarColors";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./fixed-members.module.css";
 import type { FixedMemberCandidate } from "../types/assignment.types";
 
@@ -17,11 +16,7 @@ export default function UnassignedMemberRow({
 
   return (
     <li className={styles.unassignedRow}>
-      <Avatar
-        name={member.name}
-        size={46}
-        backgroundColor={getAvatarColor(member.id)}
-      />
+      <GenderAvatar gender={member.gender} name={member.name} size={46} />
 
       <div className={styles.unassignedInfo}>
         <strong>{member.name}</strong>
@@ -40,6 +35,7 @@ export default function UnassignedMemberRow({
       <button
         type="button"
         className={styles.assignButton}
+        aria-label={`${member.name} 조 지정`}
         onClick={() => onAssign(member)}
       >
         조 지정 <span aria-hidden="true">+</span>
