@@ -149,7 +149,9 @@ export default function FixedMemberSetupScreen() {
         </p>
 
         <ParticipantSearch value={keyword} onChange={setKeyword} />
-        <ParticipantFilter value={filter} onChange={setFilter} />
+        <div className={styles.filterWrapper}>
+          <ParticipantFilter value={filter} onChange={setFilter} />
+        </div>
 
         {unassignedMembers.length === 0 ? (
           <p className={styles.emptyState}>검색 결과가 없습니다</p>
