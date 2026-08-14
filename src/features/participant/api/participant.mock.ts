@@ -1,13 +1,17 @@
-﻿import type { Participant, ParticipantGroup } from "../types/participant.types";
+﻿import {
+  getSavedMyGroupProfile,
+  MY_PARTICIPANT_ID,
+} from "@/features/profile/lib/profile-storage";
+import type { Participant, ParticipantGroup } from "../types/participant.types";
 
 const participants: Participant[] = [
   {
     id: "1",
-    name: "이서연",
+    name: "김민준",
     department: "컴퓨터공학과",
     visibility: "public",
     role: "general",
-    gender: "female",
+    gender: "male",
   },
   {
     id: "2",
@@ -121,6 +125,29 @@ export const participantGroupMock: ParticipantGroup = {
   ],
 };
 
+function applyMyProfile(participant: Participant): Participant {
+  if (participant.id !== MY_PARTICIPANT_ID) {
+    return participant;
+  }
+
+  const myProfile = getSavedMyGroupProfile();
+
+  return {
+    ...participant,
+    name: myProfile.displayName,
+    department: myProfile.major,
+    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
+    gender: myProfile.gender === "MALE" ? "male" : "female",
+  };
+}
+
 export function getParticipantListMock() {
-  return participantGroupMock;
+  return {
+    ...participantGroupMock,
+    participants: participantGroupMock.participants.map(applyMyProfile),
+    teams: participantGroupMock.teams.map((team) => ({
+      ...team,
+      members: team.members.map(applyMyProfile),
+    })),
+  };
 }

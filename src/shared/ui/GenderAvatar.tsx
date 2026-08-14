@@ -1,3 +1,4 @@
+﻿import Image from "next/image";
 import clsx from "clsx";
 import styles from "./GenderAvatar.module.css";
 
@@ -25,10 +26,16 @@ export default function GenderAvatar({
     <span
       className={clsx(styles.avatar, className)}
       style={{ width: size, height: size }}
-      aria-label={`${name} 프로필 아이콘`}
+      aria-label={`${name} profile icon`}
       role="img"
     >
-      <img src={iconSrc} alt="" className={styles.icon} />
+      <Image
+        src={iconSrc}
+        alt=""
+        width={size}
+        height={size}
+        className={styles.icon}
+      />
     </span>
   );
 }
