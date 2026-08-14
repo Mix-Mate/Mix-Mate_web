@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import AssignmentProgressIndicator from "@/features/assignment/components/AssignmentProgressIndicator";
+import { useAssignmentStatusQuery } from "@/features/assignment/hooks/useAssignmentStatusQuery";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -10,13 +11,12 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import TabNavigation from "@/shared/ui/TabNavigation";
 import styles from "@/features/assignment/components/processing.module.css";
 
-const SKELETON_PROGRESS = 64;
-
 export default function AssignmentProcessingScreen() {
   const params = useParams<{ groupId: string; round: string }>();
   const router = useRouter();
   const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const status = useAssignmentStatusQuery();
 
   return (
     <MobileFrame data-testid="assignment-processing-screen" data-round={round}>
@@ -37,7 +37,7 @@ export default function AssignmentProcessingScreen() {
       />
 
       <div className={styles.content}>
-        <AssignmentProgressIndicator progress={SKELETON_PROGRESS} />
+        <AssignmentProgressIndicator progress={status.progress} />
       </div>
     </MobileFrame>
   );
