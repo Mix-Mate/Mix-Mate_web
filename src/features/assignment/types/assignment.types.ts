@@ -29,3 +29,8 @@ export interface AssignmentMember {
   memberName: string;
   profileImage: string | null;
 }
+
+export interface AssignmentProgressStatus {
+  progress: number;
+  isComplete: boolean;
+}

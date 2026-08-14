@@ -1,4 +1,9 @@
-import type { AssignmentMember } from "../types/assignment.types";
+import type {
+  AssignmentMember,
+  AssignmentProgressStatus,
+} from "../types/assignment.types";
+
+const PROCESSING_DURATION_MS = 6000;
 
 const participantMocks: AssignmentMember[] = [
   { memberId: "lee-seoyeon", memberName: "이서연", profileImage: null },
@@ -13,4 +18,16 @@ const participantMocks: AssignmentMember[] = [
 
 export function getParticipantPool(): AssignmentMember[] {
   return participantMocks;
+}
+
+export function getAssignmentStatus(
+  startedAt: number,
+): AssignmentProgressStatus {
+  const elapsedMs = Date.now() - startedAt;
+  const progress = Math.min(
+    100,
+    Math.round((elapsedMs / PROCESSING_DURATION_MS) * 100),
+  );
+
+  return { progress, isComplete: progress >= 100 };
 }
