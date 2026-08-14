@@ -169,10 +169,19 @@ export default function FixedMemberSetupScreen() {
       </div>
 
       <div className={styles.footer}>
-        <Button variant="secondary" type="button" onClick={goToProcessing}>
+        <Button
+          variant="secondary"
+          type="button"
+          disabled={fixedMembers.length > 0}
+          onClick={goToProcessing}
+        >
           고정 없이 편성
         </Button>
-        <Button type="button" onClick={goToProcessing}>
+        <Button
+          type="button"
+          disabled={fixedMembers.length === 0}
+          onClick={goToProcessing}
+        >
           편성 실행
         </Button>
       </div>
