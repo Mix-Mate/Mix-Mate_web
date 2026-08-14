@@ -11,7 +11,7 @@ import ParticipantFilter from "@/features/participant/components/ParticipantFilt
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import AM09SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
+import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
@@ -177,12 +177,13 @@ export default function FixedMemberSetupScreen() {
         </Button>
       </div>
 
-      <AM09SelectFixedGroupDialog
+      <SelectFixedGroupDialog
+        key={assigningMember?.id ?? "none"}
         open={assigningMember !== null}
-        memberName={assigningMember?.name ?? ""}
+        member={assigningMember}
         groupCount={groupCount}
         onClose={() => setAssigningMember(null)}
-        onSelect={confirmAssignment}
+        onConfirm={confirmAssignment}
       />
     </MobileFrame>
   );
