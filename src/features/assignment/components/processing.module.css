@@ -1,0 +1,48 @@
+.content {
+  display: flex;
+  height: calc(var(--mobile-frame-height) - 128px);
+  align-items: center;
+  justify-content: center;
+  padding: 13px 16px;
+}
+
+.indicator {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.heading {
+  margin: 0;
+  color: #18181b;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.description {
+  margin: 0;
+  color: #52525b;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.track {
+  width: 200px;
+  height: 8px;
+  overflow: hidden;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: #e4e4e7;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #256ad3;
+  transition: width 160ms ease;
+}
