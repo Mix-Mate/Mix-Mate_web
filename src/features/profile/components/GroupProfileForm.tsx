@@ -96,7 +96,6 @@ export default function GroupProfileForm({
         <ProfileTextField
           label="이름"
           value={profile.displayName}
-          required
           disabled
           onChange={(value) => updateField("displayName", value)}
         />
@@ -113,7 +112,6 @@ export default function GroupProfileForm({
           label="성별"
           value={profile.gender}
           options={genderOptions}
-          required
           disabled
           onChange={(value) => updateField("gender", value)}
         />
@@ -190,3 +188,4 @@ export default function GroupProfileForm({
     </form>
   );
 }
+

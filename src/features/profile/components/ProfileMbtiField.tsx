@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ProfileMbti } from "../types/profile.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import fieldStyles from "@/shared/ui/FormField.module.css";
 import styles from "@/screens/common/EditMyProfileScreen.module.css";
 
 interface ProfileMbtiFieldProps {
@@ -38,12 +39,12 @@ export default function ProfileMbtiField({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={styles.field}>
-      <span>MBTI</span>
+    <div className={fieldStyles.field}>
+      <span className={fieldStyles.label}>MBTI</span>
 
       <button
         type="button"
-        className={styles.selectField}
+        className={fieldStyles.selectButton}
         disabled={disabled}
         onClick={() => {
           if (!disabled) setOpen(true);

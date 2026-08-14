@@ -20,7 +20,6 @@ export default function ProfileVisibilityField({
       label="프로필 공개 여부"
       value={value}
       options={visibilityOptions}
-      required
       onChange={onChange}
     />
   );
