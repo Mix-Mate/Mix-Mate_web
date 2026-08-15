@@ -28,10 +28,22 @@ export interface AssignmentSetupInput {
 
 export interface FixedMemberCandidate extends Participant {
   grade: string;
+  mbti: string;
+  isNew: boolean;
   fixedTeamNumber: number | null;
 }
 
 export interface AssignmentProgressStatus {
   progress: number;
   isComplete: boolean;
+}
+
+export interface AssignmentWarning {
+  conditionKey: AssignmentConditionKey;
+  message: string;
+}
+
+export interface AssignmentTeam {
+  teamNumber: number;
+  members: FixedMemberCandidate[];
 }
