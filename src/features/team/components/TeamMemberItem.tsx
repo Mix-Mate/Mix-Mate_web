@@ -1,4 +1,4 @@
-import Avatar from "@/shared/ui/Avatar";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import type { TeamMemberSummary } from "../types/team.types";
 import styles from "./team.module.css";
 
@@ -19,13 +19,7 @@ export default function TeamMemberItem({
         onClick={() => onSelect(member)}
         aria-label={`${member.name} 프로필 확인`}
       >
-        <Avatar
-          name={member.name}
-          fallback={member.avatarInitial}
-          backgroundColor={member.avatarColor}
-          size={46}
-          shape="rounded"
-        />
+        <GenderAvatar gender={member.gender} name={member.name} size={46} />
         <span className={styles.memberText}>
           <strong>{member.name}</strong>
           <small>{member.department}</small>
