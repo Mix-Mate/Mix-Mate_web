@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import AssignmentProgressIndicator from "@/features/assignment/components/AssignmentProgressIndicator";
 import { useAssignmentStatusQuery } from "@/features/assignment/hooks/useAssignmentStatusQuery";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -17,6 +18,16 @@ export default function AssignmentProcessingScreen() {
   const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
   const status = useAssignmentStatusQuery();
+
+  useEffect(() => {
+    if (!status.isComplete) return;
+
+    const timer = window.setTimeout(() => {
+      router.push(groupRoutes.adminAssignmentResult(params.groupId, round));
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [status.isComplete, router, params.groupId, round]);
 
   return (
     <MobileFrame data-testid="assignment-processing-screen" data-round={round}>
