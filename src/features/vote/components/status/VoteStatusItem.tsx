@@ -1,5 +1,5 @@
 import { CircleCheck, CircleX } from "lucide-react";
-import Avatar from "@/shared/ui/Avatar";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import type { VoteStatusMember } from "../../types/vote.types";
 import styles from "./VoteStatus.module.css";
 
@@ -10,11 +10,11 @@ interface VoteStatusItemProps {
 export default function VoteStatusItem({ member }: VoteStatusItemProps) {
   return (
     <li className={styles.statusItem}>
-      <Avatar
+      <GenderAvatar
+        gender={member.gender}
         name={member.memberName}
-        fallback={member.avatarInitial}
-        backgroundColor={member.avatarColor}
         size={28}
+        shape="circle"
       />
       <strong>{member.memberName}</strong>
       {member.attendanceStatus === "PENDING" && (

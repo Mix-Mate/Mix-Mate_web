@@ -6,8 +6,6 @@ const members: Record<string, TeamMemberSummary> = {
     name: "김민준",
     department: "컴퓨터공학과",
     gender: "male",
-    avatarInitial: "김",
-    avatarColor: "#2f80d1",
     profileVisibility: "PRIVATE",
   },
   seoyeon: {
@@ -15,8 +13,6 @@ const members: Record<string, TeamMemberSummary> = {
     name: "이서연",
     department: "정보통신공학과",
     gender: "female",
-    avatarInitial: "이",
-    avatarColor: "#7c3aed",
     profileVisibility: "PUBLIC",
   },
   jiho: {
@@ -24,8 +20,6 @@ const members: Record<string, TeamMemberSummary> = {
     name: "박지호",
     department: "전기전자공학과",
     gender: "male",
-    avatarInitial: "박",
-    avatarColor: "#7357e8",
     profileVisibility: "PUBLIC",
   },
   sua: {
@@ -33,8 +27,6 @@ const members: Record<string, TeamMemberSummary> = {
     name: "최수아",
     department: "산업디자인학과",
     gender: "female",
-    avatarInitial: "최",
-    avatarColor: "#777b82",
     profileVisibility: "PUBLIC",
   },
 };

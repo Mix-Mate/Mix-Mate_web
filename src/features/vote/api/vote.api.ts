@@ -34,42 +34,40 @@ function createVoteStatusMember(
   memberId: string,
   memberName: string,
   attendanceStatus: VoteStatusMember["attendanceStatus"],
-  avatarColor = "#9ca3af",
+  gender: VoteStatusMember["gender"],
 ): VoteStatusMember {
   return {
     memberId,
     memberName,
-    avatarInitial: memberName.charAt(0),
-    avatarColor,
+    gender,
     attendanceStatus,
   };
 }
 
 const attendanceMemberMocks: VoteStatusMember[] = [
-  createVoteStatusMember("lee-seoyeon", "이서연", "ATTEND"),
-  createVoteStatusMember("park-doyun", "박도윤", "ATTEND"),
-  createVoteStatusMember("choi-jiwoo", "최지우", "ATTEND"),
-  createVoteStatusMember("jeong-seowoo", "정서우", "ATTEND"),
-  createVoteStatusMember("kang-hayoon", "강하윤", "ATTEND"),
-  createVoteStatusMember("jo-yejun", "조예준", "ATTEND"),
-  createVoteStatusMember("yoon-seohyun", "윤서현", "ATTEND"),
+  createVoteStatusMember("lee-seoyeon", "이서연", "ATTEND", "female"),
+  createVoteStatusMember("park-doyun", "박도윤", "ATTEND", "male"),
+  createVoteStatusMember("choi-jiwoo", "최지우", "ATTEND", "female"),
+  createVoteStatusMember("jeong-seowoo", "정서우", "ATTEND", "male"),
+  createVoteStatusMember("kang-hayoon", "강하윤", "ATTEND", "female"),
+  createVoteStatusMember("jo-yejun", "조예준", "ATTEND", "male"),
+  createVoteStatusMember("yoon-seohyun", "윤서현", "ATTEND", "female"),
 ];
 
 const absenceMemberMocks: VoteStatusMember[] = [
-  createVoteStatusMember("lim-juwon", "임주원", "ABSENT"),
-  createVoteStatusMember("shin-taeyang", "신태양", "ABSENT"),
+  createVoteStatusMember("lim-juwon", "임주원", "ABSENT", "female"),
+  createVoteStatusMember("shin-taeyang", "신태양", "ABSENT", "male"),
 ];
 
 const pendingMemberMocks: VoteStatusMember[] = [
-  createVoteStatusMember("han-sohee", "한소희", "PENDING"),
-  createVoteStatusMember("ryu-dohyeon", "류도현", "PENDING", "#8f98a3"),
+  createVoteStatusMember("han-sohee", "한소희", "PENDING", "female"),
+  createVoteStatusMember("ryu-dohyeon", "류도현", "PENDING", "male"),
 ];
 
 function createMvpResultMember(
   memberId: string,
   memberName: string,
-  avatarInitial: string,
-  avatarColor: string,
+  gender: MvpResultMember["gender"],
   rank: number,
   voteCount: number,
   teamNumber: number,
@@ -79,8 +77,7 @@ function createMvpResultMember(
   return {
     memberId,
     memberName,
-    avatarInitial,
-    avatarColor,
+    gender,
     rank,
     voteCount,
     teamNumber,
@@ -93,19 +90,17 @@ const mvpResultMocks: MvpResultMember[] = [
   createMvpResultMember(
     "lee-seoyeon",
     "이서연",
-    "이",
-    "#dbeafe",
+    "female",
     1,
     5,
     1,
-    "신입",
+    "1학년",
     "INFP",
   ),
   createMvpResultMember(
     "han-sohee",
     "한소희",
-    "한",
-    "#dbeafe",
+    "female",
     2,
     3,
     4,
@@ -115,8 +110,7 @@ const mvpResultMocks: MvpResultMember[] = [
   createMvpResultMember(
     "jeong-hyunwoo",
     "정현우",
-    "정",
-    "#dbeafe",
+    "male",
     2,
     3,
     2,
@@ -126,8 +120,7 @@ const mvpResultMocks: MvpResultMember[] = [
   createMvpResultMember(
     "hwang-minjun",
     "황민준",
-    "황",
-    "#dbeafe",
+    "male",
     4,
     1,
     3,
@@ -219,8 +212,7 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
     const currentStatusMember: VoteStatusMember = {
       memberId: currentMember.id,
       memberName: currentMember.name,
-      avatarInitial: currentMember.avatarInitial,
-      avatarColor: currentMember.avatarColor,
+      gender: currentMember.gender,
       attendanceStatus: hasCompleted
         ? (currentAttendance ?? "PENDING")
         : "PENDING",
