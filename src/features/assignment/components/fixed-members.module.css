@@ -1,0 +1,259 @@
+.screenFrame.screenFrame {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.pageViewport.pageViewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 16px 20px;
+}
+
+.filterWrapper {
+  /* ParticipantFilter's own root carries margin-bottom: 20px (owned by
+     ParticipantListScreen.module.css) on top of this flex gap; cancel it
+     here instead of editing that shared component/CSS. */
+  margin-bottom: -20px;
+}
+
+.heading {
+  margin: 0;
+  color: #18181b;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 3px;
+}
+
+.sectionHeading {
+  margin: 0;
+  color: #18181b;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sectionCount {
+  color: #3b82c4;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sectionSubtitle {
+  margin: 2px 0 0;
+  color: #71717a;
+  font-size: 13px;
+}
+
+.fixedCard {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.fixedRow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.fixedRow:last-child {
+  border-bottom: none;
+}
+
+.fixedInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.fixedInfo strong {
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.fixedInfo small {
+  color: #52525b;
+  font-size: 13px;
+}
+
+.fixedRowActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.fixedTeamBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  background: #eff6ff;
+  padding: 3px 10px;
+  color: #3b82c4;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.removeFixedButton {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  cursor: pointer;
+  place-items: center;
+  border: none;
+  border-radius: 13px;
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.emptyFixedCard {
+  padding: 20px;
+  border: 1px dashed #e4e4e7;
+  border-radius: 20px;
+  color: #a1a1aa;
+  font-size: 13px;
+  text-align: center;
+}
+
+.unassignedList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+  list-style: none;
+}
+
+.unassignedRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 13px 18px;
+}
+
+.unassignedRow + .unassignedRow::before {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  left: 18px;
+  height: 1px;
+  background: #f0f0f2;
+  content: "";
+}
+
+.unassignedInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.unassignedInfo strong {
+  overflow: hidden;
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unassignedInfo span {
+  overflow: hidden;
+  color: #71717a;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visibilityBadge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.visibilityPublic {
+  background: #eff6ff;
+  color: #3b82c4;
+}
+
+.visibilityPrivate {
+  background: #f4f4f5;
+  color: #71717a;
+}
+
+.assignButton {
+  display: flex;
+  height: 25px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1.5px dashed #f0f0f2;
+  border-radius: 10px;
+  background: transparent;
+  padding: 0 6px;
+  color: #71717a;
+  font-size: 13px;
+}
+
+.assignButton span {
+  color: #3b82c4;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.emptyState {
+  padding: 40px 20px;
+  color: #a1a1aa;
+  font-size: 14px;
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  padding: 15px 16px 16px;
+  border-top: 1px solid #f0f0f2;
+  background: #fff;
+}
+
+.footer > button {
+  flex: 1 1 0;
+  min-width: 0;
+}

@@ -1,7 +1,7 @@
 .button {
   width: 100%;
   height: 58px;
-  flex: 0 0 58px;
+  flex: 0 0 auto;
   cursor: pointer;
   border: 1px solid var(--button-border);
   border-radius: 16.429px;
@@ -35,10 +35,10 @@
 }
 
 .secondary {
-  --button-background: #fff;
-  --button-active: #f4f7fa;
-  --button-border: #cbd5df;
-  --button-color: #4c5661;
+  --button-background: #f4f4f5;
+  --button-active: #e4e4e7;
+  --button-border: transparent;
+  --button-color: #27272a;
   --button-focus: #89bfff;
 }
 

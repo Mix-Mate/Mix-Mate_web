@@ -80,13 +80,10 @@ export default function UserSessionContent({
           <button
             type="button"
             className={styles.secondaryAction}
-            onClick={() => {
-              // TODO(team-history-integration): 이전 조 기록 페이지가 완성되면 이 전용 경로에서 연결한다.
-              onNavigate(groupRoutes.teamHistory(groupId));
-            }}
+            onClick={() => onNavigate(groupRoutes.teamHistory(groupId))}
           >
             <History aria-hidden="true" size={20} strokeWidth={1.8} />
-            이전 조 기록 보기
+            이전 조 보기
           </button>
         )}
 

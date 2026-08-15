@@ -1,21 +1,21 @@
 .timeline {
   width: 100%;
-  margin: 0;
-  padding: 18px 18px 14px;
+  margin: 24px 0 0;
+  padding: 0;
   list-style: none;
 }
 
 .step {
   display: grid;
-  min-height: 65px;
-  grid-template-columns: 33px minmax(0, 1fr) auto;
+  min-height: 68px;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   column-gap: 16px;
   align-items: start;
   color: #18181b;
 }
 
 .step:last-child {
-  min-height: 42px;
+  min-height: 48px;
 }
 
 .markerColumn {
@@ -27,7 +27,7 @@
 
 .step:not(:last-child) .markerColumn::after {
   position: absolute;
-  top: 35px;
+  top: 36px;
   bottom: 0;
   left: 50%;
   border-left: 2px dashed #d4d4d8;
@@ -44,8 +44,8 @@
   position: relative;
   z-index: 1;
   display: grid;
-  width: 33px;
-  height: 33px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border-radius: 50%;
   background: #e4e4e7;
@@ -60,9 +60,20 @@
   color: #fff;
 }
 
-.current .marker {
+.marker.current {
   background: #4455ef;
   color: #fff;
+  border: 2px dashed #4455ef;
+  animation: none;
+}
+
+.marker.current::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: current-marker-pulse 1.8s ease-in-out infinite;
 }
 
 .stepText {
@@ -70,14 +81,14 @@
   min-width: 0;
   flex-direction: column;
   gap: 2px;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .stepText strong {
   overflow: hidden;
   font-size: 15px;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 23px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -86,7 +97,7 @@
   overflow: hidden;
   color: #a1a1aa;
   font-family: Inter, sans-serif;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 400;
   line-height: 17px;
   text-overflow: ellipsis;
@@ -98,14 +109,29 @@
 }
 
 .currentBadge {
-  margin-top: 2px;
-  padding: 3px 9px;
-  border: 1px solid #fed7aa;
+  margin-top: 4px;
+  margin-right: 12px;
+  padding: 2px 10px;
+  border: 1px solid #c7cdfb;
   border-radius: 999px;
-  background: #fff7ed;
-  color: #ea580c;
+  background: #eef0ff;
+  color: #4455ef;
   font-size: 10px;
   font-weight: 700;
   line-height: 15px;
   white-space: nowrap;
+}
+
+@keyframes current-marker-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.4), inset 0 0 0 0 rgba(68, 85, 239, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(68, 85, 239, 0.1), inset 0 0 0 2px rgba(68, 85, 239, 0.3);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.4), inset 0 0 0 0 rgba(68, 85, 239, 0.2);
+  }
 }

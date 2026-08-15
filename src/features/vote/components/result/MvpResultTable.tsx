@@ -1,4 +1,4 @@
-import Avatar from "@/shared/ui/Avatar";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import type { MvpResultMember } from "../../types/vote.types";
 import styles from "./VoteResult.module.css";
 
@@ -30,11 +30,11 @@ export default function MvpResultTable({ ranking }: MvpResultTableProps) {
             className={`${styles.rankEntry} ${placementClasses[index]}`}
           >
             <span className={styles.rankAvatar}>
-              <Avatar
+              <GenderAvatar
+                gender={member.gender}
                 name={member.memberName}
-                fallback={member.avatarInitial}
-                backgroundColor={member.avatarColor}
                 size={54}
+                shape="circle"
               />
               <span className={styles.teamBadge}>{member.teamNumber}조</span>
             </span>

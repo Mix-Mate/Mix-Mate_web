@@ -1,4 +1,5 @@
 import type { TeamMemberSummary } from "@/features/team/types/team.types";
+import type { Gender } from "@/shared/types/gender.types";
 
 export type VoteStatus = "OPEN" | "CLOSED";
 export type AttendanceChoice = "ATTEND" | "ABSENT";
@@ -34,13 +35,13 @@ export interface AttendanceVoteSubmission {
 export interface VoteStatusMember {
   memberId: string;
   memberName: string;
-  avatarInitial: string;
-  avatarColor: string;
+  gender: Gender;
   attendanceStatus: VoteStatusFilter;
 }
 
 export interface VoteProgressContext {
   status: VoteStatus;
+  currentMemberId: string;
   totalCount: number;
   completedCount: number;
   attendanceCount: number;
@@ -54,8 +55,7 @@ export interface VoteProgressContext {
 export interface MvpResultMember {
   memberId: string;
   memberName: string;
-  avatarInitial: string;
-  avatarColor: string;
+  gender: Gender;
   rank: number;
   voteCount: number;
   teamNumber: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { MvpResultMember } from "../../types/vote.types";
 import styles from "./VoteResult.module.css";
 
@@ -13,9 +13,18 @@ export default function MvpIntroAnimation({
   teamMvp,
   onComplete,
 }: MvpIntroAnimationProps) {
+  const [countdown, setCountdown] = useState(5);
+
   useEffect(() => {
-    const timer = window.setTimeout(onComplete, 4000);
-    return () => window.clearTimeout(timer);
+    const countdownTimer = window.setInterval(() => {
+      setCountdown((current) => Math.max(1, current - 1));
+    }, 1000);
+    const completeTimer = window.setTimeout(onComplete, 5000);
+
+    return () => {
+      window.clearInterval(countdownTimer);
+      window.clearTimeout(completeTimer);
+    };
   }, [onComplete]);
 
   return (
@@ -34,6 +43,15 @@ export default function MvpIntroAnimation({
         <br />
         <span>분위기를 가장 잘 이끈 </span>
         <strong>분위기 메이커!</strong>
+      </p>
+
+      <p
+        className={styles.transitionNotice}
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <strong key={countdown}>{countdown}초</strong> 뒤에 자동으로 다음 화면으로
+        넘어갑니다
       </p>
     </section>
   );

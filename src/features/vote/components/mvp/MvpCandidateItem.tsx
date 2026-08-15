@@ -1,4 +1,4 @@
-import Avatar from "@/shared/ui/Avatar";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import type { MvpCandidate } from "../../types/vote.types";
 import styles from "../vote.module.css";
 
@@ -30,11 +30,11 @@ export default function MvpCandidateItem({
         disabled={disabled}
         onChange={() => onSelect(candidate.id)}
       />
-      <Avatar
+      <GenderAvatar
+        gender={candidate.gender}
         name={candidate.name}
-        fallback={candidate.avatarInitial}
-        backgroundColor={candidate.avatarColor}
         size={44}
+        shape="circle"
       />
       <span className={styles.candidateText}>
         <strong>{candidate.name}</strong>

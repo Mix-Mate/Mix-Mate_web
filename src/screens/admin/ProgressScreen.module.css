@@ -1,6 +1,9 @@
 .phone {
   display: flex;
   flex-direction: column;
+  border: 1.319px solid #e4e4e7;
+  border-radius: 26.375px;
+  background: #fff;
 }
 
 .content {
@@ -8,92 +11,142 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
-  padding: 13px 16px 16px;
-  overflow-y: auto;
+  gap: 9.891px;
+  padding: 13.188px 16.484px;
+  overflow: hidden;
   background: #fcfcff;
 }
 
 .statusCard {
-  flex: 0 0 auto;
-  padding: 17px 19px;
-  border: 1px solid #e4e4e7;
-  border-radius: 20px;
-  background: #fff;
-}
-
-.statusCard p,
-.statusCard strong {
-  margin: 0;
-}
-
-.statusCard p {
-  color: #52525b;
-  font-size: 15px;
-  line-height: 22px;
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 92px;
+  flex: 0 0 92px;
+  align-items: center;
+  gap: 13px;
+  padding: 17px 46px 17px 20px;
+  overflow: hidden;
+  border: 1px solid #bfdbfe;
+  border-radius: 17px;
+  background: linear-gradient(165deg, #eff6ff 0%, #91bfff 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    0 2px 3px rgba(37, 99, 235, 0.08);
 }
 
 .statusRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: none;
 }
 
 .statusRow strong {
   color: #18181b;
-  font-size: 23px;
+  font-size: 23.078px;
   font-weight: 700;
   line-height: 35px;
 }
 
-.progressBadge {
-  display: inline-flex;
+.roundTwoStatusCard {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 92px;
+  flex: 0 0 92px;
   align-items: center;
-  gap: 5px;
-  padding: 4px 11px;
+  gap: 13px;
+  padding: 17px 46px 17px 20px;
+  overflow: hidden;
   border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
+  border-radius: 17px;
+  background: linear-gradient(165deg, #eff6ff 0%, #91bfff 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    0 2px 3px rgba(37, 99, 235, 0.08);
 }
 
-.progressBadge span {
-  width: 8px;
-  height: 8px;
+.roundTwoStatusDot {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
   border-radius: 50%;
-  background: #3b82c4;
+  background: #2563eb;
 }
 
-.sectionTitle {
-  margin: 0;
-  padding: 0 2px;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 25px;
+.roundTwoStatusText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.roundTwoStatusText small {
+  color: #2563eb;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.65px;
+  line-height: 20px;
+}
+
+.roundTwoStatusText strong {
+  color: #1e40af;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 35px;
+}
+
+.content .editGroupButton {
+  display: none !important;
 }
 
 .progressCard {
   flex: 0 0 auto;
+  width: 347px;
+  margin-left: 1.648px;
+  padding: 24px;
   border: 1px solid #e4e4e7;
   border-radius: 20px;
   background: #fff;
+  box-shadow:
+    0 1px 1px rgb(24 24 27 / 4%),
+    0 12px 16px rgb(24 24 27 / 12%);
+}
+
+.progressHeading p,
+.progressHeading h2 {
+  margin: 0;
+}
+
+.progressHeading p {
+  color: #4455ef;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 17px;
+  letter-spacing: 1.32px;
+  text-transform: uppercase;
+}
+
+.progressHeading h2 {
+  margin-top: 4px;
+  color: #18181b;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 29px;
 }
 
 .footer {
-  flex: 0 0 98px;
-  padding: 16px 16px 14px;
-  border-top: 1px solid #e4e4e7;
+  flex: 0 0 98.906px;
+  padding: 24.397px 16.484px 14.836px;
+  border-top: 1.319px solid #e4e4e7;
   background: #fff;
 }
 
 .endButton {
-  width: 100%;
-  height: 58px;
+  width: 350.128px;
+  height: 59.344px;
   cursor: pointer;
-  border-radius: 16px;
+  border-radius: 16.484px;
   background: #ef4444;
   color: #fff;
   font-size: 18px;
