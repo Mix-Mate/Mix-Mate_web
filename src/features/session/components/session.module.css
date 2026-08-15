@@ -8,7 +8,9 @@
 }
 
 .statusCard {
+  position: relative;
   display: flex;
+  width: 100%;
   flex: 0 0 auto;
   align-items: center;
   gap: 16px;
@@ -40,6 +42,40 @@
 }
 
 .statusCardButton:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.statusCardWithAction {
+  padding-right: 60px;
+}
+
+.statusAction {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e40af;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+  transition:
+    background 120ms ease,
+    transform 100ms ease;
+}
+
+.statusAction:active {
+  background: #fff;
+  transform: scale(0.94);
+}
+
+.statusAction:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
 }
@@ -104,30 +140,6 @@
   font-family: Inter, sans-serif;
   font-size: 15px;
   line-height: 24px;
-}
-
-.roundTwoWaitingContent .statusCard {
-  gap: 13px;
-  padding: 14px 20px;
-  border-radius: 17px;
-  background: linear-gradient(165deg, #eff6ff 0%, #73afff 100%);
-}
-
-.roundTwoWaitingContent .statusDot {
-  width: 13px;
-  height: 13px;
-  flex-basis: 13px;
-}
-
-.roundTwoWaitingContent .statusCard p {
-  font-size: 13px;
-  letter-spacing: 0.65px;
-  line-height: 20px;
-}
-
-.roundTwoWaitingContent .statusCard strong {
-  font-size: 26px;
-  line-height: 35px;
 }
 
 .roundTwoWaitingContent .waitingCard {
