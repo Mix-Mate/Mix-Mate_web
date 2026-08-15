@@ -37,7 +37,7 @@ export default function AssignmentResultScreen() {
   };
 
   const handleConfirm = () => {
-    router.push(groupRoutes.adminProgress(params.groupId));
+    router.push(groupRoutes.home(params.groupId));
   };
 
   return (
