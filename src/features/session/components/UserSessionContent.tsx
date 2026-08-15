@@ -1,5 +1,6 @@
 import { Clock3, History, Power, Trash2, UserRoundPen } from "lucide-react";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { getEventStatusLabel } from "../model/event-status";
 import type { UserHomeSnapshot } from "../types/session.types";
 import SessionMenuGrid from "./SessionMenuGrid";
 import SessionStatusCard from "./SessionStatusCard";
@@ -23,6 +24,7 @@ export default function UserSessionContent({
   const isAssigned = snapshot.teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
   const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
+  const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
 
   return (
     <div
@@ -32,7 +34,7 @@ export default function UserSessionContent({
     >
       <SessionStatusCard
         eyebrow={snapshot.statusEyebrow}
-        status={snapshot.statusLabel}
+        status={currentStatusLabel}
         onClick={
           isAdmin && snapshot.round === 1 && snapshot.permissions.canEndRound
             ? () => onNavigate(groupRoutes.adminProgress(groupId))
