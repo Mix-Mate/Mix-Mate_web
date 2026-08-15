@@ -1,0 +1,146 @@
+﻿.screenFrame.screenFrame {
+  display: flex;
+  min-height: var(--mobile-frame-height);
+  height: auto;
+  flex-direction: column;
+  overflow: visible;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+}
+
+.pageViewport.pageViewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.screenFrame.screenFrame > header {
+  width: 100%;
+  flex: 0 0 72px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 14px 20px;
+  background: #fafafa;
+}
+
+.notice {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.profileHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0 4px;
+  text-align: center;
+}
+
+.profileHeader h2 {
+  margin: 12px 0 4px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 26px;
+}
+
+.profileHeader p {
+  margin: 0;
+  color: #71717a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.badges {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.badges span {
+  min-width: 52px;
+  height: 28px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: #f8fafc;
+  color: #52525b;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 26px;
+}
+
+.badges span:first-child {
+  border-color: #2f80d1;
+  background: #eff6ff;
+  color: #2f80d1;
+}
+
+.infoCard {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.infoCard div {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 14px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.infoCard div:last-child {
+  border-bottom: 0;
+}
+
+.infoCard span,
+.bioCard span {
+  flex: 0 0 auto;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.infoCard strong {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: right;
+}
+
+.instagram {
+  color: #2f80d1 !important;
+}
+
+.bioCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 14px;
+  padding: 14px;
+  background: #f1f2f4;
+}
+
+.bioCard p {
+  margin: 0;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}

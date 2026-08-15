@@ -1,5 +1,7 @@
-"use client";
+﻿"use client";
 
+import { useState } from "react";
+import { LockKeyhole } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import {
@@ -11,6 +13,9 @@ import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamMemberSummary } from "@/features/team/types/team.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import Avatar from "@/shared/ui/Avatar";
+import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./MyTeamScreen.module.css";
@@ -19,6 +24,10 @@ export default function MyTeamScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const [privateMember, setPrivateMember] = useState<TeamMemberSummary | null>(
+    null,
+  );
+
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
     getMockGroupRole(searchParams),
@@ -28,12 +37,11 @@ export default function MyTeamScreen() {
 
   const handleMemberSelect = (member: TeamMemberSummary) => {
     if (member.profileVisibility === "PRIVATE") {
-      // TODO(profile-integration): 비공개 프로필 모달 담당자의 구현이 완료되면 member.id를 전달해 모달을 연다.
+      setPrivateMember(member);
       return;
     }
 
-    // TODO(profile-integration): 공개 프로필 페이지 담당자의 구현이 완료되면 아래 경로로 이동을 연결한다.
-    // router.push(`/groups/${params.groupId}/participants/${member.id}`);
+    router.push(`/groups/${params.groupId}/participants/${member.id}`);
   };
 
   return (
@@ -67,11 +75,11 @@ export default function MyTeamScreen() {
             className={styles.assignmentOrb}
             aria-label={
               snapshot.teamNumber === null
-                ? "아직 조가 배정되지 않았습니다"
-                : `${snapshot.teamNumber}조에 배정되었습니다`
+                ? "아직 조가 배정되지 않았습니다."
+                : `${snapshot.teamNumber}조에 배정되었습니다.`
             }
           >
-            <span>나 몇 조?</span>
+            <span>내 조</span>
             <strong>
               {snapshot.teamNumber === null
                 ? "배정 전"
@@ -91,6 +99,44 @@ export default function MyTeamScreen() {
           <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
         </div>
       )}
+
+      <BottomSheetDialog
+        open={privateMember !== null}
+        titleId="private-team-profile-title"
+        sheetClassName={styles.privateProfileSheet}
+        onClose={() => setPrivateMember(null)}
+      >
+        {privateMember && (
+          <div className={styles.privateProfileContent}>
+            <Avatar
+              name={privateMember.name}
+              fallback={privateMember.avatarInitial}
+              backgroundColor={privateMember.avatarColor}
+              size={72}
+              shape="rounded"
+            />
+
+            <h2>{privateMember.name}</h2>
+            <p>{privateMember.department}</p>
+
+            <div className={styles.privateProfileDivider} />
+
+            <section className={styles.privateProfileNotice}>
+              <LockKeyhole aria-hidden="true" size={34} />
+              <strong id="private-team-profile-title">
+                비공개 프로필입니다
+              </strong>
+              <span>
+                해당 참가자의 상세 프로필
+                <br />
+                정보는 확인할 수 없습니다.
+              </span>
+            </section>
+
+            <Button onClick={() => setPrivateMember(null)}>닫기</Button>
+          </div>
+        )}
+      </BottomSheetDialog>
     </MobileFrame>
   );
 }

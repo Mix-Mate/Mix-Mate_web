@@ -1,3 +1,21 @@
-﻿export default function ParticipantProfilePage() {
-  return <main>참가자 프로필 상세</main>;
+﻿import ParticipantProfileScreen from "@/screens/common/ParticipantProfileScreen";
+
+interface ParticipantProfilePageProps {
+  params: Promise<{
+    groupId: string;
+    participantId: string;
+  }>;
+}
+
+export default async function ParticipantProfilePage({
+  params,
+}: ParticipantProfilePageProps) {
+  const { groupId, participantId } = await params;
+
+  return (
+    <ParticipantProfileScreen
+      groupId={groupId}
+      participantId={participantId}
+    />
+  );
 }

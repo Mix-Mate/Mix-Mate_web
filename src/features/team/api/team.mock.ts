@@ -1,8 +1,8 @@
-import type { MyTeamData, TeamMemberSummary } from "../types/team.types";
+﻿import type { MyTeamData, TeamMemberSummary } from "../types/team.types";
 
 const members: Record<string, TeamMemberSummary> = {
   minjun: {
-    id: "kim-minjun",
+    id: "1",
     name: "김민준",
     department: "컴퓨터공학과",
     avatarInitial: "김",

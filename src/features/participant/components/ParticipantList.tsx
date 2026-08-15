@@ -5,9 +5,13 @@ import styles from "@/screens/common/ParticipantListScreen.module.css";
 
 interface ParticipantListProps {
   participants: Participant[];
+  onPrivateSelect?: (participant: Participant) => void;
 }
 
-export default function ParticipantList({ participants }: ParticipantListProps) {
+export default function ParticipantList({
+  participants,
+  onPrivateSelect,
+}: ParticipantListProps) {
   if (participants.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -20,7 +24,11 @@ export default function ParticipantList({ participants }: ParticipantListProps) 
   return (
     <ul className={styles.participantList}>
       {participants.map((participant) => (
-        <ParticipantCard key={participant.id} participant={participant} />
+        <ParticipantCard
+          key={participant.id}
+          participant={participant}
+          onPrivateSelect={onPrivateSelect}
+        />
       ))}
     </ul>
   );

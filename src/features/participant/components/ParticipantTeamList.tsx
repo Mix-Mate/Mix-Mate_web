@@ -1,14 +1,19 @@
-import { Search } from "lucide-react";
-import type { ParticipantTeam } from "../types/participant.types";
+﻿import { Search } from "lucide-react";
+import type {
+  Participant,
+  ParticipantTeam,
+} from "../types/participant.types";
 import ParticipantCard from "./ParticipantCard";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
 interface ParticipantTeamListProps {
   teams: ParticipantTeam[];
+  onPrivateSelect?: (participant: Participant) => void;
 }
 
 export default function ParticipantTeamList({
   teams,
+  onPrivateSelect,
 }: ParticipantTeamListProps) {
   if (teams.length === 0) {
     return (
@@ -31,7 +36,11 @@ export default function ParticipantTeamList({
 
           <ul className={styles.participantList}>
             {team.members.map((participant) => (
-              <ParticipantCard key={participant.id} participant={participant} />
+              <ParticipantCard
+                key={participant.id}
+                participant={participant}
+                onPrivateSelect={onPrivateSelect}
+              />
             ))}
           </ul>
         </section>
