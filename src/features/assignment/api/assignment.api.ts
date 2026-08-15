@@ -21,10 +21,29 @@ const gradeByParticipantId: Record<string, string> = {
   "12": "4학년",
 };
 
+const mbtiByParticipantId: Record<string, string> = {
+  "1": "ENFP",
+  "2": "ISTJ",
+  "3": "INFP",
+  "4": "ESFJ",
+  "5": "INTJ",
+  "6": "ESTP",
+  "7": "ISFP",
+  "8": "ENTJ",
+  "9": "INFJ",
+  "10": "ESFP",
+  "11": "ISTP",
+  "12": "ENFJ",
+};
+
+const newcomerParticipantIds = new Set(["1", "4", "7", "10"]);
+
 export function getParticipantPool(): FixedMemberCandidate[] {
   return participantGroupMock.participants.map((participant) => ({
     ...participant,
     grade: gradeByParticipantId[participant.id] ?? "1학년",
+    mbti: mbtiByParticipantId[participant.id] ?? "ENFP",
+    isNew: newcomerParticipantIds.has(participant.id),
     fixedTeamNumber: null,
   }));
 }
