@@ -1,23 +1,32 @@
+import { participantGroupMock } from "@/features/participant/api/participant.mock";
 import type {
-  AssignmentMember,
   AssignmentProgressStatus,
+  FixedMemberCandidate,
 } from "../types/assignment.types";
 
 const PROCESSING_DURATION_MS = 6000;
 
-const participantMocks: AssignmentMember[] = [
-  { memberId: "lee-seoyeon", memberName: "이서연", profileImage: null },
-  { memberId: "park-doyun", memberName: "박도윤", profileImage: null },
-  { memberId: "choi-jiwoo", memberName: "최지우", profileImage: null },
-  { memberId: "jeong-seowoo", memberName: "정서우", profileImage: null },
-  { memberId: "kang-hayoon", memberName: "강하윤", profileImage: null },
-  { memberId: "jo-yejun", memberName: "조예준", profileImage: null },
-  { memberId: "yoon-seohyun", memberName: "윤서현", profileImage: null },
-  { memberId: "kim-minjun", memberName: "김민준", profileImage: null },
-];
+const gradeByParticipantId: Record<string, string> = {
+  "1": "1학년",
+  "2": "2학년",
+  "3": "4학년",
+  "4": "3학년",
+  "5": "2학년",
+  "6": "3학년",
+  "7": "1학년",
+  "8": "4학년",
+  "9": "2학년",
+  "10": "1학년",
+  "11": "3학년",
+  "12": "4학년",
+};
 
-export function getParticipantPool(): AssignmentMember[] {
-  return participantMocks;
+export function getParticipantPool(): FixedMemberCandidate[] {
+  return participantGroupMock.participants.map((participant) => ({
+    ...participant,
+    grade: gradeByParticipantId[participant.id] ?? "1학년",
+    fixedTeamNumber: null,
+  }));
 }
 
 export function getAssignmentStatus(

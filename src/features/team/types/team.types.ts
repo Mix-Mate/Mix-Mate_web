@@ -1,11 +1,13 @@
+import type { Gender } from "@/shared/types/gender.types";
+
 export type ProfileVisibility = "PUBLIC" | "PRIVATE";
+export type TeamMemberGender = "male" | "female";
 
 export interface TeamMemberSummary {
   id: string;
   name: string;
   department: string;
-  avatarInitial: string;
-  avatarColor: string;
+  gender: Gender;
   profileVisibility: ProfileVisibility;
 }
 

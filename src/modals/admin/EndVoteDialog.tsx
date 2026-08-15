@@ -2,9 +2,9 @@
 
 import { TriangleAlert } from "lucide-react";
 import type { VoteStatusMember } from "@/features/vote/types/vote.types";
-import Avatar from "@/shared/ui/Avatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
@@ -56,11 +56,11 @@ export default function EndVoteDialog({
         <ul className={styles.pendingList}>
           {pendingMembers.map((member) => (
             <li className={styles.pendingMember} key={member.memberId}>
-              <Avatar
+              <GenderAvatar
+                gender={member.gender}
                 name={member.memberName}
-                fallback={member.avatarInitial}
-                backgroundColor={member.avatarColor}
                 size={39}
+                shape="circle"
               />
               <strong>{member.memberName}</strong>
               <span className={styles.absenceBadge}>불참 처리</span>

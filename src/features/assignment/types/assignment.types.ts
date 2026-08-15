@@ -1,3 +1,5 @@
+import type { Participant } from "@/features/participant/types/participant.types";
+
 export type AssignmentRound = 1 | 2;
 
 export type AssignmentConditionKey =
@@ -24,10 +26,9 @@ export interface AssignmentSetupInput {
   conditionKeys: AssignmentConditionKey[];
 }
 
-export interface AssignmentMember {
-  memberId: string;
-  memberName: string;
-  profileImage: string | null;
+export interface FixedMemberCandidate extends Participant {
+  grade: string;
+  fixedTeamNumber: number | null;
 }
 
 export interface AssignmentProgressStatus {
