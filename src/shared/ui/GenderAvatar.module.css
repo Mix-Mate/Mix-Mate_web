@@ -1,11 +1,18 @@
 .avatar {
   display: inline-flex;
   flex: 0 0 auto;
+  overflow: hidden;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
   background-color: #2f80ed;
-  overflow: hidden;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.rounded {
+  border-radius: 14px;
 }
 
 .icon {
