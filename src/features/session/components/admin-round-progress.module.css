@@ -63,6 +63,30 @@
 .current .marker {
   background: #4455ef;
   color: #fff;
+  animation: currentMarkerPulse 1.8s ease-out infinite;
+}
+
+@keyframes currentMarkerPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.45);
+  }
+
+  70% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 10px rgba(68, 85, 239, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current .marker {
+    animation: none;
+  }
 }
 
 .stepText {
