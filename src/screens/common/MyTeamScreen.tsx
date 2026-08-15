@@ -13,7 +13,6 @@ import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamMemberSummary } from "@/features/team/types/team.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import Avatar from "@/shared/ui/Avatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
@@ -108,13 +107,6 @@ export default function MyTeamScreen() {
       >
         {privateMember && (
           <div className={styles.privateProfileContent}>
-            <Avatar
-              name={privateMember.name}
-              fallback={privateMember.avatarInitial}
-              backgroundColor={privateMember.avatarColor}
-              size={72}
-              shape="rounded"
-            />
 
             <h2>{privateMember.name}</h2>
             <p>{privateMember.department}</p>
