@@ -36,7 +36,7 @@ export default function UserSessionContent({
         eyebrow={snapshot.statusEyebrow}
         status={currentStatusLabel}
         onClick={
-          isAdmin && snapshot.round === 1 && snapshot.permissions.canEndRound
+          isAdmin && snapshot.permissions.canEndRound
             ? () => onNavigate(groupRoutes.adminProgress(groupId))
             : undefined
         }

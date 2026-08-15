@@ -78,7 +78,7 @@ export default function AdminRoundTwoPreparationScreen() {
           status={group.statusLabel}
           onClick={() =>
             router.push(
-              `${groupRoutes.adminProgress(params.groupId)}?scenario=round2-active`,
+              `${groupRoutes.adminProgress(params.groupId)}?scenario=round2-waiting`,
             )
           }
         />
