@@ -135,16 +135,12 @@ export default function FixedMemberSetupScreen() {
 
       <TabNavigation
         items={[
-          { id: "participants", label: "참가자" },
+          { id: "participants", label: "참가자", disabled: true },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="assignment"
         ariaLabel="관리자 메뉴"
-        onSelect={(item) => {
-          if (item.id === "participants") {
-            router.push(groupRoutes.participants(params.groupId));
-          }
-        }}
+        onSelect={() => {}}
       />
 
       <div className={styles.content}>
