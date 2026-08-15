@@ -95,7 +95,7 @@ export default function UserSessionContent({
           onClick={() => onNavigate(groupRoutes.profileEdit(groupId))}
         >
           <UserRoundPen aria-hidden="true" size={20} strokeWidth={1.8} />내
-          프로필 수정
+          프로필 조회
         </button>
       </div>
 

@@ -21,7 +21,7 @@ export default function AdminPreparationActions({
   onStartAssignment,
   secondaryAction,
   onEditProfile,
-  profileActionLabel = "내 프로필 수정",
+  profileActionLabel = "내 프로필 조회",
   footerPlacement = "bottom",
 }: AdminPreparationActionsProps) {
   return (
