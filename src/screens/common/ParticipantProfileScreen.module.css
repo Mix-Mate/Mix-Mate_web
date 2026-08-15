@@ -1,0 +1,155 @@
+﻿.viewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.phone {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+  background: #ffffff;
+}
+
+.content {
+  padding: 24px 22px;
+}
+
+.privateContent {
+  min-height: var(--mobile-frame-height);
+  padding: 18px 14px 14px;
+  border-radius: 24px 24px 0 0;
+  background: #ffffff;
+}
+
+.sheetHandle {
+  width: 38px;
+  height: 4px;
+  margin: 0 auto 22px;
+  border-radius: 999px;
+  background: #d4d4d8;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.profileHeader h2 {
+  margin: 8px 0 0;
+  color: #18181b;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.profileHeader p {
+  margin: 0;
+  color: #71717a;
+  font-size: 13px;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.badges span {
+  border: 1.5px solid #2f80d1;
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: #2f80d1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.infoCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 4px 18px;
+  background: #ffffff;
+}
+
+.infoCard div {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.infoCard div:last-child {
+  border-bottom: 0;
+}
+
+.infoCard span,
+.bioCard span {
+  flex: 0 0 auto;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.infoCard strong {
+  color: #18181b;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.instagram {
+  color: #2f80d1 !important;
+}
+
+.bioCard {
+  margin-top: 14px;
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: #f3f4f6;
+}
+
+.bioCard p {
+  margin: 12px 0 0;
+  color: #374151;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.privateDivider {
+  height: 1px;
+  margin: 16px 16px 12px;
+  background: #eeeeee;
+}
+
+.privateBox {
+  display: flex;
+  min-height: 210px;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  padding: 24px 18px;
+  background: #eff6ff;
+  color: #92400e;
+  text-align: center;
+}
+
+.privateBox strong {
+  color: #9a3412;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.privateBox p {
+  margin: 0;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 20px;
+}

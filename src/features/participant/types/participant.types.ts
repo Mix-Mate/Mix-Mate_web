@@ -22,3 +22,12 @@ export type ParticipantGroup = {
   participants: Participant[];
   teams: ParticipantTeam[];
 };
+
+export type ParticipantProfile = Participant & {
+  grade: string;
+  mbti: string;
+  age?: number;
+  instagramId?: string;
+  bio?: string;
+  isNew: boolean;
+};
