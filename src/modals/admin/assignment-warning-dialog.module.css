@@ -1,0 +1,111 @@
+.bottomSheet {
+  text-align: center;
+}
+
+.warningIcon {
+  display: grid;
+  width: 71px;
+  height: 71px;
+  margin: 0 auto;
+  place-items: center;
+  border: 1px solid #fecaca;
+  border-radius: 23px;
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.message h2,
+.message p {
+  margin: 0;
+}
+
+.message h2 {
+  margin-top: 13px;
+  color: #18181b;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 34px;
+  letter-spacing: -0.25px;
+}
+
+.message p {
+  margin-top: 6px;
+  color: #71717a;
+  font-size: 14px;
+  line-height: 23px;
+}
+
+.warningList {
+  display: flex;
+  max-height: 160px;
+  margin: 20px 0 0;
+  padding: 4px 13px;
+  overflow-y: auto;
+  flex-direction: column;
+  border-radius: 20px;
+  background: #fff1f2;
+  list-style: none;
+  text-align: left;
+  scrollbar-width: none;
+}
+
+.warningList::-webkit-scrollbar {
+  display: none;
+}
+
+.warningItem {
+  padding: 5px 0 5px 14px;
+  position: relative;
+  color: #27272a;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.warningItem::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #ef4444;
+}
+
+.warningItem:not(:last-child) {
+  border-bottom: 1px solid rgba(254, 202, 202, 0.8);
+}
+
+.error {
+  display: block;
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  margin-top: 26px;
+}
+
+.resetButton,
+.confirmButton {
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 27px;
+}
+
+.resetButton {
+  --button-background: #f4f4f5;
+  --button-active: #e4e4e7;
+  --button-border: var(--color-border);
+  --button-color: #52525b;
+  --button-focus: #60a5fa;
+}
+
+.confirmButton {
+  --button-background: var(--color-danger);
+  --button-active: #dc2626;
+  --button-border: transparent;
+  --button-color: #fff;
+  --button-focus: #60a5fa;
+}
