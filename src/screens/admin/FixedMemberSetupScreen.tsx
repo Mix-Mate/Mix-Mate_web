@@ -5,12 +5,20 @@ import { useMemo, useState } from "react";
 import { getParticipantPool } from "@/features/assignment/api/assignment.api";
 import FixedMemberCard from "@/features/assignment/components/FixedMemberCard";
 import UnassignedMemberRow from "@/features/assignment/components/UnassignedMemberRow";
-import { getAssignmentSetupDraft } from "@/features/assignment/model/assignmentDraft.store";
+import {
+  getAssignmentSetupDraft,
+  saveAssignmentResultDraft,
+} from "@/features/assignment/model/assignmentDraft.store";
+import {
+  assignTeams,
+  evaluateAssignmentWarnings,
+} from "@/features/assignment/model/assignment.rules";
 import type { FixedMemberCandidate } from "@/features/assignment/types/assignment.types";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -87,6 +95,33 @@ export default function FixedMemberSetupScreen() {
 
   const goToProcessing = () => {
     router.push(groupRoutes.adminAssignmentProcessing(params.groupId, round));
+  };
+
+  const [warningMessages, setWarningMessages] = useState<string[] | null>(
+    null,
+  );
+
+  const runAssignment = () => {
+    const candidatesForAssignment = candidates.map((candidate) =>
+      candidate.id in fixedTeamByMemberId
+        ? { ...candidate, fixedTeamNumber: fixedTeamByMemberId[candidate.id] }
+        : candidate,
+    );
+
+    const teams = assignTeams(candidatesForAssignment, groupCount);
+    const warnings = evaluateAssignmentWarnings(
+      teams,
+      setupDraft?.conditionKeys ?? [],
+    );
+
+    saveAssignmentResultDraft(params.groupId, round, teams);
+
+    if (warnings.length > 0) {
+      setWarningMessages(warnings.map((warning) => warning.message));
+      return;
+    }
+
+    goToProcessing();
   };
 
   return (
@@ -173,14 +208,14 @@ export default function FixedMemberSetupScreen() {
           variant="secondary"
           type="button"
           disabled={fixedMembers.length > 0}
-          onClick={goToProcessing}
+          onClick={runAssignment}
         >
           고정 없이 편성
         </Button>
         <Button
           type="button"
           disabled={fixedMembers.length === 0}
-          onClick={goToProcessing}
+          onClick={runAssignment}
         >
           편성 실행
         </Button>
@@ -193,6 +228,16 @@ export default function FixedMemberSetupScreen() {
         groupCount={groupCount}
         onClose={() => setAssigningMember(null)}
         onConfirm={confirmAssignment}
+      />
+
+      <AssignmentWarningDialog
+        open={warningMessages !== null}
+        warnings={warningMessages ?? []}
+        onClose={() => setWarningMessages(null)}
+        onReset={() =>
+          router.push(groupRoutes.adminAssignmentSetup(params.groupId, round))
+        }
+        onConfirm={goToProcessing}
       />
     </MobileFrame>
   );
