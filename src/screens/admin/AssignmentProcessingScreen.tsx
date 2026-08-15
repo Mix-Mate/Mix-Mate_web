@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import AssignmentProgressIndicator from "@/features/assignment/components/AssignmentProgressIndicator";
 import { useAssignmentStatusQuery } from "@/features/assignment/hooks/useAssignmentStatusQuery";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -24,16 +23,12 @@ export default function AssignmentProcessingScreen() {
 
       <TabNavigation
         items={[
-          { id: "participants", label: "참가자" },
+          { id: "participants", label: "참가자", disabled: true },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="assignment"
         ariaLabel="관리자 메뉴"
-        onSelect={(item) => {
-          if (item.id === "participants") {
-            router.push(groupRoutes.participants(params.groupId));
-          }
-        }}
+        onSelect={() => {}}
       />
 
       <div className={styles.content}>
