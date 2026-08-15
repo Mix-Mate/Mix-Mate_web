@@ -25,6 +25,37 @@
   width: 264px;
   height: 231px;
   object-fit: contain;
+  transform-origin: 50% 86%;
+  animation: illustrationWobble 2.8s ease-in-out infinite;
+}
+
+@keyframes illustrationWobble {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+
+  20% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+
+  45% {
+    transform: translateX(3px) rotate(3deg);
+  }
+
+  65% {
+    transform: translateX(-2px) rotate(-1.5deg);
+  }
+
+  82% {
+    transform: translateX(1px) rotate(1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .illustration {
+    animation: none;
+  }
 }
 
 .copy {
