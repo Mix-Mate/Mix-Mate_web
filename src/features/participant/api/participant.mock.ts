@@ -2,7 +2,11 @@
   getSavedMyGroupProfile,
   MY_PARTICIPANT_ID,
 } from "@/features/profile/lib/profile-storage";
-import type { Participant, ParticipantGroup } from "../types/participant.types";
+import type {
+  Participant,
+  ParticipantGroup,
+  ParticipantProfile,
+} from "../types/participant.types";
 
 const participants: Participant[] = [
   {
@@ -87,8 +91,8 @@ const participants: Participant[] = [
   },
   {
     id: "11",
-    name: "임수진",
-    department: "건축학과",
+    name: "한소희",
+    department: "산업공학과",
     visibility: "public",
     role: "general",
     gender: "female",
@@ -125,6 +129,133 @@ export const participantGroupMock: ParticipantGroup = {
   ],
 };
 
+const participantProfileMocks: ParticipantProfile[] = [
+  {
+    id: "2",
+    name: "박지호",
+    department: "전기공학과",
+    visibility: "private",
+    role: "general",
+    gender: "male",
+    grade: "2학년",
+    mbti: "ISTJ",
+    age: 22,
+    instagramId: "@park.jiho",
+    bio: "전기공학과 박지호입니다.",
+    isNew: false,
+  },
+  {
+    id: "3",
+    name: "최수아",
+    department: "산업디자인",
+    visibility: "public",
+    role: "staff",
+    gender: "female",
+    grade: "1학년",
+    mbti: "INFP",
+    age: 21,
+    instagramId: "@choi.sua",
+    bio: "안녕하세요! 디자인 좋아하는 1학년입니다 😊",
+    isNew: true,
+  },
+  {
+    id: "5",
+    name: "한지우",
+    department: "전자공학과",
+    visibility: "public",
+    role: "general",
+    gender: "female",
+    grade: "2학년",
+    mbti: "ENFJ",
+    age: 22,
+    instagramId: "@han.jiwoo",
+    bio: "처음 뵙겠습니다!",
+    isNew: true,
+  },
+  {
+    id: "8",
+    name: "윤재원",
+    department: "수학과",
+    visibility: "public",
+    role: "general",
+    gender: "male",
+    grade: "4학년",
+    mbti: "ENTP",
+    age: 25,
+    instagramId: "@yoon.jaewon",
+    bio: "수학과 윤재원입니다.",
+    isNew: false,
+  },
+  {
+    id: "10",
+    name: "조현준",
+    department: "화학공학과",
+    visibility: "public",
+    role: "general",
+    gender: "male",
+    grade: "3학년",
+    mbti: "ISTP",
+    age: 24,
+    instagramId: "@jo.hyeonjun",
+    isNew: false,
+  },
+  {
+    id: "11",
+    name: "한소희",
+    department: "산업공학과",
+    visibility: "public",
+    role: "general",
+    gender: "female",
+    grade: "2학년",
+    mbti: "ENFJ",
+    age: 23,
+    bio: "안녕하세요! 데이터 좋아하는 1학년입니다 😊",
+    isNew: true,
+  },
+  {
+    id: "lee-seoyeon",
+    name: "이서연",
+    department: "정보통신공학과",
+    visibility: "public",
+    role: "general",
+    gender: "female",
+    grade: "1학년",
+    mbti: "INFP",
+    age: 21,
+    instagramId: "@lee.seoyeon",
+    bio: "안녕하세요! 데이터 좋아하는 1학년입니다 😊",
+    isNew: true,
+  },
+  {
+    id: "park-jiho",
+    name: "박지호",
+    department: "전기전자공학과",
+    visibility: "public",
+    role: "general",
+    gender: "male",
+    grade: "2학년",
+    mbti: "ISTJ",
+    age: 22,
+    instagramId: "@park.jiho",
+    bio: "전기전자공학과 박지호입니다.",
+    isNew: false,
+  },
+  {
+    id: "choi-sua",
+    name: "최수아",
+    department: "산업디자인학과",
+    visibility: "public",
+    role: "general",
+    gender: "female",
+    grade: "3학년",
+    mbti: "ISFP",
+    age: 23,
+    instagramId: "@choi.sua",
+    bio: "산업디자인학과 최수아입니다.",
+    isNew: false,
+  },
+];
+
 function applyMyProfile(participant: Participant): Participant {
   if (participant.id !== MY_PARTICIPANT_ID) {
     return participant;
@@ -141,6 +272,40 @@ function applyMyProfile(participant: Participant): Participant {
   };
 }
 
+function getMyParticipantProfile(): ParticipantProfile {
+  const myProfile = getSavedMyGroupProfile();
+
+  return {
+    id: MY_PARTICIPANT_ID,
+    name: myProfile.displayName,
+    department: myProfile.major,
+    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
+    role: myProfile.position === "STAFF" ? "staff" : "general",
+    gender: myProfile.gender === "MALE" ? "male" : "female",
+    grade: "3학년",
+    mbti: myProfile.mbti,
+    age: myProfile.age ?? undefined,
+    instagramId: myProfile.instaId ?? undefined,
+    bio: myProfile.bio ?? undefined,
+    isNew: myProfile.isNew,
+  };
+}
+
+function getDefaultParticipantProfile(participantId: string): ParticipantProfile {
+  const participant =
+    participants.find((item) => item.id === participantId) ?? participants[0];
+
+  return {
+    ...participant,
+    grade: "1학년",
+    mbti: "ISTP",
+    age: 21,
+    instagramId: "@mixmate",
+    bio: "안녕하세요!",
+    isNew: true,
+  };
+}
+
 export function getParticipantListMock() {
   return {
     ...participantGroupMock,
@@ -150,4 +315,16 @@ export function getParticipantListMock() {
       members: team.members.map(applyMyProfile),
     })),
   };
+}
+
+export function getParticipantProfileMock(participantId: string) {
+  if (participantId === MY_PARTICIPANT_ID) {
+    return getMyParticipantProfile();
+  }
+
+  const profile = participantProfileMocks.find(
+    (participant) => participant.id === participantId,
+  );
+
+  return profile ?? getDefaultParticipantProfile(participantId);
 }
