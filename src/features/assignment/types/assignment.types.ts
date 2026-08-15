@@ -30,3 +30,8 @@ export interface FixedMemberCandidate extends Participant {
   grade: string;
   fixedTeamNumber: number | null;
 }
+
+export interface AssignmentProgressStatus {
+  progress: number;
+  isComplete: boolean;
+}

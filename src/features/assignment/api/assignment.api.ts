@@ -1,5 +1,10 @@
 import { participantGroupMock } from "@/features/participant/api/participant.mock";
-import type { FixedMemberCandidate } from "../types/assignment.types";
+import type {
+  AssignmentProgressStatus,
+  FixedMemberCandidate,
+} from "../types/assignment.types";
+
+const PROCESSING_DURATION_MS = 6000;
 
 const gradeByParticipantId: Record<string, string> = {
   "1": "1학년",
@@ -22,4 +27,16 @@ export function getParticipantPool(): FixedMemberCandidate[] {
     grade: gradeByParticipantId[participant.id] ?? "1학년",
     fixedTeamNumber: null,
   }));
+}
+
+export function getAssignmentStatus(
+  startedAt: number,
+): AssignmentProgressStatus {
+  const elapsedMs = Date.now() - startedAt;
+  const progress = Math.min(
+    100,
+    Math.round((elapsedMs / PROCESSING_DURATION_MS) * 100),
+  );
+
+  return { progress, isComplete: progress >= 100 };
 }
