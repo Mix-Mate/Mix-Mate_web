@@ -5,6 +5,7 @@ import { useState } from "react";
 import AssignmentGroupList from "@/features/assignment/components/AssignmentGroupList";
 import { assignTeams } from "@/features/assignment/model/assignment.rules";
 import {
+  clearAssignmentResultDraft,
   getAssignmentResultDraft,
   saveAssignmentResultDraft,
 } from "@/features/assignment/model/assignmentDraft.store";
@@ -37,6 +38,7 @@ export default function AssignmentResultScreen() {
   };
 
   const handleConfirm = () => {
+    clearAssignmentResultDraft(params.groupId, round);
     router.push(groupRoutes.home(params.groupId));
   };
 
@@ -47,11 +49,7 @@ export default function AssignmentResultScreen() {
       data-testid="assignment-result-screen"
       data-round={round}
     >
-      <Header
-        title={group.name}
-        statusLabel={group.roleLabel}
-        onBack={() => router.back()}
-      />
+      <Header title={group.name} onBack={() => router.back()} />
 
       <TabNavigation
         items={[
@@ -74,8 +72,8 @@ export default function AssignmentResultScreen() {
           <AssignmentGroupList teams={result} />
         ) : (
           <p className={styles.emptyState}>
-            아직 편성된 결과가 없어요. 고정 멤버 설정 화면에서 편성을 먼저
-            실행해주세요.
+            표시할 편성 결과가 없어요. 이미 확정되었거나, 아직 편성이 실행되지
+            않았을 수 있어요.
           </p>
         )}
       </div>
