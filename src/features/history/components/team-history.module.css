@@ -1,0 +1,80 @@
+.content {
+  height: 780px;
+  padding: 14px 18px 32px;
+  background: #fcfcff;
+}
+
+.notice {
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+}
+
+.record {
+  margin-top: 14px;
+}
+
+.record h2 {
+  margin: 0 2px 11px;
+  color: #52525b;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.teamCard {
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.teamSummary {
+  display: flex;
+  height: 57px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid #f4f4f5;
+}
+
+.teamIcon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.teamSummary p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+.teamSummary p span {
+  color: #71717a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.teamSummary strong {
+  color: #18181b;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.memberList {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.memberList button {
+  height: 71px;
+}

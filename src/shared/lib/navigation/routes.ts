@@ -10,7 +10,7 @@ export const groupRoutes = {
   profileEdit: (groupId: string) => `${groupBase(groupId)}/profile/edit`,
   team: (groupId: string) => `${groupBase(groupId)}/team`,
   teamMembers: (groupId: string) => `${groupBase(groupId)}/team?tab=members`,
-  teamHistory: (groupId: string) => `${groupBase(groupId)}/team/history`,
+  teamHistory: (groupId: string) => `${groupBase(groupId)}/history`,
   play: (groupId: string) => `${groupBase(groupId)}/play`,
   playActivity: (groupId: string, activity: PlayActivity) =>
     `${groupBase(groupId)}/play/${activity}`,
