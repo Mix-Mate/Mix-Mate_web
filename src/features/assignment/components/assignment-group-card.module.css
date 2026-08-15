@@ -1,0 +1,105 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid #f0f0f2;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f2;
+  background: #f4f4f5;
+}
+
+.teamBadge {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #256ad3;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.teamLabel {
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.teamCount {
+  color: #52525b;
+  font-size: 14px;
+}
+
+.memberList {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  list-style: none;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.memberRow:last-child {
+  border-bottom: none;
+}
+
+.memberInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.memberInfo strong {
+  overflow: hidden;
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberInfo small {
+  overflow: hidden;
+  color: #52525b;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixedBadge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  padding: 3px 10px;
+  color: #256ad3;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
