@@ -1,0 +1,111 @@
+.viewport {
+  align-items: flex-start;
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  padding: 26px 16px;
+  text-align: center;
+}
+
+.illustration {
+  display: block;
+  width: 264px;
+  height: 231px;
+  object-fit: contain;
+  transform-origin: 50% 86%;
+  animation: illustrationWobble 2.8s ease-in-out infinite;
+}
+
+@keyframes illustrationWobble {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+
+  20% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+
+  45% {
+    transform: translateX(3px) rotate(3deg);
+  }
+
+  65% {
+    transform: translateX(-2px) rotate(-1.5deg);
+  }
+
+  82% {
+    transform: translateX(1px) rotate(1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .illustration {
+    animation: none;
+  }
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+}
+
+.copy p,
+.copy h2 {
+  margin: 0;
+}
+
+.code {
+  color: #d1d1d6;
+  font-family: Inter, sans-serif;
+  font-size: 33px;
+  font-weight: 700;
+  letter-spacing: -0.82px;
+  line-height: 33px;
+}
+
+.copy h2 {
+  color: #18181b;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 35px;
+  white-space: nowrap;
+}
+
+.description {
+  color: #52525b;
+  font-family: Inter, "Noto Sans KR", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+.footer {
+  flex: 0 0 auto;
+  padding: 16px 16px 15px;
+  border-top: 1px solid #e4e4e7;
+  background: #fff;
+}
+
+@media (max-width: 389px) {
+  .phone {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+}
