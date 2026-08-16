@@ -12,7 +12,24 @@
 }
 
 .content {
+  position: relative;
   padding: 24px 22px;
+}
+
+.deleteIconButton {
+  position: absolute;
+  z-index: 2;
+  top: 92px;
+  right: 28px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #fff1f2;
+  color: #ef4444;
 }
 
 .privateContent {
@@ -152,4 +169,55 @@
   color: #9a3412;
   font-size: 13px;
   line-height: 20px;
+}
+
+.deleteSheet {
+  --bottom-sheet-padding: 32px 24px 16px;
+  --bottom-sheet-border-radius: 24px 24px 0 0;
+}
+
+.deleteDialogContent {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.warningIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.deleteDialogContent h2 {
+  margin: 18px 0 8px;
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 24px;
+}
+
+.deleteDialogContent p {
+  margin: 0 0 22px;
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.deleteActions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dialogButton.dialogButton {
+  height: 48px;
+  border-radius: 12px;
+  font-size: 14px;
 }

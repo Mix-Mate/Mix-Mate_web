@@ -1,0 +1,265 @@
+.viewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.phone {
+  display: flex;
+  min-height: var(--mobile-frame-height);
+  height: auto;
+  flex-direction: column;
+  overflow: visible;
+  border: 1px solid #e4e4e7;
+  border-radius: 26px;
+  background: #fbfbfd;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+}
+
+.phone > header {
+  flex: 0 0 72px;
+}
+
+.content {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  background: #fbfbfd;
+}
+
+.statsGrid {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 18px 24px 12px;
+}
+
+.statsGrid article {
+  display: flex;
+  height: 76px;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 14px;
+  background: #f0f0f2;
+}
+
+.statsGrid strong {
+  color: #18181b;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 30px;
+}
+
+.statsGrid span {
+  margin-top: 4px;
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.searchBar.searchBar {
+  height: 46px;
+  flex: 0 0 46px;
+  gap: 10px;
+  margin: 0 18px;
+  padding: 0 17px;
+  border-width: 1.5px;
+  border-color: #dedee3;
+  border-radius: 999px;
+}
+
+.searchBar svg {
+  width: 23px;
+  height: 23px;
+  color: #a1a1aa;
+}
+
+.searchBar input {
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.searchBar input::placeholder {
+  color: #a1a1aa;
+}
+
+.filterRow {
+  display: flex;
+  height: 72px;
+  flex: 0 0 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px;
+  background: #fbfbfd;
+}
+
+.filters {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.filters button {
+  height: 38px;
+  cursor: pointer;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #52525b;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.filters .activeFilter {
+  border-color: #2f80d1;
+  background: #eff6ff;
+  color: #2f80d1;
+}
+
+.addButton {
+  height: 38px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  border: 1px solid #1f66cc;
+  border-radius: 999px;
+  padding: 0 17px;
+  background: #256ad3;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgb(37 106 211 / 20%);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 20px;
+}
+
+.listCard {
+  flex: 0 0 auto;
+  margin: 0 18px 12px;
+  overflow: visible;
+  border: 1px solid #e1e1e5;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.participantList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.participantItem {
+  display: flex;
+  color: inherit;
+  text-decoration: none;
+  min-height: 67px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.participantItem:last-child {
+  border-bottom: 0;
+}
+
+.participantInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.participantInfo strong {
+  display: block;
+  overflow: hidden;
+  color: #18181b;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.participantInfo span {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.staffBadge,
+.newBadge,
+.existingBadge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.staffBadge {
+  background: #eff6ff;
+  color: #2f80d1;
+}
+
+.newBadge {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.existingBadge {
+  background: #f4f4f5;
+  color: #52525b;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: 14px 18px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.assignmentButton.assignmentButton {
+  height: 58px;
+  border-radius: 16px;
+  font-size: 18px;
+}
+
+@media (max-width: 389px) {
+  .viewport,
+  .phone {
+    width: 100vw;
+  }
+
+  .phone {
+    border-radius: 0;
+  }
+}

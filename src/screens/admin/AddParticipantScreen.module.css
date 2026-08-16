@@ -1,0 +1,122 @@
+﻿.viewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.phone {
+  display: flex;
+  min-height: var(--mobile-frame-height);
+  height: auto;
+  flex-direction: column;
+  overflow: visible;
+  border: 1px solid #e4e4e7;
+  border-radius: 26px;
+  background: #fbfbfd;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+}
+
+.phone > header {
+  flex: 0 0 64px;
+}
+
+.content {
+  display: flex;
+  min-height: calc(var(--mobile-frame-height) - 64px);
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 0;
+  background: #fbfbfd;
+}
+
+.notice {
+  padding: 9px 10px;
+  border-radius: 9px;
+}
+
+.notice p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field span {
+  color: #52525b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  height: 42px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 13px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #27272a;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  outline: 0;
+}
+
+.field select {
+  appearance: none;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: #2f80d1;
+}
+
+.chipGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chipGroup button {
+  height: 32px;
+  cursor: pointer;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 999px;
+  padding: 0 13px;
+  background: #ffffff;
+  color: #52525b;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chipGroup .activeChip {
+  border-color: #2f80d1;
+  background: #eff6ff;
+  color: #2f80d1;
+}
+
+.footer {
+  margin-top: auto;
+  padding: 12px 0 14px;
+  background: #fbfbfd;
+}
+
+.footer button {
+  height: 54px;
+  border-radius: 14px;
+  font-size: 16px;
+}
+
+.toast.toast {
+  right: 20px;
+  bottom: 88px;
+  left: 20px;
+  --toast-z-index: 30;
+}
