@@ -18,6 +18,10 @@ export const groupRoutes = {
   attendanceVote: (groupId: string) => `${groupBase(groupId)}/votes/attendance`,
   voteStatus: (groupId: string) => `${groupBase(groupId)}/votes/status`,
   voteResult: (groupId: string) => `${groupBase(groupId)}/votes/result`,
+  adminRecruitment: (groupId: string) =>
+    `${groupBase(groupId)}/admin/recruitment`,
+  adminPreparation: (groupId: string) =>
+    `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
   adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>

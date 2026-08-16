@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import { getEventStatusLabel } from "@/features/session/model/event-status";
 import {
   getMockGroupRole,
   withSessionContext,
@@ -33,6 +34,7 @@ export default function MyTeamScreen() {
   );
   const { data: team } = useMyTeamQuery(params.groupId);
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
+  const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
 
   const handleMemberSelect = (member: TeamMemberSummary) => {
     if (member.profileVisibility === "PRIVATE") {
@@ -88,9 +90,9 @@ export default function MyTeamScreen() {
 
           <p
             className={styles.statusText}
-            aria-label={`현재 진행 상태: ${snapshot.statusLabel}`}
+            aria-label={`현재 진행 상태: ${currentStatusLabel}`}
           >
-            진행 상태 · {snapshot.statusLabel}
+            진행 상태 · {currentStatusLabel}
           </p>
         </div>
       ) : (

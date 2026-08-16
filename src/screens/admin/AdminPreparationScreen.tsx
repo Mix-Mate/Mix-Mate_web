@@ -1,14 +1,15 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { ChevronRight, Paperclip, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import AdminGroupSummary from "@/features/group/components/AdminGroupSummary";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
+import SessionStatusCard from "@/features/session/components/SessionStatusCard";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import AM02DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
@@ -50,15 +51,12 @@ export default function AdminPreparationScreen() {
     [group.description, group.name],
   );
 
-  const copyInviteCode = useCallback(async () => {
-    try {
-      if (!navigator.clipboard) throw new Error("Clipboard API unavailable");
-      await navigator.clipboard.writeText(group.inviteCode);
-      showToast("참여 코드가 복사되었습니다.");
-    } catch {
-      showToast("참여 코드를 복사하지 못했습니다.");
-    }
-  }, [group.inviteCode, showToast]);
+  const navigateWithSession = useCallback(
+    (href: string) => {
+      router.push(withSessionContext(href, searchParams));
+    },
+    [router, searchParams],
+  );
 
   const confirmDelete = useCallback(async () => {
     const deleted = await deleteGroup(params.groupId);
@@ -94,16 +92,39 @@ export default function AdminPreparationScreen() {
       <Header title={group.name} onBack={() => router.back()} compact />
 
       <div className={`${styles.content} ${styles.firstRoundContent}`}>
-        <AdminGroupSummary
-          statusLabel={group.statusLabel}
-          inviteCode={group.inviteCode}
-          participantCount={group.participantCount}
-          onCopy={copyInviteCode}
-          onEditGroup={() => setEditDialogOpen(true)}
+        <SessionStatusCard
+          eyebrow="진행 상태 확인"
+          status={group.statusLabel}
+          onClick={() =>
+            navigateWithSession(groupRoutes.adminProgress(params.groupId))
+          }
         />
+
+        <button
+          type="button"
+          className={styles.editGroupPill}
+          onClick={() => setEditDialogOpen(true)}
+        >
+          <span className={styles.editGroupIcon} aria-hidden="true">
+            <Paperclip size={19} strokeWidth={1.8} />
+          </span>
+          <span className={styles.editGroupText}>
+            <strong>그룹 정보 편집</strong>
+            <small>이름 · 설명 · 진행 상태 수정</small>
+          </span>
+          <ChevronRight
+            className={styles.editGroupChevron}
+            aria-hidden="true"
+            size={18}
+            strokeWidth={2}
+          />
+        </button>
+
         <AdminPreparationActions
           onStartAssignment={() =>
-            router.push(groupRoutes.adminAssignmentSetup(params.groupId, 1))
+            navigateWithSession(
+              groupRoutes.adminAssignmentSetup(params.groupId, 1),
+            )
           }
           secondaryAction={{
             icon: <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />,
@@ -112,8 +133,9 @@ export default function AdminPreparationScreen() {
             tone: "danger",
           }}
           onEditProfile={() =>
-            router.push(groupRoutes.profileEdit(params.groupId))
+            navigateWithSession(groupRoutes.profileEdit(params.groupId))
           }
+          profileActionLabel="내 프로필 조회"
           footerPlacement="flow"
         />
       </div>

@@ -16,7 +16,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "round1-waiting",
     round: 1,
-    statusLabel: "1차 술자리 중",
+    currentStatus: "FIRST_PREPARING",
     teamNumber: null,
     teamHistoryAvailable: false,
     permissions: {
@@ -28,7 +28,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "round1-active",
     round: 1,
-    statusLabel: "1차 술자리 중",
+    currentStatus: "FIRST_IN_PROGRESS",
     teamNumber: 3,
     teamHistoryAvailable: false,
     permissions: {
@@ -40,7 +40,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "round2-waiting",
     round: 2,
-    statusLabel: "2차 술자리 중",
+    currentStatus: "SECOND_PREPARING",
     teamNumber: null,
     teamHistoryAvailable: true,
     permissions: {
@@ -52,7 +52,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "round2-active",
     round: 2,
-    statusLabel: "2차 술자리 중",
+    currentStatus: "SECOND_IN_PROGRESS",
     teamNumber: 5,
     teamHistoryAvailable: true,
     permissions: {

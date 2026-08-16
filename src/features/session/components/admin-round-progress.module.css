@@ -60,20 +60,33 @@
   color: #fff;
 }
 
-.marker.current {
+.current .marker {
   background: #4455ef;
   color: #fff;
-  border: 2px dashed #4455ef;
-  animation: none;
+  animation: currentMarkerPulse 1.8s ease-out infinite;
 }
 
-.marker.current::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  animation: current-marker-pulse 1.8s ease-in-out infinite;
+@keyframes currentMarkerPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.45);
+  }
+
+  70% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 10px rgba(68, 85, 239, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current .marker {
+    animation: none;
+  }
 }
 
 .stepText {
@@ -108,6 +121,10 @@
   color: #a1a1aa;
 }
 
+.current .stepText small {
+  color: #18181b;
+}
+
 .currentBadge {
   margin-top: 4px;
   margin-right: 12px;
@@ -120,18 +137,4 @@
   font-weight: 700;
   line-height: 15px;
   white-space: nowrap;
-}
-
-@keyframes current-marker-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.4), inset 0 0 0 0 rgba(68, 85, 239, 0.2);
-  }
-
-  50% {
-    box-shadow: 0 0 0 6px rgba(68, 85, 239, 0.1), inset 0 0 0 2px rgba(68, 85, 239, 0.3);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(68, 85, 239, 0.4), inset 0 0 0 0 rgba(68, 85, 239, 0.2);
-  }
 }

@@ -6,9 +6,11 @@ import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
 import AdminRoundProgress from "@/features/session/components/AdminRoundProgress";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import { getEventStatusLabel } from "@/features/session/model/event-status";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./ProgressScreen.module.css";
@@ -18,7 +20,7 @@ export default function ProgressScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: snapshot } = useUserSessionQuery(
-    searchParams.get("scenario") ?? "round1-active",
+    searchParams.get("scenario") ?? "round1-waiting",
     "ADMIN",
   );
   const {
@@ -27,6 +29,12 @@ export default function ProgressScreen() {
     error: endRoundError,
   } = useEndRoundMutation();
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
+  const currentStatus = snapshot.currentStatus;
+  const currentRound = snapshot.round;
+  const currentStatusLabel = getEventStatusLabel(currentStatus);
+  const canEndCurrentRound =
+    (currentRound === 1 && currentStatus === "FIRST_IN_PROGRESS") ||
+    (currentRound === 2 && currentStatus === "SECOND_IN_PROGRESS");
 
   const goHome = useCallback(() => {
     router.push(
@@ -39,7 +47,9 @@ export default function ProgressScreen() {
   }, [isEndingRound]);
 
   const confirmEndRound = useCallback(async () => {
-    const result = await endRound(params.groupId, 1);
+    if (!canEndCurrentRound) return;
+
+    const result = await endRound(params.groupId, currentRound);
     if (!result) return;
 
     setEndRoundDialogOpen(false);
@@ -52,7 +62,15 @@ export default function ProgressScreen() {
     }
 
     goHome();
-  }, [endRound, goHome, params.groupId, router, searchParams]);
+  }, [
+    canEndCurrentRound,
+    currentRound,
+    endRound,
+    goHome,
+    params.groupId,
+    router,
+    searchParams,
+  ]);
 
   return (
     <MobileFrame
@@ -65,7 +83,7 @@ export default function ProgressScreen() {
       <div className={styles.content}>
         <RoundTwoStatusCard
           eyebrow="진행 상태 확인"
-          statusLabel={snapshot.statusLabel}
+          statusLabel={currentStatusLabel}
           showEditButton={false}
         />
 
@@ -77,23 +95,24 @@ export default function ProgressScreen() {
             <p>Event Status</p>
             <h2 id="event-status-title">지금 진행 상황</h2>
           </div>
-          <AdminRoundProgress />
+          <AdminRoundProgress currentStatus={currentStatus} />
         </section>
       </div>
 
       <footer className={styles.footer}>
-        <button
-          type="button"
+        <Button
+          variant="danger"
           className={styles.endButton}
+          disabled={!canEndCurrentRound || isEndingRound}
           onClick={() => setEndRoundDialogOpen(true)}
         >
-          1차 술자리 종료하기
-        </button>
+          {currentRound}차 술자리 종료하기
+        </Button>
       </footer>
 
       <EndRoundDialog
         open={endRoundDialogOpen}
-        round={1}
+        round={currentRound}
         isEnding={isEndingRound}
         error={endRoundError}
         onClose={closeEndRoundDialog}
