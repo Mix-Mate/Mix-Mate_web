@@ -3,20 +3,16 @@
 import clsx from "clsx";
 import { Check } from "lucide-react";
 import { useState } from "react";
-import type { FixedMemberCandidate } from "@/features/assignment/types/assignment.types";
+import InitialAvatar from "@/features/assignment/components/InitialAvatar";
+import type { ParticipantCandidate } from "@/features/assignment/types/assignment.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
-import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./select-fixed-group-dialog.module.css";
-
-const roleLabel: Record<FixedMemberCandidate["role"], string> = {
-  general: "일반",
-  staff: "운영진",
-};
 
 interface SelectFixedGroupDialogProps {
   open: boolean;
-  member: FixedMemberCandidate | null;
+  member: ParticipantCandidate | null;
+  currentTeamNumber: number | null;
   groupCount: number;
   onClose: () => void;
   onConfirm: (teamNumber: number) => void;
@@ -25,12 +21,13 @@ interface SelectFixedGroupDialogProps {
 export default function SelectFixedGroupDialog({
   open,
   member,
+  currentTeamNumber,
   groupCount,
   onClose,
   onConfirm,
 }: SelectFixedGroupDialogProps) {
   const [selected, setSelected] = useState<number | null>(
-    member?.fixedTeamNumber ?? null,
+    currentTeamNumber ?? null,
   );
 
   if (!member) return null;
@@ -43,14 +40,12 @@ export default function SelectFixedGroupDialog({
       onClose={onClose}
     >
       <div className={styles.header}>
-        <GenderAvatar gender={member.gender} name={member.name} size={46} />
+        <InitialAvatar name={member.displayName} size={46} />
         <div className={styles.info}>
           <h2 id="select-fixed-group-title" className={styles.name}>
-            {member.name}
+            {member.displayName}
           </h2>
-          <p className={styles.meta}>
-            {member.grade} · {roleLabel[member.role]}
-          </p>
+          <p className={styles.meta}>{member.major}</p>
         </div>
         <span className={styles.headerLabel}>고정할 조 선택</span>
       </div>
