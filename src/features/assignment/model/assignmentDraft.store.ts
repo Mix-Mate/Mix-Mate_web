@@ -47,3 +47,7 @@ export function saveAssignmentResultDraft(
 export function getAssignmentResultDraft(groupId: string, round: number) {
   return getOrCreateDraft(groupId, round).result;
 }
+
+export function clearAssignmentResultDraft(groupId: string, round: number) {
+  getOrCreateDraft(groupId, round).result = null;
+}

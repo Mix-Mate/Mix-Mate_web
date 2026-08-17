@@ -1,0 +1,46 @@
+.screenFrame.screenFrame {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.pageViewport.pageViewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 13px 16px 20px;
+}
+
+.heading {
+  margin: 0;
+  color: #18181b;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.emptyState {
+  padding: 40px 20px;
+  color: #a1a1aa;
+  font-size: 14px;
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  padding: 15px 16px 16px;
+  border-top: 1px solid #f0f0f2;
+  background: #fff;
+}
+
+.footer > button {
+  flex: 1 1 0;
+  min-width: 0;
+}
