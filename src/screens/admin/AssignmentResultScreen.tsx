@@ -1,15 +1,22 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import AssignmentGroupList from "@/features/assignment/components/AssignmentGroupList";
-import { assignTeams } from "@/features/assignment/model/assignment.rules";
+import { useConfirmAssignmentMutation } from "@/features/assignment/hooks/useConfirmAssignmentMutation";
+import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
+import {
+  toBackendConditions,
+  toFixedMembersFromTeams,
+} from "@/features/assignment/model/assignment.mapper";
 import {
   clearAssignmentResultDraft,
   getAssignmentResultDraft,
+  getAssignmentSetupDraft,
   saveAssignmentResultDraft,
 } from "@/features/assignment/model/assignmentDraft.store";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
@@ -21,29 +28,64 @@ import styles from "./assignment-result.module.css";
 export default function AssignmentResultScreen() {
   const params = useParams<{ groupId: string; round: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
 
-  const [result] = useState(() =>
+  const [result, setResult] = useState(() =>
     getAssignmentResultDraft(params.groupId, round),
   );
 
-  const handleReshuffle = () => {
+  const {
+    mutate: createAssignment,
+    isPending: isReshuffling,
+    error: reshuffleError,
+  } = useCreateAssignmentMutation();
+  const {
+    mutate: confirmAssignment,
+    isPending: isConfirming,
+    error: confirmError,
+  } = useConfirmAssignmentMutation();
+
+  const handleReshuffle = async () => {
     if (!result) return;
 
-    const candidates = result.flatMap((team) => team.members);
-    const reshuffled = assignTeams(candidates, result.length);
-    saveAssignmentResultDraft(params.groupId, round, reshuffled);
-    router.push(groupRoutes.adminAssignmentProcessing(params.groupId, round));
+    const setupDraft = getAssignmentSetupDraft(params.groupId, round);
+    const fixedOnly = result.map((team) => ({
+      ...team,
+      members: team.members.filter((member) => member.fixed),
+    }));
+
+    const response = await createAssignment(params.groupId, round, {
+      teamCount: result.length,
+      conditions: toBackendConditions(setupDraft?.conditionKeys ?? []),
+      fixedMembers: toFixedMembersFromTeams(fixedOnly),
+    });
+
+    if (!response) return;
+
+    saveAssignmentResultDraft(params.groupId, round, response.teams);
+    setResult(response.teams);
+    router.push(
+      withSessionContext(
+        groupRoutes.adminAssignmentProcessing(params.groupId, round),
+        searchParams,
+      ),
+    );
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    const confirmed = await confirmAssignment(params.groupId, round);
+    if (!confirmed) return;
+
     clearAssignmentResultDraft(params.groupId, round);
     const scenario = round === 2 ? "round2-active" : "round1-active";
     router.push(
       `${groupRoutes.home(params.groupId)}?role=admin&scenario=${scenario}`,
     );
   };
+
+  const isBusy = isReshuffling || isConfirming;
 
   return (
     <MobileFrame
@@ -79,19 +121,27 @@ export default function AssignmentResultScreen() {
             않았을 수 있어요.
           </p>
         )}
+
+        {(reshuffleError || confirmError) && (
+          <p className={styles.errorText}>{reshuffleError ?? confirmError}</p>
+        )}
       </div>
 
       <div className={styles.footer}>
         <Button
           variant="secondary"
           type="button"
-          disabled={!result}
+          disabled={!result || isBusy}
           onClick={handleReshuffle}
         >
-          재셔플
+          {isReshuffling ? "재셔플 중..." : "재셔플"}
         </Button>
-        <Button type="button" disabled={!result} onClick={handleConfirm}>
-          결과 확정하기
+        <Button
+          type="button"
+          disabled={!result || isBusy}
+          onClick={handleConfirm}
+        >
+          {isConfirming ? "확정 중..." : "결과 확정하기"}
         </Button>
       </div>
     </MobileFrame>

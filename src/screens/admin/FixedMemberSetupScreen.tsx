@@ -1,23 +1,23 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { getParticipantPool } from "@/features/assignment/api/assignment.api";
 import FixedMemberCard from "@/features/assignment/components/FixedMemberCard";
 import UnassignedMemberRow from "@/features/assignment/components/UnassignedMemberRow";
+import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
+import { useParticipantCandidatesQuery } from "@/features/assignment/hooks/useParticipantCandidatesQuery";
+import {
+  toBackendConditions,
+  toFixedMembersRequest,
+} from "@/features/assignment/model/assignment.mapper";
 import {
   getAssignmentSetupDraft,
   saveAssignmentResultDraft,
 } from "@/features/assignment/model/assignmentDraft.store";
-import {
-  assignTeams,
-  evaluateAssignmentWarnings,
-} from "@/features/assignment/model/assignment.rules";
-import type { FixedMemberCandidate } from "@/features/assignment/types/assignment.types";
-import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
-import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
-import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
+import type { ParticipantCandidate } from "@/features/assignment/types/assignment.types";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
+import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -34,6 +34,7 @@ const DEFAULT_GROUP_COUNT = 3;
 export default function FixedMemberSetupScreen() {
   const params = useParams<{ groupId: string; round: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
 
@@ -41,44 +42,42 @@ export default function FixedMemberSetupScreen() {
   const groupCount = setupDraft?.groupCount ?? DEFAULT_GROUP_COUNT;
 
   const [keyword, setKeyword] = useState("");
-  const [filter, setFilter] = useState<ParticipantFilterValue>("all");
-  const [fixedTeamByMemberId, setFixedTeamByMemberId] = useState<
-    Record<string, number>
+  const [fixedTeamByParticipantId, setFixedTeamByParticipantId] = useState<
+    Record<number, number>
   >({});
   const [assigningMember, setAssigningMember] =
-    useState<FixedMemberCandidate | null>(null);
+    useState<ParticipantCandidate | null>(null);
 
-  const candidates = useMemo(() => getParticipantPool(), []);
+  const {
+    data: candidates,
+    isLoading: isLoadingCandidates,
+    error: candidatesError,
+  } = useParticipantCandidatesQuery(params.groupId, round);
 
   const fixedMembers = useMemo(
     () =>
-      candidates
-        .filter((candidate) => candidate.id in fixedTeamByMemberId)
-        .map((candidate) => ({
-          ...candidate,
-          fixedTeamNumber: fixedTeamByMemberId[candidate.id],
-        })),
-    [candidates, fixedTeamByMemberId],
+      candidates.filter(
+        (candidate) => candidate.participantId in fixedTeamByParticipantId,
+      ),
+    [candidates, fixedTeamByParticipantId],
   );
 
   const unassignedMembers = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
     return candidates.filter((candidate) => {
-      if (candidate.id in fixedTeamByMemberId) return false;
+      if (candidate.participantId in fixedTeamByParticipantId) return false;
 
-      const matchesKeyword =
-        !trimmedKeyword || candidate.name.includes(trimmedKeyword);
-      const matchesFilter = filter === "all" || candidate.role === filter;
-
-      return matchesKeyword && matchesFilter;
+      return (
+        !trimmedKeyword || candidate.displayName.includes(trimmedKeyword)
+      );
     });
-  }, [candidates, fixedTeamByMemberId, filter, keyword]);
+  }, [candidates, fixedTeamByParticipantId, keyword]);
 
-  const removeFixedMember = (memberId: string) => {
-    setFixedTeamByMemberId((current) => {
+  const removeFixedMember = (participantId: number) => {
+    setFixedTeamByParticipantId((current) => {
       const next = { ...current };
-      delete next[memberId];
+      delete next[participantId];
       return next;
     });
   };
@@ -86,38 +85,45 @@ export default function FixedMemberSetupScreen() {
   const confirmAssignment = (teamNumber: number) => {
     if (!assigningMember) return;
 
-    setFixedTeamByMemberId((current) => ({
+    setFixedTeamByParticipantId((current) => ({
       ...current,
-      [assigningMember.id]: teamNumber,
+      [assigningMember.participantId]: teamNumber,
     }));
     setAssigningMember(null);
   };
 
   const goToProcessing = () => {
-    router.push(groupRoutes.adminAssignmentProcessing(params.groupId, round));
+    router.push(
+      withSessionContext(
+        groupRoutes.adminAssignmentProcessing(params.groupId, round),
+        searchParams,
+      ),
+    );
   };
 
   const [warningMessages, setWarningMessages] = useState<string[] | null>(
     null,
   );
 
-  const runAssignment = () => {
-    const candidatesForAssignment = candidates.map((candidate) =>
-      candidate.id in fixedTeamByMemberId
-        ? { ...candidate, fixedTeamNumber: fixedTeamByMemberId[candidate.id] }
-        : candidate,
-    );
+  const {
+    mutate: createAssignment,
+    isPending: isAssigning,
+    error: assignError,
+  } = useCreateAssignmentMutation();
 
-    const teams = assignTeams(candidatesForAssignment, groupCount);
-    const warnings = evaluateAssignmentWarnings(
-      teams,
-      setupDraft?.conditionKeys ?? [],
-    );
+  const runAssignment = async () => {
+    const result = await createAssignment(params.groupId, round, {
+      teamCount: groupCount,
+      conditions: toBackendConditions(setupDraft?.conditionKeys ?? []),
+      fixedMembers: toFixedMembersRequest(fixedTeamByParticipantId),
+    });
 
-    saveAssignmentResultDraft(params.groupId, round, teams);
+    if (!result) return;
 
-    if (warnings.length > 0) {
-      setWarningMessages(warnings.map((warning) => warning.message));
+    saveAssignmentResultDraft(params.groupId, round, result.teams);
+
+    if (result.warnings.length > 0) {
+      setWarningMessages(result.warnings);
       return;
     }
 
@@ -164,8 +170,9 @@ export default function FixedMemberSetupScreen() {
           <div className={styles.fixedCard}>
             {fixedMembers.map((member) => (
               <FixedMemberCard
-                key={member.id}
+                key={member.participantId}
                 member={member}
+                teamNumber={fixedTeamByParticipantId[member.participantId]}
                 onRemove={removeFixedMember}
               />
             ))}
@@ -180,17 +187,18 @@ export default function FixedMemberSetupScreen() {
         </p>
 
         <ParticipantSearch value={keyword} onChange={setKeyword} />
-        <div className={styles.filterWrapper}>
-          <ParticipantFilter value={filter} onChange={setFilter} />
-        </div>
 
-        {unassignedMembers.length === 0 ? (
+        {candidatesError ? (
+          <p className={styles.emptyState}>{candidatesError}</p>
+        ) : isLoadingCandidates ? (
+          <p className={styles.emptyState}>불러오는 중...</p>
+        ) : unassignedMembers.length === 0 ? (
           <p className={styles.emptyState}>검색 결과가 없습니다</p>
         ) : (
           <ul className={styles.unassignedList}>
             {unassignedMembers.map((member) => (
               <UnassignedMemberRow
-                key={member.id}
+                key={member.participantId}
                 member={member}
                 onAssign={setAssigningMember}
               />
@@ -203,24 +211,32 @@ export default function FixedMemberSetupScreen() {
         <Button
           variant="secondary"
           type="button"
-          disabled={fixedMembers.length > 0}
+          disabled={fixedMembers.length > 0 || isAssigning}
           onClick={runAssignment}
         >
           고정 없이 편성
         </Button>
         <Button
           type="button"
-          disabled={fixedMembers.length === 0}
+          disabled={fixedMembers.length === 0 || isAssigning}
           onClick={runAssignment}
         >
-          편성 실행
+          {isAssigning ? "편성 중..." : "편성 실행"}
         </Button>
+        {assignError && (
+          <span className={styles.errorText}>{assignError}</span>
+        )}
       </div>
 
       <SelectFixedGroupDialog
-        key={assigningMember?.id ?? "none"}
+        key={assigningMember?.participantId ?? "none"}
         open={assigningMember !== null}
         member={assigningMember}
+        currentTeamNumber={
+          assigningMember
+            ? (fixedTeamByParticipantId[assigningMember.participantId] ?? null)
+            : null
+        }
         groupCount={groupCount}
         onClose={() => setAssigningMember(null)}
         onConfirm={confirmAssignment}
@@ -231,7 +247,12 @@ export default function FixedMemberSetupScreen() {
         warnings={warningMessages ?? []}
         onClose={() => setWarningMessages(null)}
         onReset={() =>
-          router.push(groupRoutes.adminAssignmentSetup(params.groupId, round))
+          router.push(
+            withSessionContext(
+              groupRoutes.adminAssignmentSetup(params.groupId, round),
+              searchParams,
+            ),
+          )
         }
         onConfirm={goToProcessing}
       />

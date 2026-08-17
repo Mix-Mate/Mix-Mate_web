@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getVoteProgressContext } from "@/features/vote/api/vote.api";
 import Button from "@/shared/ui/Button";
 import InfoBanner from "@/shared/ui/InfoBanner";
-import { getParticipantPool } from "../api/assignment.api";
+import { useParticipantCandidatesQuery } from "../hooks/useParticipantCandidatesQuery";
 import AssignmentConditionList, {
   assignmentConditionOptions,
 } from "./AssignmentConditionList";
@@ -39,6 +39,7 @@ interface AssignmentSetupFormProps {
   groupId: string;
   round: AssignmentSetupInput["round"];
   isSubmitting?: boolean;
+  errorMessage?: string | null;
   onSubmit: (input: AssignmentSetupInput) => void;
 }
 
@@ -46,16 +47,24 @@ export default function AssignmentSetupForm({
   groupId,
   round,
   isSubmitting = false,
+  errorMessage = null,
   onSubmit,
 }: AssignmentSetupFormProps) {
   const voteProgress = round === 2 ? getVoteProgressContext(groupId) : null;
+  const { data: candidates } = useParticipantCandidatesQuery(groupId, round);
   const participantCount = voteProgress
     ? voteProgress.attendanceCount
-    : getParticipantPool().length;
+    : candidates.length;
   const maxGroupCount = getMaxGroupCount(participantCount);
   const [groupCount, setGroupCount] = useState(() =>
     Math.min(3, maxGroupCount),
   );
+  const hasManualGroupCount = useRef(false);
+
+  useEffect(() => {
+    if (hasManualGroupCount.current) return;
+    setGroupCount(Math.min(3, maxGroupCount));
+  }, [maxGroupCount]);
   const [conditionKeys, setConditionKeys] = useState<AssignmentConditionKey[]>(
     () => {
       const defaultKeys = assignmentConditionOptions
@@ -102,7 +111,10 @@ export default function AssignmentSetupForm({
           <GroupCountStepper
             value={groupCount}
             max={maxGroupCount}
-            onChange={setGroupCount}
+            onChange={(value) => {
+              hasManualGroupCount.current = true;
+              setGroupCount(value);
+            }}
           />
           <div className={styles.divider} />
           <p className={styles.perGroupText}>
@@ -141,6 +153,9 @@ export default function AssignmentSetupForm({
               ? "2차 자동 배치"
               : "다음 — 고정 멤버"}
         </Button>
+        {errorMessage && (
+          <p className={styles.errorText}>{errorMessage}</p>
+        )}
       </div>
     </form>
   );
