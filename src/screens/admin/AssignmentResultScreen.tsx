@@ -39,7 +39,11 @@ export default function AssignmentResultScreen() {
 
   const handleConfirm = () => {
     clearAssignmentResultDraft(params.groupId, round);
-    router.push(groupRoutes.home(params.groupId));
+    router.push(
+      round === 2
+        ? groupRoutes.adminRoundTwoPreparation(params.groupId)
+        : groupRoutes.home(params.groupId),
+    );
   };
 
   return (
