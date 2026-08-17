@@ -1,26 +1,26 @@
 import clsx from "clsx";
-import GenderAvatar from "@/shared/ui/GenderAvatar";
+import type { ParticipantCandidate } from "../types/assignment.types";
+import InitialAvatar from "./InitialAvatar";
 import styles from "./fixed-members.module.css";
-import type { FixedMemberCandidate } from "../types/assignment.types";
 
 interface UnassignedMemberRowProps {
-  member: FixedMemberCandidate;
-  onAssign: (member: FixedMemberCandidate) => void;
+  member: ParticipantCandidate;
+  onAssign: (member: ParticipantCandidate) => void;
 }
 
 export default function UnassignedMemberRow({
   member,
   onAssign,
 }: UnassignedMemberRowProps) {
-  const isPublic = member.visibility === "public";
+  const isPublic = member.visibility === "PUBLIC";
 
   return (
     <li className={styles.unassignedRow}>
-      <GenderAvatar gender={member.gender} name={member.name} size={46} />
+      <InitialAvatar name={member.displayName} size={46} />
 
       <div className={styles.unassignedInfo}>
-        <strong>{member.name}</strong>
-        <span>{member.department}</span>
+        <strong>{member.displayName}</strong>
+        <span>{member.major}</span>
       </div>
 
       <span
@@ -35,7 +35,7 @@ export default function UnassignedMemberRow({
       <button
         type="button"
         className={styles.assignButton}
-        aria-label={`${member.name} 조 지정`}
+        aria-label={`${member.displayName} 조 지정`}
         onClick={() => onAssign(member)}
       >
         조 지정 <span aria-hidden="true">+</span>
