@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { getVoteProgressContext } from "@/features/vote/api/vote.api";
 import Button from "@/shared/ui/Button";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import { getParticipantPool } from "../api/assignment.api";
 import AssignmentConditionList, {
   assignmentConditionOptions,
 } from "./AssignmentConditionList";
+import AssignmentParticipantStatusCard from "./AssignmentParticipantStatusCard";
 import GroupCountStepper from "./GroupCountStepper";
 import type {
   AssignmentConditionKey,
@@ -34,26 +36,38 @@ function getMaxGroupCount(participantCount: number) {
 }
 
 interface AssignmentSetupFormProps {
+  groupId: string;
   round: AssignmentSetupInput["round"];
   isSubmitting?: boolean;
   onSubmit: (input: AssignmentSetupInput) => void;
 }
 
 export default function AssignmentSetupForm({
+  groupId,
   round,
   isSubmitting = false,
   onSubmit,
 }: AssignmentSetupFormProps) {
-  const participantCount = getParticipantPool().length;
+  const voteProgress = round === 2 ? getVoteProgressContext(groupId) : null;
+  const participantCount = voteProgress
+    ? voteProgress.attendanceCount
+    : getParticipantPool().length;
   const maxGroupCount = getMaxGroupCount(participantCount);
   const [groupCount, setGroupCount] = useState(() =>
     Math.min(3, maxGroupCount),
   );
   const [conditionKeys, setConditionKeys] = useState<AssignmentConditionKey[]>(
-    () =>
-      assignmentConditionOptions
+    () => {
+      const defaultKeys = assignmentConditionOptions
         .filter((option) => option.defaultEnabled)
-        .map((option) => option.key),
+        .map((option) => option.key);
+
+      if (round === 2) {
+        return [...new Set([...defaultKeys, "KEEP_FIXED_MEMBERS" as const])];
+      }
+
+      return defaultKeys;
+    },
   );
 
   const toggleCondition = (key: AssignmentConditionKey) => {
@@ -74,6 +88,15 @@ export default function AssignmentSetupForm({
     >
       <div className={styles.scrollArea}>
         <h2 className={styles.setupHeading}>조 편성 설정</h2>
+
+        {voteProgress && (
+          <AssignmentParticipantStatusCard
+            round={2}
+            targetCount={voteProgress.attendanceCount}
+            absenceCount={voteProgress.absenceCount}
+            pendingCount={voteProgress.pendingCount}
+          />
+        )}
 
         <div className={styles.setupCard}>
           <GroupCountStepper
@@ -99,9 +122,12 @@ export default function AssignmentSetupForm({
           </h2>
         </div>
 
-        <InfoBanner>이전 회차의 조와 조원 목록을 확인할 수 있습니다.</InfoBanner>
+        {round !== 2 && (
+          <InfoBanner>이전 회차의 조와 조원 목록을 확인할 수 있습니다.</InfoBanner>
+        )}
 
         <AssignmentConditionList
+          round={round}
           selectedKeys={conditionKeys}
           onToggle={toggleCondition}
         />
@@ -109,7 +135,11 @@ export default function AssignmentSetupForm({
 
       <div className={styles.footer}>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "설정 중..." : "다음 — 고정 멤버"}
+          {isSubmitting
+            ? "설정 중..."
+            : round === 2
+              ? "2차 자동 배치"
+              : "다음 — 고정 멤버"}
         </Button>
       </div>
     </form>

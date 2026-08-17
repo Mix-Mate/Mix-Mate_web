@@ -1,7 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import type { AssignmentConditionOption } from "../types/assignment.types";
+import type {
+  AssignmentConditionOption,
+  AssignmentSetupInput,
+} from "../types/assignment.types";
 import styles from "./assignment.module.css";
 
 export const assignmentConditionOptions: AssignmentConditionOption[] = [
@@ -57,11 +60,13 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
 ];
 
 interface AssignmentConditionListProps {
+  round: AssignmentSetupInput["round"];
   selectedKeys: AssignmentConditionOption["key"][];
   onToggle: (key: AssignmentConditionOption["key"]) => void;
 }
 
 export default function AssignmentConditionList({
+  round,
   selectedKeys,
   onToggle,
 }: AssignmentConditionListProps) {
@@ -69,6 +74,8 @@ export default function AssignmentConditionList({
     <div className={styles.conditionCard} aria-label="배치 조건 목록">
       {assignmentConditionOptions.map((option) => {
         const isOn = selectedKeys.includes(option.key);
+        // 2차부터는 직전 회차 조 배정이 있으므로 관리자가 직접 켜고 끌 수 있다.
+        const isLocked = option.locked && round !== 2;
 
         return (
           <div key={option.key} className={styles.conditionRow}>
@@ -81,10 +88,10 @@ export default function AssignmentConditionList({
               role="switch"
               aria-checked={isOn}
               aria-label={option.label}
-              disabled={option.locked}
+              disabled={isLocked}
               className={clsx(styles.toggle, isOn && styles.toggleOn)}
               onClick={() => {
-                if (option.locked) return;
+                if (isLocked) return;
                 onToggle(option.key);
               }}
             >

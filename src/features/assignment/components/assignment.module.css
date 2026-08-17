@@ -111,6 +111,38 @@
   font-weight: 700;
 }
 
+.participantStatusCard {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid #f0f0f2;
+  border-radius: 26px;
+  background: #fff;
+}
+
+.participantStatusTitle {
+  margin: 0;
+  color: #18181b;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 25px;
+}
+
+.participantStatusCount {
+  margin: 4px 0 0;
+  color: #256ad3;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 54px;
+}
+
+.participantStatusSub {
+  margin: 0;
+  color: #52525b;
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .conditionsHeadingRow {
   display: flex;
   align-items: baseline;
