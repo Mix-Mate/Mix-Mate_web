@@ -105,7 +105,12 @@ export default function AssignmentResultScreen() {
         ariaLabel="관리자 메뉴"
         onSelect={(item) => {
           if (item.id === "participants") {
-            router.push(groupRoutes.participants(params.groupId));
+            router.push(
+              withSessionContext(
+                groupRoutes.adminParticipants(params.groupId),
+                searchParams,
+              ),
+            );
           }
         }}
       />

@@ -42,12 +42,21 @@ export default function AssignmentProcessingScreen() {
 
       <TabNavigation
         items={[
-          { id: "participants", label: "참가자", disabled: true },
+          { id: "participants", label: "참가자" },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="assignment"
         ariaLabel="관리자 메뉴"
-        onSelect={() => {}}
+        onSelect={(item) => {
+          if (item.id === "participants") {
+            router.push(
+              withSessionContext(
+                groupRoutes.adminParticipants(params.groupId),
+                searchParams,
+              ),
+            );
+          }
+        }}
       />
 
       <div className={styles.content}>
