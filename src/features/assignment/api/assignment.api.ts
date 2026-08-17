@@ -1,51 +1,109 @@
-import { participantGroupMock } from "@/features/participant/api/participant.mock";
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { withAuthHeaders } from "@/shared/api/authToken";
+import { toBackendRound } from "../model/assignment.mapper";
 import type {
   AssignmentProgressStatus,
-  FixedMemberCandidate,
+  AssignmentRound,
+  AssignmentTeam,
+  ParticipantCandidate,
+  TeamGenerateRequestBody,
+  TeamGenerateResponse,
 } from "../types/assignment.types";
 
-const PROCESSING_DURATION_MS = 6000;
+const PROCESSING_DURATION_MS = 3000;
 
-const gradeByParticipantId: Record<string, string> = {
-  "1": "1학년",
-  "2": "2학년",
-  "3": "4학년",
-  "4": "3학년",
-  "5": "2학년",
-  "6": "3학년",
-  "7": "1학년",
-  "8": "4학년",
-  "9": "2학년",
-  "10": "1학년",
-  "11": "3학년",
-  "12": "4학년",
-};
+async function getErrorMessage(response: Response, fallback: string) {
+  try {
+    const body = (await response.json()) as { message?: string };
+    return body.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
 
-const mbtiByParticipantId: Record<string, string> = {
-  "1": "ENFP",
-  "2": "ISTJ",
-  "3": "INFP",
-  "4": "ESFJ",
-  "5": "INTJ",
-  "6": "ESTP",
-  "7": "ISFP",
-  "8": "ENTJ",
-  "9": "INFJ",
-  "10": "ESFP",
-  "11": "ISTP",
-  "12": "ENFJ",
-};
+export async function getParticipants(
+  groupId: string,
+  round: AssignmentRound,
+): Promise<ParticipantCandidate[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
+    { credentials: "include", headers: withAuthHeaders() },
+  );
 
-const newcomerParticipantIds = new Set(["1", "4", "7", "10"]);
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "참가자 목록을 불러오지 못했습니다."),
+    );
+  }
 
-export function getParticipantPool(): FixedMemberCandidate[] {
-  return participantGroupMock.participants.map((participant) => ({
-    ...participant,
-    grade: gradeByParticipantId[participant.id] ?? "1학년",
-    mbti: mbtiByParticipantId[participant.id] ?? "ENFP",
-    isNew: newcomerParticipantIds.has(participant.id),
-    fixedTeamNumber: null,
-  }));
+  const data = (await response.json()) as {
+    participantList: ParticipantCandidate[];
+  };
+
+  return data.participantList;
+}
+
+export async function generateTeams(
+  groupId: string,
+  round: AssignmentRound,
+  body: TeamGenerateRequestBody,
+): Promise<TeamGenerateResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams/generate`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "조 편성 실행에 실패했습니다."),
+    );
+  }
+
+  return (await response.json()) as TeamGenerateResponse;
+}
+
+export async function getTeams(
+  groupId: string,
+  round: AssignmentRound,
+): Promise<AssignmentTeam[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams`,
+    { credentials: "include", headers: withAuthHeaders() },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "조 편성 결과를 불러오지 못했습니다."),
+    );
+  }
+
+  const data = (await response.json()) as { teams: AssignmentTeam[] };
+  return data.teams;
+}
+
+export async function confirmTeams(
+  groupId: string,
+  round: AssignmentRound,
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams/confirm`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "조 편성 확정에 실패했습니다."),
+    );
+  }
 }
 
 export function getAssignmentStatus(
