@@ -10,7 +10,7 @@ export const adminGroupPreparationMock: AdminGroupPreparation = {
   inviteCode: "SW2026",
   participantCount: 12,
   roleLabel: "관리자",
-  statusLabel: "1차 술자리 중",
+  statusLabel: "1차 준비 중",
 };
 
 export const adminRoundTwoPreparationMock: AdminRoundTwoPreparation = {
@@ -20,5 +20,5 @@ export const adminRoundTwoPreparationMock: AdminRoundTwoPreparation = {
   participantCount: 8,
   roleLabel: "관리자",
   round: 2,
-  statusLabel: "2차 술자리 중",
+  statusLabel: "2차 준비 중",
 };

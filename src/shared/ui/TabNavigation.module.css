@@ -41,3 +41,8 @@
   outline: 2px solid #60a5fa;
   outline-offset: -2px;
 }
+
+.disabledTab {
+  cursor: not-allowed;
+  color: #d4d4d8;
+}

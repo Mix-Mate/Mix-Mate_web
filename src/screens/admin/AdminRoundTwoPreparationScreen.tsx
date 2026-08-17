@@ -1,13 +1,14 @@
 "use client";
 
-import { History } from "lucide-react";
+import { ChevronRight, History, Paperclip } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
-import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
 import { useAdminRoundTwoPreparationQuery } from "@/features/group/hooks/useAdminRoundTwoPreparationQuery";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
+import SessionStatusCard from "@/features/session/components/SessionStatusCard";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -40,6 +41,13 @@ export default function AdminRoundTwoPreparationScreen() {
     [group.description, group.name],
   );
 
+  const navigateWithSession = useCallback(
+    (href: string) => {
+      router.push(withSessionContext(href, searchParams));
+    },
+    [router, searchParams],
+  );
+
   const handleUpdateGroup = useCallback(
     async (input: UpdateGroupInput) => {
       const updatedGroup = await updateGroup(params.groupId, input);
@@ -62,30 +70,57 @@ export default function AdminRoundTwoPreparationScreen() {
       data-testid="admin-round-two-preparation"
       data-group-id={group.id}
     >
-      <Header title={group.name} onBack={() => router.back()} />
+      <Header title={group.name} onBack={() => router.back()} compact />
 
-      <div className={styles.content}>
-        <RoundTwoStatusCard
+      <div className={`${styles.content} ${styles.firstRoundContent}`}>
+        <SessionStatusCard
           eyebrow="진행 상태 확인"
-          statusLabel={group.statusLabel}
-          onEditGroup={() => setEditDialogOpen(true)}
+          status={group.statusLabel}
+          onClick={() =>
+            router.push(
+              `${groupRoutes.adminProgress(params.groupId)}?scenario=round2-waiting`,
+            )
+          }
         />
+
+        <button
+          type="button"
+          className={styles.editGroupPill}
+          onClick={() => setEditDialogOpen(true)}
+        >
+          <span className={styles.editGroupIcon} aria-hidden="true">
+            <Paperclip size={19} strokeWidth={1.8} />
+          </span>
+          <span className={styles.editGroupText}>
+            <strong>그룹 정보 편집</strong>
+            <small>이름 · 설명 · 진행 상태 수정</small>
+          </span>
+          <ChevronRight
+            className={styles.editGroupChevron}
+            aria-hidden="true"
+            size={18}
+            strokeWidth={2}
+          />
+        </button>
 
         <AdminPreparationActions
           onStartAssignment={() =>
-            router.push(groupRoutes.adminAssignmentSetup(params.groupId, 2))
+            navigateWithSession(
+              groupRoutes.adminAssignmentSetup(params.groupId, 2),
+            )
           }
           secondaryAction={{
             icon: <History aria-hidden="true" size={17} strokeWidth={1.8} />,
             label: "2차 참가자 명단 보기",
             onClick: () =>
-              router.push(
+              navigateWithSession(
                 groupRoutes.adminRoundTwoParticipants(params.groupId),
               ),
           }}
           onEditProfile={() =>
-            router.push(groupRoutes.profileEdit(params.groupId))
+            navigateWithSession(groupRoutes.profileEdit(params.groupId))
           }
+          profileActionLabel="내 프로필 조회"
           footerPlacement="flow"
         />
       </div>

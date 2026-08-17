@@ -5,6 +5,7 @@ import styles from "./TabNavigation.module.css";
 export interface TabNavigationItem {
   id: string;
   label: ReactNode;
+  disabled?: boolean;
 }
 
 interface TabNavigationProps<TItem extends TabNavigationItem> {
@@ -31,8 +32,13 @@ export default function TabNavigation<TItem extends TabNavigationItem>({
           <button
             key={item.id}
             type="button"
-            className={clsx(styles.tab, isActive && styles.activeTab)}
+            className={clsx(
+              styles.tab,
+              isActive && styles.activeTab,
+              item.disabled && styles.disabledTab,
+            )}
             aria-current={isActive ? "page" : undefined}
+            disabled={item.disabled}
             onClick={() => onSelect(item)}
           >
             {item.label}

@@ -1,19 +1,26 @@
+import type { ReactNode } from "react";
 import styles from "./session.module.css";
 
 interface SessionStatusCardProps {
   eyebrow: string;
   status: string;
   onClick?: () => void;
+  action?: {
+    ariaLabel: string;
+    icon: ReactNode;
+    onClick: () => void;
+  };
 }
 
 export default function SessionStatusCard({
   eyebrow,
   status,
   onClick,
+  action,
 }: SessionStatusCardProps) {
   const content = (
     <>
-      <span className={styles.statusDot} />
+      <span className={styles.statusDot} aria-hidden="true" />
       <div>
         <p>{eyebrow}</p>
         <strong>{status}</strong>
@@ -35,8 +42,23 @@ export default function SessionStatusCard({
   }
 
   return (
-    <section className={styles.statusCard} aria-label="현재 진행 상태">
+    <section
+      className={`${styles.statusCard} ${
+        action ? styles.statusCardWithAction : ""
+      }`.trim()}
+      aria-label="현재 진행 상태"
+    >
       {content}
+      {action && (
+        <button
+          type="button"
+          className={styles.statusAction}
+          aria-label={action.ariaLabel}
+          onClick={action.onClick}
+        >
+          {action.icon}
+        </button>
+      )}
     </section>
   );
 }

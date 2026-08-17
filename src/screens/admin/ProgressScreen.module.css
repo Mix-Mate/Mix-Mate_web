@@ -1,9 +1,7 @@
 .phone {
   display: flex;
   flex-direction: column;
-  border: 1.319px solid #e4e4e7;
-  border-radius: 26.375px;
-  background: #fff;
+  color: #172b3d;
 }
 
 .content {
@@ -13,91 +11,25 @@
   flex-direction: column;
   gap: 9.891px;
   padding: 13.188px 16.484px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #c7cdfb transparent;
+  scrollbar-width: thin;
   background: #fcfcff;
 }
 
-.statusCard {
-  position: relative;
-  display: flex;
-  width: 100%;
-  min-height: 92px;
-  flex: 0 0 92px;
-  align-items: center;
-  gap: 13px;
-  padding: 17px 46px 17px 20px;
-  overflow: hidden;
-  border: 1px solid #bfdbfe;
-  border-radius: 17px;
-  background: linear-gradient(165deg, #eff6ff 0%, #91bfff 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.55),
-    0 2px 3px rgba(37, 99, 235, 0.08);
+.content::-webkit-scrollbar {
+  width: 5px;
 }
 
-.statusRow {
-  display: none;
+.content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.statusRow strong {
-  color: #18181b;
-  font-size: 23.078px;
-  font-weight: 700;
-  line-height: 35px;
-}
-
-.roundTwoStatusCard {
-  position: relative;
-  display: flex;
-  width: 100%;
-  min-height: 92px;
-  flex: 0 0 92px;
-  align-items: center;
-  gap: 13px;
-  padding: 17px 46px 17px 20px;
-  overflow: hidden;
-  border: 1px solid #bfdbfe;
-  border-radius: 17px;
-  background: linear-gradient(165deg, #eff6ff 0%, #91bfff 100%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.55),
-    0 2px 3px rgba(37, 99, 235, 0.08);
-}
-
-.roundTwoStatusDot {
-  width: 13px;
-  height: 13px;
-  flex: 0 0 13px;
-  border-radius: 50%;
-  background: #2563eb;
-}
-
-.roundTwoStatusText {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.roundTwoStatusText small {
-  color: #2563eb;
-  font-family: "Noto Sans KR", sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.65px;
-  line-height: 20px;
-}
-
-.roundTwoStatusText strong {
-  color: #1e40af;
-  font-family: "Noto Sans KR", sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  line-height: 35px;
-}
-
-.content .editGroupButton {
-  display: none !important;
+.content::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c7cdfb;
 }
 
 .progressCard {
@@ -108,9 +40,6 @@
   border: 1px solid #e4e4e7;
   border-radius: 20px;
   background: #fff;
-  box-shadow:
-    0 1px 1px rgb(24 24 27 / 4%),
-    0 12px 16px rgb(24 24 27 / 12%);
 }
 
 .progressHeading p,
@@ -136,6 +65,8 @@
 }
 
 .footer {
+  position: relative;
+  z-index: 1;
   flex: 0 0 98.906px;
   padding: 24.397px 16.484px 14.836px;
   border-top: 1.319px solid #e4e4e7;
@@ -144,15 +75,12 @@
 
 .endButton {
   width: 350.128px;
+  max-width: 100%;
   height: 59.344px;
-  cursor: pointer;
   border-radius: 16.484px;
-  background: #ef4444;
-  color: #fff;
   font-size: 18px;
   font-weight: 600;
   line-height: 27px;
-  transition: transform 100ms ease;
 }
 
 .endButton:active {
@@ -162,4 +90,10 @@
 .endButton:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
+}
+
+.footer .endButton:disabled {
+  border-color: #71717a;
+  background: #71717a;
+  color: #fff;
 }

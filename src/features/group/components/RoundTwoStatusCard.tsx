@@ -1,5 +1,5 @@
 import { SquarePen } from "lucide-react";
-import styles from "./admin-preparation.module.css";
+import SessionStatusCard from "@/features/session/components/SessionStatusCard";
 
 interface RoundTwoStatusCardProps {
   eyebrow: string;
@@ -14,23 +14,16 @@ export default function RoundTwoStatusCard({
   onEditGroup,
   showEditButton = true,
 }: RoundTwoStatusCardProps) {
+  const action =
+    showEditButton && onEditGroup
+      ? {
+          ariaLabel: "그룹 정보 편집",
+          icon: <SquarePen aria-hidden="true" size={18} strokeWidth={2} />,
+          onClick: onEditGroup,
+        }
+      : undefined;
+
   return (
-    <section className={styles.roundTwoStatusCard} aria-label="그룹 진행 상태">
-      <span className={styles.roundTwoStatusDot} aria-hidden="true" />
-      <span className={styles.roundTwoStatusText}>
-        <small>{eyebrow}</small>
-        <strong>{statusLabel}</strong>
-      </span>
-      {showEditButton && onEditGroup && (
-        <button
-          type="button"
-          className={styles.editGroupButton}
-          onClick={onEditGroup}
-          aria-label="그룹 정보 편집"
-        >
-          <SquarePen aria-hidden="true" size={18} strokeWidth={2} />
-        </button>
-      )}
-    </section>
+    <SessionStatusCard eyebrow={eyebrow} status={statusLabel} action={action} />
   );
 }
