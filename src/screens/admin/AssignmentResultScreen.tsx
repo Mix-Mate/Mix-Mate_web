@@ -39,10 +39,9 @@ export default function AssignmentResultScreen() {
 
   const handleConfirm = () => {
     clearAssignmentResultDraft(params.groupId, round);
+    const scenario = round === 2 ? "round2-active" : "round1-active";
     router.push(
-      round === 2
-        ? groupRoutes.adminRoundTwoPreparation(params.groupId)
-        : groupRoutes.home(params.groupId),
+      `${groupRoutes.home(params.groupId)}?role=admin&scenario=${scenario}`,
     );
   };
 
