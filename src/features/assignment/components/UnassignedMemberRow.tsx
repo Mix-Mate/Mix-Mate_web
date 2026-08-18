@@ -1,6 +1,7 @@
 import clsx from "clsx";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
+import { toGender } from "../model/assignment.mapper";
 import type { ParticipantCandidate } from "../types/assignment.types";
-import InitialAvatar from "./InitialAvatar";
 import styles from "./fixed-members.module.css";
 
 interface UnassignedMemberRowProps {
@@ -16,7 +17,11 @@ export default function UnassignedMemberRow({
 
   return (
     <li className={styles.unassignedRow}>
-      <InitialAvatar name={member.displayName} size={46} />
+      <GenderAvatar
+        gender={toGender(member.gender)}
+        name={member.displayName}
+        size={46}
+      />
 
       <div className={styles.unassignedInfo}>
         <strong>{member.displayName}</strong>

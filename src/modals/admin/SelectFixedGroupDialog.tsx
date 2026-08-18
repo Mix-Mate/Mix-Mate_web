@@ -3,10 +3,11 @@
 import clsx from "clsx";
 import { Check } from "lucide-react";
 import { useState } from "react";
-import InitialAvatar from "@/features/assignment/components/InitialAvatar";
+import { toGender } from "@/features/assignment/model/assignment.mapper";
 import type { ParticipantCandidate } from "@/features/assignment/types/assignment.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./select-fixed-group-dialog.module.css";
 
 interface SelectFixedGroupDialogProps {
@@ -40,7 +41,11 @@ export default function SelectFixedGroupDialog({
       onClose={onClose}
     >
       <div className={styles.header}>
-        <InitialAvatar name={member.displayName} size={46} />
+        <GenderAvatar
+          gender={toGender(member.gender)}
+          name={member.displayName}
+          size={46}
+        />
         <div className={styles.info}>
           <h2 id="select-fixed-group-title" className={styles.name}>
             {member.displayName}

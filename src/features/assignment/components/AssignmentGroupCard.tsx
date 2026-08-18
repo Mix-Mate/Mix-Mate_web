@@ -1,5 +1,6 @@
+import GenderAvatar from "@/shared/ui/GenderAvatar";
+import { toGender } from "../model/assignment.mapper";
 import type { AssignmentTeam } from "../types/assignment.types";
-import InitialAvatar from "./InitialAvatar";
 import styles from "./assignment-group-card.module.css";
 
 interface AssignmentGroupCardProps {
@@ -20,7 +21,11 @@ export default function AssignmentGroupCard({
       <ul className={styles.memberList}>
         {team.members.map((member) => (
           <li key={member.participantId} className={styles.memberRow}>
-            <InitialAvatar name={member.displayName} size={40} />
+            <GenderAvatar
+              gender={toGender(member.gender)}
+              name={member.displayName}
+              size={40}
+            />
             <div className={styles.memberInfo}>
               <strong>{member.displayName}</strong>
               <small>{member.major}</small>
