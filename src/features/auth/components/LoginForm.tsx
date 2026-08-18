@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Button from '@/shared/ui/Button';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -165,9 +166,10 @@ export function LoginForm() {
           />
         </div>
 
-        {/* 로그인 버튼 */}
-        <button
+        {/* 로그인 버튼 (가이드 공통 컴포넌트 적용) */}
+        <Button
           type="submit"
+          variant="primary"
           style={{
             width: '100%',
             height: '56px',
@@ -182,7 +184,7 @@ export function LoginForm() {
           }}
         >
           로그인
-        </button>
+        </Button>
 
         {/* 구분선 */}
         <div
