@@ -19,6 +19,8 @@ export type BackendConditionKey =
   | "NEWCOMER_SPREAD"
   | "POSITION_SPREAD";
 
+export type BackendGender = "MALE" | "FEMALE";
+
 export interface AssignmentConditionOption {
   key: AssignmentConditionKey;
   label: string;
@@ -43,6 +45,7 @@ export interface ParticipantCandidate {
   participantId: number;
   displayName: string;
   major: string;
+  gender: BackendGender;
   visibility: "PUBLIC" | "PRIVATE";
 }
 
@@ -61,11 +64,12 @@ export interface TeamGenerateRequestBody {
 }
 
 // 조 편성 실행/조회 응답의 멤버 — 실제 API는 이 필드만 내려준다
-// (학년·MBTI·성별·신입여부·직급은 내려주지 않음).
+// (학년·MBTI·신입여부·직급은 내려주지 않음).
 export interface TeamMemberDetail {
   participantId: number;
   displayName: string;
   major: string;
+  gender: BackendGender;
   visibility: "PUBLIC" | "PRIVATE";
   fixed: boolean;
 }

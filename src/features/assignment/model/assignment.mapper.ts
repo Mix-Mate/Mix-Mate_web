@@ -1,8 +1,10 @@
+import type { Gender } from "@/shared/types/gender.types";
 import type {
   AssignmentConditionKey,
   AssignmentRound,
   AssignmentTeam,
   BackendConditionKey,
+  BackendGender,
   BackendRound,
   FixedMemberRequestItem,
   FixedMemberSelection,
@@ -10,6 +12,10 @@ import type {
 
 export function toBackendRound(round: AssignmentRound): BackendRound {
   return round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+}
+
+export function toGender(gender: BackendGender): Gender {
+  return gender === "FEMALE" ? "female" : "male";
 }
 
 // 인원 수 균등(MEMBER_COUNT_BALANCE)은 서버가 항상 보장하므로 보내지 않고,

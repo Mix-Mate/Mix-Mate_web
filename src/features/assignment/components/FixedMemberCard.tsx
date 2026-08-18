@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
+import GenderAvatar from "@/shared/ui/GenderAvatar";
+import { toGender } from "../model/assignment.mapper";
 import type { ParticipantCandidate } from "../types/assignment.types";
-import InitialAvatar from "./InitialAvatar";
 import styles from "./fixed-members.module.css";
 
 interface FixedMemberCardProps {
@@ -16,7 +17,11 @@ export default function FixedMemberCard({
 }: FixedMemberCardProps) {
   return (
     <div className={styles.fixedRow}>
-      <InitialAvatar name={member.displayName} size={46} />
+      <GenderAvatar
+        gender={toGender(member.gender)}
+        name={member.displayName}
+        size={46}
+      />
 
       <div className={styles.fixedInfo}>
         <strong>{member.displayName}</strong>
