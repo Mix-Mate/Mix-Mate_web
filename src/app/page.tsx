@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import SplashScreen from "@/screens/common/SplashScreen";
 
 export default function RootPage() {
-  redirect("/groups/demo/home");
+  return <SplashScreen />;
 }
