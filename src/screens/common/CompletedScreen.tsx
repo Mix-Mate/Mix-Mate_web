@@ -30,13 +30,6 @@ export default function CompletedScreen() {
       data-testid="completed-screen"
       data-group-id={params.groupId}
     >
-      <header className={styles.header}>
-        <p className={styles.logo}>
-          <span className={styles.logoMix}>Mix</span>
-          <span className={styles.logoMate}>Mate</span>
-        </p>
-      </header>
-
       <main className={styles.content}>
         <div className={styles.illustration}>
           <Image
