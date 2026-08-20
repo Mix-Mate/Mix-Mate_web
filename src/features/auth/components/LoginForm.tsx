@@ -4,6 +4,12 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Button from '@/shared/ui/Button';
+// AS-IS (에러)
+// import logoIcon from '@/public/icons/logo.svg';
+
+// TO-BE (수정: 프로젝트 루트의 public 경로 참조)
+import logoIcon from '../../../../public/icons/logo.svg';
+import styles from './LoginForm.module.css';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -15,88 +21,29 @@ export function LoginForm() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'stretch',
-        width: '100%',
-        gap: '35.95px',
-      }}
-    >
+    <div className={styles.container}>
       {/* 1. 상단 로고 & 타이틀 영역 */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          width: '100%',
-          marginTop: '10px',
-        }}
-      >
-        <div
-          style={{
-            position: 'relative',
-            width: '80px',
-            height: '80px',
-            marginBottom: '16px',
-          }}
-        >
+      <div className={styles.header}>
+        <div className={styles.logoWrapper}>
           <Image
-            src="/icons/logo.svg"
+            src={logoIcon}
             alt="MixMate 로고"
             width={80}
             height={80}
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            className={styles.logoImage}
             priority
           />
         </div>
 
-        <h1
-          style={{
-            fontSize: '32px',
-            fontWeight: '700',
-            lineHeight: '1.3',
-            color: '#18181B',
-            margin: '0 0 8px 0',
-          }}
-        >
-          MixMate
-        </h1>
-        <p
-          style={{
-            fontSize: '16px',
-            fontWeight: '500',
-            color: '#52525B',
-            margin: 0,
-          }}
-        >
-          술자리 조 편성 서비스
-        </p>
+        <h1 className={styles.title}>MixMate</h1>
+        <p className={styles.subtitle}>술자리 조 편성 서비스</p>
       </div>
 
       {/* 2. 입력 폼 영역 */}
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          gap: '24px',
-        }}
-      >
+      <form onSubmit={handleSubmit} className={styles.form}>
         {/* 이메일 인풋 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label
-            htmlFor="email"
-            style={{
-              fontSize: '15px',
-              fontWeight: '500',
-              color: '#52525B',
-              paddingLeft: '4px',
-            }}
-          >
+        <div className={styles.inputGroup}>
+          <label htmlFor="email" className={styles.label}>
             이메일
           </label>
           <input
@@ -106,37 +53,13 @@ export function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder=" "
             required
-            style={{
-              width: '100%',
-              height: '56px',
-              padding: '0 24px',
-              fontSize: '16px',
-              color: '#18181B',
-              backgroundColor: '#F7F9FC',
-              borderStyle: 'solid',
-              borderColor: '#B8C6D8',
-              borderTopWidth: '2.57px',
-              borderRightWidth: '2.57px',
-              borderBottomWidth: '2.57px',
-              borderLeftWidth: '7.7px',
-              borderRadius: '25.68px',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
+            className={styles.inputEmail}
           />
         </div>
 
         {/* 비밀번호 인풋 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label
-            htmlFor="password"
-            style={{
-              fontSize: '15px',
-              fontWeight: '500',
-              color: '#52525B',
-              paddingLeft: '4px',
-            }}
-          >
+        <div className={styles.inputGroup}>
+          <label htmlFor="password" className={styles.label}>
             비밀번호
           </label>
           <input
@@ -146,88 +69,22 @@ export function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder=""
             required
-            style={{
-              width: '100%',
-              height: '56px',
-              padding: '0 24px',
-              fontSize: '16px',
-              color: '#18181B',
-              backgroundColor: '#FBF8FC',
-              borderStyle: 'solid',
-              borderColor: '#C8BDD6',
-              borderTopWidth: '2.57px',
-              borderRightWidth: '2.57px',
-              borderBottomWidth: '2.57px',
-              borderLeftWidth: '7.7px',
-              borderRadius: '25.68px',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
+            className={styles.inputPassword}
           />
         </div>
 
-        {/* 로그인 버튼 (가이드 공통 컴포넌트 적용) */}
-        <Button
-          type="submit"
-          variant="primary"
-          style={{
-            width: '100%',
-            height: '56px',
-            backgroundColor: '#256AD3',
-            color: '#FFFFFF',
-            fontSize: '16px',
-            fontWeight: '600',
-            borderRadius: '16px',
-            border: 'none',
-            cursor: 'pointer',
-            marginTop: '8px',
-          }}
-        >
+        {/* 로그인 버튼 */}
+        <Button type="submit" variant="primary" className={styles.loginButton}>
           로그인
         </Button>
 
         {/* 구분선 */}
-        <div
-          style={{
-            width: '100%',
-            height: '1px',
-            backgroundColor: '#E4E4E7',
-            margin: '8px 0',
-          }}
-        />
+        <div className={styles.divider} />
 
         {/* 회원가입 영역 */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '14px',
-            width: '100%',
-          }}
-        >
-          <span style={{ fontSize: '14px', fontWeight: '500', color: '#52525B' }}>
-            계정이 없나요?
-          </span>
-
-          <Link
-            href="/signup"
-            style={{
-              width: '100%',
-              height: '54px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#FFFFFF',
-              color: '#3B82C4',
-              fontSize: '16px',
-              fontWeight: '600',
-              borderRadius: '16px',
-              border: '1px solid #E4E4E7',
-              textDecoration: 'none',
-              boxSizing: 'border-box',
-            }}
-          >
+        <div className={styles.signupWrapper}>
+          <span className={styles.signupText}>계정이 없나요?</span>
+          <Link href="/signup" className={styles.signupLink}>
             회원가입
           </Link>
         </div>
