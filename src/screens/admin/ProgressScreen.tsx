@@ -61,16 +61,10 @@ export default function ProgressScreen() {
       return;
     }
 
-    goHome();
-  }, [
-    canEndCurrentRound,
-    currentRound,
-    endRound,
-    goHome,
-    params.groupId,
-    router,
-    searchParams,
-  ]);
+    router.replace(
+      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
+    );
+  }, [canEndCurrentRound, currentRound, endRound, params.groupId, router, searchParams]);
 
   return (
     <MobileFrame
