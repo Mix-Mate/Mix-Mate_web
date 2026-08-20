@@ -1,5 +1,9 @@
 export type UserHomeScenario =
-  "round1-waiting" | "round1-active" | "round2-waiting" | "round2-active";
+  | "recruiting"
+  | "round1-waiting"
+  | "round1-active"
+  | "round2-waiting"
+  | "round2-active";
 
 export type GroupRole = "USER" | "ADMIN";
 
@@ -17,6 +21,7 @@ export type EventStatus =
 export interface GroupHomePermissions {
   canLeaveGroup: boolean;
   canEndRound: boolean;
+  canEditProfile: boolean;
 }
 
 export interface UserHomeSnapshot {

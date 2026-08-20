@@ -1,4 +1,4 @@
-﻿import { getMyGroupProfileMock } from "../api/profile.mock";
+import { getMyGroupProfileMock } from "../api/profile.mock";
 import type {
   EditableGroupProfile,
   MyGroupProfile,
@@ -8,6 +8,7 @@ import type {
   ProfilePosition,
   ProfileVisibility,
 } from "../types/profile.types";
+import { normalizeMajor } from "./normalize-major";
 
 export const PROFILE_STORAGE_KEY = "mixmate-my-group-profile";
 export const MY_PARTICIPANT_ID = "1";
@@ -93,10 +94,11 @@ function normalizeSavedProfile(
       savedProfile.position === "STAFF" || savedProfile.position === "MEMBER"
         ? (savedProfile.position as ProfilePosition)
         : mockProfile.position,
-    major:
+    major: normalizeMajor(
       normalizeString(savedProfile.major) ??
-      normalizeString(savedProfile.department) ??
-      mockProfile.major,
+        normalizeString(savedProfile.department) ??
+        mockProfile.major,
+    ),
     isNew:
       typeof savedProfile.isNew === "boolean"
         ? savedProfile.isNew
@@ -133,5 +135,11 @@ export function getSavedMyGroupProfile(): MyGroupProfile {
 }
 
 export function saveMyGroupProfile(profile: EditableGroupProfile) {
-  window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  window.localStorage.setItem(
+    PROFILE_STORAGE_KEY,
+    JSON.stringify({
+      ...profile,
+      major: normalizeMajor(profile.major),
+    }),
+  );
 }
