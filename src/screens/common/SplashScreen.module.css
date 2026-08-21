@@ -29,10 +29,20 @@
   font-weight: 700;
   line-height: 45px;
   opacity: 0;
-  animation: revealWordmark 0.5s ease-out 1.3s forwards;
+  animation: revealText 0.5s ease-out 1.3s forwards;
 }
 
-@keyframes revealWordmark {
+.tagline {
+  margin: 8px 0 0;
+  color: #71717a;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  opacity: 0;
+  animation: revealText 0.5s ease-out 1.6s forwards;
+}
+
+@keyframes revealText {
   from {
     opacity: 0;
     translate: 0 8px;
@@ -45,7 +55,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wordmark {
+  .wordmark,
+  .tagline {
     animation: none;
     opacity: 1;
   }
