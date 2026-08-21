@@ -75,6 +75,22 @@
   text-align: center;
 }
 
+.queryState {
+  margin: 48px 16px 0;
+  color: #68717c;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.queryError {
+  margin: 12px 16px 0;
+  color: #b42318;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+
 .privateProfileSheet {
   --bottom-sheet-padding: 16px 14px 14px;
   --bottom-sheet-border-radius: 24px 24px 0 0;

@@ -12,7 +12,7 @@ import {
 import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
-import type { TeamMemberSummary } from "@/features/team/types/team.types";
+import type { TeamMember, TeamRound } from "@/features/team/types/team.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
@@ -24,25 +24,31 @@ export default function MyTeamScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const [privateMember, setPrivateMember] = useState<TeamMemberSummary | null>(
-    null,
-  );
+  const [privateMember, setPrivateMember] = useState<TeamMember | null>(null);
 
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
     getMockGroupRole(searchParams),
   );
-  const { data: team } = useMyTeamQuery(params.groupId);
+  const round: TeamRound =
+    snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+  const {
+    data: team,
+    isLoading,
+    error,
+  } = useMyTeamQuery(params.groupId, round);
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
   const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
 
-  const handleMemberSelect = (member: TeamMemberSummary) => {
-    if (member.profileVisibility === "PRIVATE") {
+  const handleMemberSelect = (member: TeamMember) => {
+    if (member.visibility === "PRIVATE") {
       setPrivateMember(member);
       return;
     }
 
-    router.push(`/groups/${params.groupId}/participants/${member.id}`);
+    router.push(
+      `/groups/${params.groupId}/participants/${member.participantId}`,
+    );
   };
 
   return (
@@ -75,16 +81,18 @@ export default function MyTeamScreen() {
           <section
             className={styles.assignmentOrb}
             aria-label={
-              snapshot.teamNumber === null
-                ? "아직 조가 배정되지 않았습니다."
-                : `${snapshot.teamNumber}조에 배정되었습니다.`
+              isLoading
+                ? "내 조 정보를 불러오는 중입니다."
+                : error
+                  ? "내 조 정보를 불러오지 못했습니다."
+                  : team
+                    ? `${team.teamNumber}조에 배정되었습니다.`
+                    : "내 조 정보가 없습니다."
             }
           >
             <span>내 조</span>
             <strong>
-              {snapshot.teamNumber === null
-                ? "배정 전"
-                : `${snapshot.teamNumber}조`}
+              {isLoading ? "…" : team ? `${team.teamNumber}조` : "—"}
             </strong>
           </section>
 
@@ -94,10 +102,28 @@ export default function MyTeamScreen() {
           >
             진행 상태 · {currentStatusLabel}
           </p>
+          {error && (
+            <p className={styles.queryError} role="alert">
+              {error}
+            </p>
+          )}
         </div>
       ) : (
         <div className={styles.membersContent}>
-          <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
+          {isLoading ? (
+            <p className={styles.queryState} role="status">
+              같은 조 멤버를 불러오는 중입니다.
+            </p>
+          ) : error ? (
+            <p
+              className={`${styles.queryState} ${styles.queryError}`}
+              role="alert"
+            >
+              {error}
+            </p>
+          ) : team ? (
+            <MyTeamPanel team={team} onMemberSelect={handleMemberSelect} />
+          ) : null}
         </div>
       )}
 
@@ -109,9 +135,8 @@ export default function MyTeamScreen() {
       >
         {privateMember && (
           <div className={styles.privateProfileContent}>
-
-            <h2>{privateMember.name}</h2>
-            <p>{privateMember.department}</p>
+            <h2>{privateMember.displayName}</h2>
+            <p>{privateMember.major}</p>
 
             <div className={styles.privateProfileDivider} />
 
