@@ -52,6 +52,14 @@
   line-height: 20px;
 }
 
+.error {
+  display: block;
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .divider {
   height: 1px;
   margin: 24px -26px 18px;
