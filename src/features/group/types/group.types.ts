@@ -1,3 +1,13 @@
+export type GroupStatus =
+  | "RECRUITING"
+  | "BEFORE_FIRST_ROUND"
+  | "FIRST_ROUND"
+  | "VOTING"
+  | "VOTE_CLOSED"
+  | "BEFORE_SECOND_ROUND"
+  | "SECOND_ROUND"
+  | "FINISHED";
+
 export interface AdminGroupPreparation {
   id: string;
   name: string;
@@ -5,6 +15,7 @@ export interface AdminGroupPreparation {
   inviteCode: string;
   participantCount: number;
   roleLabel: "관리자";
+  status: GroupStatus;
   statusLabel: string;
 }
 
