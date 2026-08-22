@@ -77,6 +77,23 @@ export async function getAdminGroupDetail(
   };
 }
 
+export async function closeRecruiting(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/close-recruiting`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "참가자 모집 마감에 실패했습니다."),
+    );
+  }
+}
+
 export function getAdminRoundTwoPreparation(groupId: string) {
   return {
     ...adminRoundTwoPreparationMock,
