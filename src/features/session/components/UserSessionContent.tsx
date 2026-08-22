@@ -9,6 +9,9 @@ import styles from "./session.module.css";
 interface UserSessionContentProps {
   groupId: string;
   snapshot: UserHomeSnapshot;
+  teamNumber: number | null;
+  isTeamLoading: boolean;
+  teamError: string | null;
   onNavigate: (href: string) => void;
   onRequestLeave: () => void;
   onRequestEndRound: () => void;
@@ -17,11 +20,14 @@ interface UserSessionContentProps {
 export default function UserSessionContent({
   groupId,
   snapshot,
+  teamNumber,
+  isTeamLoading,
+  teamError,
   onNavigate,
   onRequestLeave,
   onRequestEndRound,
 }: UserSessionContentProps) {
-  const isAssigned = snapshot.teamNumber !== null;
+  const isAssigned = teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
   const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
   const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
@@ -42,7 +48,19 @@ export default function UserSessionContent({
         }
       />
 
-      {isAssigned ? (
+      {isTeamLoading ? (
+        <section className={styles.waitingCard} aria-live="polite">
+          <Clock3 aria-hidden="true" size={28} strokeWidth={1.7} />
+          <strong>내 조 정보를 불러오는 중입니다</strong>
+          <p>잠시만 기다려 주세요</p>
+        </section>
+      ) : teamError ? (
+        <section className={styles.waitingCard} role="alert">
+          <Clock3 aria-hidden="true" size={28} strokeWidth={1.7} />
+          <strong>내 조 정보를 확인할 수 없습니다</strong>
+          <p>{teamError}</p>
+        </section>
+      ) : isAssigned ? (
         <>
           <button
             type="button"

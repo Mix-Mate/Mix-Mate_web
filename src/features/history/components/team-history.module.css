@@ -78,3 +78,15 @@
 .memberList button {
   height: 71px;
 }
+
+.queryState {
+  margin: 48px 16px 0;
+  color: #71717a;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+}
+
+.queryError {
+  color: #b42318;
+}

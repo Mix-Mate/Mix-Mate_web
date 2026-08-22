@@ -1,11 +1,11 @@
 import InfoBanner from "@/shared/ui/InfoBanner";
-import type { MyTeamData, TeamMemberSummary } from "../types/team.types";
+import type { Team, TeamMember } from "../types/team.types";
 import TeamMemberList from "./TeamMemberList";
 import styles from "./team.module.css";
 
 interface MyTeamPanelProps {
-  team: MyTeamData;
-  onMemberSelect: (member: TeamMemberSummary) => void;
+  team: Team;
+  onMemberSelect: (member: TeamMember) => void;
 }
 
 export default function MyTeamPanel({

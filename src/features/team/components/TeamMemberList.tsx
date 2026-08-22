@@ -1,11 +1,11 @@
 import clsx from "clsx";
-import type { TeamMemberSummary } from "../types/team.types";
+import type { TeamMember } from "../types/team.types";
 import TeamMemberItem from "./TeamMemberItem";
 import styles from "./team.module.css";
 
 interface TeamMemberListProps {
-  members: TeamMemberSummary[];
-  onSelect: (member: TeamMemberSummary) => void;
+  members: TeamMember[];
+  onSelect: (member: TeamMember) => void;
   className?: string;
 }
 
@@ -20,7 +20,11 @@ export default function TeamMemberList({
       aria-label="같은 조 멤버 목록"
     >
       {members.map((member) => (
-        <TeamMemberItem key={member.id} member={member} onSelect={onSelect} />
+        <TeamMemberItem
+          key={member.participantId}
+          member={member}
+          onSelect={onSelect}
+        />
       ))}
     </ul>
   );

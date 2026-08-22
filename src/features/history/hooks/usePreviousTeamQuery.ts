@@ -1,14 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { getPreviousTeam } from "../api/history.api";
+import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 
 export function usePreviousTeamQuery(groupId: string) {
-  const data = useMemo(() => getPreviousTeam(groupId), [groupId]);
-
-  return {
-    data,
-    isLoading: false,
-    isError: false,
-  };
+  return useMyTeamQuery(groupId, "FIRST_ROUND");
 }

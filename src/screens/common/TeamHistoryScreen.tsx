@@ -3,7 +3,7 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import TeamHistoryPanel from "@/features/history/components/TeamHistoryPanel";
 import { usePreviousTeamQuery } from "@/features/history/hooks/usePreviousTeamQuery";
-import type { TeamMemberSummary } from "@/features/team/types/team.types";
+import type { TeamMember } from "@/features/team/types/team.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
@@ -13,12 +13,17 @@ export default function TeamHistoryScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const { data: team } = usePreviousTeamQuery(params.groupId);
+  const { data: team, isLoading, error } = usePreviousTeamQuery(params.groupId);
 
-  const handleMemberSelect = (member: TeamMemberSummary) => {
-    if (member.profileVisibility === "PRIVATE") return;
+  const handleMemberSelect = (member: TeamMember) => {
+    if (member.visibility === "PRIVATE") return;
 
-    // TODO(profile-integration): 공개 프로필 페이지가 연결되면 member.id로 이동한다.
+    router.push(
+      withSessionContext(
+        `/groups/${params.groupId}/participants/${member.participantId}`,
+        searchParams,
+      ),
+    );
   };
 
   return (
@@ -34,7 +39,12 @@ export default function TeamHistoryScreen() {
         backLabel="사용자 홈으로 이동"
       />
 
-      <TeamHistoryPanel team={team} onMemberSelect={handleMemberSelect} />
+      <TeamHistoryPanel
+        team={team}
+        isLoading={isLoading}
+        error={error}
+        onMemberSelect={handleMemberSelect}
+      />
     </MobileFrame>
   );
 }

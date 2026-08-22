@@ -9,6 +9,8 @@ import {
   getMockGroupRole,
   withSessionContext,
 } from "@/features/session/utils/session-navigation";
+import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
+import type { TeamRound } from "@/features/team/types/team.types";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
@@ -28,6 +30,13 @@ export default function UserHomeScreen() {
     searchParams.get("scenario") ?? undefined,
     mockRole,
   );
+  const teamRound: TeamRound =
+    snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+  const {
+    data: myTeam,
+    isLoading: isTeamLoading,
+    error: teamError,
+  } = useMyTeamQuery(params.groupId, teamRound);
   const {
     mutate: endRound,
     isPending: isEndingRound,
@@ -94,6 +103,9 @@ export default function UserHomeScreen() {
       <UserSessionContent
         groupId={params.groupId}
         snapshot={snapshot}
+        teamNumber={myTeam?.teamNumber ?? null}
+        isTeamLoading={isTeamLoading}
+        teamError={teamError}
         onNavigate={(href) =>
           router.push(withSessionContext(href, searchParams))
         }

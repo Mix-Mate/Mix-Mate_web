@@ -1,10 +1,10 @@
 import GenderAvatar from "@/shared/ui/GenderAvatar";
-import type { TeamMemberSummary } from "../types/team.types";
+import type { TeamMember } from "../types/team.types";
 import styles from "./team.module.css";
 
 interface TeamMemberItemProps {
-  member: TeamMemberSummary;
-  onSelect: (member: TeamMemberSummary) => void;
+  member: TeamMember;
+  onSelect: (member: TeamMember) => void;
 }
 
 export default function TeamMemberItem({
@@ -17,12 +17,16 @@ export default function TeamMemberItem({
         type="button"
         className={styles.memberButton}
         onClick={() => onSelect(member)}
-        aria-label={`${member.name} 프로필 확인`}
+        aria-label={`${member.displayName} 프로필 확인`}
       >
-        <GenderAvatar gender={member.gender} name={member.name} size={46} />
+        <GenderAvatar
+          gender={member.gender === "FEMALE" ? "female" : "male"}
+          name={member.displayName}
+          size={46}
+        />
         <span className={styles.memberText}>
-          <strong>{member.name}</strong>
-          <small>{member.department}</small>
+          <strong>{member.displayName}</strong>
+          <small>{member.major}</small>
         </span>
       </button>
     </li>
