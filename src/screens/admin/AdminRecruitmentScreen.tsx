@@ -4,6 +4,7 @@ import { BriefcaseBusiness, Clock3, Copy } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
 import useToast from "@/shared/hooks/useToast";
@@ -19,7 +20,12 @@ export default function AdminRecruitmentScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data: group, refetch } = useAdminGroupQuery(params.groupId);
+  const {
+    mutate: closeRecruiting,
+    isPending: isClosingRecruitment,
+    error: closeRecruitmentError,
+  } = useCloseRecruitingMutation();
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
   );
@@ -36,16 +42,41 @@ export default function AdminRecruitmentScreen() {
 
   const goToParticipants = useCallback(() => {
     router.push(
-      withSessionContext(groupRoutes.participants(params.groupId), searchParams),
+      withSessionContext(
+        groupRoutes.participants(params.groupId),
+        searchParams,
+      ),
     );
   }, [params.groupId, router, searchParams]);
 
-  const closeRecruitment = useCallback(() => {
+  const confirmCloseRecruitment = useCallback(async () => {
+    const closed = await closeRecruiting(params.groupId);
+    if (!closed) return;
+
+    const latestGroup = await refetch();
     setCloseDialogOpen(false);
-    router.replace(
-      `${groupRoutes.adminPreparation(params.groupId)}?scenario=round1-waiting&role=admin`,
-    );
-  }, [params.groupId, router]);
+
+    if (latestGroup?.status === "BEFORE_FIRST_ROUND") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminPreparation(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (!latestGroup) {
+      showToast("최신 그룹 정보를 불러오지 못했습니다.");
+    }
+  }, [
+    closeRecruiting,
+    params.groupId,
+    refetch,
+    router,
+    searchParams,
+    showToast,
+  ]);
 
   return (
     <MobileFrame
@@ -99,8 +130,7 @@ export default function AdminRecruitmentScreen() {
           <h2>그룹을 모집하고 있습니다.</h2>
           <p>
             모집이 마감 이후 확정된 참가자 목록을 확인하고
-            <br />
-            조 편성을 시작할 수 있습니다.
+            <br />조 편성을 시작할 수 있습니다.
           </p>
         </section>
 
@@ -137,8 +167,12 @@ export default function AdminRecruitmentScreen() {
 
       <CloseRecruitmentDialog
         open={closeDialogOpen}
-        onClose={() => setCloseDialogOpen(false)}
-        onConfirm={closeRecruitment}
+        isClosing={isClosingRecruitment}
+        error={closeRecruitmentError}
+        onClose={() => {
+          if (!isClosingRecruitment) setCloseDialogOpen(false);
+        }}
+        onConfirm={confirmCloseRecruitment}
       />
     </MobileFrame>
   );

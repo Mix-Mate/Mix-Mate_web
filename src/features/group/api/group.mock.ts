@@ -10,6 +10,7 @@ export const adminGroupPreparationMock: AdminGroupPreparation = {
   inviteCode: "SW2026",
   participantCount: 12,
   roleLabel: "관리자",
+  status: "BEFORE_FIRST_ROUND",
   statusLabel: "1차 준비 중",
 };
 
