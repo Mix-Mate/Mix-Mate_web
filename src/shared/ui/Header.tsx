@@ -5,7 +5,7 @@ import styles from "./Header.module.css";
 interface HeaderProps {
   title: string;
   statusLabel?: string;
-  onBack: () => void;
+  onBack?: () => void;
   backLabel?: string;
   compact?: boolean;
   smallTitle?: boolean;
@@ -27,14 +27,18 @@ export default function Header({
         smallTitle ? styles.smallTitle : ""
       }`.trim()}
     >
-      <button
-        type="button"
-        className={styles.backButton}
-        onClick={onBack}
-        aria-label={backLabel}
-      >
-        <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
-      </button>
+      {onBack ? (
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={onBack}
+          aria-label={backLabel}
+        >
+          <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
+        </button>
+      ) : (
+        <span className={styles.backButtonPlaceholder} aria-hidden="true" />
+      )}
       <h1>{title}</h1>
       {rightAction ??
         (statusLabel && (

@@ -12,7 +12,7 @@ interface VoteScreenLayoutProps {
   children: ReactNode;
   title: string;
   status: VoteStatus;
-  backHref: string;
+  backHref?: string;
   testId: string;
   showStatusBadge?: boolean;
   flushContent?: boolean;
@@ -41,7 +41,11 @@ export default function VoteScreenLayout({
               : "투표 마감"
             : undefined
         }
-        onBack={() => router.push(withSessionContext(backHref, searchParams))}
+        onBack={
+          backHref
+            ? () => router.push(withSessionContext(backHref, searchParams))
+            : undefined
+        }
       />
       <div
         className={`${styles.content} ${

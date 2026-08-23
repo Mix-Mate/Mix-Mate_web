@@ -30,7 +30,6 @@ export default function MvpVoteScreen() {
     <VoteScreenLayout
       title="MVP 투표"
       status={context.status}
-      backHref={groupRoutes.home(params.groupId)}
       testId="mvp-vote-screen"
     >
       <section className={styles.mvpScreen}>

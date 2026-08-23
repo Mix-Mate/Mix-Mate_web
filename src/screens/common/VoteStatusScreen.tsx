@@ -58,7 +58,6 @@ export default function VoteStatusScreen() {
     <VoteScreenLayout
       title="투표 현황"
       status={data.status}
-      backHref={groupRoutes.home(params.groupId)}
       testId="vote-status-screen"
     >
       <section
