@@ -31,7 +31,7 @@ export default function VoteScreenLayout({
   const searchParams = useSearchParams();
 
   return (
-    <MobileFrame className={styles.phone} data-testid={testId}>
+    <MobileFrame className={styles.phone} fillHeight data-testid={testId}>
       <Header
         title={title}
         statusLabel={
