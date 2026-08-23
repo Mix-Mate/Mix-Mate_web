@@ -29,3 +29,15 @@
     width: var(--mobile-frame-width);
   }
 }
+
+/* fillHeight: 컨텐츠가 flex로 남은 공간을 채우는 화면 전용.
+   실기기 높이(100dvh)에 그대로 맞추고, 데스크톱에서만 기존 목업 높이로 고정 */
+.fillHeight {
+  height: 100dvh;
+}
+
+@media (min-width: 481px) {
+  .fillHeight {
+    height: var(--mobile-frame-height);
+  }
+}

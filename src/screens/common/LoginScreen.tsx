@@ -5,7 +5,7 @@ import { LoginForm } from '@/features/auth/components/LoginForm';
 
 export default function LoginScreen() {
   return (
-    <MobileFrame data-testid="login-screen">
+    <MobileFrame data-testid="login-screen" fillHeight>
       <div
         style={{
           display: 'flex',
