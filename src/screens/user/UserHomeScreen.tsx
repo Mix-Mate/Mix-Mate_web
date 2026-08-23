@@ -2,6 +2,8 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSecondRoundMutation";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
@@ -24,6 +26,9 @@ export default function UserHomeScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
+    params.groupId,
+  );
   // TODO(auth-integration): 실제 연동 시 URL이 아니라 그룹 멤버십 응답의 역할을 사용한다.
   const mockRole = getMockGroupRole(searchParams);
   const { data: snapshot } = useUserSessionQuery(
@@ -42,12 +47,26 @@ export default function UserHomeScreen() {
     isPending: isEndingRound,
     error: endRoundError,
   } = useEndRoundMutation();
+  const {
+    mutate: decideSecondRound,
+    isPending: isDecidingSecondRound,
+    error: decideSecondRoundError,
+  } = useDecideSecondRoundMutation();
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [leaveCompleted, setLeaveCompleted] = useState(false);
-  const isAdmin = snapshot.role === "ADMIN";
+  const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
+    null,
+  );
+  const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
+  const isAdmin = group?.myRole === "HOST";
+  const canDecideSecondRound = isAdmin && group.status === "VOTE_CLOSED";
+  const isSecondRoundDecisionPending =
+    isDecidingSecondRound || isRefreshingGroup;
+  const secondRoundDecisionError =
+    statusRefreshError ?? decideSecondRoundError;
   const postVoteDialogOpen =
-    isAdmin && searchParams.get("dialog") === "post-vote";
+    canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
   const closeLeaveDialog = useCallback(() => {
     setLeaveDialogOpen(false);
@@ -80,11 +99,41 @@ export default function UserHomeScreen() {
     );
   }, [endRound, params.groupId, router, searchParams, snapshot.round]);
 
-  const continueToRoundTwo = useCallback(() => {
-    router.replace(
-      `${groupRoutes.adminRoundTwoPreparation(params.groupId)}?scenario=round2-waiting&role=admin`,
-    );
-  }, [params.groupId, router]);
+  const continueToRoundTwo = useCallback(async () => {
+    if (!canDecideSecondRound || isSecondRoundDecisionPending) return;
+
+    setStatusRefreshError(null);
+
+    const didDecide = await decideSecondRound(params.groupId);
+    if (!didDecide) return;
+
+    setIsRefreshingGroup(true);
+
+    try {
+      const refreshedGroup = await refetchGroup();
+
+      if (!refreshedGroup) {
+        setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
+        return;
+      }
+
+      if (refreshedGroup.status !== "BEFORE_SECOND_ROUND") {
+        setStatusRefreshError("2차 준비 상태를 확인하지 못했습니다.");
+        return;
+      }
+
+      router.replace(groupRoutes.adminRoundTwoPreparation(params.groupId));
+    } finally {
+      setIsRefreshingGroup(false);
+    }
+  }, [
+    canDecideSecondRound,
+    decideSecondRound,
+    isSecondRoundDecisionPending,
+    params.groupId,
+    refetchGroup,
+    router,
+  ]);
 
   const finishGroup = useCallback(() => {
     router.replace(
@@ -136,6 +185,8 @@ export default function UserHomeScreen() {
 
       <PostVoteDecisionDialog
         open={postVoteDialogOpen}
+        isContinuing={isSecondRoundDecisionPending}
+        continueError={secondRoundDecisionError}
         onContinue={continueToRoundTwo}
         onFinish={finishGroup}
       />
