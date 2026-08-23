@@ -10,6 +10,8 @@ import type {
   ParticipantProfileRequest,
   ParticipantSummaryResponse,
 } from "../types/participant.types";
+import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
+import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 
 const API_BASE_URL = "https://mixmate.duckdns.org";
 
@@ -50,11 +52,14 @@ async function request(path: string, init?: RequestInit) {
 
 export async function getAdminParticipants(
   groupId: string,
+  round: AssignmentRound,
 ): Promise<AdminParticipantGroup> {
   const fallbackGroup = getAdminParticipantListMock();
 
   try {
-    const response = await request(`/api/v1/groups/${groupId}/participants`);
+    const response = await request(
+      `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
+    );
 
     if (!response.ok) throw new Error("참가자 목록 API 요청 실패");
 
@@ -70,7 +75,7 @@ export async function getAdminParticipants(
 
     return {
       ...fallbackGroup,
-      participants: participants.length > 0 ? participants : fallbackGroup.participants,
+      participants,
     };
   } catch {
     return fallbackGroup;

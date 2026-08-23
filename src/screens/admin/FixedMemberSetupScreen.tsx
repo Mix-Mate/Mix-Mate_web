@@ -152,7 +152,7 @@ export default function FixedMemberSetupScreen() {
           if (item.id === "participants") {
             router.push(
               withSessionContext(
-                groupRoutes.adminParticipants(params.groupId),
+                groupRoutes.adminParticipants(params.groupId, round),
                 searchParams,
               ),
             );

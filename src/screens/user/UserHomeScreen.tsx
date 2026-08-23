@@ -122,7 +122,7 @@ export default function UserHomeScreen() {
         return;
       }
 
-      router.replace(groupRoutes.adminRoundTwoPreparation(params.groupId));
+      router.replace(groupRoutes.adminPreparation(params.groupId));
     } finally {
       setIsRefreshingGroup(false);
     }

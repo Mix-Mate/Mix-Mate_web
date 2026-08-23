@@ -115,7 +115,7 @@ export default function AssignmentSetupScreen() {
           if (item.id === "participants") {
             router.push(
               withSessionContext(
-                groupRoutes.adminParticipants(params.groupId),
+                groupRoutes.adminParticipants(params.groupId, round),
                 searchParams,
               ),
             );
