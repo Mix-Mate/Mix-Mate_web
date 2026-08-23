@@ -2,12 +2,16 @@
 
 import { BriefcaseBusiness, Clock3, Copy } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import GroupEditButton from "@/features/group/components/GroupEditButton";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
+import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
+import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
+import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
@@ -27,10 +31,27 @@ export default function AdminRecruitmentScreen() {
     isPending: isClosingRecruitment,
     error: closeRecruitmentError,
   } = useCloseRecruitingMutation();
+  const {
+    mutate: updateGroup,
+    isPending: isSavingGroup,
+    error: updateGroupError,
+  } = useUpdateGroupMutation();
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
   );
+  const [editDialogOpen, setEditDialogOpen] = useState(
+    searchParams.get("dialog") === "edit",
+  );
   const { message: toast, showToast } = useToast();
+  const canEditGroup =
+    group?.myRole === "HOST" && group.status === "RECRUITING";
+  const editInitialValues = useMemo<UpdateGroupInput>(
+    () => ({
+      name: group?.groupName ?? "",
+      description: group?.description ?? "",
+    }),
+    [group?.description, group?.groupName],
+  );
 
   const copyInviteCode = useCallback(async () => {
     if (!group) return;
@@ -81,6 +102,28 @@ export default function AdminRecruitmentScreen() {
     showToast,
   ]);
 
+  const handleUpdateGroup = useCallback(
+    async (input: UpdateGroupInput) => {
+      if (!canEditGroup) return;
+
+      const updated = await updateGroup(params.groupId, {
+        groupName: input.name,
+        description: input.description,
+      });
+      if (!updated) return;
+
+      const latestGroup = await refetch();
+      setEditDialogOpen(false);
+
+      showToast(
+        latestGroup
+          ? "그룹 정보가 수정되었습니다."
+          : "수정했지만 최신 그룹 정보를 불러오지 못했습니다.",
+      );
+    },
+    [canEditGroup, params.groupId, refetch, showToast, updateGroup],
+  );
+
   if (!group) return null;
 
   return (
@@ -121,6 +164,10 @@ export default function AdminRecruitmentScreen() {
             </button>
           </div>
         </section>
+
+        {canEditGroup && (
+          <GroupEditButton onClick={() => setEditDialogOpen(true)} />
+        )}
 
         <InfoBanner className={styles.expirationNotice}>
           <p>
@@ -179,6 +226,17 @@ export default function AdminRecruitmentScreen() {
           if (!isClosingRecruitment) setCloseDialogOpen(false);
         }}
         onConfirm={confirmCloseRecruitment}
+      />
+
+      <EditGroupDialog
+        open={editDialogOpen && canEditGroup}
+        initialValues={editInitialValues}
+        isSaving={isSavingGroup}
+        error={updateGroupError}
+        onClose={() => {
+          if (!isSavingGroup) setEditDialogOpen(false);
+        }}
+        onSubmit={handleUpdateGroup}
       />
     </MobileFrame>
   );
