@@ -32,6 +32,7 @@ export default function AdminRoundTwoPreparationScreen() {
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="admin-round-two-preparation"
       data-group-id={group.groupId}
     >

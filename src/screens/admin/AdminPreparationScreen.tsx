@@ -36,6 +36,7 @@ export default function AdminPreparationScreen() {
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="admin-preparation"
       data-group-id={group.groupId}
     >
