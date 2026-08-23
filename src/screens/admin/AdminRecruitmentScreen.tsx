@@ -138,13 +138,15 @@ export default function AdminRecruitmentScreen() {
   }, []);
 
   const confirmDeleteGroup = useCallback(async () => {
+    if (!canEditGroup) return;
+
     const deleted = await deleteGroup(params.groupId);
     if (!deleted) return;
 
     setDeleteDialogOpen(false);
-    // TODO(group-delete-integration): 삭제 완료 화면이 구현되면 해당 경로로 이동한다.
-    showToast("Mock 환경에서 그룹이 삭제되었습니다.");
-  }, [deleteGroup, params.groupId, showToast]);
+    router.replace("/");
+    //TODO 그룹홈 라우팅
+  }, [canEditGroup, deleteGroup, params.groupId, router]);
 
   if (!group) return null;
 
