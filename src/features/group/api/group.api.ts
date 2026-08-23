@@ -43,6 +43,23 @@ export async function closeRecruiting(groupId: string): Promise<void> {
   }
 }
 
+export async function finishFirstRound(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/voting`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "1차 종료에 실패했습니다."),
+    );
+  }
+}
+
 export async function updateGroup(
   groupId: string,
   request: UpdateGroupRequest,
