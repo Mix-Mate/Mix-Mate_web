@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { Participant } from "../types/participant.types";
@@ -30,15 +31,11 @@ export default function ParticipantCard({
         <span>{participant.department}</span>
       </div>
 
-      <span
-        className={
-          participant.visibility === "public"
-            ? styles.publicBadge
-            : styles.privateBadge
-        }
-      >
-        {participant.visibility === "public" ? "공개" : "비공개"}
-      </span>
+      {participant.visibility === "private" && (
+        <span className={styles.privateBadge} aria-label="비공개 프로필">
+          <Lock aria-hidden="true" size={16} strokeWidth={2} />
+        </span>
+      )}
     </>
   );
 
