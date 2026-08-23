@@ -91,3 +91,20 @@ export async function deleteGroup(groupId: string): Promise<void> {
     );
   }
 }
+
+export async function leaveGroup(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "그룹 탈퇴에 실패했습니다."),
+    );
+  }
+}

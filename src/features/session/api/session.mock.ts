@@ -16,7 +16,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "recruiting",
     round: 1,
-    currentStatus: "FIRST_PREPARING",
+    currentStatus: "RECRUITING",
     teamNumber: null,
     teamHistoryAvailable: false,
     permissions: {
@@ -33,7 +33,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     teamNumber: null,
     teamHistoryAvailable: false,
     permissions: {
-      canLeaveGroup: true,
+      canLeaveGroup: false,
       canEndRound: false,
       canEditProfile: false,
     },

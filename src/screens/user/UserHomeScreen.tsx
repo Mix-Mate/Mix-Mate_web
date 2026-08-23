@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import { useLeaveGroupMutation } from "@/features/group/hooks/useLeaveGroupMutation";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
@@ -17,8 +18,6 @@ import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import Toast from "@/shared/ui/Toast";
-import styles from "./UserHomeScreen.module.css";
 
 export default function UserHomeScreen() {
   const router = useRouter();
@@ -42,21 +41,31 @@ export default function UserHomeScreen() {
     isPending: isEndingRound,
     error: endRoundError,
   } = useEndRoundMutation();
+  const {
+    mutate: leaveGroup,
+    isPending: isLeavingGroup,
+    error: leaveGroupError,
+  } = useLeaveGroupMutation();
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
-  const [leaveCompleted, setLeaveCompleted] = useState(false);
   const isAdmin = snapshot.role === "ADMIN";
+  const canLeaveGroup = snapshot.permissions.canLeaveGroup;
   const postVoteDialogOpen =
     isAdmin && searchParams.get("dialog") === "post-vote";
 
   const closeLeaveDialog = useCallback(() => {
-    setLeaveDialogOpen(false);
-  }, []);
+    if (!isLeavingGroup) setLeaveDialogOpen(false);
+  }, [isLeavingGroup]);
 
-  const confirmLeave = useCallback(() => {
+  const confirmLeave = useCallback(async () => {
+    if (!canLeaveGroup) return;
+
+    const left = await leaveGroup(params.groupId);
+    if (!left) return;
+
     setLeaveDialogOpen(false);
-    setLeaveCompleted(true);
-  }, []);
+    router.replace("/");
+  }, [canLeaveGroup, leaveGroup, params.groupId, router]);
 
   const closeEndRoundDialog = useCallback(() => {
     if (!isEndingRound) setEndRoundDialogOpen(false);
@@ -113,14 +122,10 @@ export default function UserHomeScreen() {
         onRequestEndRound={() => setEndRoundDialogOpen(true)}
       />
 
-      {leaveCompleted && (
-        <Toast className={styles.toast}>
-          Mock 환경에서 그룹 탈퇴가 처리됐습니다.
-        </Toast>
-      )}
-
       <UM01LeaveGroupDialog
         open={leaveDialogOpen}
+        isLeaving={isLeavingGroup}
+        error={leaveGroupError}
         onClose={closeLeaveDialog}
         onConfirm={confirmLeave}
       />
