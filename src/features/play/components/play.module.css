@@ -3,8 +3,7 @@
 .topicScreen,
 .balanceScreen {
   display: flex;
-  width: 358px;
-  height: 684px;
+  width: 100%;
   flex-direction: column;
 }
 
