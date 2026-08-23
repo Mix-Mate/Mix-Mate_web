@@ -13,13 +13,6 @@
   gap: 16px;
 }
 
-.toast {
-  --toast-bottom: 76px;
-  --toast-z-index: 20;
-  --toast-padding: 13px 16px;
-  --toast-border-radius: 14px;
-}
-
 @media (max-width: 389px) {
   .viewport,
   .phone {

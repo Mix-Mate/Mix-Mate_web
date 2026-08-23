@@ -6,7 +6,6 @@ interface SecondaryAction {
   icon: ReactNode;
   label: string;
   onClick: () => void;
-  tone?: "default" | "danger";
 }
 
 interface AdminPreparationActionsProps {
@@ -47,9 +46,7 @@ export default function AdminPreparationActions({
       >
         <button
           type="button"
-          className={`${styles.secondaryButton} ${
-            secondaryAction.tone === "danger" ? styles.deleteButton : ""
-          }`.trim()}
+          className={styles.secondaryButton}
           onClick={secondaryAction.onClick}
         >
           {secondaryAction.icon}

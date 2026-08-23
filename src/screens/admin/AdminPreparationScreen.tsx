@@ -1,20 +1,16 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Trash2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { UsersRound } from "lucide-react";
+import { useCallback } from "react";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import SessionStatusCard from "@/features/session/components/SessionStatusCard";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
-import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
-import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import Toast from "@/shared/ui/Toast";
 import styles from "./AdminPreparationScreen.module.css";
 
 export default function AdminPreparationScreen() {
@@ -22,15 +18,6 @@ export default function AdminPreparationScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
-  const {
-    mutate: deleteGroup,
-    isPending: isDeleting,
-    error: deleteError,
-  } = useDeleteGroupMutation();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(
-    searchParams.get("dialog") === "delete",
-  );
-  const { message: toast, showToast } = useToast();
 
   const navigateWithSession = useCallback(
     (href: string) => {
@@ -39,14 +26,9 @@ export default function AdminPreparationScreen() {
     [router, searchParams],
   );
 
-  const confirmDelete = useCallback(async () => {
-    const deleted = await deleteGroup(params.groupId);
-    if (!deleted) return;
-
-    setDeleteDialogOpen(false);
-    // TODO(group-delete-integration): C-03 경로가 구현되면 삭제 성공 후 해당 화면으로 이동한다.
-    showToast("Mock 환경에서 그룹이 삭제되었습니다.");
-  }, [deleteGroup, params.groupId, showToast]);
+  const viewFirstRoundParticipants = useCallback(() => {
+    // TODO(first-round-participants-routing): 1차 참가자 명단 조회 화면이 구현되면 라우팅을 연결한다.
+  }, []);
 
   if (!group) return null;
 
@@ -75,10 +57,9 @@ export default function AdminPreparationScreen() {
             )
           }
           secondaryAction={{
-            icon: <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />,
-            label: "그룹 삭제하기",
-            onClick: () => setDeleteDialogOpen(true),
-            tone: "danger",
+            icon: <UsersRound aria-hidden="true" size={17} strokeWidth={1.8} />,
+            label: "1차 참가자 명단 조회",
+            onClick: viewFirstRoundParticipants,
           }}
           onEditProfile={() =>
             navigateWithSession(groupRoutes.profileEdit(params.groupId))
@@ -87,16 +68,6 @@ export default function AdminPreparationScreen() {
           footerPlacement="flow"
         />
       </div>
-
-      {toast && <Toast className={styles.toast}>{toast}</Toast>}
-
-      <DeleteGroupDialog
-        open={deleteDialogOpen}
-        isDeleting={isDeleting}
-        error={deleteError}
-        onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={confirmDelete}
-      />
     </MobileFrame>
   );
 }
