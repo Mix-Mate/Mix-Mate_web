@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSecondRoundVoteStatus } from "../api/secondRoundVoteStatus.api";
 import { VoteApiError } from "../api/voteApiError";
 import type { SecondRoundVoteStatusResponse } from "../types/secondRoundVoteStatus.types";
@@ -15,6 +15,15 @@ interface VoteStatusQueryState {
   error: string | null;
 }
 
+interface UseVoteStatusQueryOptions {
+  pollingEnabled?: boolean;
+}
+
+interface FetchVoteStatusResult {
+  data: SecondRoundVoteStatusResponse | null;
+  shouldContinuePolling: boolean;
+}
+
 function createInitialQueryState(groupId: string): VoteStatusQueryState {
   return {
     groupId,
@@ -25,7 +34,11 @@ function createInitialQueryState(groupId: string): VoteStatusQueryState {
   };
 }
 
-export function useVoteStatusQuery(groupId: string) {
+export function useVoteStatusQuery(
+  groupId: string,
+  { pollingEnabled = true }: UseVoteStatusQueryOptions = {},
+) {
+  const requestIdRef = useRef(0);
   const [queryState, setQueryState] = useState<VoteStatusQueryState>(() =>
     createInitialQueryState(groupId),
   );
@@ -34,35 +47,25 @@ export function useVoteStatusQuery(groupId: string) {
       ? queryState
       : createInitialQueryState(groupId);
 
-  useEffect(() => {
-    let active = true;
-    let pollingTimer: number | undefined;
-    let requestController: AbortController | null = null;
+  const fetchStatus = useCallback(
+    async (
+      isInitialRequest: boolean,
+      signal?: AbortSignal,
+    ): Promise<FetchVoteStatusResult> => {
+      const requestId = ++requestIdRef.current;
 
-    const scheduleNextPoll = () => {
-      pollingTimer = window.setTimeout(() => {
-        void fetchStatus(false);
-      }, POLLING_INTERVAL_MS);
-    };
+      setQueryState((previousState) => {
+        if (isInitialRequest || previousState.groupId !== groupId) {
+          return createInitialQueryState(groupId);
+        }
 
-    const fetchStatus = async (isInitialRequest: boolean) => {
-      requestController = new AbortController();
-      if (!isInitialRequest) {
-        setQueryState((previousState) =>
-          previousState.groupId === groupId
-            ? { ...previousState, isRefreshing: true }
-            : previousState,
-        );
-      }
-      let shouldContinuePolling = true;
+        return { ...previousState, isRefreshing: true };
+      });
 
       try {
-        const nextData = await getSecondRoundVoteStatus(
-          groupId,
-          requestController.signal,
-        );
+        const nextData = await getSecondRoundVoteStatus(groupId, signal);
 
-        if (active) {
+        if (requestId === requestIdRef.current) {
           setQueryState({
             groupId,
             data: nextData,
@@ -71,18 +74,22 @@ export function useVoteStatusQuery(groupId: string) {
             error: null,
           });
         }
+
+        return { data: nextData, shouldContinuePolling: true };
       } catch (fetchError) {
         if (
           fetchError instanceof DOMException &&
           fetchError.name === "AbortError"
         ) {
-          shouldContinuePolling = false;
-        } else if (active) {
-          const errorMessage =
-            fetchError instanceof Error
-              ? fetchError.message
-              : "투표 현황을 불러오지 못했습니다.";
+          return { data: null, shouldContinuePolling: false };
+        }
 
+        const errorMessage =
+          fetchError instanceof Error
+            ? fetchError.message
+            : "투표 현황을 불러오지 못했습니다.";
+
+        if (requestId === requestIdRef.current) {
           setQueryState((previousState) => ({
             groupId,
             data:
@@ -91,31 +98,65 @@ export function useVoteStatusQuery(groupId: string) {
             isRefreshing: false,
             error: errorMessage,
           }));
-
-          if (
-            fetchError instanceof VoteApiError &&
-            [401, 403, 404].includes(fetchError.status)
-          ) {
-            shouldContinuePolling = false;
-          }
         }
-      } finally {
-        requestController = null;
 
-        if (active) {
-          if (shouldContinuePolling) scheduleNextPoll();
-        }
+        const shouldContinuePolling = !(
+          fetchError instanceof VoteApiError &&
+          [401, 403, 404].includes(fetchError.status)
+        );
+
+        return { data: null, shouldContinuePolling };
+      }
+    },
+    [groupId],
+  );
+
+  useEffect(() => {
+    const requestController = new AbortController();
+    const initialRequestTimer = window.setTimeout(() => {
+      void fetchStatus(true, requestController.signal);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(initialRequestTimer);
+      requestController.abort();
+    };
+  }, [fetchStatus]);
+
+  useEffect(() => {
+    if (!pollingEnabled) return;
+
+    let active = true;
+    let pollingTimer: number | undefined;
+    let requestController: AbortController | null = null;
+
+    const poll = async () => {
+      requestController = new AbortController();
+      const result = await fetchStatus(false, requestController.signal);
+      requestController = null;
+
+      if (active && result.shouldContinuePolling) {
+        pollingTimer = window.setTimeout(() => {
+          void poll();
+        }, POLLING_INTERVAL_MS);
       }
     };
 
-    void fetchStatus(true);
+    pollingTimer = window.setTimeout(() => {
+      void poll();
+    }, POLLING_INTERVAL_MS);
 
     return () => {
       active = false;
       requestController?.abort();
       if (pollingTimer !== undefined) window.clearTimeout(pollingTimer);
     };
-  }, [groupId]);
+  }, [fetchStatus, pollingEnabled]);
+
+  const refetch = useCallback(async () => {
+    const result = await fetchStatus(false);
+    return result.data;
+  }, [fetchStatus]);
 
   const isComplete =
     currentState.data !== null &&
@@ -125,5 +166,6 @@ export function useVoteStatusQuery(groupId: string) {
   return {
     ...currentState,
     isComplete,
+    refetch,
   };
 }

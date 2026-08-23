@@ -1,5 +1,4 @@
 import { myTeamMock } from "@/features/team/api/team.mock";
-import { mockDelay } from "@/shared/api/mockDelay";
 import type {
   MvpResultMember,
   VoteProgressContext,
@@ -158,15 +157,4 @@ export function getVoteResultContext(groupId: string): VoteResultContext {
     attendanceCount: Math.max(8, progress.attendanceCount),
     totalCount: progress.totalCount,
   };
-}
-
-export function setMockVoteStatus(groupId: string, status: VoteStatus) {
-  voteStatuses.set(groupId, status);
-}
-
-export async function endGroupVote(groupId: string) {
-  await mockDelay();
-  setMockVoteStatus(groupId, "CLOSED");
-
-  return getVoteProgressContext(groupId);
 }
