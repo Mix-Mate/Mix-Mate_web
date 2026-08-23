@@ -1,12 +1,12 @@
 import GenderAvatar from "@/shared/ui/GenderAvatar";
-import type { MvpCandidate } from "../../types/vote.types";
+import type { MvpCandidate } from "../../types/mvpVote.types";
 import styles from "../vote.module.css";
 
 interface MvpCandidateItemProps {
   candidate: MvpCandidate;
   selected: boolean;
   disabled: boolean;
-  onSelect: (candidateId: string) => void;
+  onSelect: (participantId: number) => void;
 }
 
 export default function MvpCandidateItem({
@@ -25,10 +25,10 @@ export default function MvpCandidateItem({
         className={styles.visuallyHidden}
         type="radio"
         name="mvp-candidate"
-        value={candidate.id}
+        value={candidate.participantId}
         checked={selected}
         disabled={disabled}
-        onChange={() => onSelect(candidate.id)}
+        onChange={() => onSelect(candidate.participantId)}
       />
       <GenderAvatar
         gender={candidate.gender}
