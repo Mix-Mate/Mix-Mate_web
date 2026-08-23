@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { MvpResultMember } from "../../types/vote.types";
+import type { MvpWinner } from "../../types/voteResult.types";
 import styles from "./VoteResult.module.css";
 
 interface MvpIntroAnimationProps {
-  teamMvp: MvpResultMember;
+  winners: MvpWinner[];
   onComplete: () => void;
 }
 
 export default function MvpIntroAnimation({
-  teamMvp,
+  winners,
   onComplete,
 }: MvpIntroAnimationProps) {
   const [countdown, setCountdown] = useState(5);
@@ -35,7 +35,22 @@ export default function MvpIntroAnimation({
         <span className={styles.confetti} aria-hidden="true">
           🤡🎉
         </span>
-        <strong>{teamMvp.memberName}</strong>
+        {winners.length > 0 ? (
+          <span
+            className={`${styles.mvpWinnerNames} ${
+              winners.length > 1 ? styles.multipleMvpWinnerNames : ""
+            }`}
+            aria-label={`오늘의 MVP ${winners
+              .map((winner) => winner.displayName)
+              .join(", ")}`}
+          >
+            {winners.map((winner) => (
+              <strong key={winner.participantId}>{winner.displayName}</strong>
+            ))}
+          </span>
+        ) : (
+          <strong className={styles.emptyMvp}>선정 결과 없음</strong>
+        )}
       </div>
 
       <p className={styles.introCaption}>

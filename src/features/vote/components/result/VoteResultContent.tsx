@@ -3,14 +3,14 @@
 import { useCallback, useState } from "react";
 import { House } from "lucide-react";
 import Button from "@/shared/ui/Button";
-import type { VoteResultContext } from "../../types/vote.types";
+import type { VoteResultResponse } from "../../types/voteResult.types";
 import AttendanceResultSummary from "./AttendanceResultSummary";
 import MvpIntroAnimation from "./MvpIntroAnimation";
 import MvpResultTable from "./MvpResultTable";
 import styles from "./VoteResult.module.css";
 
 interface VoteResultContentProps {
-  result: VoteResultContext;
+  result: VoteResultResponse;
   onHome: () => void;
 }
 
@@ -32,10 +32,10 @@ export default function VoteResultContent({
           }`}
         >
           {showOverallResult ? (
-            <MvpResultTable ranking={result.overallRanking} />
+            <MvpResultTable winners={result.mvpWinners} />
           ) : (
             <MvpIntroAnimation
-              teamMvp={result.teamMvp}
+              winners={result.mvpWinners}
               onComplete={revealOverallResult}
             />
           )}
@@ -45,7 +45,9 @@ export default function VoteResultContent({
           <span>다음 단계</span>
         </div>
 
-        <AttendanceResultSummary />
+        <AttendanceResultSummary
+          participants={result.secondRoundParticipants}
+        />
       </div>
 
       <footer className={styles.resultFooter}>
