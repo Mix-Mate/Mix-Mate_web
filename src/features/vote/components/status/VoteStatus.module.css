@@ -11,6 +11,24 @@
   display: none;
 }
 
+.queryState {
+  margin: auto 0;
+  padding: 22px 16px;
+  border: 1px solid #dfe4ea;
+  border-radius: 14px;
+  background: #fff;
+  color: #5f6872;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.queryError {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #d14f5a;
+}
+
 .progressSection {
   flex: 0 0 auto;
 }

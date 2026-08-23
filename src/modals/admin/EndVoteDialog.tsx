@@ -1,15 +1,14 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import type { VoteStatusMember } from "@/features/vote/types/vote.types";
+import type { SecondRoundVoteParticipant } from "@/features/vote/types/secondRoundVoteStatus.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
-import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
   open: boolean;
-  pendingMembers: VoteStatusMember[];
+  pendingMembers: SecondRoundVoteParticipant[];
   isEnding?: boolean;
   error?: string | null;
   onClose: () => void;
@@ -55,14 +54,8 @@ export default function EndVoteDialog({
         <h3 id="pending-members-title">미투표자 {pendingMembers.length}명</h3>
         <ul className={styles.pendingList}>
           {pendingMembers.map((member) => (
-            <li className={styles.pendingMember} key={member.memberId}>
-              <GenderAvatar
-                gender={member.gender}
-                name={member.memberName}
-                size={39}
-                shape="circle"
-              />
-              <strong>{member.memberName}</strong>
+            <li className={styles.pendingMember} key={member.participantId}>
+              <strong>{member.displayName}</strong>
               <span className={styles.absenceBadge}>불참 처리</span>
             </li>
           ))}

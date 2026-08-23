@@ -20,16 +20,15 @@ export default function EndVoteScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isAdmin = getMockGroupRole(searchParams) === "ADMIN";
-  const { data } = useVoteStatusQuery(params.groupId);
+  const { data, isLoading, error: voteStatusError } = useVoteStatusQuery(
+    params.groupId,
+  );
   const {
     mutate: endVote,
     isPending: isEndingVote,
     error: endVoteError,
   } = useEndVoteMutation();
   const [endVoteDialogOpen, setEndVoteDialogOpen] = useState(false);
-  const pendingMembers = data.pendingMembers.filter(
-    (member) => member.memberId !== data.currentMemberId,
-  );
 
   const showVoteStatus = useCallback(() => {
     router.push(
@@ -57,6 +56,36 @@ export default function EndVoteScreen() {
 
   if (!isAdmin) return null;
 
+  if (!data) {
+    return (
+      <MobileFrame
+        className={styles.phone}
+        data-testid="admin-vote-end-screen"
+        data-group-id={params.groupId}
+        data-role="ADMIN"
+      >
+        <Header title="투표 종료" onBack={showVoteStatus} />
+        <div className={styles.content}>
+          <p
+            className={`${styles.queryState} ${
+              voteStatusError ? styles.queryError : ""
+            }`}
+            role={voteStatusError ? "alert" : "status"}
+          >
+            {voteStatusError ??
+              (isLoading
+                ? "투표 현황을 불러오는 중입니다."
+                : "투표 현황을 불러오지 못했습니다.")}
+          </p>
+        </div>
+      </MobileFrame>
+    );
+  }
+
+  const pendingMembers = data.participants.filter(
+    (participant) => participant.choice === null,
+  );
+
   return (
     <MobileFrame
       className={styles.phone}
@@ -77,7 +106,7 @@ export default function EndVoteScreen() {
             <div className={styles.summaryContent}>
               <span className={styles.summaryValue}>
                 <small>2차 참여자</small>
-                <strong>{data.attendanceCount}명</strong>
+                <strong>{data.participateCount}명</strong>
               </span>
               <span className={styles.summaryDescription}>참여 선택 인원</span>
             </div>
@@ -91,7 +120,7 @@ export default function EndVoteScreen() {
               <span className={styles.summaryValue}>
                 <small>투표 완료</small>
                 <strong>
-                  {data.completedCount} / {data.totalCount}
+                  {data.votedCount} / {data.totalParticipantCount}
                 </strong>
               </span>
               <span className={styles.summaryDescription}>

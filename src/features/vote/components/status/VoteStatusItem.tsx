@@ -1,26 +1,19 @@
 import { CircleCheck, CircleX } from "lucide-react";
-import GenderAvatar from "@/shared/ui/GenderAvatar";
-import type { VoteStatusMember } from "../../types/vote.types";
+import type { SecondRoundVoteParticipant } from "../../types/secondRoundVoteStatus.types";
 import styles from "./VoteStatus.module.css";
 
 interface VoteStatusItemProps {
-  member: VoteStatusMember;
+  member: SecondRoundVoteParticipant;
 }
 
 export default function VoteStatusItem({ member }: VoteStatusItemProps) {
   return (
     <li className={styles.statusItem}>
-      <GenderAvatar
-        gender={member.gender}
-        name={member.memberName}
-        size={28}
-        shape="circle"
-      />
-      <strong>{member.memberName}</strong>
-      {member.attendanceStatus === "PENDING" && (
+      <strong>{member.displayName}</strong>
+      {member.choice === null && (
         <span className={styles.waitingBadge}>대기 중</span>
       )}
-      {member.attendanceStatus === "ATTEND" && (
+      {member.choice === "PARTICIPATE" && (
         <CircleCheck
           className={styles.attendanceIcon}
           aria-label="2차 참여"
@@ -28,7 +21,7 @@ export default function VoteStatusItem({ member }: VoteStatusItemProps) {
           strokeWidth={2}
         />
       )}
-      {member.attendanceStatus === "ABSENT" && (
+      {member.choice === "NOT_PARTICIPATE" && (
         <CircleX
           className={styles.absenceIcon}
           aria-label="불참"

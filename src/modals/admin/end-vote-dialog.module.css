@@ -112,7 +112,7 @@
 
 .pendingMember > strong {
   min-width: 0;
-  margin-left: 13px;
+  flex: 1;
   overflow: hidden;
   color: #18181b;
   font-size: 16px;
