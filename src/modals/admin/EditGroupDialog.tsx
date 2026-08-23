@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, SquarePen } from "lucide-react";
 import { useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { updateGroupSchema } from "@/features/group/schemas/group.schemas";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
@@ -30,25 +30,17 @@ export default function EditGroupDialog({
     register,
     handleSubmit,
     reset,
-    setFocus,
-    control,
     formState: { errors },
   } = useForm<UpdateGroupInput>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: initialValues,
   });
 
-  const description = useWatch({ control, name: "description" });
-  const descriptionLength = description?.length ?? 0;
-
   useEffect(() => {
     if (!open) return;
 
     reset(initialValues);
-    const focusFrame = window.requestAnimationFrame(() => setFocus("name"));
-
-    return () => window.cancelAnimationFrame(focusFrame);
-  }, [initialValues, open, reset, setFocus]);
+  }, [initialValues, open, reset]);
 
   return (
     <BottomSheetDialog
@@ -62,10 +54,9 @@ export default function EditGroupDialog({
     >
       <header className={styles.dialogHeader}>
         <span className={styles.editIcon} aria-hidden="true">
-          <SquarePen size={32} strokeWidth={1.8} />
+          <SquarePen size={40} strokeWidth={1.7} />
         </span>
         <h2 id="edit-group-title">그룹 정보 편집</h2>
-        <p>모임을 알아보기 쉽도록 정보를 정리해 주세요.</p>
       </header>
 
       <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
@@ -89,15 +80,12 @@ export default function EditGroupDialog({
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.labelRow}>
-            <label htmlFor="edit-group-description">설명 (선택)</label>
-            <small>{descriptionLength}/120</small>
-          </span>
+          <label htmlFor="edit-group-description">설명 (선택)</label>
           <textarea
             id="edit-group-description"
-            rows={3}
+            rows={2}
             maxLength={120}
-            placeholder="그룹의 목적이나 모임 정보를 입력해 주세요."
+            placeholder="설명 입력"
             aria-invalid={Boolean(errors.description)}
             {...register("description")}
           />
