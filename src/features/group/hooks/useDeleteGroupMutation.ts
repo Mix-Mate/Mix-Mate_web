@@ -11,7 +11,7 @@ export function useDeleteGroupMutation() {
   }, []);
 
   return useAsyncMutation(deleteGroupAction, {
-    fallbackErrorMessage: "그룹을 삭제하지 못했습니다.",
+    fallbackErrorMessage: "그룹 삭제에 실패했습니다.",
     fallbackResult: false,
   });
 }

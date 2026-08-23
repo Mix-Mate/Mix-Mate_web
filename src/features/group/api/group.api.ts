@@ -1,7 +1,6 @@
 import type { GroupDetail, UpdateGroupRequest } from "../types/group.types";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
-import { mockDelay } from "@/shared/api/mockDelay";
 
 async function getErrorMessage(response: Response, fallback: string) {
   try {
@@ -62,7 +61,16 @@ export async function updateGroup(
   }
 }
 
-export async function deleteGroup(groupId: string) {
-  void groupId;
-  await mockDelay(350);
+export async function deleteGroup(groupId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: withAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "그룹 삭제에 실패했습니다."),
+    );
+  }
 }
