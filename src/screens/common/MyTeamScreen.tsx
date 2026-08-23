@@ -54,6 +54,7 @@ export default function MyTeamScreen() {
   return (
     <MobileFrame
       className={styles.phone}
+      fillHeight
       data-testid="my-team-screen"
       data-scenario={snapshot.scenario}
       data-role={snapshot.role}
