@@ -1,6 +1,6 @@
 .viewport {
   display: flex;
-  width: var(--mobile-frame-width);
+  width: 100%;
   height: calc(
     var(--mobile-frame-height) + var(--safe-area-top) + var(--safe-area-bottom)
   );
@@ -12,11 +12,20 @@
 
 .phone {
   position: relative;
-  width: var(--mobile-frame-width);
+  width: 100%;
   height: calc(
     var(--mobile-frame-height) + var(--safe-area-top) + var(--safe-area-bottom)
   );
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+/* 실제 폰 폭(대부분 430px 이하)에서는 화면을 꽉 채우고,
+   그보다 넓은 데스크톱 브라우저에서만 목업처럼 고정폭으로 보여줌 */
+@media (min-width: 481px) {
+  .viewport,
+  .phone {
+    width: var(--mobile-frame-width);
+  }
 }
