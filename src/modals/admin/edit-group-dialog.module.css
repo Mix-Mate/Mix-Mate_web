@@ -141,6 +141,29 @@
   font-size: 13px;
 }
 
+.deleteGroupButton {
+  display: inline-flex;
+  align-self: flex-start;
+  cursor: pointer;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 3px 2px;
+  background: transparent;
+  color: #e37d7f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  transition:
+    color 140ms ease,
+    transform 100ms ease;
+}
+
+.deleteGroupButton:active:not(:disabled) {
+  color: #ef4444;
+  transform: scale(0.98);
+}
+
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -185,13 +208,15 @@
 }
 
 .cancelButton:focus-visible,
-.saveButton:focus-visible {
+.saveButton:focus-visible,
+.deleteGroupButton:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
 }
 
 .cancelButton:disabled,
-.saveButton:disabled {
+.saveButton:disabled,
+.deleteGroupButton:disabled {
   cursor: wait;
   opacity: 0.65;
 }

@@ -5,11 +5,13 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
+import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
+import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -35,11 +37,19 @@ export default function AdminRecruitmentScreen() {
     isPending: isSavingGroup,
     error: updateGroupError,
   } = useUpdateGroupMutation();
+  const {
+    mutate: deleteGroup,
+    isPending: isDeletingGroup,
+    error: deleteGroupError,
+  } = useDeleteGroupMutation();
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
   );
   const [editDialogOpen, setEditDialogOpen] = useState(
     searchParams.get("dialog") === "edit",
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(
+    searchParams.get("dialog") === "delete",
   );
   const { message: toast, showToast } = useToast();
   const canEditGroup =
@@ -121,6 +131,20 @@ export default function AdminRecruitmentScreen() {
     },
     [canEditGroup, params.groupId, refetch, showToast, updateGroup],
   );
+
+  const openDeleteDialog = useCallback(() => {
+    setEditDialogOpen(false);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDeleteGroup = useCallback(async () => {
+    const deleted = await deleteGroup(params.groupId);
+    if (!deleted) return;
+
+    setDeleteDialogOpen(false);
+    // TODO(group-delete-integration): 삭제 완료 화면이 구현되면 해당 경로로 이동한다.
+    showToast("Mock 환경에서 그룹이 삭제되었습니다.");
+  }, [deleteGroup, params.groupId, showToast]);
 
   if (!group) return null;
 
@@ -246,7 +270,18 @@ export default function AdminRecruitmentScreen() {
         onClose={() => {
           if (!isSavingGroup) setEditDialogOpen(false);
         }}
+        onDelete={openDeleteDialog}
         onSubmit={handleUpdateGroup}
+      />
+
+      <DeleteGroupDialog
+        open={deleteDialogOpen && canEditGroup}
+        isDeleting={isDeletingGroup}
+        error={deleteGroupError}
+        onClose={() => {
+          if (!isDeletingGroup) setDeleteDialogOpen(false);
+        }}
+        onConfirm={confirmDeleteGroup}
       />
     </MobileFrame>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleAlert, SquarePen } from "lucide-react";
+import { CircleAlert, SquarePen, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { updateGroupSchema } from "@/features/group/schemas/group.schemas";
@@ -15,6 +15,7 @@ interface EditGroupDialogProps {
   isSaving?: boolean;
   error?: string | null;
   onClose: () => void;
+  onDelete: () => void;
   onSubmit: (input: UpdateGroupInput) => void | Promise<void>;
 }
 
@@ -24,6 +25,7 @@ export default function EditGroupDialog({
   isSaving = false,
   error,
   onClose,
+  onDelete,
   onSubmit,
 }: EditGroupDialogProps) {
   const {
@@ -102,6 +104,16 @@ export default function EditGroupDialog({
             {error}
           </p>
         )}
+
+        <button
+          type="button"
+          className={styles.deleteGroupButton}
+          onClick={onDelete}
+          disabled={isSaving}
+        >
+          <Trash2 aria-hidden="true" size={17} strokeWidth={1.8} />
+          그룹 삭제하기
+        </button>
 
         <div className={styles.actions}>
           <button
