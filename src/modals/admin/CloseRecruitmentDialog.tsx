@@ -33,7 +33,10 @@ export default function CloseRecruitmentDialog({
         <LockKeyhole size={32} strokeWidth={1.8} />
       </span>
 
-      <h2 id="close-recruitment-title">참가자 모집을 마감하시겠습니까?</h2>
+      <h2 id="close-recruitment-title">
+        참가자 모집을 <br />
+        마감하시겠습니까?
+      </h2>
       <p id="close-recruitment-description">
         모집을 마감하면 초대코드를 통한
         <br />
