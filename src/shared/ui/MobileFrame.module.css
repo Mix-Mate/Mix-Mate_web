@@ -31,13 +31,19 @@
 }
 
 /* fillHeight: 컨텐츠가 flex로 남은 공간을 채우는 화면 전용.
-   실기기 높이(100dvh)에 그대로 맞추고, 데스크톱에서만 기존 목업 높이로 고정 */
-.fillHeight {
+   바깥(.viewport)만 실기기 높이(100dvh)를 기준으로 잡고,
+   안쪽(.phone)은 그 바깥 박스에 100%로 딱 맞춰서 둘 사이 오차가 안 생기게 함 */
+.viewport.fillHeight {
   height: 100dvh;
 }
 
+.phone.fillHeight {
+  height: 100%;
+}
+
 @media (min-width: 481px) {
-  .fillHeight {
+  .viewport.fillHeight,
+  .phone.fillHeight {
     height: var(--mobile-frame-height);
   }
 }
