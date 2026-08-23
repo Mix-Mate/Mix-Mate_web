@@ -2,12 +2,16 @@
 
 interface ParticipantStatsProps {
   count: number;
+  label?: string;
 }
 
-export default function ParticipantStats({ count }: ParticipantStatsProps) {
+export default function ParticipantStats({
+  count,
+  label = "전체 참가자",
+}: ParticipantStatsProps) {
   return (
     <div className={styles.listHeader}>
-      <strong>전체 참가자</strong>
+      <strong>{label}</strong>
       <span>{count}명</span>
     </div>
   );

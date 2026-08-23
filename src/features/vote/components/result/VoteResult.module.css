@@ -12,28 +12,30 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  align-items: center;
   gap: 13px;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 16px;
 }
 
 .resultCard {
   width: 100%;
-  height: 417px;
-  flex: 0 0 417px;
+  height: 560px;
+  flex: 0 0 560px;
   overflow: hidden;
-  padding: 36px 24px 30px;
+  padding: 28px 24px 30px;
   border: 1px solid rgba(144, 144, 144, 0.3);
   border-radius: 32px;
   background: #fff;
 }
 
 .overallResultCard {
-  height: 443px;
-  flex-basis: 443px;
-  padding: 23px 20px 27px;
+  width: 350px;
+  height: 449px;
+  flex-basis: 449px;
+  padding: 24px 20px 28px;
   border-color: #dbeafe;
-  border-radius: 26px;
+  border-radius: 20px;
   background: linear-gradient(202deg, #fff 5%, #eff6ff 60%, #eef8ff 97%);
 }
 
@@ -47,28 +49,19 @@
 }
 
 .introStage {
-  position: relative;
   gap: 19px;
 }
 
 .transitionNotice {
-  position: absolute;
-  right: 0;
-  bottom: -24px;
-  left: 0;
   margin: 0;
   color: #94a3b8;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 18px;
-  text-align: center;
-  white-space: nowrap;
+  font-weight: 400;
 }
 
 .transitionNotice strong {
   display: inline-block;
-  color: #2563eb;
-  font-size: 12px;
+  color: #ef4444;
+  font-size: 13px;
   font-weight: 700;
   animation: countdownTick 360ms ease-out both;
 }
@@ -85,21 +78,43 @@
   color: #2563eb;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.35px;
+  letter-spacing: 0.5px;
   line-height: 20px;
 }
 
+button.resultPill {
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .overallResultCard .resultPill {
+  min-height: 52px;
+  flex-direction: column;
   border-color: #bfdbfe;
   background: #fff;
   letter-spacing: 0;
 }
 
+.resultPillHint {
+  color: #8e8e93;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.mvpTrophy {
+  width: 106px;
+  height: 71px;
+  flex: 0 0 71px;
+  object-fit: contain;
+  filter: blur(2px);
+}
+
 .mvpHalo {
   display: flex;
-  width: 235px;
-  height: 235px;
-  flex: 0 0 235px;
+  width: 244px;
+  height: 244px;
+  flex: 0 0 244px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -137,20 +152,8 @@
 .mvpWinnerNames {
   display: flex;
   max-width: 190px;
-  max-height: 150px;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
-.multipleMvpWinnerNames {
-  gap: 2px;
-}
-
-.multipleMvpWinnerNames strong {
-  font-size: 29px;
-  line-height: 34px;
 }
 
 .emptyMvp {
@@ -162,8 +165,12 @@
   margin: 0;
   color: #475569;
   font-size: 13px;
-  line-height: 22px;
+  line-height: 23px;
   text-align: center;
+}
+
+.introCaption p {
+  margin: 0;
 }
 
 .introCaption span,
@@ -177,77 +184,12 @@
 
 .podium {
   position: relative;
-  width: 100%;
-  height: 337px;
-  margin: 22px 0 0;
+  width: 308px;
+  height: 321px;
+  flex: 0 0 321px;
+  margin: 23px 0 0;
   padding: 0;
   list-style: none;
-}
-
-.mvpWinnerList {
-  display: grid;
-  width: 100%;
-  max-height: 337px;
-  margin: 22px 0 0;
-  padding: 2px;
-  overflow-y: auto;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  list-style: none;
-  scrollbar-width: thin;
-}
-
-.singleMvpWinnerList {
-  grid-template-columns: minmax(0, 170px);
-  justify-content: center;
-}
-
-.mvpWinnerCard {
-  display: flex;
-  min-width: 0;
-  min-height: 132px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 13px 8px 10px;
-  border: 1px solid rgba(147, 197, 253, 0.6);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.82);
-  color: #18181b;
-  text-align: center;
-}
-
-.mvpWinnerCard > strong {
-  width: 100%;
-  margin-top: 12px;
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mvpWinnerCard > small {
-  margin-top: 4px;
-  color: #94a3b8;
-  font-size: 11px;
-  line-height: 16px;
-  white-space: nowrap;
-}
-
-.initialAvatar {
-  display: grid;
-  width: 54px;
-  height: 54px;
-  border: 2px solid #93c5fd;
-  border-radius: 50%;
-  background: #dbeafe;
-  color: #1e40af;
-  font-size: 21px;
-  font-weight: 700;
-  line-height: 1;
-  place-items: center;
 }
 
 .emptyMvpResult {
@@ -261,7 +203,7 @@
   position: absolute;
   z-index: 2;
   display: flex;
-  width: 83px;
+  width: 86px;
   flex-direction: column;
   align-items: center;
   color: #18181b;
@@ -275,143 +217,364 @@
 }
 
 .leftPlacement {
-  top: 120px;
+  top: 112px;
   left: 0;
 }
 
 .rightPlacement {
-  top: 120px;
+  top: 112px;
   right: 0;
 }
 
 .bottomPlacement {
-  top: 239px;
+  top: 225px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .centerMedallion {
   position: absolute;
-  top: 117px;
+  top: 112px;
   left: 50%;
-  width: 96px;
-  height: 96px;
+  display: flex;
+  width: 111px;
+  height: 98px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   list-style: none;
   transform: translateX(-50%);
 }
 
-.centerMedallion::before,
-.centerMedallion::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-color: rgba(147, 197, 253, 0.55);
-  content: "";
-  transform: translate(-50%, -50%);
-}
-
-.centerMedallion::before {
-  width: 102px;
-  border-top: 1px dashed rgba(147, 197, 253, 0.55);
-}
-
-.centerMedallion::after {
-  height: 102px;
-  border-left: 1px dashed rgba(147, 197, 253, 0.55);
-}
-
-.centerMedallion span {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 96px;
-  height: 96px;
-  border: 1px solid #bfdbfe;
+.centerLogo {
+  width: 37px;
+  height: 37px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow:
-    0 3px 16px rgba(96, 165, 250, 0.2),
-    inset 0 3px 7px rgba(255, 255, 255, 0.9);
-  font-size: 32px;
-  line-height: 33px;
-  place-items: center;
+  object-fit: cover;
+  opacity: 0.9;
+  mix-blend-mode: multiply;
 }
 
-.rankAvatar {
+.centerTable {
+  width: 45px;
+  height: 35px;
+  margin-top: -1px;
+  object-fit: contain;
+}
+
+.mvpIllustration {
   position: relative;
-  display: inline-flex;
+  display: block;
+  width: 86px;
+  height: 51px;
 }
 
-.rankAvatar > span:first-child {
-  border: 2px solid #93c5fd;
-  color: #1e40af !important;
+.armsUp,
+.martiniGlass {
+  position: absolute;
+  z-index: 1;
+}
+
+.armsUp {
+  top: -1px;
+  width: 69px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.martiniGlass {
+  top: 18px;
+  width: 30px;
+  height: 25px;
+  color: #1238f5;
+}
+
+.clinkGlass {
+  z-index: 5;
+  transform-origin: 50% 22%;
+  animation-duration: 1.3s;
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+  animation-timing-function: cubic-bezier(0.22, 0.75, 0.24, 1);
+  will-change: transform;
+}
+
+.clinkGlassTop {
+  animation-name: clinkFromTop;
+}
+
+.clinkGlassLeft {
+  animation-name: clinkFromLeft;
+}
+
+.clinkGlassRight {
+  animation-name: clinkFromRight;
+}
+
+.clinkGlassBottom {
+  animation-name: clinkFromBottom;
+}
+
+.clinkImpact {
+  position: absolute;
+  z-index: 6;
+  top: 104px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.impactRing,
+.impactRay,
+.sparkleParticle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.impactRing {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(37, 99, 235, 0.68);
+  border-radius: 50%;
+  animation: clinkImpactRing 1.3s ease-out both;
+}
+
+.impactRays,
+.sparkleParticles {
+  position: absolute;
+  inset: 0;
+}
+
+.impactRay {
+  width: 34px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(37, 99, 235, 0.82) 22%,
+    rgba(14, 165, 233, 0.88) 50%,
+    rgba(37, 99, 235, 0.82) 78%,
+    transparent
+  );
+  animation: clinkImpactRay 1.3s ease-out both;
+}
+
+.impactRay:nth-child(1) {
+  --ray-angle: 0deg;
+}
+
+.impactRay:nth-child(2) {
+  --ray-angle: 45deg;
+}
+
+.impactRay:nth-child(3) {
+  --ray-angle: 90deg;
+}
+
+.impactRay:nth-child(4) {
+  --ray-angle: 135deg;
+}
+
+.sparkleParticle {
+  color: #2563eb;
+  font-size: var(--particle-size, 8px);
+  line-height: 1;
+  animation: clinkSparkle 1.3s ease-out both;
+  animation-delay: var(--particle-delay, 0ms);
+}
+
+.sparkleParticle:nth-child(1) {
+  --particle-x: -30px;
+  --particle-y: -22px;
+  --particle-rotation: -75deg;
+  --particle-size: 9px;
+}
+
+.sparkleParticle:nth-child(2) {
+  --particle-x: -12px;
+  --particle-y: -30px;
+  --particle-rotation: 35deg;
+  --particle-size: 10px;
+  --particle-delay: 25ms;
+}
+
+.sparkleParticle:nth-child(3) {
+  --particle-x: 13px;
+  --particle-y: -28px;
+  --particle-rotation: 95deg;
+  --particle-size: 8px;
+  --particle-delay: 45ms;
+}
+
+.sparkleParticle:nth-child(4) {
+  --particle-x: 31px;
+  --particle-y: -15px;
+  --particle-rotation: 150deg;
+  --particle-size: 7px;
+  --particle-delay: 15ms;
+}
+
+.sparkleParticle:nth-child(5) {
+  --particle-x: 34px;
+  --particle-y: 8px;
+  --particle-rotation: 210deg;
+  --particle-size: 11px;
+  --particle-delay: 55ms;
+}
+
+.sparkleParticle:nth-child(6) {
+  --particle-x: 18px;
+  --particle-y: 27px;
+  --particle-rotation: 265deg;
+  --particle-size: 9px;
+  --particle-delay: 35ms;
+}
+
+.sparkleParticle:nth-child(7) {
+  --particle-x: -8px;
+  --particle-y: 30px;
+  --particle-rotation: 320deg;
+  --particle-size: 7px;
+  --particle-delay: 60ms;
+}
+
+.sparkleParticle:nth-child(8) {
+  --particle-x: -29px;
+  --particle-y: 20px;
+  --particle-rotation: 390deg;
+  --particle-size: 10px;
+  --particle-delay: 20ms;
+}
+
+.sparkleParticle:nth-child(9) {
+  --particle-x: -36px;
+  --particle-y: 1px;
+  --particle-rotation: 445deg;
+  --particle-size: 8px;
+  --particle-delay: 40ms;
+}
+
+.sparkleParticle:nth-child(10) {
+  --particle-x: 2px;
+  --particle-y: -36px;
+  --particle-rotation: 510deg;
+  --particle-size: 6px;
+  --particle-delay: 10ms;
+}
+
+.winnerPlacement .armsUp {
+  left: 11px;
+}
+
+.winnerPlacement .martiniGlass,
+.winnerPlacement .teamBadge,
+.rightPlacement .martiniGlass,
+.rightPlacement .teamBadge {
+  left: 0;
+}
+
+.leftPlacement .armsUp,
+.bottomPlacement .armsUp {
+  left: 0;
+}
+
+.leftPlacement .martiniGlass,
+.leftPlacement .teamBadge,
+.bottomPlacement .martiniGlass,
+.bottomPlacement .teamBadge {
+  right: 0;
+}
+
+.rightPlacement .armsUp {
+  right: 0;
 }
 
 .teamBadge {
   position: absolute;
-  right: auto;
-  bottom: -9px;
-  left: 50%;
+  z-index: 2;
+  top: 0;
   display: inline-flex;
-  min-width: 32px;
+  min-width: 33px;
   height: 18px;
   align-items: center;
   justify-content: center;
   padding: 0 6px;
   border-radius: 999px;
-  background: #1e40af;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.72);
+  color: #18181b;
   font-size: 10px;
   font-weight: 700;
   line-height: 15px;
-  transform: translateX(-50%);
 }
 
 .rankEntry > strong {
-  margin-top: 12px;
+  margin-top: 0;
   font-size: 14px;
   font-weight: 700;
   line-height: 14px;
 }
 
 .rankEntry > small {
-  margin-top: 4px;
+  margin-top: 3px;
   color: #94a3b8;
   font-size: 11px;
   line-height: 16px;
   white-space: nowrap;
 }
 
-.resultDivider {
-  display: flex;
-  width: 100%;
-  height: 18px;
-  flex: 0 0 18px;
+.participantListButton {
+  display: grid;
+  width: 342px;
+  height: 72px;
+  flex: 0 0 72px;
+  grid-template-columns: 20px minmax(0, 1fr) 20px;
   align-items: center;
-  gap: 10px;
-  padding: 0 2px;
-  color: #a1a1aa;
-  font-size: 12px;
+  gap: 16px;
+  padding: 17px 24px;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 20px;
+  background: #fff;
+  color: #18181b;
+  font-family: inherit;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 18px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
 }
 
-.resultDivider::before,
-.resultDivider::after {
-  height: 1px;
-  flex: 1;
-  background: #e4e4e7;
-  content: "";
+button.resultPill:focus-visible,
+.participantListButton:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.participantListIcon {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  border-radius: 14px;
+  background: #f4f4f5;
+  color: #52525b;
+  place-items: center;
+}
+
+.participantListChevron {
+  color: #d4d4d8;
 }
 
 .resultSummary {
   display: flex;
   width: 100%;
-  min-height: 116px;
-  max-height: 228px;
-  flex: 0 0 auto;
-  flex-direction: column;
-  gap: 11px;
+  min-height: 46px;
+  flex: 0 0 46px;
+  align-items: center;
+  gap: 10px;
   padding: 12px 14px;
   border: 1px solid #bfdbfe;
   border-radius: 13px;
@@ -419,93 +582,15 @@
   color: #06b6d4;
 }
 
-.resultSummaryHeader {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.resultSummaryHeader > svg {
+.resultSummary > svg {
   flex: 0 0 18px;
-  margin-top: 1px;
 }
 
-.resultSummaryHeader p {
-  display: flex;
-  min-width: 0;
-  margin: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.resultSummaryHeader strong {
+.resultSummary strong {
   color: #1d4ed8;
   font-size: 13px;
   font-weight: 700;
   line-height: 20px;
-}
-
-.resultSummaryHeader p > span {
-  color: #27272a;
-  font-size: 13px;
-  line-height: 21px;
-  word-break: keep-all;
-}
-
-.secondRoundParticipantList {
-  display: flex;
-  min-height: 0;
-  margin: 0;
-  padding: 0 2px 0 0;
-  overflow-y: auto;
-  flex-direction: column;
-  gap: 7px;
-  list-style: none;
-  scrollbar-width: thin;
-}
-
-.secondRoundParticipantList li {
-  display: flex;
-  min-height: 46px;
-  flex: 0 0 46px;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 9px;
-  border: 1px solid rgba(191, 219, 254, 0.8);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.82);
-}
-
-.secondRoundParticipantList li > span:last-child {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.secondRoundParticipantList strong {
-  overflow: hidden;
-  color: #18181b;
-  font-size: 13px;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.secondRoundParticipantList small {
-  overflow: hidden;
-  color: #71717a;
-  font-size: 11px;
-  line-height: 16px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.emptySecondRoundParticipants {
-  margin: 4px 0;
-  color: #64748b;
-  font-size: 12px;
-  line-height: 20px;
-  text-align: center;
 }
 
 .resultQueryScreen {
@@ -603,12 +688,178 @@
   }
 }
 
+@keyframes clinkFromTop {
+  0% {
+    opacity: 0;
+    transform: translate(0, -10px) rotate(-18deg) scale(0.92);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  54% {
+    transform: translate(28px, 73px) rotate(16deg) scale(1.08);
+  }
+
+  64% {
+    transform: translate(28px, 64px) rotate(8deg) scale(0.97);
+  }
+
+  78%,
+  100% {
+    opacity: 1;
+    transform: translate(28px, 67px) rotate(10deg) scale(1);
+  }
+}
+
+@keyframes clinkFromLeft {
+  0% {
+    opacity: 0;
+    transform: translate(-12px, 0) rotate(-24deg) scale(0.92);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  54% {
+    transform: translate(83px, -39px) rotate(22deg) scale(1.08);
+  }
+
+  64% {
+    transform: translate(74px, -39px) rotate(12deg) scale(0.97);
+  }
+
+  78%,
+  100% {
+    opacity: 1;
+    transform: translate(77px, -39px) rotate(14deg) scale(1);
+  }
+}
+
+@keyframes clinkFromRight {
+  0% {
+    opacity: 0;
+    transform: translate(12px, 0) rotate(24deg) scale(0.92);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  54% {
+    transform: translate(-83px, -39px) rotate(-22deg) scale(1.08);
+  }
+
+  64% {
+    transform: translate(-74px, -39px) rotate(-12deg) scale(0.97);
+  }
+
+  78%,
+  100% {
+    opacity: 1;
+    transform: translate(-77px, -39px) rotate(-14deg) scale(1);
+  }
+}
+
+@keyframes clinkFromBottom {
+  0% {
+    opacity: 0;
+    transform: translate(0, 12px) rotate(18deg) scale(0.92);
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  54% {
+    transform: translate(-28px, -152px) rotate(-16deg) scale(1.08);
+  }
+
+  64% {
+    transform: translate(-28px, -143px) rotate(-8deg) scale(0.97);
+  }
+
+  78%,
+  100% {
+    opacity: 1;
+    transform: translate(-28px, -146px) rotate(-10deg) scale(1);
+  }
+}
+
+@keyframes clinkImpactRing {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+
+  55% {
+    opacity: 0.9;
+  }
+
+  72%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.8);
+  }
+}
+
+@keyframes clinkImpactRay {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--ray-angle)) scaleX(0.15);
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--ray-angle)) scaleX(1.35);
+  }
+}
+
+@keyframes clinkSparkle {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(0deg) scale(0.25);
+  }
+
+  56% {
+    opacity: 0.95;
+  }
+
+  82%,
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--particle-x)),
+        calc(-50% + var(--particle-y))
+      )
+      rotate(var(--particle-rotation)) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .introStage,
   .resultTable,
   .mvpHalo,
   .confetti,
-  .transitionNotice strong {
+  .transitionNotice strong,
+  .clinkGlass,
+  .impactRing,
+  .impactRay,
+  .sparkleParticle {
     animation: none;
+  }
+
+  .clinkImpact {
+    display: none;
   }
 }
