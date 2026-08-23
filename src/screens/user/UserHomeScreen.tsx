@@ -94,6 +94,8 @@ export default function UserHomeScreen() {
 
   return (
     <MobileFrame
+      className={styles.phone}
+      fillHeight
       data-testid="user-home"
       data-scenario={snapshot.scenario}
       data-role={snapshot.role}

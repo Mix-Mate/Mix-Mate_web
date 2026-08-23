@@ -1,3 +1,8 @@
+.phone {
+  display: flex;
+  flex-direction: column;
+}
+
 .toast {
   --toast-bottom: 84px;
   --toast-z-index: 5;
