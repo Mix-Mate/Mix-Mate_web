@@ -5,13 +5,19 @@ import { useParams, useRouter } from "next/navigation";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
 interface ParticipantPageHeaderProps {
-  groupName: string;
+  groupName?: string;
   participantCount: number;
+  title?: string;
+  backHref?: string;
+  backLabel?: string;
 }
 
 export default function ParticipantPageHeader({
   groupName,
   participantCount,
+  title = "참가자 목록",
+  backHref,
+  backLabel = "그룹 홈으로 이동",
 }: ParticipantPageHeaderProps) {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -21,16 +27,19 @@ export default function ParticipantPageHeader({
       <button
         type="button"
         className={styles.backButton}
-        aria-label="그룹 홈으로 이동"
-        onClick={() => router.push(`/groups/${params.groupId}/home`)}
+        aria-label={backLabel}
+        onClick={() =>
+          router.push(backHref ?? `/groups/${params.groupId}/home`)
+        }
       >
         <ChevronLeft aria-hidden="true" size={24} strokeWidth={1.7} />
       </button>
 
       <div className={styles.titleArea}>
-        <h1>참가자 목록</h1>
+        <h1>{title}</h1>
         <p>
-          {groupName} · {participantCount}명
+          {groupName ? `${groupName} · ` : ""}
+          {participantCount}명
         </p>
       </div>
     </header>

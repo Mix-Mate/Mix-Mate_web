@@ -11,6 +11,24 @@
   display: none;
 }
 
+.queryState {
+  margin: auto 0;
+  padding: 22px 16px;
+  border: 1px solid #dfe4ea;
+  border-radius: 14px;
+  background: #fff;
+  color: #5f6872;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.queryError {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #d14f5a;
+}
+
 .progressSection {
   flex: 0 0 auto;
 }
@@ -207,10 +225,10 @@
 .allComplete {
   margin-top: 8px;
   padding: 18px 14px;
-  border: 1px solid #cce8d7;
+  border: 1px solid #bfdbfe;
   border-radius: 14px;
-  background: #edf8f1;
-  color: #278250;
+  background: #eff6ff;
+  color: #2563eb;
   font-size: 12px;
   line-height: 19px;
   text-align: center;

@@ -13,10 +13,12 @@ export default function MvpVoteScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const { context, error, submit } = useMvpVote(params.groupId);
+  const { context, isLoading, isSubmitting, error, submit } = useMvpVote(
+    params.groupId,
+  );
 
-  const handleSubmit = (candidateId: string) => {
-    if (context.hasSubmitted || submit(candidateId)) {
+  const handleSubmit = async (targetParticipantId: number) => {
+    if (await submit(targetParticipantId)) {
       router.push(
         withSessionContext(
           groupRoutes.attendanceVote(params.groupId),
@@ -30,7 +32,6 @@ export default function MvpVoteScreen() {
     <VoteScreenLayout
       title="MVP 투표"
       status={context.status}
-      backHref={groupRoutes.home(params.groupId)}
       testId="mvp-vote-screen"
     >
       <section className={styles.mvpScreen}>
@@ -60,11 +61,15 @@ export default function MvpVoteScreen() {
 
         <MvpVoteForm
           candidates={context.candidates}
-          initialCandidateId={context.selectedCandidateId}
+          initialParticipantId={context.selectedParticipantId}
           isSubmitted={context.hasSubmitted}
           isClosed={context.status === "CLOSED"}
+          isLoading={isLoading}
+          isSubmitting={isSubmitting}
           error={error}
-          onSubmit={handleSubmit}
+          onSubmit={(targetParticipantId) => {
+            void handleSubmit(targetParticipantId);
+          }}
         />
       </section>
     </VoteScreenLayout>

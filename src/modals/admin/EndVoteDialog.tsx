@@ -1,19 +1,25 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import type { VoteStatusMember } from "@/features/vote/types/vote.types";
+import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import type { SecondRoundVoteParticipant } from "@/features/vote/types/secondRoundVoteStatus.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
-import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
   open: boolean;
-  pendingMembers: VoteStatusMember[];
+  pendingMembers: SecondRoundVoteParticipant[];
   isEnding?: boolean;
   error?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+}
+
+interface PendingListDragState {
+  pointerId: number;
+  startY: number;
+  startScrollTop: number;
 }
 
 export default function EndVoteDialog({
@@ -24,6 +30,44 @@ export default function EndVoteDialog({
   onClose,
   onConfirm,
 }: EndVoteDialogProps) {
+  const pendingListRef = useRef<HTMLUListElement>(null);
+  const pendingListDragRef = useRef<PendingListDragState | null>(null);
+
+  const startPendingListDrag = (
+    event: ReactPointerEvent<HTMLUListElement>,
+  ) => {
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+    pendingListDragRef.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startScrollTop: event.currentTarget.scrollTop,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const movePendingListDrag = (
+    event: ReactPointerEvent<HTMLUListElement>,
+  ) => {
+    const dragState = pendingListDragRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+    event.preventDefault();
+    event.currentTarget.scrollTop =
+      dragState.startScrollTop + dragState.startY - event.clientY;
+  };
+
+  const finishPendingListDrag = (
+    event: ReactPointerEvent<HTMLUListElement>,
+  ) => {
+    if (pendingListDragRef.current?.pointerId !== event.pointerId) return;
+
+    pendingListDragRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
     <BottomSheetDialog
       open={open}
@@ -53,16 +97,22 @@ export default function EndVoteDialog({
         aria-labelledby="pending-members-title"
       >
         <h3 id="pending-members-title">미투표자 {pendingMembers.length}명</h3>
-        <ul className={styles.pendingList}>
+        <ul
+          ref={pendingListRef}
+          className={styles.pendingList}
+          aria-label="미투표자 명단"
+          tabIndex={0}
+          onPointerDown={startPendingListDrag}
+          onPointerMove={movePendingListDrag}
+          onPointerUp={finishPendingListDrag}
+          onPointerCancel={finishPendingListDrag}
+          onLostPointerCapture={() => {
+            pendingListDragRef.current = null;
+          }}
+        >
           {pendingMembers.map((member) => (
-            <li className={styles.pendingMember} key={member.memberId}>
-              <GenderAvatar
-                gender={member.gender}
-                name={member.memberName}
-                size={39}
-                shape="circle"
-              />
-              <strong>{member.memberName}</strong>
+            <li className={styles.pendingMember} key={member.participantId}>
+              <strong>{member.displayName}</strong>
               <span className={styles.absenceBadge}>불참 처리</span>
             </li>
           ))}

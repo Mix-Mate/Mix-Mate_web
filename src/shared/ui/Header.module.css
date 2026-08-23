@@ -29,6 +29,11 @@
     transform 100ms ease;
 }
 
+.backButtonPlaceholder {
+  width: 44px;
+  height: 44px;
+}
+
 .backButton:active {
   background: #e9e9ec;
   transform: scale(0.94);

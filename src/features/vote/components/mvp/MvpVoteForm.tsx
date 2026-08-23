@@ -2,49 +2,58 @@
 
 import { useState } from "react";
 import Button from "@/shared/ui/Button";
-import type { MvpCandidate } from "../../types/vote.types";
+import type { MvpCandidate } from "../../types/mvpVote.types";
 import styles from "../vote.module.css";
 import MvpCandidateList from "./MvpCandidateList";
 
 interface MvpVoteFormProps {
   candidates: MvpCandidate[];
-  initialCandidateId: string | null;
+  initialParticipantId: number | null;
   isSubmitted: boolean;
   isClosed: boolean;
+  isLoading: boolean;
+  isSubmitting: boolean;
   error: string | null;
-  onSubmit: (candidateId: string) => void;
+  onSubmit: (targetParticipantId: number) => void;
 }
 
 export default function MvpVoteForm({
   candidates,
-  initialCandidateId,
+  initialParticipantId,
   isSubmitted,
   isClosed,
+  isLoading,
+  isSubmitting,
   error,
   onSubmit,
 }: MvpVoteFormProps) {
-  const [selectedCandidateId, setSelectedCandidateId] =
-    useState(initialCandidateId);
+  const [selectedParticipantId, setSelectedParticipantId] =
+    useState(initialParticipantId);
   const selectedCandidate = candidates.find(
-    (candidate) => candidate.id === selectedCandidateId,
+    (candidate) => candidate.participantId === selectedParticipantId,
   );
-  const canContinue = selectedCandidateId !== null && !isClosed;
+  const canContinue =
+    selectedParticipantId !== null &&
+    !isSubmitted &&
+    !isClosed &&
+    !isLoading &&
+    !isSubmitting;
 
   return (
     <form
       className={styles.mvpForm}
       onSubmit={(event) => {
         event.preventDefault();
-        if (selectedCandidateId) {
-          onSubmit(selectedCandidateId);
+        if (selectedParticipantId !== null) {
+          onSubmit(selectedParticipantId);
         }
       }}
     >
       <MvpCandidateList
         candidates={candidates}
-        selectedCandidateId={selectedCandidateId}
-        disabled={isSubmitted || isClosed}
-        onSelect={setSelectedCandidateId}
+        selectedParticipantId={selectedParticipantId}
+        disabled={isSubmitted || isClosed || isLoading || isSubmitting}
+        onSelect={setSelectedParticipantId}
       />
 
       {selectedCandidate && (
@@ -65,7 +74,7 @@ export default function MvpVoteForm({
         className={styles.submitButton}
         disabled={!canContinue}
       >
-        다음 - 2차 참여 여부 투표 →
+        {isSubmitting ? "투표 중..." : "다음 - 2차 참여 여부 투표 →"}
       </Button>
     </form>
   );
