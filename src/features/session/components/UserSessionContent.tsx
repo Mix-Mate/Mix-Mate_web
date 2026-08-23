@@ -31,6 +31,12 @@ export default function UserSessionContent({
   const isAdmin = snapshot.role === "ADMIN";
   const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
   const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
+  const profileRoute = snapshot.permissions.canEditProfile
+    ? groupRoutes.profileEdit(groupId)
+    : groupRoutes.profile(groupId);
+  const profileActionLabel = snapshot.permissions.canEditProfile
+    ? "내 프로필 수정"
+    : "내 프로필 조회";
 
   return (
     <div
@@ -110,10 +116,10 @@ export default function UserSessionContent({
         <button
           type="button"
           className={styles.secondaryAction}
-          onClick={() => onNavigate(groupRoutes.profileEdit(groupId))}
+          onClick={() => onNavigate(profileRoute)}
         >
-          <UserRoundPen aria-hidden="true" size={20} strokeWidth={1.8} />내
-          프로필 조회
+          <UserRoundPen aria-hidden="true" size={20} strokeWidth={1.8} />
+          {profileActionLabel}
         </button>
       </div>
 

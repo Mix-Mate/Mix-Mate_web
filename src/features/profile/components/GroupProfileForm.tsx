@@ -4,8 +4,11 @@ import { useState } from "react";
 import type {
   EditableGroupProfile,
   MyGroupProfile,
+  ProfileGender,
   ProfileGrade,
+  ProfilePosition,
 } from "../types/profile.types";
+import { normalizeMajor } from "../lib/normalize-major";
 import ProfileChipField from "./ProfileChipField";
 import ProfileMbtiField from "./ProfileMbtiField";
 import ProfileTextAreaField from "./ProfileTextAreaField";
@@ -30,6 +33,21 @@ const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "4학년", value: "FOURTH" },
 ];
 
+const genderOptions: { label: string; value: ProfileGender }[] = [
+  { label: "남", value: "MALE" },
+  { label: "여", value: "FEMALE" },
+];
+
+const newMemberOptions: { label: string; value: "true" | "false" }[] = [
+  { label: "신입", value: "true" },
+  { label: "기존", value: "false" },
+];
+
+const positionOptions: { label: string; value: ProfilePosition }[] = [
+  { label: "일반", value: "MEMBER" },
+  { label: "운영진", value: "STAFF" },
+];
+
 export default function GroupProfileForm({
   mode,
   initialProfile,
@@ -39,8 +57,11 @@ export default function GroupProfileForm({
 }: GroupProfileFormProps) {
   const [profile, setProfile] = useState<EditableGroupProfile>({
     displayName: initialProfile.displayName,
+    position: initialProfile.position,
     major: initialProfile.major,
+    isNew: initialProfile.isNew,
     grade: initialProfile.grade,
+    gender: initialProfile.gender,
     mbti: initialProfile.mbti,
     age: initialProfile.age,
     instaId: initialProfile.instaId,
@@ -64,12 +85,13 @@ export default function GroupProfileForm({
         void onSubmit({
           ...initialProfile,
           ...profile,
+          major: normalizeMajor(profile.major),
         });
       }}
     >
       <div className={styles.formBody}>
         <GenderAvatar
-          gender={initialProfile.gender === "MALE" ? "male" : "female"}
+          gender={profile.gender === "MALE" ? "male" : "female"}
           name={profile.displayName}
           size={52}
           className={styles.profileAvatar}
@@ -89,10 +111,32 @@ export default function GroupProfileForm({
           onChange={(value) => updateField("grade", value)}
         />
 
+        <ProfileChipField
+          label="성별"
+          value={profile.gender}
+          options={genderOptions}
+          onChange={(value) => updateField("gender", value)}
+        />
+
         <ProfileTextField
           label="소속 (학과·팀 등)"
           value={profile.major}
           onChange={(value) => updateField("major", value)}
+          onBlur={() => updateField("major", normalizeMajor(profile.major))}
+        />
+
+        <ProfileChipField
+          label="신입 여부"
+          value={profile.isNew ? "true" : "false"}
+          options={newMemberOptions}
+          onChange={(value) => updateField("isNew", value === "true")}
+        />
+
+        <ProfileChipField
+          label="직급"
+          value={profile.position}
+          options={positionOptions}
+          onChange={(value) => updateField("position", value)}
         />
 
         <ProfileMbtiField

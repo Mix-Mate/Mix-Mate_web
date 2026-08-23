@@ -1,5 +1,5 @@
-﻿import MyProfileScreen from "@/screens/common/MyProfileScreen";
+import EditMyProfileScreen from "@/screens/common/EditMyProfileScreen";
 
 export default function EditProfilePage() {
-  return <MyProfileScreen />;
+  return <EditMyProfileScreen />;
 }

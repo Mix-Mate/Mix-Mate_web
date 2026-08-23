@@ -7,6 +7,7 @@ export const groupRoutes = {
   home: (groupId: string) => `${groupBase(groupId)}/home`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
   participants: (groupId: string) => `${groupBase(groupId)}/participants`,
+  profile: (groupId: string) => `${groupBase(groupId)}/profile`,
   profileEdit: (groupId: string) => `${groupBase(groupId)}/profile/edit`,
   team: (groupId: string) => `${groupBase(groupId)}/team`,
   teamMembers: (groupId: string) => `${groupBase(groupId)}/team?tab=members`,

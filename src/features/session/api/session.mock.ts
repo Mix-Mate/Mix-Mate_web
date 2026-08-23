@@ -12,6 +12,19 @@ const baseSnapshot = {
 } as const;
 
 const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
+  recruiting: {
+    ...baseSnapshot,
+    scenario: "recruiting",
+    round: 1,
+    currentStatus: "FIRST_PREPARING",
+    teamNumber: null,
+    teamHistoryAvailable: false,
+    permissions: {
+      canLeaveGroup: true,
+      canEndRound: false,
+      canEditProfile: true,
+    },
+  },
   "round1-waiting": {
     ...baseSnapshot,
     scenario: "round1-waiting",
@@ -22,6 +35,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     permissions: {
       canLeaveGroup: true,
       canEndRound: false,
+      canEditProfile: false,
     },
   },
   "round1-active": {
@@ -34,6 +48,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     permissions: {
       canLeaveGroup: false,
       canEndRound: false,
+      canEditProfile: false,
     },
   },
   "round2-waiting": {
@@ -46,6 +61,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     permissions: {
       canLeaveGroup: false,
       canEndRound: false,
+      canEditProfile: false,
     },
   },
   "round2-active": {
@@ -58,6 +74,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     permissions: {
       canLeaveGroup: false,
       canEndRound: false,
+      canEditProfile: false,
     },
   },
 };
@@ -82,6 +99,7 @@ export function getMockUserSession(
       canEndRound:
         snapshot.scenario === "round1-active" ||
         snapshot.scenario === "round2-active",
+      canEditProfile: false,
     },
   };
 }

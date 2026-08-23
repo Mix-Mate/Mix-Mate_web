@@ -23,8 +23,11 @@ export type ProfileMbti =
 
 export type EditableGroupProfile = {
   displayName: string;
+  position: ProfilePosition;
   major: string;
+  isNew: boolean;
   grade: ProfileGrade;
+  gender: ProfileGender;
   mbti: ProfileMbti;
   age: number | null;
   instaId: string | null;
@@ -34,9 +37,6 @@ export type EditableGroupProfile = {
 
 export type MyGroupProfile = EditableGroupProfile & {
   id: string;
-  position: ProfilePosition;
-  isNew: boolean;
-  gender: ProfileGender;
 };
 
 export type ParticipantProfileRequest = Omit<MyGroupProfile, "id">;
