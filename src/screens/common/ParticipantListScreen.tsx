@@ -63,6 +63,7 @@ export default function ParticipantListScreen() {
     <MobileFrame
       className={styles.screenFrame}
       viewportClassName={styles.pageViewport}
+      fillHeight
     >
       <ParticipantPageHeader
         groupName={data.groupName}

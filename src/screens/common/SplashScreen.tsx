@@ -29,6 +29,7 @@ export default function SplashScreen({
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="splash-screen"
     >
       <div className={styles.content}>

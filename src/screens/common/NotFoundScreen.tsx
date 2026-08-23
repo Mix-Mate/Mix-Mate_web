@@ -14,6 +14,7 @@ export default function NotFoundScreen() {
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="not-found-screen"
     >
       <Header title="Not Found" onBack={() => router.back()} compact />
