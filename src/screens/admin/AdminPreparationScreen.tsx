@@ -9,7 +9,7 @@ import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMut
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import SessionStatusCard from "@/features/session/components/SessionStatusCard";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
-import AM02DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
+import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
@@ -90,7 +90,7 @@ export default function AdminPreparationScreen() {
 
       {toast && <Toast className={styles.toast}>{toast}</Toast>}
 
-      <AM02DeleteGroupDialog
+      <DeleteGroupDialog
         open={deleteDialogOpen}
         isDeleting={isDeleting}
         error={deleteError}
