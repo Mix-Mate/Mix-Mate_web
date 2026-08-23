@@ -6,6 +6,7 @@
   --bottom-sheet-padding: 16px 26px 26px;
   --bottom-sheet-border-radius: 30px 30px 0 0;
 
+  position: relative;
   display: flex;
   height: 561px;
   max-height: calc(100% - 24px);
@@ -142,24 +143,31 @@
 }
 
 .deleteGroupButton {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  left: 26px;
   display: inline-flex;
-  align-self: flex-start;
+  width: 46px;
+  height: 46px;
   cursor: pointer;
   align-items: center;
-  gap: 6px;
-  margin-top: 14px;
-  padding: 3px 2px;
-  background: transparent;
+  justify-content: center;
+  padding: 0;
+  border: 1.3px solid #e4e4e7;
+  border-radius: 16px;
+  background: #fff;
   color: #e37d7f;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 21px;
   transition:
+    background 140ms ease,
+    border-color 140ms ease,
     color 140ms ease,
     transform 100ms ease;
 }
 
 .deleteGroupButton:active:not(:disabled) {
+  border-color: #fecdd3;
+  background: #fff1f2;
   color: #ef4444;
   transform: scale(0.98);
 }

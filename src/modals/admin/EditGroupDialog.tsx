@@ -54,6 +54,16 @@ export default function EditGroupDialog({
       onClose={onClose}
       closeDisabled={isSaving}
     >
+      <button
+        type="button"
+        className={styles.deleteGroupButton}
+        onClick={onDelete}
+        disabled={isSaving}
+        aria-label="그룹 삭제하기"
+      >
+        <Trash2 aria-hidden="true" size={20} strokeWidth={1.8} />
+      </button>
+
       <header className={styles.dialogHeader}>
         <span className={styles.editIcon} aria-hidden="true">
           <SquarePen size={40} strokeWidth={1.7} />
@@ -104,16 +114,6 @@ export default function EditGroupDialog({
             {error}
           </p>
         )}
-
-        <button
-          type="button"
-          className={styles.deleteGroupButton}
-          onClick={onDelete}
-          disabled={isSaving}
-        >
-          <Trash2 aria-hidden="true" size={17} strokeWidth={1.8} />
-          그룹 삭제하기
-        </button>
 
         <div className={styles.actions}>
           <button
