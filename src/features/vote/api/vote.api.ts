@@ -1,8 +1,5 @@
-import { myTeamMock } from "@/features/team/api/team.mock";
 import type {
-  MvpResultMember,
   VoteProgressContext,
-  VoteResultContext,
   VoteStatus,
   VoteStatusMember,
 } from "../types/vote.types";
@@ -44,71 +41,6 @@ const pendingMemberMocks: VoteStatusMember[] = [
   createVoteStatusMember("ryu-dohyeon", "류도현", "PENDING", "male"),
 ];
 
-function createMvpResultMember(
-  memberId: string,
-  memberName: string,
-  gender: MvpResultMember["gender"],
-  rank: number,
-  voteCount: number,
-  teamNumber: number,
-  gradeLabel: string,
-  mbti: string,
-): MvpResultMember {
-  return {
-    memberId,
-    memberName,
-    gender,
-    rank,
-    voteCount,
-    teamNumber,
-    gradeLabel,
-    mbti,
-  };
-}
-
-const mvpResultMocks: MvpResultMember[] = [
-  createMvpResultMember(
-    "lee-seoyeon",
-    "이서연",
-    "female",
-    1,
-    5,
-    1,
-    "1학년",
-    "INFP",
-  ),
-  createMvpResultMember(
-    "han-sohee",
-    "한소희",
-    "female",
-    2,
-    3,
-    4,
-    "3학년",
-    "ISTP",
-  ),
-  createMvpResultMember(
-    "jeong-hyunwoo",
-    "정현우",
-    "male",
-    2,
-    3,
-    2,
-    "2학년",
-    "ENTP",
-  ),
-  createMvpResultMember(
-    "hwang-minjun",
-    "황민준",
-    "male",
-    4,
-    1,
-    3,
-    "3학년",
-    "ISFJ",
-  ),
-];
-
 export function getVoteStatus(groupId: string): VoteStatus {
   return voteStatuses.get(groupId) ?? "OPEN";
 }
@@ -143,18 +75,5 @@ export function getVoteProgressContext(groupId: string): VoteProgressContext {
     attendanceMembers,
     absenceMembers,
     pendingMembers,
-  };
-}
-
-export function getVoteResultContext(groupId: string): VoteResultContext {
-  const progress = getVoteProgressContext(groupId);
-
-  return {
-    status: "CLOSED",
-    teamNumber: myTeamMock.teamNumber,
-    teamMvp: mvpResultMocks[0],
-    overallRanking: mvpResultMocks,
-    attendanceCount: Math.max(8, progress.attendanceCount),
-    totalCount: progress.totalCount,
   };
 }
