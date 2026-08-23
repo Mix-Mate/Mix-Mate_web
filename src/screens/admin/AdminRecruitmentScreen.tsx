@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
+import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
 import useToast from "@/shared/hooks/useToast";
@@ -32,13 +33,15 @@ export default function AdminRecruitmentScreen() {
   const { message: toast, showToast } = useToast();
 
   const copyInviteCode = useCallback(async () => {
+    if (!group) return;
+
     try {
       await navigator.clipboard.writeText(group.inviteCode);
       showToast("그룹 코드가 복사되었습니다.");
     } catch {
       showToast(`그룹 코드: ${group.inviteCode}`);
     }
-  }, [group.inviteCode, showToast]);
+  }, [group, showToast]);
 
   const goToParticipants = useCallback(() => {
     router.push(
@@ -78,14 +81,16 @@ export default function AdminRecruitmentScreen() {
     showToast,
   ]);
 
+  if (!group) return null;
+
   return (
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
       data-testid="admin-recruitment"
-      data-group-id={group.id}
+      data-group-id={group.groupId}
     >
-      <Header title={group.name} onBack={() => router.back()} compact />
+      <Header title={group.groupName} onBack={() => router.back()} compact />
 
       <div className={styles.content}>
         <section className={styles.statusCard} aria-label="현재 모집 상태">
@@ -93,7 +98,7 @@ export default function AdminRecruitmentScreen() {
             <span className={styles.statusDot} aria-hidden="true" />
             <div>
               <p>진행 상태 확인</p>
-              <h2>그룹 모집 중</h2>
+              <h2>{getGroupStatusLabel(group.status)}</h2>
             </div>
           </div>
 
@@ -137,7 +142,7 @@ export default function AdminRecruitmentScreen() {
         <button
           type="button"
           className={styles.participantCountCard}
-          aria-label={`현재 모집된 인원 ${group.participantCount}명, 참가자 목록 보기`}
+          aria-label={`현재 모집된 인원 ${group.memberCount}명, 참가자 목록 보기`}
           onClick={goToParticipants}
         >
           <span className={styles.participantCountInfo}>
@@ -150,13 +155,14 @@ export default function AdminRecruitmentScreen() {
             </span>
           </span>
           <span className={styles.participantCountValue}>
-            <strong>{group.participantCount}</strong>
+            <strong>{group.memberCount}</strong>
             <span>명</span>
           </span>
         </button>
 
         <Button
           className={styles.closeRecruitmentButton}
+          disabled={group.status !== "RECRUITING"}
           onClick={() => setCloseDialogOpen(true)}
         >
           모집 마감하기

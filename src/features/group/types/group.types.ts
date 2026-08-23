@@ -8,25 +8,17 @@ export type GroupStatus =
   | "SECOND_ROUND"
   | "FINISHED";
 
-export interface AdminGroupPreparation {
-  id: string;
-  name: string;
-  description: string;
-  inviteCode: string;
-  participantCount: number;
-  roleLabel: "관리자";
-  status: GroupStatus;
-  statusLabel: string;
-}
+export type GroupMemberRole = "HOST" | "PARTICIPANT";
 
-export interface AdminRoundTwoPreparation {
-  id: string;
-  name: string;
-  description: string;
-  participantCount: number;
-  roleLabel: "관리자";
-  round: 2;
-  statusLabel: string;
+export interface GroupDetail {
+  groupId: number;
+  groupName: string;
+  description: string | null;
+  status: GroupStatus;
+  inviteCode: string;
+  memberCount: number;
+  myRole: GroupMemberRole;
+  myParticipantId: number;
 }
 
 export interface UpdateGroupInput {

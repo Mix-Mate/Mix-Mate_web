@@ -98,9 +98,11 @@ export default function AssignmentSetupScreen() {
     goToProcessing();
   };
 
+  if (!group) return null;
+
   return (
     <MobileFrame data-testid="assignment-setup-screen" data-round={round}>
-      <Header title={group.name} onBack={() => router.back()} />
+      <Header title={group.groupName} onBack={() => router.back()} />
 
       <TabNavigation
         items={[
