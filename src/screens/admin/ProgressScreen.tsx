@@ -1,5 +1,6 @@
 "use client";
 
+import { Power } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
@@ -155,6 +156,7 @@ export default function ProgressScreen() {
               setEndRoundDialogOpen(true);
             }}
           >
+            <Power aria-hidden="true" size={21} strokeWidth={1.9} />
             {currentRound}차 술자리 종료하기
           </Button>
         </footer>

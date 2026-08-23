@@ -1,5 +1,6 @@
 import { Clock3, History, Power, Trash2, UserRoundPen } from "lucide-react";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import Button from "@/shared/ui/Button";
 import { getEventStatusLabel } from "../model/event-status";
 import type { UserHomeSnapshot } from "../types/session.types";
 import SessionMenuGrid from "./SessionMenuGrid";
@@ -124,14 +125,14 @@ export default function UserSessionContent({
       </div>
 
       {snapshot.permissions.canEndRound && (
-        <button
-          type="button"
+        <Button
+          variant="danger"
           className={styles.endRoundButton}
           onClick={onRequestEndRound}
         >
           <Power aria-hidden="true" size={21} strokeWidth={1.9} />
-          {snapshot.round}차 술자리 종료
-        </button>
+          {snapshot.round}차 술자리 종료하기
+        </Button>
       )}
     </div>
   );
