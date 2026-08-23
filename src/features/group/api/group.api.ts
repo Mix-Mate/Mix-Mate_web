@@ -1,4 +1,4 @@
-import type { GroupDetail, UpdateGroupInput } from "../types/group.types";
+import type { GroupDetail, UpdateGroupRequest } from "../types/group.types";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
 import { mockDelay } from "@/shared/api/mockDelay";
@@ -46,14 +46,20 @@ export async function closeRecruiting(groupId: string): Promise<void> {
 
 export async function updateGroup(
   groupId: string,
-  input: UpdateGroupInput,
-) {
-  await mockDelay();
+  request: UpdateGroupRequest,
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(request),
+  });
 
-  return {
-    id: groupId,
-    ...input,
-  };
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "그룹 정보 수정에 실패했습니다."),
+    );
+  }
 }
 
 export async function deleteGroup(groupId: string) {

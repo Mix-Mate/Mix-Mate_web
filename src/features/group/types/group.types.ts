@@ -25,3 +25,8 @@ export interface UpdateGroupInput {
   name: string;
   description: string;
 }
+
+export interface UpdateGroupRequest {
+  groupName: string;
+  description: string;
+}
