@@ -25,11 +25,12 @@ export default function AM02DeleteGroupDialog({
       titleId="delete-group-title"
       descriptionId="delete-group-description"
       sheetClassName={styles.bottomSheet}
+      handleClassName={styles.sheetHandle}
       onClose={onClose}
       closeDisabled={isDeleting}
     >
       <span className={styles.deleteIcon} aria-hidden="true">
-        <Trash2 size={26} strokeWidth={1.8} />
+        <Trash2 size={41} strokeWidth={1.7} />
       </span>
 
       <div className={styles.message}>
@@ -40,7 +41,7 @@ export default function AM02DeleteGroupDialog({
           모두 삭제되며 복구할 수 없습니다.
         </p>
         <strong className={styles.warning}>
-          <CircleAlert aria-hidden="true" size={18} strokeWidth={1.8} />이
+          <CircleAlert aria-hidden="true" size={20} strokeWidth={1.8} />이
           세션은 되돌릴 수 없습니다
         </strong>
         {error && (
