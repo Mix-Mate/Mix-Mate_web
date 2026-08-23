@@ -124,7 +124,7 @@ export default function ProgressScreen() {
       data-testid="admin-progress"
       data-group-id={params.groupId}
     >
-      <Header title="진행 현황 보기" onBack={goHome} compact smallTitle />
+      <Header title="진행 현황 보기" onBack={goHome} />
 
       <div className={styles.content}>
         <RoundTwoStatusCard
