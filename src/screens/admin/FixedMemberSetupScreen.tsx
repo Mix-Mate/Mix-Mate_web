@@ -130,6 +130,8 @@ export default function FixedMemberSetupScreen() {
     goToProcessing();
   };
 
+  if (!group) return null;
+
   return (
     <MobileFrame
       className={styles.screenFrame}
@@ -137,7 +139,7 @@ export default function FixedMemberSetupScreen() {
       data-testid="fixed-member-setup-screen"
       data-round={round}
     >
-      <Header title={group.name} onBack={() => router.back()} />
+      <Header title={group.groupName} onBack={() => router.back()} />
 
       <TabNavigation
         items={[

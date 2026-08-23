@@ -3,15 +3,22 @@
 }
 
 .bottomSheet {
+  --bottom-sheet-padding: 16px 26px 26px;
   --bottom-sheet-border-radius: 30px 30px 0 0;
 
+  position: relative;
+  display: flex;
+  height: 561px;
   max-height: calc(100% - 24px);
+  flex-direction: column;
   overflow-y: auto;
   box-shadow: 0 -16px 48px rgba(24, 24, 27, 0.2);
 }
 
 .sheetHandle {
-  --bottom-sheet-handle-margin: 0 auto 22px;
+  --bottom-sheet-handle-width: 46px;
+  --bottom-sheet-handle-height: 5px;
+  --bottom-sheet-handle-margin: 0 auto 28px;
 }
 
 .dialogHeader {
@@ -23,42 +30,38 @@
 
 .editIcon {
   display: grid;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   place-items: center;
-  border: 1px solid #93c5fd;
-  border-radius: 20px;
-  background: linear-gradient(145deg, #f7fbff 0%, #e7f2ff 100%);
+  border: 1.3px solid #256ad3;
+  border-radius: 23px;
+  background: #eff6ff;
   color: #2563eb;
 }
 
 .dialogHeader h2 {
-  margin: 14px 0 0;
+  margin: 13px 0 0;
   color: #18181b;
   font-family: "Noto Sans KR", sans-serif;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: -0.7px;
-  line-height: 39px;
-}
-
-.dialogHeader p {
-  margin: 2px 0 0;
-  color: #71717a;
-  font-size: 13px;
-  line-height: 20px;
+  letter-spacing: -0.66px;
+  line-height: 42px;
 }
 
 .form {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
   margin-top: 20px;
 }
 
 .fieldGroup + .fieldGroup {
-  margin-top: 14px;
+  margin-top: 27px;
 }
 
-.fieldGroup label,
-.labelRow {
+.fieldGroup label {
   color: #52525b;
   font-size: 14px;
   line-height: 22px;
@@ -66,17 +69,6 @@
 
 .fieldGroup label > span {
   color: #ef4444;
-}
-
-.labelRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.labelRow small {
-  color: #a1a1aa;
-  font-size: 12px;
 }
 
 .fieldGroup input,
@@ -99,14 +91,14 @@
 }
 
 .fieldGroup input {
-  height: 48px;
+  height: 46px;
   padding: 0 16px 0 20px;
 }
 
 .fieldGroup textarea {
-  min-height: 78px;
+  height: 72px;
   resize: none;
-  padding: 12px 16px 12px 20px;
+  padding: 11px 16px 11px 20px;
   line-height: 24px;
 }
 
@@ -150,21 +142,51 @@
   font-size: 13px;
 }
 
+.deleteGroupButton {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  left: 26px;
+  display: inline-flex;
+  width: 46px;
+  height: 46px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1.3px solid #e4e4e7;
+  border-radius: 16px;
+  background: #fff;
+  color: #e37d7f;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 100ms ease;
+}
+
+.deleteGroupButton:active:not(:disabled) {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #ef4444;
+  transform: scale(0.98);
+}
+
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-top: 20px;
-  padding-top: 18px;
+  padding-top: 20px;
   border-top: 1px solid #f4f4f5;
 }
 
 .cancelButton,
 .saveButton {
-  height: 58px;
+  height: 59px;
   cursor: pointer;
-  border-radius: 15px;
-  font-size: 16px;
+  border-radius: 16px;
+  font-size: 18px;
   font-weight: 700;
   transition:
     background 140ms ease,
@@ -194,13 +216,15 @@
 }
 
 .cancelButton:focus-visible,
-.saveButton:focus-visible {
+.saveButton:focus-visible,
+.deleteGroupButton:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
 }
 
 .cancelButton:disabled,
-.saveButton:disabled {
+.saveButton:disabled,
+.deleteGroupButton:disabled {
   cursor: wait;
   opacity: 0.65;
 }

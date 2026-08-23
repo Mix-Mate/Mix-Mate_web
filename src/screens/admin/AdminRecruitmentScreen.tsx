@@ -1,12 +1,18 @@
 "use client";
 
-import { BriefcaseBusiness, Clock3, Copy } from "lucide-react";
+import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
+import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
+import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
+import { getGroupStatusLabel } from "@/features/group/model/group-status";
+import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
+import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
+import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
@@ -26,19 +32,46 @@ export default function AdminRecruitmentScreen() {
     isPending: isClosingRecruitment,
     error: closeRecruitmentError,
   } = useCloseRecruitingMutation();
+  const {
+    mutate: updateGroup,
+    isPending: isSavingGroup,
+    error: updateGroupError,
+  } = useUpdateGroupMutation();
+  const {
+    mutate: deleteGroup,
+    isPending: isDeletingGroup,
+    error: deleteGroupError,
+  } = useDeleteGroupMutation();
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
   );
+  const [editDialogOpen, setEditDialogOpen] = useState(
+    searchParams.get("dialog") === "edit",
+  );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(
+    searchParams.get("dialog") === "delete",
+  );
   const { message: toast, showToast } = useToast();
+  const canEditGroup =
+    group?.myRole === "HOST" && group.status === "RECRUITING";
+  const editInitialValues = useMemo<UpdateGroupInput>(
+    () => ({
+      name: group?.groupName ?? "",
+      description: group?.description ?? "",
+    }),
+    [group?.description, group?.groupName],
+  );
 
   const copyInviteCode = useCallback(async () => {
+    if (!group) return;
+
     try {
       await navigator.clipboard.writeText(group.inviteCode);
       showToast("그룹 코드가 복사되었습니다.");
     } catch {
       showToast(`그룹 코드: ${group.inviteCode}`);
     }
-  }, [group.inviteCode, showToast]);
+  }, [group, showToast]);
 
   const goToParticipants = useCallback(() => {
     router.push(
@@ -78,14 +111,69 @@ export default function AdminRecruitmentScreen() {
     showToast,
   ]);
 
+  const handleUpdateGroup = useCallback(
+    async (input: UpdateGroupInput) => {
+      if (!canEditGroup) return;
+
+      const updated = await updateGroup(params.groupId, {
+        groupName: input.name,
+        description: input.description,
+      });
+      if (!updated) return;
+
+      const latestGroup = await refetch();
+      setEditDialogOpen(false);
+      showToast(
+        latestGroup
+          ? "그룹 정보가 수정되었습니다."
+          : "수정했지만 최신 그룹 정보를 불러오지 못했습니다.",
+      );
+    },
+    [canEditGroup, params.groupId, refetch, showToast, updateGroup],
+  );
+
+  const openDeleteDialog = useCallback(() => {
+    setEditDialogOpen(false);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const confirmDeleteGroup = useCallback(async () => {
+    if (!canEditGroup) return;
+
+    const deleted = await deleteGroup(params.groupId);
+    if (!deleted) return;
+
+    setDeleteDialogOpen(false);
+    router.replace("/");
+    //TODO 그룹홈 라우팅
+  }, [canEditGroup, deleteGroup, params.groupId, router]);
+
+  if (!group) return null;
+
   return (
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
       data-testid="admin-recruitment"
-      data-group-id={group.id}
+      data-group-id={group.groupId}
     >
-      <Header title={group.name} onBack={() => router.back()} compact />
+      <Header
+        title={group.groupName}
+        onBack={() => router.back()}
+        compact
+        rightAction={
+          canEditGroup ? (
+            <button
+              type="button"
+              className={styles.editGroupButton}
+              aria-label="그룹 정보 편집"
+              onClick={() => setEditDialogOpen(true)}
+            >
+              <Pencil aria-hidden="true" size={19} strokeWidth={1.8} />
+            </button>
+          ) : undefined
+        }
+      />
 
       <div className={styles.content}>
         <section className={styles.statusCard} aria-label="현재 모집 상태">
@@ -93,7 +181,7 @@ export default function AdminRecruitmentScreen() {
             <span className={styles.statusDot} aria-hidden="true" />
             <div>
               <p>진행 상태 확인</p>
-              <h2>그룹 모집 중</h2>
+              <h2>{getGroupStatusLabel(group.status)}</h2>
             </div>
           </div>
 
@@ -137,7 +225,7 @@ export default function AdminRecruitmentScreen() {
         <button
           type="button"
           className={styles.participantCountCard}
-          aria-label={`현재 모집된 인원 ${group.participantCount}명, 참가자 목록 보기`}
+          aria-label={`현재 모집된 인원 ${group.memberCount}명, 참가자 목록 보기`}
           onClick={goToParticipants}
         >
           <span className={styles.participantCountInfo}>
@@ -150,13 +238,14 @@ export default function AdminRecruitmentScreen() {
             </span>
           </span>
           <span className={styles.participantCountValue}>
-            <strong>{group.participantCount}</strong>
+            <strong>{group.memberCount}</strong>
             <span>명</span>
           </span>
         </button>
 
         <Button
           className={styles.closeRecruitmentButton}
+          disabled={group.status !== "RECRUITING"}
           onClick={() => setCloseDialogOpen(true)}
         >
           모집 마감하기
@@ -173,6 +262,28 @@ export default function AdminRecruitmentScreen() {
           if (!isClosingRecruitment) setCloseDialogOpen(false);
         }}
         onConfirm={confirmCloseRecruitment}
+      />
+
+      <EditGroupDialog
+        open={editDialogOpen && canEditGroup}
+        initialValues={editInitialValues}
+        isSaving={isSavingGroup}
+        error={updateGroupError}
+        onClose={() => {
+          if (!isSavingGroup) setEditDialogOpen(false);
+        }}
+        onDelete={openDeleteDialog}
+        onSubmit={handleUpdateGroup}
+      />
+
+      <DeleteGroupDialog
+        open={deleteDialogOpen && canEditGroup}
+        isDeleting={isDeletingGroup}
+        error={deleteGroupError}
+        onClose={() => {
+          if (!isDeletingGroup) setDeleteDialogOpen(false);
+        }}
+        onConfirm={confirmDeleteGroup}
       />
     </MobileFrame>
   );
