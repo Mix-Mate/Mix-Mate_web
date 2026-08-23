@@ -1,14 +1,9 @@
-import type { GroupRole } from "../types/session.types";
 import {
   preserveSearchParams,
   type SearchParamReader,
 } from "@/shared/lib/navigation/preserveSearchParams";
 
-const sessionContextKeys = ["scenario", "role"] as const;
-
-export function getMockGroupRole(searchParams: SearchParamReader): GroupRole {
-  return searchParams.get("role") === "admin" ? "ADMIN" : "USER";
-}
+const sessionContextKeys = ["scenario"] as const;
 
 export function withSessionContext(
   href: string,

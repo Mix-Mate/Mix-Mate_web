@@ -7,10 +7,7 @@ import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSe
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
-import {
-  getMockGroupRole,
-  withSessionContext,
-} from "@/features/session/utils/session-navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamRound } from "@/features/team/types/team.types";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
@@ -29,11 +26,10 @@ export default function UserHomeScreen() {
   const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
     params.groupId,
   );
-  // TODO(auth-integration): 실제 연동 시 URL이 아니라 그룹 멤버십 응답의 역할을 사용한다.
-  const mockRole = getMockGroupRole(searchParams);
+  const groupRole = group?.myRole === "HOST" ? "ADMIN" : "USER";
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
-    mockRole,
+    groupRole,
   );
   const teamRound: TeamRound =
     snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";

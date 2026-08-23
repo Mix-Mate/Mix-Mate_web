@@ -28,7 +28,7 @@ export default function VoteResultScreen() {
   const homeHref = groupRoutes.home(params.groupId);
   const resultHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
-    : `${homeHref}?scenario=round2-waiting&role=user`;
+    : `${homeHref}?scenario=round2-waiting`;
   const myTeamMvpWinner = firstRoundTeam
     ? (data?.mvpWinners.find(
         (winner) => winner.teamNumber === firstRoundTeam.teamNumber,

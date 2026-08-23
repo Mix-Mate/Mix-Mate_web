@@ -80,9 +80,7 @@ export default function AssignmentResultScreen() {
 
     clearAssignmentResultDraft(params.groupId, round);
     const scenario = round === 2 ? "round2-active" : "round1-active";
-    router.push(
-      `${groupRoutes.home(params.groupId)}?role=admin&scenario=${scenario}`,
-    );
+    router.push(`${groupRoutes.home(params.groupId)}?scenario=${scenario}`);
   };
 
   const isBusy = isReshuffling || isConfirming;

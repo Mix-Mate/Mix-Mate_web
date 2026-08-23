@@ -80,8 +80,8 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
 };
 
 export function getMockUserSession(
-  scenario?: string,
-  role: GroupRole = "USER",
+  scenario: string | undefined,
+  role: GroupRole,
 ): UserHomeSnapshot {
   const snapshot =
     scenario && scenario in snapshots

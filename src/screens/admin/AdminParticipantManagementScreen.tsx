@@ -55,9 +55,7 @@ export default function AdminParticipantManagementScreen() {
   }, [data.participants, filter, keyword]);
 
   const goToAssignment = () => {
-    router.push(
-      `${groupRoutes.adminAssignmentSetup(params.groupId, round)}?role=admin`,
-    );
+    router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
 
   return (
@@ -121,7 +119,9 @@ export default function AdminParticipantManagementScreen() {
             type="button"
             className={styles.addButton}
             onClick={() =>
-              router.push(`/groups/${params.groupId}/admin/participants/new?role=admin`)
+              router.push(
+                `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+              )
             }
           >
             사용자 추가
@@ -129,7 +129,11 @@ export default function AdminParticipantManagementScreen() {
         </div>
 
         <section className={styles.listCard} aria-label="참가자 목록">
-          <AdminParticipantList groupId={params.groupId} participants={filteredParticipants} />
+          <AdminParticipantList
+            groupId={params.groupId}
+            participants={filteredParticipants}
+            round={round}
+          />
         </section>
       </main>
 
@@ -141,4 +145,3 @@ export default function AdminParticipantManagementScreen() {
     </MobileFrame>
   );
 }
-

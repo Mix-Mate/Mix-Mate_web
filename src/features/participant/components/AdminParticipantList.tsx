@@ -5,11 +5,13 @@ import styles from "@/screens/admin/AdminParticipantManagementScreen.module.css"
 interface AdminParticipantListProps {
   groupId: string;
   participants: AdminParticipant[];
+  round: 1 | 2;
 }
 
 export default function AdminParticipantList({
   groupId,
   participants,
+  round,
 }: AdminParticipantListProps) {
   if (participants.length === 0) {
     return (
@@ -26,6 +28,7 @@ export default function AdminParticipantList({
           key={participant.id}
           groupId={groupId}
           participant={participant}
+          round={round}
         />
       ))}
     </ul>

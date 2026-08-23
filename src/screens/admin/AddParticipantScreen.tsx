@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, type FormEvent } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAddParticipantMutation } from "@/features/participant/hooks/useAddParticipantMutation";
 import type {
   ParticipantProfileRequest,
@@ -13,6 +13,8 @@ import type {
 } from "@/features/participant/types/participant.types";
 import ProfileMbtiField from "@/features/profile/components/ProfileMbtiField";
 import useToast from "@/shared/hooks/useToast";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
@@ -50,6 +52,8 @@ const visibilityOptions: { label: string; value: ProfileVisibility }[] = [
 export default function AddParticipantScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
+  const round = toAssignmentRound(searchParams.get("round") ?? "1");
   const { mutate, isPending } = useAddParticipantMutation();
   const { message: toast, showToast } = useToast();
   const [form, setForm] = useState<ParticipantProfileRequest>({
@@ -74,7 +78,7 @@ export default function AddParticipantScreen() {
   };
 
   const goToManagement = () => {
-    router.push(`/groups/${params.groupId}/admin/participants?role=admin`);
+    router.push(groupRoutes.adminParticipants(params.groupId, round));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -227,4 +231,3 @@ export default function AddParticipantScreen() {
     </MobileFrame>
   );
 }
-
