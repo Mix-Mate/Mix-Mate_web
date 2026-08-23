@@ -25,8 +25,8 @@ export const groupRoutes = {
     `${groupBase(groupId)}/participants?list=second-round`,
   adminRecruitment: (groupId: string) =>
     `${groupBase(groupId)}/admin/recruitment`,
-  adminParticipants: (groupId: string) =>
-    `${groupBase(groupId)}/admin/participants`,
+  adminParticipants: (groupId: string, round?: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/participants${round ? `?round=${round}` : ""}`,
   adminPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
@@ -39,8 +39,4 @@ export const groupRoutes = {
     `${groupBase(groupId)}/admin/assignments/${round}/processing`,
   adminAssignmentResult: (groupId: string, round: AssignmentRound) =>
     `${groupBase(groupId)}/admin/assignments/${round}/result`,
-  adminRoundTwoPreparation: (groupId: string) =>
-    `${groupBase(groupId)}/admin/round-2/preparation`,
-  adminRoundTwoParticipants: (groupId: string) =>
-    `${groupBase(groupId)}/admin/round-2/participants`,
 };

@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AdminParticipantList from "@/features/participant/components/AdminParticipantList";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
 import type { ParticipantRole } from "@/features/participant/types/participant.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -24,7 +25,9 @@ const filterOptions: { label: string; value: FilterValue }[] = [
 export default function AdminParticipantManagementScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
-  const { data } = useAdminParticipantListQuery(params.groupId);
+  const searchParams = useSearchParams();
+  const round = toAssignmentRound(searchParams.get("round") ?? "1");
+  const { data } = useAdminParticipantListQuery(params.groupId, round);
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
 
@@ -52,7 +55,7 @@ export default function AdminParticipantManagementScreen() {
   }, [data.participants, filter, keyword]);
 
   const goToAssignment = () => {
-    router.push(`${groupRoutes.adminAssignmentSetup(params.groupId, 1)}?role=admin`);
+    router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
 
   return (
@@ -116,7 +119,9 @@ export default function AdminParticipantManagementScreen() {
             type="button"
             className={styles.addButton}
             onClick={() =>
-              router.push(`/groups/${params.groupId}/admin/participants/new?role=admin`)
+              router.push(
+                `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+              )
             }
           >
             사용자 추가
@@ -124,7 +129,11 @@ export default function AdminParticipantManagementScreen() {
         </div>
 
         <section className={styles.listCard} aria-label="참가자 목록">
-          <AdminParticipantList groupId={params.groupId} participants={filteredParticipants} />
+          <AdminParticipantList
+            groupId={params.groupId}
+            participants={filteredParticipants}
+            round={round}
+          />
         </section>
       </main>
 
@@ -136,5 +145,3 @@ export default function AdminParticipantManagementScreen() {
     </MobileFrame>
   );
 }
-
-

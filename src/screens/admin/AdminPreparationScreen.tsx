@@ -1,11 +1,14 @@
 "use client";
 
+import { History, UsersRound } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { UsersRound } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import AdminPreparationActions from "@/features/group/components/AdminPreparationActions";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { getGroupStatusLabel } from "@/features/group/model/group-status";
+import {
+  getGroupStatusLabel,
+  getPreparationRound,
+} from "@/features/group/model/group-status";
 import SessionStatusCard from "@/features/session/components/SessionStatusCard";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -18,6 +21,7 @@ export default function AdminPreparationScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const round = group ? getPreparationRound(group.status) : null;
 
   const navigateWithSession = useCallback(
     (href: string) => {
@@ -26,11 +30,15 @@ export default function AdminPreparationScreen() {
     [router, searchParams],
   );
 
-  const viewFirstRoundParticipants = useCallback(() => {
-    // TODO(first-round-participants-routing): 1차 참가자 명단 조회 화면이 구현되면 라우팅을 연결한다.
-  }, []);
+  useEffect(() => {
+    if (group && !round) {
+      router.replace(
+        withSessionContext(groupRoutes.home(params.groupId), searchParams),
+      );
+    }
+  }, [group, params.groupId, round, router, searchParams]);
 
-  if (!group) return null;
+  if (!group || !round) return null;
 
   return (
     <MobileFrame
@@ -38,6 +46,7 @@ export default function AdminPreparationScreen() {
       viewportClassName={styles.viewport}
       data-testid="admin-preparation"
       data-group-id={group.groupId}
+      data-round={round}
     >
       <Header title={group.groupName} onBack={() => router.back()} compact />
 
@@ -53,13 +62,21 @@ export default function AdminPreparationScreen() {
         <AdminPreparationActions
           onStartAssignment={() =>
             navigateWithSession(
-              groupRoutes.adminAssignmentSetup(params.groupId, 1),
+              groupRoutes.adminAssignmentSetup(params.groupId, round),
             )
           }
           secondaryAction={{
-            icon: <UsersRound aria-hidden="true" size={17} strokeWidth={1.8} />,
-            label: "1차 참가자 명단 조회",
-            onClick: viewFirstRoundParticipants,
+            icon:
+              round === 1 ? (
+                <UsersRound aria-hidden="true" size={17} strokeWidth={1.8} />
+              ) : (
+                <History aria-hidden="true" size={17} strokeWidth={1.8} />
+              ),
+            label: `${round}차 참가자 명단 보기`,
+            onClick: () =>
+              navigateWithSession(
+                groupRoutes.adminParticipants(params.groupId, round),
+              ),
           }}
           onEditProfile={() =>
             navigateWithSession(groupRoutes.profileEdit(params.groupId))

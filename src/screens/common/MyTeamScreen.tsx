@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import { getEventStatusLabel } from "@/features/session/model/event-status";
-import {
-  getMockGroupRole,
-  withSessionContext,
-} from "@/features/session/utils/session-navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
@@ -25,10 +23,11 @@ export default function MyTeamScreen() {
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
   const [privateMember, setPrivateMember] = useState<TeamMember | null>(null);
+  const { data: group } = useAdminGroupQuery(params.groupId);
 
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
-    getMockGroupRole(searchParams),
+    group?.myRole === "HOST" ? "ADMIN" : "USER",
   );
   const round: TeamRound =
     snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
@@ -50,6 +49,8 @@ export default function MyTeamScreen() {
       `/groups/${params.groupId}/participants/${member.participantId}`,
     );
   };
+
+  if (!group) return null;
 
   return (
     <MobileFrame

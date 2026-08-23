@@ -37,3 +37,11 @@ export function toEventStatus(status: GroupStatus) {
 export function getCurrentGroupRound(status: GroupStatus): GroupRound {
   return status === "BEFORE_SECOND_ROUND" || status === "SECOND_ROUND" ? 2 : 1;
 }
+
+export function getPreparationRound(status: GroupStatus): GroupRound | null {
+  if (status !== "BEFORE_FIRST_ROUND" && status !== "BEFORE_SECOND_ROUND") {
+    return null;
+  }
+
+  return getCurrentGroupRound(status);
+}

@@ -3,7 +3,7 @@
 import { AlertTriangle } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { getMockGroupRole } from "@/features/session/utils/session-navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import AdminVoteEndButton from "@/features/vote/components/status/AdminVoteEndButton";
 import VoteCompletionWatcher from "@/features/vote/components/status/VoteCompletionWatcher";
 import VoteProgressCard from "@/features/vote/components/status/VoteProgressCard";
@@ -19,7 +19,8 @@ export default function VoteStatusScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const isAdmin = getMockGroupRole(searchParams) === "ADMIN";
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const isAdmin = group?.myRole === "HOST";
   const { data, isLoading, isRefreshing, error, isComplete } =
     useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =

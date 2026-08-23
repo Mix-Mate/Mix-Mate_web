@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { AlertTriangle, LockKeyhole, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDeleteParticipantMutation } from "@/features/participant/hooks/useDeleteParticipantMutation";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
@@ -23,11 +25,17 @@ export default function ParticipantProfileScreen({
 }: ParticipantProfileScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: group } = useAdminGroupQuery(groupId);
   const { data: profile } = useParticipantProfileQuery(groupId, participantId);
   const { mutate: deleteParticipant, isPending: isDeleting } =
     useDeleteParticipantMutation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const isAdminView = searchParams.get("role") === "admin";
+  const isAdminView = group?.myRole === "HOST";
+  const roundParam = searchParams.get("round");
+  const adminRound =
+    roundParam === "1" || roundParam === "2"
+      ? (Number(roundParam) as 1 | 2)
+      : undefined;
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
@@ -36,8 +44,10 @@ export default function ParticipantProfileScreen({
   const handleDelete = async () => {
     await deleteParticipant(groupId, participantId);
     setDeleteDialogOpen(false);
-    router.push(`/groups/${groupId}/admin/participants?role=admin`);
+    router.push(groupRoutes.adminParticipants(groupId, adminRound));
   };
+
+  if (!group) return null;
 
   return (
     <MobileFrame className={styles.phone} viewportClassName={styles.viewport}>
