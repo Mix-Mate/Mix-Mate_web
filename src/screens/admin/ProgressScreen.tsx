@@ -2,17 +2,18 @@
 
 import { Power } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
-import { useFinishFirstRoundMutation } from "@/features/group/hooks/useFinishFirstRoundMutation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { useFinishFirstRoundMutation } from "@/features/group/hooks/useFinishFirstRoundMutation";
+import { useFinishGroupMutation } from "@/features/group/hooks/useFinishGroupMutation";
 import {
+  canFinishGroup,
   getCurrentGroupRound,
   getGroupStatusLabel,
   toEventStatus,
 } from "@/features/group/model/group-status";
 import AdminRoundProgress from "@/features/session/components/AdminRoundProgress";
-import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -32,10 +33,11 @@ export default function ProgressScreen() {
     error: finishFirstRoundError,
   } = useFinishFirstRoundMutation();
   const {
-    mutate: endRound,
-    isPending: isEndingSecondRound,
-    error: endSecondRoundError,
-  } = useEndRoundMutation();
+    mutate: finishGroup,
+    isPending: isFinishingGroup,
+    error: finishGroupError,
+  } = useFinishGroupMutation();
+  const endRoundFlowInFlightRef = useRef(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
   const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
@@ -44,13 +46,17 @@ export default function ProgressScreen() {
   const currentStatus = group ? toEventStatus(group.status) : null;
   const currentRound = group ? getCurrentGroupRound(group.status) : null;
   const canEndCurrentRound =
-    (currentRound === 1 && currentStatus === "FIRST_IN_PROGRESS") ||
-    (currentRound === 2 && currentStatus === "SECOND_IN_PROGRESS");
+    group?.myRole === "HOST" &&
+    ((group.status === "FIRST_ROUND" &&
+      currentStatus === "FIRST_IN_PROGRESS") ||
+      (group.status === "SECOND_ROUND" &&
+        currentStatus === "SECOND_IN_PROGRESS" &&
+        canFinishGroup(group.status)));
   const isEndingRound =
-    isFinishingFirstRound || isEndingSecondRound || isRefreshingGroup;
+    isFinishingFirstRound || isFinishingGroup || isRefreshingGroup;
   const endRoundError =
     statusRefreshError ??
-    (currentRound === 1 ? finishFirstRoundError : endSecondRoundError);
+    (currentRound === 1 ? finishFirstRoundError : finishGroupError);
 
   const goHome = useCallback(() => {
     router.push(
@@ -63,53 +69,65 @@ export default function ProgressScreen() {
   }, [isEndingRound]);
 
   const confirmEndRound = useCallback(async () => {
-    if (!canEndCurrentRound || !currentRound) return;
+    if (
+      !canEndCurrentRound ||
+      !currentRound ||
+      isEndingRound ||
+      endRoundFlowInFlightRef.current
+    ) {
+      return;
+    }
 
-    if (currentRound === 1) {
-      setStatusRefreshError(null);
+    endRoundFlowInFlightRef.current = true;
+    setStatusRefreshError(null);
 
-      const didFinish = await finishFirstRound(params.groupId);
+    try {
+      const didFinish =
+        currentRound === 1
+          ? await finishFirstRound(params.groupId)
+          : await finishGroup(params.groupId);
       if (!didFinish) return;
 
       setIsRefreshingGroup(true);
 
-      try {
-        const refreshedGroup = await refetch();
+      const refreshedGroup = await refetch();
 
-        if (!refreshedGroup) {
-          setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
-          return;
-        }
-
-        if (refreshedGroup.status !== "VOTING") {
-          setStatusRefreshError("투표 단계 전환을 확인하지 못했습니다.");
-          return;
-        }
-
-        setEndRoundDialogOpen(false);
-        router.replace(
-          withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
-        );
-      } finally {
-        setIsRefreshingGroup(false);
+      if (!refreshedGroup) {
+        setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
+        return;
       }
 
-      return;
+      const expectedStatus = currentRound === 1 ? "VOTING" : "FINISHED";
+
+      if (refreshedGroup.status !== expectedStatus) {
+        setStatusRefreshError(
+          currentRound === 1
+            ? "투표 단계 전환을 확인하지 못했습니다."
+            : "모임 종료 상태를 확인하지 못했습니다.",
+        );
+        return;
+      }
+
+      setEndRoundDialogOpen(false);
+
+      router.replace(
+        withSessionContext(
+          currentRound === 1
+            ? groupRoutes.mvpVote(params.groupId)
+            : groupRoutes.completed(params.groupId),
+          searchParams,
+        ),
+      );
+    } finally {
+      endRoundFlowInFlightRef.current = false;
+      setIsRefreshingGroup(false);
     }
-
-    const result = await endRound(params.groupId, currentRound);
-    if (!result) return;
-
-    setEndRoundDialogOpen(false);
-
-    router.replace(
-      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
-    );
   }, [
     canEndCurrentRound,
     currentRound,
-    endRound,
     finishFirstRound,
+    finishGroup,
+    isEndingRound,
     params.groupId,
     refetch,
     router,

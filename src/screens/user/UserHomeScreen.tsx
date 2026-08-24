@@ -1,12 +1,19 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSecondRoundMutation";
+import { useFinishGroupMutation } from "@/features/group/hooks/useFinishGroupMutation";
+import {
+  canFinishGroup,
+  getCurrentGroupRound,
+  toEventStatus,
+} from "@/features/group/model/group-status";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import type { GroupRole } from "@/features/session/types/session.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamRound } from "@/features/team/types/team.types";
@@ -26,13 +33,28 @@ export default function UserHomeScreen() {
   const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
     params.groupId,
   );
-  const groupRole = group?.myRole === "HOST" ? "ADMIN" : "USER";
+  const isAdmin = group?.myRole === "HOST";
+  const groupRole: GroupRole = isAdmin ? "ADMIN" : "USER";
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
     groupRole,
   );
+  const sessionSnapshot = {
+    ...snapshot,
+    groupName: group?.groupName ?? snapshot.groupName,
+    role: groupRole,
+    roleLabel: isAdmin ? "관리자" : "사용자",
+    round: group ? getCurrentGroupRound(group.status) : snapshot.round,
+    currentStatus: group ? toEventStatus(group.status) : snapshot.currentStatus,
+    permissions: {
+      ...snapshot.permissions,
+      canEndRound:
+        isAdmin &&
+        (group?.status === "FIRST_ROUND" || group?.status === "SECOND_ROUND"),
+    },
+  };
   const teamRound: TeamRound =
-    snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+    sessionSnapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
   const {
     data: myTeam,
     isLoading: isTeamLoading,
@@ -40,7 +62,7 @@ export default function UserHomeScreen() {
   } = useMyTeamQuery(params.groupId, teamRound);
   const {
     mutate: endRound,
-    isPending: isEndingRound,
+    isPending: isEndingMockRound,
     error: endRoundError,
   } = useEndRoundMutation();
   const {
@@ -48,19 +70,35 @@ export default function UserHomeScreen() {
     isPending: isDecidingSecondRound,
     error: decideSecondRoundError,
   } = useDecideSecondRoundMutation();
+  const {
+    mutate: requestFinishGroup,
+    isPending: isFinishGroupPending,
+    error: finishGroupError,
+  } = useFinishGroupMutation();
+  const finishFlowInFlightRef = useRef(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [leaveCompleted, setLeaveCompleted] = useState(false);
-  const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
+  const [isRefreshingSecondRound, setIsRefreshingSecondRound] = useState(false);
+  const [secondRoundStatusError, setSecondRoundStatusError] = useState<
+    string | null
+  >(null);
+  const [isRefreshingFinishedGroup, setIsRefreshingFinishedGroup] =
+    useState(false);
+  const [finishStatusError, setFinishStatusError] = useState<string | null>(
     null,
   );
-  const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
-  const isAdmin = group?.myRole === "HOST";
-  const canDecideSecondRound = isAdmin && group.status === "VOTE_CLOSED";
+  const canDecideSecondRound =
+    isAdmin && group?.status === "VOTE_CLOSED";
   const isSecondRoundDecisionPending =
-    isDecidingSecondRound || isRefreshingGroup;
+    isDecidingSecondRound || isRefreshingSecondRound;
   const secondRoundDecisionError =
-    statusRefreshError ?? decideSecondRoundError;
+    secondRoundStatusError ?? decideSecondRoundError;
+  const isFinishingGroup =
+    isFinishGroupPending || isRefreshingFinishedGroup;
+  const isEndingRound = isEndingMockRound || isFinishingGroup;
+  const finalRoundError = finishStatusError ?? finishGroupError;
+  const isFinalRound = sessionSnapshot.round === 2;
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
@@ -77,8 +115,63 @@ export default function UserHomeScreen() {
     if (!isEndingRound) setEndRoundDialogOpen(false);
   }, [isEndingRound]);
 
+  const finishGroup = useCallback(async () => {
+    if (
+      !group ||
+      group.myRole !== "HOST" ||
+      !canFinishGroup(group.status) ||
+      isFinishingGroup ||
+      finishFlowInFlightRef.current
+    ) {
+      return;
+    }
+
+    finishFlowInFlightRef.current = true;
+    setFinishStatusError(null);
+
+    try {
+      const didFinish = await requestFinishGroup(params.groupId);
+      if (!didFinish) return;
+
+      setIsRefreshingFinishedGroup(true);
+
+      const refreshedGroup = await refetchGroup();
+
+      if (!refreshedGroup) {
+        setFinishStatusError("그룹 상태를 다시 확인하지 못했습니다.");
+        return;
+      }
+
+      if (refreshedGroup.status !== "FINISHED") {
+        setFinishStatusError("모임 종료 상태를 확인하지 못했습니다.");
+        return;
+      }
+
+      setEndRoundDialogOpen(false);
+      router.replace(
+        withSessionContext(groupRoutes.completed(params.groupId), searchParams),
+      );
+    } finally {
+      finishFlowInFlightRef.current = false;
+      setIsRefreshingFinishedGroup(false);
+    }
+  }, [
+    group,
+    isFinishingGroup,
+    params.groupId,
+    refetchGroup,
+    requestFinishGroup,
+    router,
+    searchParams,
+  ]);
+
   const confirmEndRound = useCallback(async () => {
-    const result = await endRound(params.groupId, snapshot.round);
+    if (isFinalRound) {
+      await finishGroup();
+      return;
+    }
+
+    const result = await endRound(params.groupId, sessionSnapshot.round);
     if (!result) return;
 
     setEndRoundDialogOpen(false);
@@ -93,61 +186,70 @@ export default function UserHomeScreen() {
     router.replace(
       withSessionContext(groupRoutes.completed(params.groupId), searchParams),
     );
-  }, [endRound, params.groupId, router, searchParams, snapshot.round]);
+  }, [
+    endRound,
+    finishGroup,
+    isFinalRound,
+    params.groupId,
+    router,
+    searchParams,
+    sessionSnapshot.round,
+  ]);
 
   const continueToRoundTwo = useCallback(async () => {
-    if (!canDecideSecondRound || isSecondRoundDecisionPending) return;
+    if (
+      !canDecideSecondRound ||
+      isSecondRoundDecisionPending ||
+      isFinishingGroup
+    ) {
+      return;
+    }
 
-    setStatusRefreshError(null);
+    setSecondRoundStatusError(null);
 
     const didDecide = await decideSecondRound(params.groupId);
     if (!didDecide) return;
 
-    setIsRefreshingGroup(true);
+    setIsRefreshingSecondRound(true);
 
     try {
       const refreshedGroup = await refetchGroup();
 
       if (!refreshedGroup) {
-        setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
+        setSecondRoundStatusError("그룹 상태를 다시 확인하지 못했습니다.");
         return;
       }
 
       if (refreshedGroup.status !== "BEFORE_SECOND_ROUND") {
-        setStatusRefreshError("2차 준비 상태를 확인하지 못했습니다.");
+        setSecondRoundStatusError("2차 준비 상태를 확인하지 못했습니다.");
         return;
       }
 
       router.replace(groupRoutes.adminPreparation(params.groupId));
     } finally {
-      setIsRefreshingGroup(false);
+      setIsRefreshingSecondRound(false);
     }
   }, [
     canDecideSecondRound,
     decideSecondRound,
+    isFinishingGroup,
     isSecondRoundDecisionPending,
     params.groupId,
     refetchGroup,
     router,
   ]);
 
-  const finishGroup = useCallback(() => {
-    router.replace(
-      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
-    );
-  }, [params.groupId, router, searchParams]);
-
   return (
     <MobileFrame
       data-testid="user-home"
-      data-scenario={snapshot.scenario}
-      data-role={snapshot.role}
+      data-scenario={sessionSnapshot.scenario}
+      data-role={sessionSnapshot.role}
     >
-      <Header title={snapshot.groupName} onBack={() => router.back()} />
+      <Header title={sessionSnapshot.groupName} onBack={() => router.back()} />
 
       <UserSessionContent
         groupId={params.groupId}
-        snapshot={snapshot}
+        snapshot={sessionSnapshot}
         teamNumber={myTeam?.teamNumber ?? null}
         isTeamLoading={isTeamLoading}
         teamError={teamError}
@@ -164,6 +266,12 @@ export default function UserHomeScreen() {
         </Toast>
       )}
 
+      {finalRoundError && (
+        <Toast className={styles.toast} role="alert">
+          {finalRoundError}
+        </Toast>
+      )}
+
       <UM01LeaveGroupDialog
         open={leaveDialogOpen}
         onClose={closeLeaveDialog}
@@ -172,9 +280,9 @@ export default function UserHomeScreen() {
 
       <EndRoundDialog
         open={endRoundDialogOpen}
-        round={snapshot.round}
+        round={sessionSnapshot.round}
         isEnding={isEndingRound}
-        error={endRoundError}
+        error={isFinalRound ? finalRoundError : endRoundError}
         onClose={closeEndRoundDialog}
         onConfirm={confirmEndRound}
       />
@@ -183,6 +291,7 @@ export default function UserHomeScreen() {
         open={postVoteDialogOpen}
         isContinuing={isSecondRoundDecisionPending}
         continueError={secondRoundDecisionError}
+        isFinishing={isFinishingGroup}
         onContinue={continueToRoundTwo}
         onFinish={finishGroup}
       />
