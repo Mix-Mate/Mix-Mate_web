@@ -1,13 +1,13 @@
 import { Check } from "lucide-react";
-import type { AttendanceChoice } from "../../types/vote.types";
+import type { SecondRoundVoteChoice } from "../../types/secondRoundVote.types";
 import styles from "../vote.module.css";
 
 interface AttendanceOptionCardProps {
-  value: AttendanceChoice;
+  value: SecondRoundVoteChoice;
   label: string;
   selected: boolean;
   disabled: boolean;
-  onSelect: (choice: AttendanceChoice) => void;
+  onSelect: (choice: SecondRoundVoteChoice) => void;
 }
 
 export default function AttendanceOptionCard({
@@ -18,7 +18,7 @@ export default function AttendanceOptionCard({
   onSelect,
 }: AttendanceOptionCardProps) {
   const selectedClassName =
-    value === "ABSENT"
+    value === "NOT_PARTICIPATE"
       ? styles.selectedAbsentAttendance
       : styles.selectedAttendance;
 

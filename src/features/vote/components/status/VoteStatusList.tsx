@@ -1,10 +1,10 @@
-import type { VoteStatusMember } from "../../types/vote.types";
+import type { SecondRoundVoteParticipant } from "../../types/secondRoundVoteStatus.types";
 import styles from "./VoteStatus.module.css";
 import VoteStatusItem from "./VoteStatusItem";
 
 interface VoteStatusListProps {
   title: string;
-  members: VoteStatusMember[];
+  members: SecondRoundVoteParticipant[];
   emptyMessage: string;
 }
 
@@ -23,7 +23,7 @@ export default function VoteStatusList({
       {members.length > 0 ? (
         <ul className={styles.statusList}>
           {members.map((member) => (
-            <VoteStatusItem key={member.memberId} member={member} />
+            <VoteStatusItem key={member.participantId} member={member} />
           ))}
         </ul>
       ) : (

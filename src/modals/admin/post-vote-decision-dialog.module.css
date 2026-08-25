@@ -74,12 +74,19 @@
   background: #fff;
 }
 
+.error {
+  grid-column: 1 / -1;
+  color: #dc2626;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
 .continueButton,
 .finishButton {
   height: 58px;
   cursor: pointer;
   border-radius: 16px;
-  color: #fff;
   font-size: 18px;
   font-weight: 600;
   line-height: 27px;
@@ -87,11 +94,14 @@
 }
 
 .continueButton {
-  background: #ef4444;
+  border: 1px solid var(--color-border);
+  background: #f4f4f5;
+  color: #27272a;
 }
 
 .finishButton {
-  background: #256ad3;
+  background: var(--color-danger);
+  color: #fff;
 }
 
 .continueButton:active,
@@ -103,4 +113,10 @@
 .finishButton:focus-visible {
   outline: 2px solid #93c5fd;
   outline-offset: 2px;
+}
+
+.continueButton:disabled,
+.finishButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }

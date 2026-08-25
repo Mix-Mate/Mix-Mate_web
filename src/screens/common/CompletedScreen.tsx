@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import Button from "@/shared/ui/Button";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import { getMockGroupRole } from "@/features/session/utils/session-navigation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
 import backgroundGlow from "@/shared/assets/session-completed/background-glow.svg";
 import iconPartyPopper from "@/shared/assets/session-completed/icon-party-popper.svg";
@@ -17,11 +17,13 @@ export default function CompletedScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const mockRole = getMockGroupRole(searchParams);
+  const { data: group } = useAdminGroupQuery(params.groupId);
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
-    mockRole,
+    group?.myRole === "HOST" ? "ADMIN" : "USER",
   );
+
+  if (!group) return null;
 
   return (
     <MobileFrame

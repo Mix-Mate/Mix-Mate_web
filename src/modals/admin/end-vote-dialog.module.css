@@ -8,7 +8,7 @@
 
   position: relative;
   display: flex;
-  height: 504px;
+  height: min(579px, calc(100dvh - 20px));
   flex-direction: column;
   text-align: center;
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
@@ -85,18 +85,32 @@
 
 .pendingList {
   display: flex;
-  max-height: 139px;
+  max-height: 214px;
   margin: 0;
   padding: 0;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   flex-direction: column;
   gap: 11px;
   list-style: none;
-  scrollbar-width: none;
+  cursor: grab;
+  scrollbar-color: #d4d4d8 transparent;
+  scrollbar-width: thin;
+  touch-action: pan-y;
 }
 
 .pendingList::-webkit-scrollbar {
-  display: none;
+  width: 4px;
+}
+
+.pendingList::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #d4d4d8;
+}
+
+.pendingList:active {
+  cursor: grabbing;
+  user-select: none;
 }
 
 .pendingMember {
@@ -112,7 +126,7 @@
 
 .pendingMember > strong {
   min-width: 0;
-  margin-left: 13px;
+  flex: 1;
   overflow: hidden;
   color: #18181b;
   font-size: 16px;

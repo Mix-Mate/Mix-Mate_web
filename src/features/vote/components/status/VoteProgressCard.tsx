@@ -1,4 +1,4 @@
-import type { VoteStatusFilter } from "../../types/vote.types";
+import type { SecondRoundVoteStatusFilter } from "../../types/secondRoundVoteStatus.types";
 import styles from "./VoteStatus.module.css";
 
 interface VoteProgressCardProps {
@@ -7,8 +7,8 @@ interface VoteProgressCardProps {
   attendanceCount: number;
   absenceCount: number;
   pendingCount: number;
-  selectedFilter: VoteStatusFilter;
-  onSelectFilter: (filter: VoteStatusFilter) => void;
+  selectedFilter: SecondRoundVoteStatusFilter;
+  onSelectFilter: (filter: SecondRoundVoteStatusFilter) => void;
 }
 
 export default function VoteProgressCard({
@@ -51,11 +51,13 @@ export default function VoteProgressCard({
         <button
           type="button"
           className={`${styles.summaryButton} ${styles.attendanceSummary} ${
-            selectedFilter === "ATTEND" ? styles.selectedAttendanceSummary : ""
+            selectedFilter === "PARTICIPATE"
+              ? styles.selectedAttendanceSummary
+              : ""
           }`}
           aria-label={`2차 참여 ${attendanceCount}명 명단 보기`}
-          aria-pressed={selectedFilter === "ATTEND"}
-          onClick={() => onSelectFilter("ATTEND")}
+          aria-pressed={selectedFilter === "PARTICIPATE"}
+          onClick={() => onSelectFilter("PARTICIPATE")}
         >
           <strong>{attendanceCount}</strong>
           <span>2차 참여</span>
@@ -63,11 +65,13 @@ export default function VoteProgressCard({
         <button
           type="button"
           className={`${styles.summaryButton} ${styles.absenceSummary} ${
-            selectedFilter === "ABSENT" ? styles.selectedAbsenceSummary : ""
+            selectedFilter === "NOT_PARTICIPATE"
+              ? styles.selectedAbsenceSummary
+              : ""
           }`}
           aria-label={`불참 ${absenceCount}명 명단 보기`}
-          aria-pressed={selectedFilter === "ABSENT"}
-          onClick={() => onSelectFilter("ABSENT")}
+          aria-pressed={selectedFilter === "NOT_PARTICIPATE"}
+          onClick={() => onSelectFilter("NOT_PARTICIPATE")}
         >
           <strong>{absenceCount}</strong>
           <span>불참</span>

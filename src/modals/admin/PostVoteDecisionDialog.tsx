@@ -6,12 +6,16 @@ import styles from "./post-vote-decision-dialog.module.css";
 
 interface PostVoteDecisionDialogProps {
   open: boolean;
+  isContinuing?: boolean;
+  continueError?: string | null;
   onContinue: () => void;
   onFinish: () => void;
 }
 
 export default function PostVoteDecisionDialog({
   open,
+  isContinuing = false,
+  continueError,
   onContinue,
   onFinish,
 }: PostVoteDecisionDialogProps) {
@@ -33,17 +37,24 @@ export default function PostVoteDecisionDialog({
       </div>
 
       <div className={styles.actions}>
+        {continueError && (
+          <span className={styles.error} role="alert">
+            {continueError}
+          </span>
+        )}
         <button
           type="button"
           className={styles.continueButton}
           onClick={onContinue}
+          disabled={isContinuing}
         >
-          계속 진행하기
+          {isContinuing ? "진행 중..." : "계속 진행하기"}
         </button>
         <button
           type="button"
           className={styles.finishButton}
           onClick={onFinish}
+          disabled={isContinuing}
         >
           모임 종료하기
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -15,6 +15,10 @@ import {
   type AdminGroupQueryResult,
 } from "../hooks/useAdminGroupQuery";
 import type { GroupDetail } from "../types/group.types";
+import Button from "@/shared/ui/Button";
+import Header from "@/shared/ui/Header";
+import MobileFrame from "@/shared/ui/MobileFrame";
+import styles from "@/features/session/components/admin-access-guard.module.css";
 
 interface AdminGroupQueryProviderProps {
   children: ReactNode;
@@ -24,6 +28,7 @@ export default function AdminGroupQueryProvider({
   children,
 }: AdminGroupQueryProviderProps) {
   const params = useParams<{ groupId: string }>();
+  const router = useRouter();
   const groupId = params.groupId;
   const requestIdRef = useRef(0);
   const [data, setData] = useState<GroupDetail | null>(null);
@@ -99,17 +104,45 @@ export default function AdminGroupQueryProvider({
     };
   }, [groupId]);
 
+  const currentData = dataGroupId === groupId ? data : null;
+  const currentIsLoading = dataGroupId !== groupId || isLoading;
   const value = useMemo<AdminGroupQueryResult>(
     () => ({
       groupId,
-      data: dataGroupId === groupId ? data : null,
-      isLoading: dataGroupId !== groupId || isLoading,
+      data: currentData,
+      isLoading: currentIsLoading,
       isError: error !== null,
       error,
       refetch,
     }),
-    [data, dataGroupId, error, groupId, isLoading, refetch],
+    [currentData, currentIsLoading, error, groupId, refetch],
   );
+
+  if (!currentData) {
+    return (
+      <MobileFrame
+        className={styles.phone}
+        data-testid="admin-group-query-state"
+      >
+        <Header title="그룹 정보" onBack={() => router.back()} compact />
+
+        <main className={styles.content}>
+          {currentIsLoading ? (
+            <p role="status">그룹 정보를 불러오는 중입니다.</p>
+          ) : (
+            <>
+              <p className={styles.error} role="alert">
+                {error ?? "그룹 정보를 불러오지 못했습니다."}
+              </p>
+              <Button className={styles.retryButton} onClick={refetch}>
+                다시 시도
+              </Button>
+            </>
+          )}
+        </main>
+      </MobileFrame>
+    );
+  }
 
   return (
     <AdminGroupQueryContext.Provider value={value}>

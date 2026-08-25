@@ -3,27 +3,31 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
 import Button from "@/shared/ui/Button";
-import type { AttendanceChoice } from "../../types/vote.types";
+import type { SecondRoundVoteChoice } from "../../types/secondRoundVote.types";
 import styles from "../vote.module.css";
 import AttendanceOptionCard from "./AttendanceOptionCard";
 
 interface AttendanceVoteFormProps {
-  initialChoice: AttendanceChoice | null;
+  initialChoice: SecondRoundVoteChoice | null;
   isSubmitted: boolean;
   isClosed: boolean;
+  isLoading: boolean;
+  isSubmitting: boolean;
   error: string | null;
-  onSubmit: (choice: AttendanceChoice) => void;
+  onSubmit: (choice: SecondRoundVoteChoice) => void;
 }
 
 export default function AttendanceVoteForm({
   initialChoice,
   isSubmitted,
   isClosed,
+  isLoading,
+  isSubmitting,
   error,
   onSubmit,
 }: AttendanceVoteFormProps) {
   const [selectedChoice, setSelectedChoice] = useState(initialChoice);
-  const locked = isSubmitted || isClosed;
+  const locked = isSubmitted || isClosed || isLoading || isSubmitting;
 
   return (
     <form
@@ -43,16 +47,16 @@ export default function AttendanceVoteForm({
       <fieldset className={styles.attendanceOptions} disabled={locked}>
         <legend className={styles.visuallyHidden}>2차 참여 여부 선택</legend>
         <AttendanceOptionCard
-          value="ATTEND"
+          value="PARTICIPATE"
           label="참여할게요"
-          selected={selectedChoice === "ATTEND"}
+          selected={selectedChoice === "PARTICIPATE"}
           disabled={locked}
           onSelect={setSelectedChoice}
         />
         <AttendanceOptionCard
-          value="ABSENT"
+          value="NOT_PARTICIPATE"
           label="불참합니다"
-          selected={selectedChoice === "ABSENT"}
+          selected={selectedChoice === "NOT_PARTICIPATE"}
           disabled={locked}
           onSelect={setSelectedChoice}
         />
@@ -74,7 +78,11 @@ export default function AttendanceVoteForm({
         className={styles.submitButton}
         disabled={selectedChoice === null || locked}
       >
-        {isSubmitted ? "투표 완료됨" : "투표 완료하기"}
+        {isSubmitting
+          ? "투표 중..."
+          : isSubmitted
+            ? "투표 완료됨"
+            : "투표 완료하기"}
       </Button>
     </form>
   );

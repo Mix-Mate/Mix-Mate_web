@@ -2,11 +2,9 @@
 
 import type { ReactNode } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
-import {
-  getMockGroupRole,
-  withSessionContext,
-} from "@/features/session/utils/session-navigation";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -26,10 +24,13 @@ export default function PlayScreenLayout({
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const { data: group } = useAdminGroupQuery(params.groupId);
   const { data: snapshot } = useUserSessionQuery(
     searchParams.get("scenario") ?? undefined,
-    getMockGroupRole(searchParams),
+    group?.myRole === "HOST" ? "ADMIN" : "USER",
   );
+
+  if (!group) return null;
 
   return (
     <MobileFrame

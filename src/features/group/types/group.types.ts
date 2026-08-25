@@ -16,6 +16,7 @@ export interface GroupDetail {
   description: string | null;
   status: GroupStatus;
   inviteCode: string;
+  createdAt: string;
   memberCount: number;
   myRole: GroupMemberRole;
   myParticipantId: number;

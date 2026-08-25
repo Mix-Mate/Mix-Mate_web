@@ -6,11 +6,13 @@ import styles from "@/screens/admin/AdminParticipantManagementScreen.module.css"
 interface AdminParticipantItemProps {
   groupId: string;
   participant: AdminParticipant;
+  round: 1 | 2;
 }
 
 export default function AdminParticipantItem({
   groupId,
   participant,
+  round,
 }: AdminParticipantItemProps) {
   const roleLabel = participant.role === "staff" ? "운영진" : "일반";
   const badgeLabel =
@@ -25,7 +27,7 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?role=admin`}
+        href={`/groups/${groupId}/participants/${participant.id}?round=${round}`}
         className={styles.participantItem}
       >
         <GenderAvatar

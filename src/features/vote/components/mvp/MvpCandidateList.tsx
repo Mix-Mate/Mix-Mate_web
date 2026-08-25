@@ -1,17 +1,17 @@
-import type { MvpCandidate } from "../../types/vote.types";
+import type { MvpCandidate } from "../../types/mvpVote.types";
 import styles from "../vote.module.css";
 import MvpCandidateItem from "./MvpCandidateItem";
 
 interface MvpCandidateListProps {
   candidates: MvpCandidate[];
-  selectedCandidateId: string | null;
+  selectedParticipantId: number | null;
   disabled: boolean;
-  onSelect: (candidateId: string) => void;
+  onSelect: (participantId: number) => void;
 }
 
 export default function MvpCandidateList({
   candidates,
-  selectedCandidateId,
+  selectedParticipantId,
   disabled,
   onSelect,
 }: MvpCandidateListProps) {
@@ -20,9 +20,9 @@ export default function MvpCandidateList({
       <legend className={styles.visuallyHidden}>MVP 후보 한 명 선택</legend>
       {candidates.map((candidate) => (
         <MvpCandidateItem
-          key={candidate.id}
+          key={candidate.participantId}
           candidate={candidate}
-          selected={candidate.id === selectedCandidateId}
+          selected={candidate.participantId === selectedParticipantId}
           disabled={disabled}
           onSelect={onSelect}
         />

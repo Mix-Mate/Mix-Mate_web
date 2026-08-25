@@ -6,7 +6,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
+import { useInviteCodeRemainingTime } from "@/features/group/hooks/useInviteCodeRemainingTime";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
+import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-expiration";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -21,6 +23,31 @@ import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
 import styles from "./AdminRecruitmentScreen.module.css";
+
+interface InviteCodeExpirationNoticeProps {
+  createdAt: string;
+}
+
+function InviteCodeExpirationNotice({
+  createdAt,
+}: InviteCodeExpirationNoticeProps) {
+  const remainingTime = useInviteCodeRemainingTime(createdAt);
+
+  return (
+    <InfoBanner className={styles.expirationNotice}>
+      <p>
+        {remainingTime.remainingMs === 0 ? (
+          "참여코드가 만료되었습니다."
+        ) : (
+          <>
+            참여코드 만료까지{" "}
+            <strong>{formatInviteCodeRemainingTime(remainingTime)}</strong>
+          </>
+        )}
+      </p>
+    </InfoBanner>
+  );
+}
 
 export default function AdminRecruitmentScreen() {
   const params = useParams<{ groupId: string }>();
@@ -206,11 +233,7 @@ export default function AdminRecruitmentScreen() {
           </div>
         </section>
 
-        <InfoBanner className={styles.expirationNotice}>
-          <p>
-            참여코드는 발급 후 <strong>3일간</strong> 유효합니다.
-          </p>
-        </InfoBanner>
+        <InviteCodeExpirationNotice createdAt={group.createdAt} />
 
         <section className={styles.recruitingCard}>
           <span className={styles.clockIcon} aria-hidden="true">

@@ -1,0 +1,27 @@
+.mvpAvatar {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  place-items: center;
+}
+
+.queryState {
+  display: grid;
+  min-height: 360px;
+  margin: 0;
+  padding: 24px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  place-items: center;
+}
+
+.queryError {
+  color: #d14f5a;
+}
