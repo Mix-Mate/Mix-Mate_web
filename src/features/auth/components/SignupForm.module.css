@@ -1,0 +1,127 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #52525b;
+  padding-left: 4px;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.inputBase {
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  font-size: 16px;
+  color: #18181b;
+  background-color: #f7f9fc;
+  border-style: solid;
+  border-color: #b8c6d8;
+  border-top-width: 2.57px;
+  border-right-width: 2.57px;
+  border-bottom-width: 2.57px;
+  border-left-width: 7.7px;
+  border-radius: 18px; /* 👈 18px 적용 */
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inputPassword {
+  background-color: #fbf8fc;
+  border-color: #c8bdd6;
+}
+
+.inputDisabled {
+  background-color: #f4f4f5;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.sideButton {
+  width: 120px;
+  min-width: 120px;
+  height: 56px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 18px; /* 👈 18px 적용 */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.sideButtonDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.messageSent {
+  width: 100%;
+  color: #a1a1aa;
+  text-align: left;
+  padding-left: 4px;
+  font-family: Arimo, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.messageVerified {
+  width: 100%;
+  color: #256ad3;
+  text-align: left;
+  padding-left: 4px;
+  font-family: Arimo, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.messageError {
+  width: 100%;
+  color: #ef4444;
+  text-align: left;
+  padding-left: 4px;
+  font-family: Arimo, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.submitWrapper {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.submitButton {
+  width: 100%;
+  height: 56px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
