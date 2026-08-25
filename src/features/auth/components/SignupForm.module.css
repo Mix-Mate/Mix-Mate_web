@@ -35,7 +35,7 @@
   border-right-width: 2.57px;
   border-bottom-width: 2.57px;
   border-left-width: 7.7px;
-  border-radius: 25.68px;
+  border-radius: 18px; /* 👈 18px 적용 */
   outline: none;
   box-sizing: border-box;
 }
@@ -63,7 +63,7 @@
   padding: 0 12px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 25.494px;
+  border-radius: 18px; /* 👈 18px 적용 */
   flex-shrink: 0;
   display: flex;
   align-items: center;
