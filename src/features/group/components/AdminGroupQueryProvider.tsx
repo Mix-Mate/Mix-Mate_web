@@ -122,6 +122,7 @@ export default function AdminGroupQueryProvider({
     return (
       <MobileFrame
         className={styles.phone}
+        fillHeight
         data-testid="admin-group-query-state"
       >
         <Header title="그룹 정보" onBack={() => router.back()} compact />
