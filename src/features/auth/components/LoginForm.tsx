@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Button from '@/shared/ui/Button';
 // AS-IS (에러)
 // import logoIcon from '@/public/icons/logo.svg';
@@ -12,12 +13,14 @@ import logoIcon from '../../../../public/icons/logo.svg';
 import styles from './LoginForm.module.css';
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('로그인 시도:', { email, password });
+    router.push('/home');
   };
 
   return (
