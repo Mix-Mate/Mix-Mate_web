@@ -1,0 +1,387 @@
+/* GroupCreateScreen.module.css */
+
+.pageViewport.pageViewport {
+  height: auto;
+  min-height: var(--mobile-frame-height, 844px);
+  overflow: visible;
+  position: relative;
+}
+
+.screenFrame.screenFrame {
+  display: flex;
+  min-height: var(--mobile-frame-height, 844px);
+  height: auto;
+  flex-direction: column;
+  overflow: visible;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  background: var(--color-surface, #fcfcff);
+  color: var(--color-text, #18181b);
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   1. Header
+   ========================================================================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e4e4e7;
+  background: rgba(252, 252, 255, 0.95);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #18181b;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.15s ease;
+  padding: 0;
+}
+
+.backButton:hover {
+  background-color: #f4f4f5;
+}
+
+.backButton:active {
+  transform: scale(0.94);
+}
+
+.headerTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. Main & Form
+   ========================================================================== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px 20px;
+  box-sizing: border-box;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 15px;
+  font-weight: 500;
+  color: #52525b;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.requiredDot {
+  color: #ef4444;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.inputField {
+  width: 100%;
+  height: 56px;
+  padding: 0 24px;
+  font-size: 16px;
+  color: #18181b;
+  border-radius: 24.843px;
+  border-top: 2.484px solid #c5c7cc;
+  border-right: 2.484px solid #c5c7cc;
+  border-bottom: 2.484px solid #c5c7cc;
+  border-left: 7.453px solid #c5c7cc;
+  background: #f9f9fa;
+  box-shadow: 0 0 0 4.969px rgba(197, 199, 204, 0.13);
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.inputField::placeholder {
+  color: #a1a1aa;
+}
+
+.inputField:focus {
+  border-color: #256ad3;
+  background: #ffffff;
+  box-shadow: 0 0 0 4.969px rgba(37, 106, 211, 0.15);
+}
+
+.textareaField {
+  width: 100%;
+  min-height: 124px;
+  padding: 16px 24px;
+  font-size: 16px;
+  color: #18181b;
+  border-radius: 24.843px;
+  border-top: 2.484px solid #c5c7cc;
+  border-right: 2.484px solid #c5c7cc;
+  border-bottom: 2.484px solid #c5c7cc;
+  border-left: 7.453px solid #c5c7cc;
+  background: #f9f9fa;
+  box-shadow: 0 0 0 4.969px rgba(197, 199, 204, 0.13);
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: none;
+  line-height: 1.5;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.textareaField::placeholder {
+  color: #a1a1aa;
+}
+
+.textareaField:focus {
+  border-color: #256ad3;
+  background: #ffffff;
+  box-shadow: 0 0 0 4.969px rgba(37, 106, 211, 0.15);
+}
+
+/* ==========================================================================
+   3. Info Banner (Blue Box)
+   ========================================================================== */
+.infoBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 18px;
+  background: #eff6ff;
+  border: none;
+  border-radius: 18px;
+  color: #256ad3;
+  box-sizing: border-box;
+}
+
+.infoIcon {
+  flex-shrink: 0;
+  color: #256ad3;
+}
+
+.infoText {
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin: 0;
+  word-break: keep-all;
+}
+
+/* ==========================================================================
+   4. Footer / Fixed Bottom Button
+   ========================================================================== */
+.footer {
+  padding: 16px 20px 24px;
+  background: var(--color-surface, #fcfcff);
+  border-top: 1px solid #e4e4e7;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+.submitButton {
+  width: 100%;
+  height: 56px;
+  background-color: #256ad3;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #1e56ab;
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.submitButton:disabled {
+  background-color: #e4e4e7;
+  color: #a1a1aa;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   5. BottomSheet Modal (참여코드 발급 모달)
+   ========================================================================== */
+.modalSheet {
+  --bottom-sheet-border-radius: 36px 36px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 24px 32px;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+  border-top-left-radius: 36px;
+  border-top-right-radius: 36px;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.codeLabel {
+  color: #3b82c4;
+  text-align: center;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.codeText {
+  color: #18181b;
+  text-align: center;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 6px;
+  margin: 4px 0 2px;
+  user-select: all;
+}
+
+.codeSubtext {
+  color: #71717a;
+  text-align: center;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.copyButton {
+  width: 100%;
+  height: 54px;
+  background-color: #256ad3;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.copyButton:hover {
+  background-color: #1e56ab;
+}
+
+.copyButton:active {
+  transform: scale(0.985);
+}
+
+/* ==========================================================================
+   6. Toast Notification
+   ========================================================================== */
+.toastContainer {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1.656px solid #bffcd9;
+  border-radius: 19.875px;
+  box-shadow: 0 9.937px 29.812px 0 rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: toastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.toastIcon {
+  flex-shrink: 0;
+  fill: #008a2e;
+  color: #008a2e;
+}
+
+@keyframes toastPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
