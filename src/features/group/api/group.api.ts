@@ -114,6 +114,18 @@ export interface JoinGroupResponse {
   groupName?: string;
 }
 
+export class GroupApiError extends Error {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.name = "GroupApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 export async function joinGroupByCode(
   inviteCode: string,
 ): Promise<JoinGroupResponse> {
@@ -125,16 +137,21 @@ export async function joinGroupByCode(
   });
 
   if (!response.ok) {
-    const error: any = new Error(
-      await getErrorMessage(response, "참여코드가 존재하지 않습니다."),
+    const message = await getErrorMessage(
+      response,
+      "참여코드가 존재하지 않습니다.",
     );
-    error.status = response.status;
+    let code: string | undefined;
     try {
-      const data = await response.clone().json();
-      error.code = data.code;
-      error.message = data.message || error.message;
-    } catch {}
-    throw error;
+      const data = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+      code = data.code;
+    } catch {
+      // Ignore JSON parse errors for non-JSON responses
+    }
+    throw new GroupApiError(message, response.status, code);
   }
 
   return (await response.json()) as JoinGroupResponse;

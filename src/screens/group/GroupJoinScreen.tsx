@@ -136,15 +136,28 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
       // 실제 참여코드 검증 및 그룹 참여 API 호출
       const result = await joinGroupByCode(fullCode);
       router.push(groupRoutes.home(result.groupId || fullCode.toLowerCase()));
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorObj =
+        err instanceof Error
+          ? err
+          : new Error("알 수 없는 오류가 발생했습니다.");
+      const errorStatus =
+        err && typeof err === "object" && "status" in err
+          ? (err as { status?: number }).status
+          : undefined;
+      const errorCode =
+        err && typeof err === "object" && "code" in err
+          ? (err as { code?: string }).code
+          : undefined;
+
       if (onJoinError) {
-        onJoinError(err.code || err.type || err.message);
+        onJoinError(errorCode || errorObj.message);
       }
 
       // 상황별 에러 모달 멘트 분기 처리
       if (
-        err.status === 409 &&
-        (err.code === "EXPIRED" || err.type === "EXPIRED" || err.message?.includes("만료"))
+        errorStatus === 409 &&
+        (errorCode === "EXPIRED" || errorObj.message.includes("만료"))
       ) {
         // 409 에러: 참여코드 만료
         setErrorModal({
@@ -153,8 +166,8 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
           description: "입력하신 코드를 다시 확인해 주세요.",
         });
       } else if (
-        err.status === 409 &&
-        (err.code === "ALREADY_STARTED" || err.type === "ALREADY_STARTED" || err.message?.includes("시작"))
+        errorStatus === 409 &&
+        (errorCode === "ALREADY_STARTED" || errorObj.message.includes("시작"))
       ) {
         // 409 에러: 이미 시작된 그룹
         setErrorModal({

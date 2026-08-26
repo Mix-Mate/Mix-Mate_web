@@ -58,7 +58,7 @@ export default function HomeScreen({
   const router = useRouter();
 
   // Group lists state
-  const [activeGroups, setActiveGroups] =
+  const [activeGroups] =
     useState<HomeScreenGroupItem[]>(initialActiveGroups);
   const [completedGroups] =
     useState<HomeScreenGroupItem[]>(initialCompletedGroups);
