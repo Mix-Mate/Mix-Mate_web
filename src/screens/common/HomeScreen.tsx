@@ -64,12 +64,9 @@ export default function HomeScreen({
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
   // Form states
-  const [newGroupName, setNewGroupName] = useState("");
-  const [newGroupDescription, setNewGroupDescription] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [joinError, setJoinError] = useState("");
 
@@ -86,31 +83,6 @@ export default function HomeScreen({
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
     router.push("/login");
-  };
-
-  // Create group flow
-  const handleCreateGroup = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newGroupName.trim()) return;
-
-    const newId = `group-${Date.now()}`;
-    const newGroup: HomeScreenGroupItem = {
-      id: newId,
-      name: newGroupName.trim(),
-      description: newGroupDescription.trim() || undefined,
-      status: "RECRUITING",
-      role: "HOST",
-      memberCount: 1,
-      date: "오늘",
-    };
-
-    setActiveGroups((prev) => [newGroup, ...prev]);
-    setIsCreateModalOpen(false);
-    setNewGroupName("");
-    setNewGroupDescription("");
-
-    // Navigate to the newly created group home
-    router.push(`/groups/${newId}/home`);
   };
 
   // Join group by invite code flow
@@ -171,7 +143,7 @@ export default function HomeScreen({
           <button
             type="button"
             className={`${styles.actionCard} ${styles.actionCardCreate}`}
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => router.push("/groups/create")}
           >
             <span className={styles.actionRoleAdmin}>관리자</span>
             <div className={styles.actionTextGroup}>
@@ -350,79 +322,7 @@ export default function HomeScreen({
         </div>
       </BottomSheetDialog>
 
-      {/* 새 그룹 생성 모달 */}
-      <BottomSheetDialog
-        open={isCreateModalOpen}
-        titleId="create-group-title"
-        descriptionId="create-group-desc"
-        sheetClassName={styles.modalSheet}
-        onClose={() => setIsCreateModalOpen(false)}
-      >
-        <div
-          className={`${styles.modalIcon} ${styles.modalIconPrimary}`}
-          aria-hidden="true"
-        >
-          <Plus size={28} strokeWidth={2.4} />
-        </div>
 
-        <div className={styles.modalContent}>
-          <h2 id="create-group-title" className={styles.modalTitle}>
-            새 그룹 생성
-          </h2>
-          <p id="create-group-desc" className={styles.modalDescription}>
-            새로운 술자리 모임을 개설하고 멤버들을 초대해보세요.
-          </p>
-        </div>
-
-        <form onSubmit={handleCreateGroup} className={styles.modalForm}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="group-name" className={styles.inputLabel}>
-              모임 이름 *
-            </label>
-            <input
-              id="group-name"
-              type="text"
-              className={styles.inputField}
-              placeholder="예: 컴퓨터공학과 종강 파티"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              required
-              autoFocus
-            />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label htmlFor="group-desc" className={styles.inputLabel}>
-              모임 설명 (선택)
-            </label>
-            <input
-              id="group-desc"
-              type="text"
-              className={styles.inputField}
-              placeholder="예: 강남역 1차 / 2차 진행"
-              value={newGroupDescription}
-              onChange={(e) => setNewGroupDescription(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.modalActions}>
-            <button
-              type="button"
-              className={styles.modalCancelButton}
-              onClick={() => setIsCreateModalOpen(false)}
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              className={styles.modalConfirmButton}
-              disabled={!newGroupName.trim()}
-            >
-              생성하기
-            </button>
-          </div>
-        </form>
-      </BottomSheetDialog>
 
       {/* 초대 코드로 입장 모달 */}
       <BottomSheetDialog
