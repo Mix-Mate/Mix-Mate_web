@@ -7,6 +7,7 @@ import type {
   MyGroupProfile,
   ParticipantProfileRequest,
 } from "../types/profile.types";
+import { shouldUseMockFallback } from "@/shared/api/apiError";
 
 type UpdateMyProfileInput = {
   groupId: string;
@@ -15,7 +16,7 @@ type UpdateMyProfileInput = {
 
 type UpdateMyProfileResult =
   | { ok: true }
-  | { ok: false; message: string };
+  | { ok: false; message: string; savedLocally: boolean };
 
 function toParticipantProfileRequest(
   profile: MyGroupProfile,
@@ -52,10 +53,15 @@ export function useUpdateMyProfileMutation() {
       saveMyGroupProfile(profile);
       return { ok: true };
     } catch (error) {
-      saveMyGroupProfile(profile);
+      const savedLocally = shouldUseMockFallback(error);
+
+      if (savedLocally) {
+        saveMyGroupProfile(profile);
+      }
 
       return {
         ok: false,
+        savedLocally,
         message:
           error instanceof Error
             ? error.message

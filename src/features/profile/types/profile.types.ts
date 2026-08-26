@@ -40,3 +40,5 @@ export type MyGroupProfile = EditableGroupProfile & {
 };
 
 export type ParticipantProfileRequest = Omit<MyGroupProfile, "id">;
+
+export type MyProfileResponse = EditableGroupProfile;

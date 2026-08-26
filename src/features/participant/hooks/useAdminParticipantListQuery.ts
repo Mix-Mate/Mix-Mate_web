@@ -2,14 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { getAdminParticipants } from "../api/admin-participant.api";
-import { adminParticipantGroupMock } from "../api/admin-participant.mock";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
+import type { AdminParticipantGroup } from "../types/participant.types";
+
+const initialAdminParticipantGroup: AdminParticipantGroup = {
+  groupName: "",
+  participants: [],
+};
 
 export function useAdminParticipantListQuery(
   groupId: string,
   round: AssignmentRound,
 ) {
-  const [data, setData] = useState(adminParticipantGroupMock);
+  const [data, setData] = useState(initialAdminParticipantGroup);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import Header from "@/shared/ui/Header";
@@ -27,7 +27,19 @@ const positionLabelMap = {
 
 export default function MyProfileScreen() {
   const router = useRouter();
-  const { data: profile } = useMyGroupProfileQuery();
+  const params = useParams<{ groupId: string }>();
+  const { data: profile } = useMyGroupProfileQuery(params.groupId);
+
+  if (!profile) {
+    return (
+      <MobileFrame
+        className={styles.screenFrame}
+        viewportClassName={styles.pageViewport}
+      >
+        <Header title="내 프로필" onBack={() => router.back()} />
+      </MobileFrame>
+    );
+  }
 
   return (
     <MobileFrame

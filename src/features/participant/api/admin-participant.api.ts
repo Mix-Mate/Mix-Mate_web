@@ -12,8 +12,12 @@ import type {
 } from "../types/participant.types";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
-
-const API_BASE_URL = "https://mixmate.duckdns.org";
+import {
+  createApiRequestError,
+  shouldUseMockFallback,
+} from "@/shared/api/apiError";
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { withAuthHeaders } from "@/shared/api/authToken";
 
 function toVisibility(visibility: ParticipantSummaryResponse["visibility"]) {
   return visibility === "PUBLIC" ? "public" : "private";
@@ -42,11 +46,11 @@ function mapParticipantSummary(
 async function request(path: string, init?: RequestInit) {
   return fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
-    headers: {
+    ...init,
+    headers: withAuthHeaders({
       "Content-Type": "application/json",
       ...init?.headers,
-    },
-    ...init,
+    }),
   });
 }
 
@@ -61,7 +65,12 @@ export async function getAdminParticipants(
       `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
     );
 
-    if (!response.ok) throw new Error("참가자 목록 API 요청 실패");
+    if (!response.ok) {
+      throw await createApiRequestError(
+        response,
+        "참가자 목록 API 요청 실패",
+      );
+    }
 
     const data = (await response.json()) as ParticipantListResponse;
     const participants = data.participantList.map((summary) =>
@@ -77,7 +86,11 @@ export async function getAdminParticipants(
       ...fallbackGroup,
       participants,
     };
-  } catch {
+  } catch (error) {
+    if (!shouldUseMockFallback(error)) {
+      throw error;
+    }
+
     return fallbackGroup;
   }
 }
@@ -92,12 +105,21 @@ export async function addParticipant(
       body: JSON.stringify(input),
     });
 
-    if (!response.ok) throw new Error("참가자 추가 API 요청 실패");
+    if (!response.ok) {
+      throw await createApiRequestError(
+        response,
+        "참가자 추가 API 요청 실패",
+      );
+    }
 
-    return { ok: true, source: "api" as const };
-  } catch {
+    return { ok: true as const, source: "api" as const };
+  } catch (error) {
+    if (!shouldUseMockFallback(error)) {
+      throw error;
+    }
+
     addAdminParticipantMock(input);
-    return { ok: true, source: "mock" as const };
+    return { ok: true as const, source: "mock" as const };
   }
 }
 
@@ -108,11 +130,20 @@ export async function deleteParticipant(groupId: string, participantId: string) 
       { method: "DELETE" },
     );
 
-    if (!response.ok) throw new Error("참가자 삭제 API 요청 실패");
+    if (!response.ok) {
+      throw await createApiRequestError(
+        response,
+        "참가자 삭제 API 요청 실패",
+      );
+    }
 
-    return { ok: true, source: "api" as const };
-  } catch {
+    return { ok: true as const, source: "api" as const };
+  } catch (error) {
+    if (!shouldUseMockFallback(error)) {
+      throw error;
+    }
+
     deleteAdminParticipantMock(participantId);
-    return { ok: true, source: "mock" as const };
+    return { ok: true as const, source: "mock" as const };
   }
 }

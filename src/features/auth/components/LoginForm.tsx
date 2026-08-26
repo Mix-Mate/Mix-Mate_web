@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Button from '@/shared/ui/Button';
+import { login } from '@/features/auth/api/auth.api';
+import { setAccessToken } from '@/shared/api/authToken';
 // AS-IS (에러)
 // import logoIcon from '@/public/icons/logo.svg';
 
@@ -12,12 +15,28 @@ import logoIcon from '../../../../public/icons/logo.svg';
 import styles from './LoginForm.module.css';
 
 export function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('로그인 시도:', { email, password });
+    setErrorMessage('');
+    setIsSubmitting(true);
+
+    try {
+      const data = await login({ email, password });
+      setAccessToken(data.accessToken);
+      router.push('/groups/1/home?role=user');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : '로그인에 실패했습니다.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,9 +93,20 @@ export function LoginForm() {
         </div>
 
         {/* 로그인 버튼 */}
-        <Button type="submit" variant="primary" className={styles.loginButton}>
-          로그인
+        <Button
+          type="submit"
+          variant="primary"
+          className={styles.loginButton}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
+
+        {errorMessage && (
+          <p className={styles.errorMessage} role="alert">
+            {errorMessage}
+          </p>
+        )}
 
         {/* 구분선 */}
         <div className={styles.divider} />

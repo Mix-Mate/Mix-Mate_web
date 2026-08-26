@@ -79,6 +79,7 @@ export type ParticipantSummaryResponse = {
   participantId: number;
   displayName: string;
   major: string;
+  gender: ProfileGender;
   visibility: ProfileVisibility;
 };
 
