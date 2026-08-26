@@ -233,9 +233,8 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
                 }}
                 id={`otp-input-${index}`}
                 type="text"
-                className={`${styles.otpInput} ${
-                  char ? styles.otpInputFilled : ""
-                }`}
+                className={`${styles.otpInput} ${char ? styles.otpInputFilled : ""
+                  }`}
                 value={char}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
@@ -273,6 +272,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         open={errorModal.open}
         titleId="join-error-title"
         descriptionId="join-error-desc"
+        scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={handleCloseErrorModal}
       >
