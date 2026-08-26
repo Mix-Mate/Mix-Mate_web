@@ -108,3 +108,34 @@ export async function deleteGroup(groupId: string): Promise<void> {
     );
   }
 }
+
+export interface JoinGroupResponse {
+  groupId: string;
+  groupName?: string;
+}
+
+export async function joinGroupByCode(
+  inviteCode: string,
+): Promise<JoinGroupResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups/join`, {
+    method: "POST",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
+  });
+
+  if (!response.ok) {
+    const error: any = new Error(
+      await getErrorMessage(response, "참여코드가 존재하지 않습니다."),
+    );
+    error.status = response.status;
+    try {
+      const data = await response.clone().json();
+      error.code = data.code;
+      error.message = data.message || error.message;
+    } catch {}
+    throw error;
+  }
+
+  return (await response.json()) as JoinGroupResponse;
+}

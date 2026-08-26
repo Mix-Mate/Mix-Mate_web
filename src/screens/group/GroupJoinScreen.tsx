@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, AlertCircle } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import { mockDelay } from "@/shared/api/mockDelay";
+import { joinGroupByCode } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupJoinScreen.module.css";
 
@@ -118,7 +118,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
 
   const isCodeComplete = code.every((char) => char.trim().length === 1);
 
-  // Handle Submit & Mock Error branch handling
+  // Handle Submit with API integration and status-based error modals
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isCodeComplete || isSubmitting) return;
@@ -128,50 +128,23 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     setErrorMessage("");
 
     try {
-      // 자연스러운 로딩 체감을 위한 Mock 지연 (300ms)
-      await mockDelay(300);
-
-      // 1. 409 에러 시뮬레이션: 참여코드 만료
-      if (fullCode === "EXPIRE") {
-        const error: any = new Error("만료된 참여코드입니다.");
-        error.status = 409;
-        error.type = "EXPIRED";
-        throw error;
-      }
-
-      // 2. 409 에러 시뮬레이션: 이미 시작된 그룹
-      if (fullCode === "START1") {
-        const error: any = new Error("이미 시작된 그룹입니다.");
-        error.status = 409;
-        error.type = "ALREADY_STARTED";
-        throw error;
-      }
-
-      // 3. 테스트용 올바른 코드 ("123456") 검증
-      if (fullCode === "123456") {
-        if (onSuccess) {
-          onSuccess(fullCode);
-        } else {
-          // 토큰 유무와 상관없이 안전하게 그룹 1번 홈 화면으로 이동
-          router.push(groupRoutes.home("1"));
-        }
+      if (onSuccess) {
+        onSuccess(fullCode);
         return;
       }
 
-      // 4. 테스트 코드와 일치하지 않는 경우 -> 404 참여코드 불일치 에러 발생
-      const mismatchError: any = new Error("참여코드가 일치하지 않습니다.");
-      mismatchError.status = 404;
-      mismatchError.type = "INVALID_CODE";
-      throw mismatchError;
+      // 실제 참여코드 검증 및 그룹 참여 API 호출
+      const result = await joinGroupByCode(fullCode);
+      router.push(groupRoutes.home(result.groupId || fullCode.toLowerCase()));
     } catch (err: any) {
       if (onJoinError) {
-        onJoinError(err.type || err.message);
+        onJoinError(err.code || err.type || err.message);
       }
 
       // 상황별 에러 모달 멘트 분기 처리
       if (
         err.status === 409 &&
-        (err.type === "EXPIRED" || err.message?.includes("만료"))
+        (err.code === "EXPIRED" || err.type === "EXPIRED" || err.message?.includes("만료"))
       ) {
         // 409 에러: 참여코드 만료
         setErrorModal({
@@ -181,7 +154,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         });
       } else if (
         err.status === 409 &&
-        (err.type === "ALREADY_STARTED" || err.message?.includes("시작"))
+        (err.code === "ALREADY_STARTED" || err.type === "ALREADY_STARTED" || err.message?.includes("시작"))
       ) {
         // 409 에러: 이미 시작된 그룹
         setErrorModal({
