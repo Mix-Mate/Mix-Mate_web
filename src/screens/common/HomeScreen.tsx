@@ -192,7 +192,7 @@ export default function HomeScreen({
           >
             <span className={styles.actionRoleUser}>일반 사용자</span>
             <div className={styles.actionTextGroup}>
-              <h3 className={styles.actionCardTitle}>초대 코드로 입장</h3>
+              <h3 className={styles.actionCardTitle}>그룹 입장</h3>
               <p className={styles.actionCardDesc}>
                 참여코드를 입력하여 참여
               </p>
@@ -244,11 +244,10 @@ export default function HomeScreen({
 
                         <div className={styles.roleTagWrap}>
                           <span
-                            className={`${styles.roleTag} ${
-                              group.role === "HOST"
+                            className={`${styles.roleTag} ${group.role === "HOST"
                                 ? styles.roleTagAdmin
                                 : styles.roleTagUser
-                            }`}
+                              }`}
                           >
                             {group.role === "HOST" ? "관리자" : "사용자"}
                           </span>
