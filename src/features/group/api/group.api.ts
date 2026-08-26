@@ -108,3 +108,51 @@ export async function deleteGroup(groupId: string): Promise<void> {
     );
   }
 }
+
+export interface JoinGroupResponse {
+  groupId: string;
+  groupName?: string;
+}
+
+export class GroupApiError extends Error {
+  status?: number;
+  code?: string;
+
+  constructor(message: string, status?: number, code?: string) {
+    super(message);
+    this.name = "GroupApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export async function joinGroupByCode(
+  inviteCode: string,
+): Promise<JoinGroupResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups/join`, {
+    method: "POST",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
+  });
+
+  if (!response.ok) {
+    const message = await getErrorMessage(
+      response,
+      "참여코드가 존재하지 않습니다.",
+    );
+    let code: string | undefined;
+    try {
+      const data = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+      code = data.code;
+    } catch {
+      // Ignore JSON parse errors for non-JSON responses
+    }
+    throw new GroupApiError(message, response.status, code);
+  }
+
+  return (await response.json()) as JoinGroupResponse;
+}
