@@ -1,0 +1,650 @@
+/* HomeScreen.module.css */
+
+.pageViewport.pageViewport {
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
+}
+
+.screenFrame.screenFrame {
+  display: flex;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  flex-direction: column;
+  overflow: hidden;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  background: var(--color-surface, #fcfcff);
+  color: var(--color-text, #18181b);
+}
+
+/* ==========================================================================
+   1. Header
+   ========================================================================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e4e4e7;
+  background: rgba(252, 252, 255, 0.95);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #18181b;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #256ad3;
+}
+
+.brandTitle {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #18181b;
+  margin: 0;
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #71717a;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.logoutButton:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #ef4444;
+}
+
+.logoutButton:active {
+  transform: scale(0.96);
+}
+
+/* ==========================================================================
+   2. Main Content
+   ========================================================================== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 16px 24px;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* Welcome Section */
+.welcomeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.welcomeTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.4px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   3. Action Section (2-Column Grid)
+   ========================================================================== */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 16px 14px;
+  min-height: 120px;
+  height: auto;
+  border-radius: 18px;
+  border: 1px solid #e4e4e7;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.actionCard:active {
+  transform: scale(0.98);
+}
+
+.actionCardCreate {
+  background: var(--Color-2, #eff6ff);
+  border-color: #dbeafe;
+}
+
+.actionCardCreate:hover {
+  border-color: #3b82c4;
+}
+
+.actionCardJoin {
+  background: #f5f3ff;
+  border-color: #ede9fe;
+}
+
+.actionCardJoin:hover {
+  border-color: #8b5cf6;
+}
+
+.actionRoleAdmin {
+  color: #3b82c4;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  margin: 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.actionRoleUser {
+  color: #8b5cf6;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  margin: 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.actionTextGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  gap: 3px;
+}
+
+.actionCardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+  letter-spacing: -0.3px;
+  text-align: left;
+}
+
+.actionCardDesc {
+  font-size: 11px;
+  color: #71717a;
+  margin: 0;
+  line-height: 1.4;
+  word-break: keep-all;
+  text-align: left;
+}
+
+/* ==========================================================================
+   4. Meeting Lists (50:50 Layout)
+   ========================================================================== */
+.listsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+}
+
+.halfSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.sectionTitleCompleted {
+  color: #71717a;
+}
+
+.groupList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #e4e4e7 transparent;
+}
+
+.groupList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.groupList::-webkit-scrollbar-thumb {
+  background: #e4e4e7;
+  border-radius: 4px;
+}
+
+.groupList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.groupCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.groupCard:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.groupCard:active {
+  transform: scale(0.985);
+}
+
+.groupCardLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.groupName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+  letter-spacing: -0.3px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.groupMetaText {
+  color: #52525b;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 13.5px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px;
+  margin: 0;
+  text-align: left;
+}
+
+.roleTagWrap {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.roleTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: var(--Color-2, #eff6ff);
+  color: #3b82c4;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.roleTagAdmin {
+  color: #3b82c4;
+  background: #eff6ff;
+}
+
+.roleTagUser {
+  color: #8b5cf6;
+  background: #f5f3ff;
+}
+
+.groupCardRight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1a1aa;
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.groupCard:hover .groupCardRight {
+  color: #256ad3;
+  transform: translateX(2px);
+}
+
+/* ==========================================================================
+   5. Divider & Meeting List 2: Completed Groups
+   ========================================================================== */
+.sectionDivider {
+  width: 100%;
+  height: 2px;
+  flex-shrink: 0;
+  background: #e4e4e7;
+  margin: 2px 0;
+  border-radius: 9999px;
+}
+
+.completedGroupList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 16px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #e4e4e7 transparent;
+}
+
+.completedGroupList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.completedGroupList::-webkit-scrollbar-thumb {
+  background: #e4e4e7;
+  border-radius: 4px;
+}
+
+.completedGroupList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.completedGroupItem {
+  display: flex;
+  align-items: center;
+  padding: 13px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #f4f4f5;
+  cursor: default;
+}
+
+.completedGroupItem:last-child {
+  border-bottom: none;
+}
+
+.completedGroupName {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #a1a1aa;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+/* Empty State (Plain Text) */
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.emptyText {
+  color: #a1a1aa;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+  margin: 0;
+  text-align: center;
+  word-break: keep-all;
+}
+
+/* ==========================================================================
+   6. Modals & Dialogs
+   ========================================================================== */
+.modalSheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px 24px;
+  gap: 16px;
+  text-align: center;
+  border-radius: 18px 18px 0 0;
+}
+
+.modalIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+}
+
+.modalIconDanger {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.modalIconPrimary {
+  background: #eff6ff;
+  color: #256ad3;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.modalTitle {
+  font-size: 19px;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.modalDescription {
+  font-size: 13px;
+  color: #71717a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalForm {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #27272a;
+}
+
+.inputField {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #18181b;
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  font-family: inherit;
+}
+
+.inputField:focus {
+  border-color: #256ad3;
+  box-shadow: 0 0 0 3px rgba(37, 106, 211, 0.12);
+}
+
+.inputField::placeholder {
+  color: #a1a1aa;
+}
+
+.inputCode {
+  letter-spacing: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modalCancelButton {
+  flex: 1;
+  height: 48px;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  background: #f4f4f5;
+  color: #3f3f46;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.modalCancelButton:hover {
+  background: #e4e4e7;
+}
+
+.modalConfirmButton {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #256ad3;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.modalConfirmButton:hover {
+  background: #1e56ab;
+}
+
+.modalDangerButton {
+  background: #ef4444;
+}
+
+.modalDangerButton:hover {
+  background: #dc2626;
+}
+
+.modalConfirmButton:disabled,
+.modalCancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  font-size: 12px;
+  color: #ef4444;
+  margin: 0;
+}

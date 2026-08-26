@@ -12,8 +12,7 @@ interface SplashScreenProps {
   nextHref?: string;
 }
 
-// TODO: /login 이 머지되면 되돌릴 것 (PR #43, feature/auth-login)
-const NEXT_HREF = "/groups/demo/home";
+const NEXT_HREF = "/login";
 
 export default function SplashScreen({
   nextHref = NEXT_HREF,
