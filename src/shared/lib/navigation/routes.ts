@@ -4,6 +4,9 @@ type PlayActivity = "games" | "small-talk" | "balance";
 const groupBase = (groupId: string) => `/groups/${groupId}`;
 
 export const groupRoutes = {
+  create: () => `/groups/create`,
+  createExtra: () => `/groups/create/extra`,
+  join: () => `/groups/join`,
   home: (groupId: string) => `${groupBase(groupId)}/home`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
   participants: (groupId: string) => `${groupBase(groupId)}/participants`,
