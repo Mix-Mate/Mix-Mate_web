@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Plus, KeyRound, ChevronRight } from "lucide-react";
+import { LogOut, KeyRound, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import styles from "./HomeScreen.module.css";
@@ -57,7 +57,7 @@ export default function HomeScreen({
   const router = useRouter();
 
   // Group lists state
-  const [activeGroups, setActiveGroups] =
+  const [activeGroups] =
     useState<HomeScreenGroupItem[]>(initialActiveGroups);
   const [completedGroups] =
     useState<HomeScreenGroupItem[]>(initialCompletedGroups);

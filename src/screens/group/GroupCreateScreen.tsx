@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Info, Check } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import styles from "./GroupCreateScreen.module.css";
