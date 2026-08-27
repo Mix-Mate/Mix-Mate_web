@@ -57,7 +57,8 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       if (onSuccess) {
         onSuccess(groupName.trim(), inviteCode);
       } else {
-        router.push(groupRoutes.createExtra());
+        const targetId = inviteCode ? inviteCode.toLowerCase() : "new";
+        router.push(`${groupRoutes.extra(targetId)}?role=admin`);
       }
     }
   };

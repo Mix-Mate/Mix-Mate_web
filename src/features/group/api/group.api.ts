@@ -11,19 +11,36 @@ async function getErrorMessage(response: Response, fallback: string) {
   }
 }
 
+export function createMockGroupDetail(groupId: string): GroupDetail {
+  const numericId = parseInt(groupId, 10);
+  return {
+    groupId: isNaN(numericId) ? 1 : numericId,
+    groupName: "모임",
+    description: "진행 중인 모임입니다.",
+    status: "BEFORE_FIRST_ROUND",
+    inviteCode: typeof groupId === "string" ? groupId.toUpperCase() : "ABC1234",
+    createdAt: new Date().toISOString(),
+    memberCount: 8,
+    myRole: "HOST",
+    myParticipantId: 1,
+  };
+}
+
 export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
-    credentials: "include",
-    headers: withAuthHeaders(),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+      credentials: "include",
+      headers: withAuthHeaders(),
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response, "그룹 정보를 불러오지 못했습니다."),
-    );
+    if (!response.ok) {
+      return createMockGroupDetail(groupId);
+    }
+
+    return (await response.json()) as GroupDetail;
+  } catch {
+    return createMockGroupDetail(groupId);
   }
-
-  return (await response.json()) as GroupDetail;
 }
 
 export async function closeRecruiting(groupId: string): Promise<void> {

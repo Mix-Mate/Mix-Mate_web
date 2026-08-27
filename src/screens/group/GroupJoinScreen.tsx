@@ -135,7 +135,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
 
       // 실제 참여코드 검증 및 그룹 참여 API 호출
       const result = await joinGroupByCode(fullCode);
-      router.push(groupRoutes.home(result.groupId || fullCode.toLowerCase()));
+      router.push(groupRoutes.extra(result.groupId || fullCode.toLowerCase()));
     } catch (err: unknown) {
       const errorObj =
         err instanceof Error
