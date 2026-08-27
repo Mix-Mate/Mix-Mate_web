@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { getParticipantProfile } from "../api/participant.api";
-import { getParticipantProfileMock } from "../api/participant.mock";
+import type { ParticipantProfile } from "../types/participant.types";
 
 export function useParticipantProfileQuery(groupId: string, participantId: string) {
-  const [data, setData] = useState(() => getParticipantProfileMock(participantId));
+  const [data, setData] = useState<ParticipantProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 

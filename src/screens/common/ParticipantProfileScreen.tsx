@@ -36,18 +36,21 @@ export default function ParticipantProfileScreen({
     roundParam === "1" || roundParam === "2"
       ? (Number(roundParam) as 1 | 2)
       : undefined;
+
+  if (!group || !profile) return null;
+
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
   const bioText = profile.bio ?? "자기소개가 없습니다.";
 
   const handleDelete = async () => {
-    await deleteParticipant(groupId, participantId);
+    const result = await deleteParticipant(groupId, participantId);
+    if (!result.ok) return;
+
     setDeleteDialogOpen(false);
     router.push(groupRoutes.adminParticipants(groupId, adminRound));
   };
-
-  if (!group) return null;
 
   return (
     <MobileFrame className={styles.phone} viewportClassName={styles.viewport}>
