@@ -22,9 +22,6 @@ export function useParticipantProfileQuery(
     let ignore = false;
 
     if (!enabled) {
-      setData(null);
-      setIsLoading(false);
-      setIsError(false);
       return () => {
         ignore = true;
       };
@@ -52,8 +49,8 @@ export function useParticipantProfileQuery(
   }, [enabled, groupId, participantId]);
 
   return {
-    data,
-    isLoading,
-    isError,
+    data: enabled ? data : null,
+    isLoading: enabled ? isLoading : false,
+    isError: enabled ? isError : false,
   };
 }
