@@ -141,9 +141,34 @@
 }
 
 .inputField:focus {
-  border-color: #256ad3;
-  background: #ffffff;
-  box-shadow: 0 0 0 4.969px rgba(37, 106, 211, 0.15);
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.25);
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldError {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ef4444;
+  margin-top: -2px;
+}
+
+.generalError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-sizing: border-box;
 }
 
 .textareaField {

@@ -7,6 +7,7 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Toast from "@/shared/ui/Toast";
 import useToast from "@/shared/hooks/useToast";
+import { createGroupApi, GroupApiError } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupCreateScreen.module.css";
 
@@ -23,42 +24,105 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
   const [isCodeIssued, setIsCodeIssued] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
+  const [createdGroupId, setCreatedGroupId] = useState<number | null>(null);
+
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Shared toast hook (2000ms auto dismiss)
   const { message, showToast } = useToast(2000);
-
-  // Generate 6-digit random code (e.g., 7K2M91)
-  const generateRandomCode = () => {
-    const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
 
   const handleBack = () => {
     router.back();
   };
 
-  // Main button: [조 편성하기]
-  const handleMainAction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!groupName.trim()) return;
+  const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGroupName(e.target.value);
+    if (fieldErrors.groupName) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.groupName;
+        return next;
+      });
+    }
+  };
 
-    if (!isCodeIssued) {
-      // Flow ①: 처음 클릭 시 참여코드 발급 후 모달 띄우기
-      const newCode = generateRandomCode();
-      setInviteCode(newCode);
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setDescription(e.target.value);
+    if (fieldErrors.description) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.description;
+        return next;
+      });
+    }
+  };
+
+  // Main button: [조 편성하기]
+  const handleMainAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!groupName.trim() || isSubmitting) return;
+
+    if (isCodeIssued && createdGroupId) {
+      // 이미 생성 및 발급된 상태에서 다시 클릭 시 다음 페이지로 이동
+      if (onSuccess) {
+        onSuccess(String(createdGroupId), inviteCode);
+      } else {
+        router.push(groupRoutes.home(String(createdGroupId)));
+      }
+      return;
+    }
+
+    setFieldErrors({});
+    setGeneralError(null);
+    setIsSubmitting(true);
+
+    try {
+      // 1. 그룹 생성 API 호출
+      const response = await createGroupApi({
+        groupName: groupName.trim(),
+        description: description.trim(),
+      });
+
+      // 2. 201 성공: 발급된 inviteCode와 groupId 저장 후 모달 노출
+      setInviteCode(response.inviteCode);
+      setCreatedGroupId(response.groupId);
       setIsCodeIssued(true);
       setIsModalOpen(true);
-    } else {
-      // Flow ④: 이미 발급된 상태에서 다시 클릭 시 다음 페이지로 이동
+
       if (onSuccess) {
-        onSuccess(groupName.trim(), inviteCode);
-      } else {
-        router.push(groupRoutes.createExtra());
+        onSuccess(String(response.groupId), response.inviteCode);
       }
+    } catch (error: unknown) {
+      if (error instanceof GroupApiError) {
+        if (
+          error.status === 400 &&
+          error.fieldErrors &&
+          Object.keys(error.fieldErrors).length > 0
+        ) {
+          // 400 Bad Request 필드별 에러 바인딩
+          setFieldErrors(error.fieldErrors);
+        } else if (error.status === 401) {
+          // 401 Unauthorized 세션 만료 안내 후 로그인 이동
+          alert("토큰이 없거나 만료되었습니다. 다시 로그인해 주세요.");
+          router.push("/login");
+          return;
+        } else {
+          // 500 또는 기타 에러
+          setGeneralError(error.message || "서버 오류가 발생하였습니다.");
+          showToast(error.message || "서버 오류가 발생하였습니다.");
+        }
+      } else {
+        const fallbackMsg =
+          error instanceof Error ? error.message : "그룹 생성에 실패했습니다.";
+        setGeneralError(fallbackMsg);
+        showToast(fallbackMsg);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -74,13 +138,15 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       // Fallback
     }
 
-    // Flow ②: 토스트 2초간 노출
     showToast("참여코드가 복사되었습니다.");
   };
 
-  // Flow ③: 모달 닫기
+  // Modal close: 그룹 상세 화면으로 이동
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    if (createdGroupId) {
+      router.push(groupRoutes.home(String(createdGroupId)));
+    }
   };
 
   return (
@@ -105,7 +171,12 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
 
       {/* 2. 메인 폼 입력 영역 */}
       <main className={styles.main}>
-        <form id="create-group-form" onSubmit={handleMainAction} className={styles.form}>
+        <form
+          id="create-group-form"
+          onSubmit={handleMainAction}
+          className={styles.form}
+          noValidate
+        >
           {/* 입력 1: 그룹명 (필수) */}
           <div className={styles.inputGroup}>
             <label htmlFor="group-name-input" className={styles.inputLabel}>
@@ -114,12 +185,19 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
             <input
               id="group-name-input"
               type="text"
-              className={styles.inputField}
+              className={`${styles.inputField} ${
+                fieldErrors.groupName ? styles.inputError : ""
+              }`}
               value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
+              onChange={handleGroupNameChange}
               required
               autoFocus
             />
+            {fieldErrors.groupName && (
+              <span className={styles.fieldError} role="alert">
+                {fieldErrors.groupName}
+              </span>
+            )}
           </div>
 
           {/* 입력 2: 설명 (선택) */}
@@ -129,12 +207,19 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
             </label>
             <textarea
               id="group-desc-input"
-              className={styles.textareaField}
+              className={`${styles.textareaField} ${
+                fieldErrors.description ? styles.inputError : ""
+              }`}
               placeholder="설명 입력"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               rows={4}
             />
+            {fieldErrors.description && (
+              <span className={styles.fieldError} role="alert">
+                {fieldErrors.description}
+              </span>
+            )}
           </div>
 
           {/* 안내 배너: 파란색 박스 (테두리 없음) */}
@@ -144,6 +229,13 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
               참여코드는 모임 생성 시 자동 발급됩니다.
             </p>
           </div>
+
+          {/* 공통 에러 메시지 */}
+          {generalError && (
+            <div className={styles.generalError} role="alert">
+              {generalError}
+            </div>
+          )}
         </form>
       </main>
 
@@ -153,9 +245,13 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
           type="submit"
           form="create-group-form"
           className={styles.submitButton}
-          disabled={!groupName.trim()}
+          disabled={!groupName.trim() || isSubmitting}
         >
-          조 편성하기
+          {isSubmitting
+            ? "생성 중..."
+            : isCodeIssued
+              ? "모임으로 이동하기"
+              : "조 편성하기"}
         </button>
       </footer>
 
@@ -174,9 +270,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
 
           <p className={styles.codeText}>{inviteCode}</p>
 
-          <span className={styles.codeSubtext}>
-            클릭해서 복사하기
-          </span>
+          <span className={styles.codeSubtext}>클릭해서 복사하기</span>
         </div>
 
         <button

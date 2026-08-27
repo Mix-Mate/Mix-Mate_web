@@ -11,15 +11,116 @@ async function getErrorMessage(response: Response, fallback: string) {
   }
 }
 
+export interface GroupProfileDto {
+  displayName: string;
+  position: "STAFF" | "MEMBER" | string;
+  major: string;
+  isNew: boolean;
+  grade: "FIRST" | "SECOND" | "THIRD" | "FOURTH" | string;
+  gender: "MALE" | "FEMALE" | string;
+  mbti: string;
+  age: number;
+  instaId?: string;
+  bio?: string;
+  visibility: "PUBLIC" | "PRIVATE" | string;
+}
+
 export interface CreateGroupRequest {
   groupName: string;
   description?: string;
+  profile?: GroupProfileDto;
 }
 
 export interface CreateGroupResponse {
-  groupId: number | string;
+  groupId: number;
   groupName: string;
   inviteCode: string;
+}
+
+export class GroupApiError extends Error {
+  status?: number;
+  code?: string;
+  fieldErrors?: Record<string, string>;
+
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    fieldErrors?: Record<string, string>,
+  ) {
+    super(message);
+    this.name = "GroupApiError";
+    this.status = status;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+/**
+ * 그룹 생성 API
+ * POST /api/v1/groups
+ */
+export async function createGroupApi(
+  request: CreateGroupRequest,
+): Promise<CreateGroupResponse> {
+  const payload = {
+    groupName: request.groupName.trim(),
+    description: request.description?.trim() || "",
+    profile: request.profile || {
+      displayName: "운영진",
+      position: "STAFF",
+      major: "컴퓨터공학과",
+      isNew: false,
+      grade: "FOURTH",
+      gender: "MALE",
+      mbti: "ENFP",
+      age: 24,
+      visibility: "PUBLIC",
+    },
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups`, {
+    method: "POST",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let errorData: {
+      code?: string;
+      message?: string;
+      errors?: Record<string, string>;
+    } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+        errors?: Record<string, string>;
+      };
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 500
+            ? "서버 오류가 발생하였습니다."
+            : "그룹 생성에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  return (await response.json()) as CreateGroupResponse;
 }
 
 export function createMockGroupDetail(groupId: string): GroupDetail {
@@ -40,30 +141,7 @@ export function createMockGroupDetail(groupId: string): GroupDetail {
 export async function createGroup(
   request: CreateGroupRequest,
 ): Promise<CreateGroupResponse> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/groups`, {
-      method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      return {
-        groupId: 1,
-        groupName: request.groupName,
-        inviteCode: "7K2M91",
-      };
-    }
-
-    return (await response.json()) as CreateGroupResponse;
-  } catch {
-    return {
-      groupId: 1,
-      groupName: request.groupName,
-      inviteCode: "7K2M91",
-    };
-  }
+  return createGroupApi(request);
 }
 
 export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
@@ -169,18 +247,6 @@ export async function deleteGroup(groupId: string): Promise<void> {
 export interface JoinGroupResponse {
   groupId: string;
   groupName?: string;
-}
-
-export class GroupApiError extends Error {
-  status?: number;
-  code?: string;
-
-  constructor(message: string, status?: number, code?: string) {
-    super(message);
-    this.name = "GroupApiError";
-    this.status = status;
-    this.code = code;
-  }
 }
 
 export async function joinGroupByCode(
