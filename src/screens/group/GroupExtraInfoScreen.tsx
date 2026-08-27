@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Button from "@/shared/ui/Button";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupExtraInfoScreen.module.css";
 
@@ -75,17 +74,29 @@ export default function GroupExtraInfoScreen({
     initialData?.isPublicProfile ?? "전체 공개",
   );
 
-  // Modal state
-  const [isMbtiModalOpen, setIsMbtiModalOpen] = useState(false);
+  const [isMbtiOpen, setIsMbtiOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsMbtiOpen(false);
+      }
+    };
+    if (isMbtiOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMbtiOpen]);
 
   const handleBack = () => {
     router.back();
-  };
-
-  const handleSelectMbti = (selectedMbti: string) => {
-    setMbti(selectedMbti);
-    setIsMbtiModalOpen(false);
   };
 
   const isFormValid = name.trim().length > 0 && department.trim().length > 0;
@@ -238,17 +249,50 @@ export default function GroupExtraInfoScreen({
           </div>
         </div>
 
-        {/* 7. MBTI (클릭 시 바텀시트 오픈) */}
-        <div className={styles.field}>
+        {/* 7. MBTI (커스텀 드롭다운) */}
+        <div
+          className={styles.field}
+          ref={dropdownRef}
+          style={{ position: "relative" }}
+        >
           <span>MBTI</span>
           <button
             type="button"
-            className={styles.selectField}
-            onClick={() => setIsMbtiModalOpen(true)}
+            className={`${styles.dropdownTrigger} ${
+              mbti ? styles.hasValue : ""
+            } ${isMbtiOpen ? styles.dropdownTriggerActive : ""}`}
+            onClick={() => setIsMbtiOpen((prev) => !prev)}
+            aria-expanded={isMbtiOpen}
           >
             <span>{mbti || "MBTI 선택"}</span>
-            <span aria-hidden="true">▾</span>
+            <span
+              className={`${styles.dropdownArrow} ${
+                isMbtiOpen ? styles.dropdownArrowOpen : ""
+              }`}
+            >
+              ▾
+            </span>
           </button>
+
+          {isMbtiOpen && (
+            <div className={styles.dropdownMenu}>
+              {MBTI_LIST.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`${styles.dropdownItem} ${
+                    mbti === item ? styles.dropdownItemActive : ""
+                  }`}
+                  onClick={() => {
+                    setMbti(item);
+                    setIsMbtiOpen(false);
+                  }}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 8. 나이 (선택) */}
@@ -315,39 +359,6 @@ export default function GroupExtraInfoScreen({
           {isSubmitting ? "저장 중..." : "저장하기"}
         </Button>
       </div>
-
-      {/* 4. MBTI 바텀시트 모달 */}
-      <BottomSheetDialog
-        open={isMbtiModalOpen}
-        titleId="mbti-sheet-title"
-        sheetClassName={styles.mbtiSheet}
-        onClose={() => setIsMbtiModalOpen(false)}
-      >
-        <h2 id="mbti-sheet-title" className={styles.sheetTitle}>
-          MBTI 선택
-        </h2>
-
-        <div className={styles.mbtiGrid}>
-          {MBTI_LIST.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={mbti === item ? styles.activeMbti : ""}
-              onClick={() => handleSelectMbti(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        <button
-          type="button"
-          className={styles.sheetCloseButton}
-          onClick={() => setIsMbtiModalOpen(false)}
-        >
-          닫기
-        </button>
-      </BottomSheetDialog>
     </MobileFrame>
   );
 }
