@@ -1,118 +1,132 @@
-﻿import {
-  addAdminParticipantMock,
-  deleteAdminParticipantMock,
-  getAdminParticipantListMock,
-} from "./admin-participant.mock";
 import type {
   AdminParticipant,
   AdminParticipantGroup,
   ParticipantListResponse,
   ParticipantProfileRequest,
+  ParticipantProfileResponse,
   ParticipantSummaryResponse,
 } from "../types/participant.types";
+import { toParticipantProfile } from "./participant.api";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
-
-const API_BASE_URL = "https://mixmate.duckdns.org";
+import { getGroupDetail } from "@/features/group/api/group.api";
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { withAuthHeaders } from "@/shared/api/authToken";
 
 function toVisibility(visibility: ParticipantSummaryResponse["visibility"]) {
   return visibility === "PUBLIC" ? "public" : "private";
 }
 
-function mapParticipantSummary(
+function toGender(gender: ParticipantSummaryResponse["gender"]) {
+  return gender === "FEMALE" ? "female" : "male";
+}
+
+function toDefaultAdminParticipant(
   summary: ParticipantSummaryResponse,
-  fallback?: AdminParticipant,
 ): AdminParticipant {
   return {
     id: String(summary.participantId),
     name: summary.displayName,
     department: summary.major,
     visibility: toVisibility(summary.visibility),
-    role: fallback?.role ?? "general",
-    gender: fallback?.gender ?? "male",
-    grade: fallback?.grade ?? "1학년",
-    isNew: fallback?.isNew ?? true,
-    mbti: fallback?.mbti ?? "ISTP",
-    age: fallback?.age,
-    instagramId: fallback?.instagramId,
-    bio: fallback?.bio,
+    role: "general",
+    gender: toGender(summary.gender),
+    grade: "",
+    isNew: false,
+    mbti: "",
+    age: undefined,
+    instagramId: undefined,
+    bio: undefined,
   };
+}
+
+async function createRequestError(response: Response, fallbackMessage: string) {
+  try {
+    const body = (await response.json()) as { message?: string };
+    return new Error(body.message ?? fallbackMessage);
+  } catch {
+    return new Error(fallbackMessage);
+  }
 }
 
 async function request(path: string, init?: RequestInit) {
   return fetch(`${API_BASE_URL}${path}`, {
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
     ...init,
+    headers: withAuthHeaders({
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...init?.headers,
+    }),
   });
+}
+
+async function getParticipantDetail(
+  groupId: string,
+  summary: ParticipantSummaryResponse,
+): Promise<AdminParticipant> {
+  const participantId = String(summary.participantId);
+  const response = await request(
+    `/api/v1/groups/${groupId}/participants/${participantId}`,
+  );
+
+  if (!response.ok) {
+    return toDefaultAdminParticipant(summary);
+  }
+
+  const profile = (await response.json()) as ParticipantProfileResponse;
+  return toParticipantProfile(profile, participantId, toVisibility(summary.visibility));
 }
 
 export async function getAdminParticipants(
   groupId: string,
   round: AssignmentRound,
 ): Promise<AdminParticipantGroup> {
-  const fallbackGroup = getAdminParticipantListMock();
+  const [groupDetail, response] = await Promise.all([
+    getGroupDetail(groupId),
+    request(`/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`),
+  ]);
 
-  try {
-    const response = await request(
-      `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
-    );
-
-    if (!response.ok) throw new Error("참가자 목록 API 요청 실패");
-
-    const data = (await response.json()) as ParticipantListResponse;
-    const participants = data.participantList.map((summary) =>
-      mapParticipantSummary(
-        summary,
-        fallbackGroup.participants.find(
-          (participant) => participant.id === String(summary.participantId),
-        ),
-      ),
-    );
-
-    return {
-      ...fallbackGroup,
-      participants,
-    };
-  } catch {
-    return fallbackGroup;
+  if (!response.ok) {
+    throw await createRequestError(response, "참가자 목록을 불러오지 못했습니다.");
   }
+
+  const data = (await response.json()) as ParticipantListResponse;
+  const participants = await Promise.all(
+    data.participantList.map((summary) => getParticipantDetail(groupId, summary)),
+  );
+
+  return {
+    groupName: groupDetail.groupName,
+    participants,
+  };
 }
 
 export async function addParticipant(
   groupId: string,
   input: ParticipantProfileRequest,
 ) {
-  try {
-    const response = await request(`/api/v1/groups/${groupId}/participants`, {
-      method: "POST",
-      body: JSON.stringify(input),
-    });
+  const response = await request(`/api/v1/groups/${groupId}/participants`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 
-    if (!response.ok) throw new Error("참가자 추가 API 요청 실패");
-
-    return { ok: true, source: "api" as const };
-  } catch {
-    addAdminParticipantMock(input);
-    return { ok: true, source: "mock" as const };
+  if (!response.ok) {
+    throw await createRequestError(response, "참가자 추가에 실패했습니다.");
   }
+
+  return { ok: true as const, source: "api" as const };
 }
 
 export async function deleteParticipant(groupId: string, participantId: string) {
-  try {
-    const response = await request(
-      `/api/v1/groups/${groupId}/participants/${participantId}`,
-      { method: "DELETE" },
-    );
+  const response = await request(
+    `/api/v1/groups/${groupId}/participants/${participantId}`,
+    { method: "DELETE" },
+  );
 
-    if (!response.ok) throw new Error("참가자 삭제 API 요청 실패");
-
-    return { ok: true, source: "api" as const };
-  } catch {
-    deleteAdminParticipantMock(participantId);
-    return { ok: true, source: "mock" as const };
+  if (!response.ok) {
+    throw await createRequestError(response, "참가자 삭제에 실패했습니다.");
   }
+
+  return { ok: true as const, source: "api" as const };
 }

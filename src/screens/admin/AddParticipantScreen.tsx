@@ -95,11 +95,12 @@ export default function AddParticipantScreen() {
       major: form.major.trim(),
     });
 
-    showToast(
-      result.source === "api"
-        ? "참가자를 추가했습니다."
-        : "API 인증 전이라 mock에 참가자를 추가했습니다.",
-    );
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+
+    showToast("참가자를 추가했습니다.");
 
     window.setTimeout(goToManagement, 350);
   };
