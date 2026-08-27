@@ -11,7 +11,7 @@ const GROUP_STATUS_POLLING_INTERVAL_MS = 2_000;
 export function useGroupStatusPolling(groupId: string) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: group, refetch } = useAdminGroupQuery(groupId);
+  const { data: group, isLoading, refetch } = useAdminGroupQuery(groupId);
   const groupStatus = group?.status;
   const hasGroup = group !== null;
   const mvpVotePath = groupRoutes.mvpVote(groupId);
@@ -78,7 +78,12 @@ export function useGroupStatusPolling(groupId: string) {
     };
 
     if (navigateIfVoting(groupStatus)) return;
-    if (!hasGroup) void pollGroupStatus();
+    if (!hasGroup && !isLoading) void pollGroupStatus();
+
+    // 진행 중인 라운드(1차, 2차)일 때만 투표 전환 감지를 위해 polling 수행
+    const shouldPoll =
+      groupStatus === "FIRST_ROUND" || groupStatus === "SECOND_ROUND";
+    if (!shouldPoll) return;
 
     const intervalId = window.setInterval(
       () => void pollGroupStatus(),
@@ -92,6 +97,7 @@ export function useGroupStatusPolling(groupId: string) {
   }, [
     groupStatus,
     hasGroup,
+    isLoading,
     isExtraPage,
     isInvalidGroupId,
     isVoteFlowPage,

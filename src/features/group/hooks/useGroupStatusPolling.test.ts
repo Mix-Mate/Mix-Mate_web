@@ -34,9 +34,13 @@ function createGroup(status: GroupStatus): GroupDetail {
   };
 }
 
-function mockGroupQuery(data: GroupDetail | null) {
+function mockGroupQuery(data: GroupDetail | null, isLoading = false) {
   useAdminGroupQueryMock.mockReturnValue({
+    groupId: "6",
     data,
+    isLoading,
+    isError: false,
+    error: null,
     refetch: refetchMock,
   });
 }
