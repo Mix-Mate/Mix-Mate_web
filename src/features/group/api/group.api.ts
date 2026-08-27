@@ -320,3 +320,59 @@ export async function joinGroupByCode(
 
   return (await response.json()) as JoinGroupResponse;
 }
+
+export interface VerifyInviteCodeRequest {
+  inviteCode: string;
+}
+
+export interface VerifyInviteCodeResponse {
+  groupId: number;
+  groupName: string;
+}
+
+/**
+ * 참여코드 검증 API
+ * POST /api/v1/groups/invitations/verify
+ */
+export async function verifyInviteCodeApi(
+  request: VerifyInviteCodeRequest,
+): Promise<VerifyInviteCodeResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/verify`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        inviteCode: request.inviteCode.trim().toUpperCase(),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: { code?: string; message?: string } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "참여코드를 입력해 주세요."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "유효하지 않은 초대코드입니다."
+            : "참여코드 검증에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(message, response.status, errorData?.code);
+  }
+
+  return (await response.json()) as VerifyInviteCodeResponse;
+}
+

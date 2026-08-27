@@ -54,6 +54,7 @@ export function LoginForm() {
         password,
       });
 
+      // 200 성공 시: accessToken과 refreshToken을 스토리지/쿠키에 저장하고 메인 홈(/home)으로 이동
       setAuthTokens({
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
@@ -79,8 +80,10 @@ export function LoginForm() {
           error.fieldErrors &&
           Object.keys(error.fieldErrors).length > 0
         ) {
+          // 400 에러 시: errors 객체 내의 필드별 에러를 각 입력 필드(이메일/비밀번호) 하단 텍스트로 바인딩
           setFieldErrors(error.fieldErrors);
         } else {
+          // 401 / 404 / 400(no field errors) 등: message 텍스트를 폼 하단 공통 에러 메시지로 렌더링
           setGeneralError(error.message);
         }
       } else {
@@ -162,7 +165,7 @@ export function LoginForm() {
           )}
         </div>
 
-        {/* 공통 에러 메시지 */}
+        {/* 공통 에러 메시지 (401, 404 등) */}
         {generalError && (
           <div className={styles.generalError} role="alert">
             {generalError}

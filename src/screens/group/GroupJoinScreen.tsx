@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, AlertCircle } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import { joinGroupByCode } from "@/features/group/api/group.api";
+import { verifyInviteCodeApi } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupJoinScreen.module.css";
 
@@ -50,6 +50,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     setErrorModal((prev) => ({ ...prev, open: false }));
     // Clear all 6 input fields and focus the first box
     setCode(["", "", "", "", "", ""]);
+    setErrorMessage("");
     inputRefs.current[0]?.focus();
   };
 
@@ -118,7 +119,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
 
   const isCodeComplete = code.every((char) => char.trim().length === 1);
 
-  // Handle Submit with API integration and status-based error modals
+  // Handle Submit with API integration and status-based error handling
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isCodeComplete || isSubmitting) return;
@@ -128,14 +129,16 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     setErrorMessage("");
 
     try {
+      // 1. 실제 참여코드 검증 API 호출
+      const result = await verifyInviteCodeApi({ inviteCode: fullCode });
+
       if (onSuccess) {
         onSuccess(fullCode);
         return;
       }
 
-      // 실제 참여코드 검증 및 그룹 참여 API 호출
-      const result = await joinGroupByCode(fullCode);
-      router.push(groupRoutes.home(result.groupId || fullCode.toLowerCase()));
+      // 200 성공 시: 응답받은 groupId, groupName을 상태로 전달하며 다음 단계(프로필/추가 정보 입력)로 전환
+      router.push(groupRoutes.extra(String(result.groupId)));
     } catch (err: unknown) {
       const errorObj =
         err instanceof Error
@@ -154,12 +157,24 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         onJoinError(errorCode || errorObj.message);
       }
 
-      // 상황별 에러 모달 멘트 분기 처리
+      // 401 Unauthorized: 로그인 세션 만료 안내 후 로그인 화면(/login)으로 리다이렉트
+      if (errorStatus === 401) {
+        alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+        router.push("/login");
+        return;
+      }
+
+      // 404 Not Found: 인풋 하단에 "유효하지 않은 초대코드입니다." 빨간색 텍스트 렌더링
+      if (errorStatus === 404 || errorCode === "INVALID_INVITE_CODE") {
+        setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
+        return;
+      }
+
+      // 상황별 에러 모달 멘트 분기 처리 (409 등)
       if (
         errorStatus === 409 &&
         (errorCode === "EXPIRED" || errorObj.message.includes("만료"))
       ) {
-        // 409 에러: 참여코드 만료
         setErrorModal({
           open: true,
           title: "참여코드가 만료되었습니다",
@@ -169,19 +184,14 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         errorStatus === 409 &&
         (errorCode === "ALREADY_STARTED" || errorObj.message.includes("시작"))
       ) {
-        // 409 에러: 이미 시작된 그룹
         setErrorModal({
           open: true,
           title: "이미 시작된 그룹입니다",
           description: "입력하신 코드를 다시 확인해 주세요.",
         });
       } else {
-        // 404 또는 코드 불일치 / 미존재
-        setErrorModal({
-          open: true,
-          title: "참여코드가 존재하지 않습니다",
-          description: "입력하신 코드를 다시 확인해 주세요.",
-        });
+        // 기타 400 등 에러는 인풋 하단 에러 텍스트로 노출
+        setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
       }
     } finally {
       setIsSubmitting(false);
@@ -233,8 +243,9 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
                 }}
                 id={`otp-input-${index}`}
                 type="text"
-                className={`${styles.otpInput} ${char ? styles.otpInputFilled : ""
-                  }`}
+                className={`${styles.otpInput} ${
+                  char ? styles.otpInputFilled : ""
+                } ${errorMessage ? styles.otpInputError : ""}`}
                 value={char}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
@@ -267,24 +278,24 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         </button>
       </footer>
 
-      {/* 4. 경고 모달: 참여코드 불일치 / 만료 / 이미 시작됨 */}
+      {/* 4. 경고 모달: 참여코드 만료 / 이미 시작됨 */}
       <BottomSheetDialog
         open={errorModal.open}
-        titleId="join-error-title"
-        descriptionId="join-error-desc"
+        titleId="error-dialog-title"
+        descriptionId="error-dialog-desc"
         scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={handleCloseErrorModal}
       >
         <div className={styles.modalIcon} aria-hidden="true">
-          <AlertCircle size={26} strokeWidth={2} />
+          <AlertCircle size={32} strokeWidth={2} />
         </div>
 
         <div className={styles.modalContent}>
-          <h2 id="join-error-title" className={styles.modalTitle}>
+          <h2 id="error-dialog-title" className={styles.modalTitle}>
             {errorModal.title}
           </h2>
-          <p id="join-error-desc" className={styles.modalDescription}>
+          <p id="error-dialog-desc" className={styles.modalDescription}>
             {errorModal.description}
           </p>
         </div>
@@ -292,14 +303,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         <div className={styles.modalActions}>
           <button
             type="button"
-            className={styles.modalCancelButton}
-            onClick={handleCloseErrorModal}
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            className={styles.modalRetryButton}
+            className={styles.retryButton}
             onClick={handleRetry}
           >
             다시 입력하기

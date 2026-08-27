@@ -107,7 +107,8 @@
   font-size: 13px;
   font-weight: 500;
   color: #ef4444;
-  padding-left: 4px;
+  padding-left: 6px;
+  margin-top: -2px;
 }
 
 .generalError {
@@ -135,8 +136,8 @@
   border-radius: 16px;
   border: none;
   cursor: pointer;
-  margin-top: 8px;
-  transition: opacity 0.15s ease;
+  margin-top: 4px;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .loginButton:disabled {

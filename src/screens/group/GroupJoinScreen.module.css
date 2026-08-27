@@ -178,11 +178,17 @@
   background: #ffffff;
 }
 
+.otpInputError {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
 .errorMessage {
   font-size: 13.5px;
   color: #ef4444;
   margin: 4px 0 0 0;
   text-align: center;
+  font-weight: 500;
 }
 
 /* ==========================================================================

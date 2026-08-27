@@ -36,11 +36,11 @@ export function setAuthTokens({
   if (typeof window === "undefined") return;
 
   window.localStorage.setItem("accessToken", accessToken);
-  document.cookie = `accessToken=${accessToken}; path=/; SameSite=Lax`;
+  document.cookie = `accessToken=${accessToken}; path=/; max-age=86400; SameSite=Lax`;
 
   if (refreshToken) {
     window.localStorage.setItem("refreshToken", refreshToken);
-    document.cookie = `refreshToken=${refreshToken}; path=/; SameSite=Lax`;
+    document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`;
   }
 }
 
@@ -54,8 +54,8 @@ export function clearAuthTokens(): void {
     },
   );
 
-  document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-  document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "accessToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  document.cookie = "refreshToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
 }
 
 export function withAuthHeaders(headers: HeadersInit = {}): HeadersInit {
