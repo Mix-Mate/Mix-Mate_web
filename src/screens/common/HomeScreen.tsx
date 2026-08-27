@@ -1,84 +1,138 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import {
+  getMyGroupsApi,
+  MyGroupItem,
+  GroupApiError,
+} from "@/features/group/api/group.api";
+import { clearAuthTokens } from "@/shared/api/authToken";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./HomeScreen.module.css";
 
-export type GroupRole = "HOST" | "PARTICIPANT";
-
-export type GroupStatus =
-  | "RECRUITING"
-  | "FIRST_ROUND"
-  | "VOTING"
-  | "SECOND_ROUND"
-  | "FINISHED";
-
-export interface HomeScreenGroupItem {
-  id: string;
-  name: string;
-  description?: string;
-  status: GroupStatus;
-  role: GroupRole;
-  memberCount: number;
-  date: string;
-  time?: string;
-  location?: string;
-}
-
-const DEFAULT_ACTIVE_GROUPS: HomeScreenGroupItem[] = [];
-
-const DEFAULT_COMPLETED_GROUPS: HomeScreenGroupItem[] = [];
-
-const STATUS_CONFIG: Record<
-  GroupStatus,
-  { label: string; className: string }
-> = {
-  RECRUITING: { label: "모집 중", className: styles.statusRecruiting },
-  FIRST_ROUND: { label: "1차 진행 중", className: styles.statusInProgress },
-  VOTING: { label: "투표 진행 중", className: styles.statusVoting },
-  SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
-  FINISHED: { label: "종료됨", className: styles.statusCompleted },
-};
-
 interface HomeScreenProps {
   userName?: string;
-  initialActiveGroups?: HomeScreenGroupItem[];
-  initialCompletedGroups?: HomeScreenGroupItem[];
+  initialActiveGroups?: MyGroupItem[];
+  initialCompletedGroups?: MyGroupItem[];
 }
 
 export default function HomeScreen({
-  userName = "김민준",
-  initialActiveGroups = DEFAULT_ACTIVE_GROUPS,
-  initialCompletedGroups = DEFAULT_COMPLETED_GROUPS,
+  userName: initialUserName = "사용자",
+  initialActiveGroups = [],
+  initialCompletedGroups = [],
 }: HomeScreenProps) {
   const router = useRouter();
 
-  // Group lists state
-  const [activeGroups] =
-    useState<HomeScreenGroupItem[]>(initialActiveGroups);
-  const [completedGroups] =
-    useState<HomeScreenGroupItem[]>(initialCompletedGroups);
+  const [userName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const storedName =
+        window.localStorage.getItem("userName") ||
+        window.localStorage.getItem("user");
+      if (storedName) {
+        try {
+          const parsed = JSON.parse(storedName) as {
+            userName?: string;
+            name?: string;
+          };
+          return parsed?.userName || parsed?.name || storedName;
+        } catch {
+          return storedName;
+        }
+      }
+    }
+    return initialUserName;
+  });
+
+  const [activeGroups, setActiveGroups] =
+    useState<MyGroupItem[]>(initialActiveGroups);
+  const [completedGroups, setCompletedGroups] = useState<MyGroupItem[]>(
+    initialCompletedGroups,
+  );
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMyGroups = async () => {
+      setIsLoading(true);
+      try {
+        const [activeRes, finishedRes] = await Promise.allSettled([
+          getMyGroupsApi({ scope: "me", state: "active" }),
+          getMyGroupsApi({ scope: "me", state: "finished" }),
+        ]);
+
+        if (activeRes.status === "rejected") {
+          const err = activeRes.reason;
+          if (err instanceof GroupApiError && err.status === 401) {
+            alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
+            clearAuthTokens();
+            router.push("/login");
+            return;
+          }
+        }
+
+        if (isMounted) {
+          if (activeRes.status === "fulfilled") {
+            setActiveGroups(activeRes.value.groups || []);
+          }
+          if (finishedRes.status === "fulfilled") {
+            setCompletedGroups(finishedRes.value.groups || []);
+          }
+        }
+      } catch (err: unknown) {
+        console.error("내 그룹 목록 조회 실패:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchMyGroups();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialUserName, router]);
+
   // Navigation handlers
-  const handleGroupClick = (group: HomeScreenGroupItem) => {
+  const handleGroupClick = (group: MyGroupItem) => {
     if (group.status === "FINISHED") {
-      router.push(groupRoutes.completed(group.id));
+      router.push(groupRoutes.completed(String(group.groupId)));
     } else {
-      router.push(groupRoutes.home(group.id));
+      router.push(groupRoutes.home(String(group.groupId)));
     }
   };
 
   // Logout flow
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
+    clearAuthTokens();
     router.push("/login");
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "RECRUITING":
+        return "모집 중";
+      case "PROGRESS":
+      case "FIRST_ROUND":
+      case "SECOND_ROUND":
+        return "진행 중";
+      case "VOTING":
+        return "투표 진행 중";
+      case "FINISHED":
+        return "종료됨";
+      default:
+        return status || "진행 중";
+    }
   };
 
   return (
@@ -87,7 +141,7 @@ export default function HomeScreen({
       viewportClassName={styles.pageViewport}
       data-testid="home-screen"
     >
-      {/* 1. 상단 헤더: MixMate 제목만 유지 (로고 제거) */}
+      {/* 1. 상단 헤더: MixMate 제목 & 로그아웃 버튼 */}
       <header className={styles.header}>
         <div className={styles.brand}>
           <h1 className={styles.brandTitle}>MixMate</h1>
@@ -159,15 +213,19 @@ export default function HomeScreen({
               <h3 className={styles.sectionTitle}>내 그룹 목록</h3>
             </div>
 
-            {activeGroups.length > 0 ? (
+            {isLoading ? (
+              <div className={styles.skeletonList}>
+                <div className={styles.skeletonCard} />
+                <div className={styles.skeletonCard} />
+              </div>
+            ) : activeGroups.length > 0 ? (
               <div className={styles.groupList}>
                 {activeGroups.map((group) => {
-                  const statusInfo =
-                    STATUS_CONFIG[group.status] || STATUS_CONFIG.FIRST_ROUND;
+                  const isHost = group.role === "HOST";
 
                   return (
                     <article
-                      key={group.id}
+                      key={group.groupId}
                       className={styles.groupCard}
                       onClick={() => handleGroupClick(group)}
                       role="button"
@@ -180,20 +238,19 @@ export default function HomeScreen({
                       }}
                     >
                       <div className={styles.groupCardLeft}>
-                        <h4 className={styles.groupName}>{group.name}</h4>
+                        <h4 className={styles.groupName}>{group.groupName}</h4>
 
                         <p className={styles.groupMetaText}>
-                          {statusInfo.label} · {group.memberCount}명
+                          {getStatusLabel(group.status)} · {group.memberCount}명
                         </p>
 
                         <div className={styles.roleTagWrap}>
                           <span
-                            className={`${styles.roleTag} ${group.role === "HOST"
-                                ? styles.roleTagAdmin
-                                : styles.roleTagUser
-                              }`}
+                            className={`${styles.roleTag} ${
+                              isHost ? styles.roleTagAdmin : styles.roleTagUser
+                            }`}
                           >
-                            {group.role === "HOST" ? "관리자" : "사용자"}
+                            {isHost ? "관리자" : "사용자"}
                           </span>
                         </div>
                       </div>
@@ -222,17 +279,28 @@ export default function HomeScreen({
           {/* 4. 모임 목록 섹션 2: 종료된 그룹 목록 (단순 텍스트 / 비활성화 톤) */}
           <section className={styles.halfSection} aria-label="종료된 그룹 목록">
             <div className={styles.sectionHeader}>
-              <h3 className={`${styles.sectionTitle} ${styles.sectionTitleCompleted}`}>
+              <h3
+                className={`${styles.sectionTitle} ${styles.sectionTitleCompleted}`}
+              >
                 종료된 그룹 목록
               </h3>
             </div>
 
-            {completedGroups.length > 0 ? (
+            {isLoading ? (
+              <div className={styles.skeletonList}>
+                <div className={styles.skeletonCardCompleted} />
+              </div>
+            ) : completedGroups.length > 0 ? (
               <div className={styles.completedGroupList}>
                 {completedGroups.map((group) => (
-                  <div key={group.id} className={styles.completedGroupItem}>
+                  <div
+                    key={group.groupId}
+                    className={styles.completedGroupItem}
+                    onClick={() => handleGroupClick(group)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <span className={styles.completedGroupName}>
-                      {group.name}
+                      {group.groupName}
                     </span>
                   </div>
                 ))}
@@ -294,10 +362,6 @@ export default function HomeScreen({
           </button>
         </div>
       </BottomSheetDialog>
-
-
-
-
     </MobileFrame>
   );
 }

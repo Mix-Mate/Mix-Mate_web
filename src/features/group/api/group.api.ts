@@ -216,3 +216,64 @@ export async function joinGroupByCode(
 
   return (await response.json()) as JoinGroupResponse;
 }
+
+export interface GetMyGroupsRequest {
+  scope: "me";
+  state?: "active" | "finished";
+}
+
+export interface MyGroupItem {
+  groupId: number;
+  groupName: string;
+  status: string; // 'RECRUITING' | 'PROGRESS' | 'FINISHED' | string
+  memberCount: number;
+  role: string; // 'HOST' | 'MEMBER' | string
+}
+
+export interface GetMyGroupsResponse {
+  groups: MyGroupItem[];
+}
+
+/**
+ * 내 그룹 목록 조회 API
+ * GET /api/v1/groups?scope=me&state=active|finished
+ */
+export async function getMyGroupsApi(
+  params: GetMyGroupsRequest = { scope: "me" },
+): Promise<GetMyGroupsResponse> {
+  const query = new URLSearchParams({
+    scope: params.scope,
+    ...(params.state ? { state: params.state } : {}),
+  }).toString();
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups?${query}`, {
+    method: "GET",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+  });
+
+  if (!response.ok) {
+    let errorData: { code?: string; message?: string } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : "그룹 목록 조회에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(message, response.status, errorData?.code);
+  }
+
+  return (await response.json()) as GetMyGroupsResponse;
+}
+
