@@ -123,6 +123,7 @@ export default function ProgressScreen() {
       className={styles.phone}
       data-testid="admin-progress"
       data-group-id={params.groupId}
+      data-status={group.status}
     >
       <Header title="진행 현황 보기" onBack={goHome} />
 

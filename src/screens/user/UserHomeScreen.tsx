@@ -1,12 +1,16 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSecondRoundMutation";
+import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
-import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import {
+  createGroupHomeSnapshot,
+  hasAssignedTeam,
+} from "@/features/session/model/group-session";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamRound } from "@/features/team/types/team.types";
@@ -26,18 +30,21 @@ export default function UserHomeScreen() {
   const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
     params.groupId,
   );
-  const groupRole = group?.myRole === "HOST" ? "ADMIN" : "USER";
-  const { data: snapshot } = useUserSessionQuery(
-    searchParams.get("scenario") ?? undefined,
-    groupRole,
+  const snapshot = useMemo(
+    () => (group ? createGroupHomeSnapshot(group) : null),
+    [group],
   );
   const teamRound: TeamRound =
-    snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+    snapshot?.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
   const {
     data: myTeam,
     isLoading: isTeamLoading,
     error: teamError,
-  } = useMyTeamQuery(params.groupId, teamRound);
+  } = useMyTeamQuery(
+    params.groupId,
+    teamRound,
+    group ? hasAssignedTeam(group.status) : false,
+  );
   const {
     mutate: endRound,
     isPending: isEndingRound,
@@ -56,13 +63,28 @@ export default function UserHomeScreen() {
   );
   const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
   const isAdmin = group?.myRole === "HOST";
-  const canDecideSecondRound = isAdmin && group.status === "VOTE_CLOSED";
+  const shouldShowAdminPreparation =
+    isAdmin &&
+    (group?.status === "BEFORE_FIRST_ROUND" ||
+      group?.status === "BEFORE_SECOND_ROUND");
+  const canDecideSecondRound = isAdmin && group?.status === "VOTE_CLOSED";
   const isSecondRoundDecisionPending =
     isDecidingSecondRound || isRefreshingGroup;
   const secondRoundDecisionError =
     statusRefreshError ?? decideSecondRoundError;
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
+
+  useEffect(() => {
+    if (group?.status === "FINISHED") {
+      router.replace(groupRoutes.completed(params.groupId));
+      return;
+    }
+
+    if (shouldShowAdminPreparation) {
+      router.replace(groupRoutes.adminPreparation(params.groupId));
+    }
+  }, [group?.status, params.groupId, router, shouldShowAdminPreparation]);
 
   const closeLeaveDialog = useCallback(() => {
     setLeaveDialogOpen(false);
@@ -78,6 +100,8 @@ export default function UserHomeScreen() {
   }, [isEndingRound]);
 
   const confirmEndRound = useCallback(async () => {
+    if (!snapshot) return;
+
     const result = await endRound(params.groupId, snapshot.round);
     if (!result) return;
 
@@ -93,7 +117,7 @@ export default function UserHomeScreen() {
     router.replace(
       withSessionContext(groupRoutes.completed(params.groupId), searchParams),
     );
-  }, [endRound, params.groupId, router, searchParams, snapshot.round]);
+  }, [endRound, params.groupId, router, searchParams, snapshot]);
 
   const continueToRoundTwo = useCallback(async () => {
     if (!canDecideSecondRound || isSecondRoundDecisionPending) return;
@@ -137,17 +161,28 @@ export default function UserHomeScreen() {
     );
   }, [params.groupId, router, searchParams]);
 
+  if (
+    !group ||
+    !snapshot ||
+    group.status === "FINISHED" ||
+    shouldShowAdminPreparation
+  ) {
+    return null;
+  }
+
   return (
     <MobileFrame
       data-testid="user-home"
       data-scenario={snapshot.scenario}
       data-role={snapshot.role}
+      data-status={group.status}
     >
       <Header title={snapshot.groupName} onBack={() => router.back()} />
 
       <UserSessionContent
         groupId={params.groupId}
         snapshot={snapshot}
+        statusLabel={getGroupStatusLabel(group.status)}
         teamNumber={myTeam?.teamNumber ?? null}
         isTeamLoading={isTeamLoading}
         teamError={teamError}
