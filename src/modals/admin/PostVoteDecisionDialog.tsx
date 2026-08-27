@@ -8,6 +8,7 @@ interface PostVoteDecisionDialogProps {
   open: boolean;
   isContinuing?: boolean;
   continueError?: string | null;
+  isFinishing?: boolean;
   onContinue: () => void;
   onFinish: () => void;
 }
@@ -16,9 +17,12 @@ export default function PostVoteDecisionDialog({
   open,
   isContinuing = false,
   continueError,
+  isFinishing = false,
   onContinue,
   onFinish,
 }: PostVoteDecisionDialogProps) {
+  const isPending = isContinuing || isFinishing;
+
   return (
     <BottomSheetDialog
       open={open}
@@ -46,7 +50,7 @@ export default function PostVoteDecisionDialog({
           type="button"
           className={styles.continueButton}
           onClick={onContinue}
-          disabled={isContinuing}
+          disabled={isPending}
         >
           {isContinuing ? "진행 중..." : "계속 진행하기"}
         </button>
@@ -54,9 +58,9 @@ export default function PostVoteDecisionDialog({
           type="button"
           className={styles.finishButton}
           onClick={onFinish}
-          disabled={isContinuing}
+          disabled={isPending}
         >
-          모임 종료하기
+          {isFinishing ? "종료 중..." : "모임 종료하기"}
         </button>
       </div>
     </BottomSheetDialog>

@@ -45,3 +45,7 @@ export function getPreparationRound(status: GroupStatus): GroupRound | null {
 
   return getCurrentGroupRound(status);
 }
+
+export function canFinishGroup(status: GroupStatus) {
+  return status === "VOTE_CLOSED" || status === "SECOND_ROUND";
+}

@@ -2,17 +2,18 @@
 
 import { Power } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import RoundTwoStatusCard from "@/features/group/components/RoundTwoStatusCard";
-import { useFinishFirstRoundMutation } from "@/features/group/hooks/useFinishFirstRoundMutation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { useFinishFirstRoundMutation } from "@/features/group/hooks/useFinishFirstRoundMutation";
+import { useFinishGroupMutation } from "@/features/group/hooks/useFinishGroupMutation";
 import {
+  canFinishGroup,
   getCurrentGroupRound,
   getGroupStatusLabel,
   toEventStatus,
 } from "@/features/group/model/group-status";
 import AdminRoundProgress from "@/features/session/components/AdminRoundProgress";
-import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -25,26 +26,37 @@ export default function ProgressScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data: group, refetch } = useAdminGroupQuery(params.groupId);
   const {
     mutate: finishFirstRound,
     isPending: isFinishingFirstRound,
     error: finishFirstRoundError,
   } = useFinishFirstRoundMutation();
   const {
-    mutate: endRound,
-    isPending: isEndingSecondRound,
-    error: endSecondRoundError,
-  } = useEndRoundMutation();
+    mutate: finishGroup,
+    isPending: isFinishingGroup,
+    error: finishGroupError,
+  } = useFinishGroupMutation();
+  const endRoundFlowInFlightRef = useRef(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
+  const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
+  const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
+    null,
+  );
   const currentStatus = group ? toEventStatus(group.status) : null;
   const currentRound = group ? getCurrentGroupRound(group.status) : null;
   const canEndCurrentRound =
-    (currentRound === 1 && currentStatus === "FIRST_IN_PROGRESS") ||
-    (currentRound === 2 && currentStatus === "SECOND_IN_PROGRESS");
-  const isEndingRound = isFinishingFirstRound || isEndingSecondRound;
+    group?.myRole === "HOST" &&
+    ((group.status === "FIRST_ROUND" &&
+      currentStatus === "FIRST_IN_PROGRESS") ||
+      (group.status === "SECOND_ROUND" &&
+        currentStatus === "SECOND_IN_PROGRESS" &&
+        canFinishGroup(group.status)));
+  const isEndingRound =
+    isFinishingFirstRound || isFinishingGroup || isRefreshingGroup;
   const endRoundError =
-    currentRound === 1 ? finishFirstRoundError : endSecondRoundError;
+    statusRefreshError ??
+    (currentRound === 1 ? finishFirstRoundError : finishGroupError);
 
   const goHome = useCallback(() => {
     router.push(
@@ -57,34 +69,63 @@ export default function ProgressScreen() {
   }, [isEndingRound]);
 
   const confirmEndRound = useCallback(async () => {
-    if (!canEndCurrentRound || !currentRound) return;
-
-    if (currentRound === 1) {
-      const didFinish = await finishFirstRound(params.groupId);
-      if (!didFinish) return;
-
-      setEndRoundDialogOpen(false);
-      router.replace(
-        withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
-      );
-
+    if (
+      !canEndCurrentRound ||
+      !currentRound ||
+      isEndingRound ||
+      endRoundFlowInFlightRef.current
+    ) {
       return;
     }
 
-    const result = await endRound(params.groupId, currentRound);
-    if (!result) return;
+    endRoundFlowInFlightRef.current = true;
+    setStatusRefreshError(null);
 
-    setEndRoundDialogOpen(false);
+    try {
+      if (currentRound === 1) {
+        const didFinish = await finishFirstRound(params.groupId);
+        if (!didFinish) return;
 
-    router.replace(
-      withSessionContext(groupRoutes.completed(params.groupId), searchParams),
-    );
+        setEndRoundDialogOpen(false);
+        router.replace(
+          withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
+        );
+        return;
+      }
+
+      const didFinish = await finishGroup(params.groupId);
+      if (!didFinish) return;
+
+      setIsRefreshingGroup(true);
+
+      const refreshedGroup = await refetch();
+
+      if (!refreshedGroup) {
+        setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
+        return;
+      }
+
+      if (refreshedGroup.status !== "FINISHED") {
+        setStatusRefreshError("모임 종료 상태를 확인하지 못했습니다.");
+        return;
+      }
+
+      setEndRoundDialogOpen(false);
+      router.replace(
+        withSessionContext(groupRoutes.completed(params.groupId), searchParams),
+      );
+    } finally {
+      endRoundFlowInFlightRef.current = false;
+      setIsRefreshingGroup(false);
+    }
   }, [
     canEndCurrentRound,
     currentRound,
-    endRound,
     finishFirstRound,
+    finishGroup,
+    isEndingRound,
     params.groupId,
+    refetch,
     router,
     searchParams,
   ]);
@@ -125,7 +166,10 @@ export default function ProgressScreen() {
             variant="danger"
             className={styles.endButton}
             disabled={isEndingRound}
-            onClick={() => setEndRoundDialogOpen(true)}
+            onClick={() => {
+              setStatusRefreshError(null);
+              setEndRoundDialogOpen(true);
+            }}
           >
             <Power aria-hidden="true" size={21} strokeWidth={1.9} />
             {currentRound}차 술자리 종료하기
