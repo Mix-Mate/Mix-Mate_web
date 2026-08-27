@@ -5,10 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Button from '@/shared/ui/Button';
-// AS-IS (에러)
-// import logoIcon from '@/public/icons/logo.svg';
-
-// TO-BE (수정: 프로젝트 루트의 public 경로 참조)
+import { setAuthTokens } from '@/shared/api/authToken';
+import { loginApi, AuthApiError } from '../api/auth.api';
 import logoIcon from '../../../../public/icons/logo.svg';
 import styles from './LoginForm.module.css';
 
@@ -16,11 +14,88 @@ export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (fieldErrors.email) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.email;
+        return next;
+      });
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (fieldErrors.password) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.password;
+        return next;
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('로그인 시도:', { email, password });
-    router.push('/home');
+    if (isLoading) return;
+
+    setFieldErrors({});
+    setGeneralError(null);
+    setIsLoading(true);
+
+    try {
+      const response = await loginApi({
+        email: email.trim(),
+        password,
+      });
+
+      // 200 성공 시: accessToken과 refreshToken을 스토리지/쿠키에 저장하고 메인(/)으로 navigate
+      setAuthTokens({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+
+      if (typeof window !== "undefined") {
+        if (response.userName) {
+          window.localStorage.setItem("userName", response.userName);
+        }
+        if (response.userId) {
+          window.localStorage.setItem("userId", String(response.userId));
+        }
+        if (response.email) {
+          window.localStorage.setItem("email", response.email);
+        }
+      }
+
+      router.push('/home');
+    } catch (error: unknown) {
+      if (error instanceof AuthApiError) {
+        if (
+          error.status === 400 &&
+          error.fieldErrors &&
+          Object.keys(error.fieldErrors).length > 0
+        ) {
+          // 400 에러 시: errors 객체 내의 필드별 에러를 각 입력 필드(이메일/비밀번호) 하단 텍스트로 바인딩
+          setFieldErrors(error.fieldErrors);
+        } else {
+          // 401 / 404 / 400(no field errors) 등: message 텍스트를 폼 하단 공통 에러 메시지로 렌더링
+          setGeneralError(error.message);
+        }
+      } else {
+        setGeneralError(
+          error instanceof Error
+            ? error.message
+            : '로그인 중 오류가 발생했습니다.',
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,7 +118,7 @@ export function LoginForm() {
       </div>
 
       {/* 2. 입력 폼 영역 */}
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {/* 이메일 인풋 */}
         <div className={styles.inputGroup}>
           <label htmlFor="email" className={styles.label}>
@@ -53,11 +128,18 @@ export function LoginForm() {
             id="email"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             placeholder=" "
             required
-            className={styles.inputEmail}
+            className={`${styles.inputEmail} ${
+              fieldErrors.email ? styles.inputError : ''
+            }`}
           />
+          {fieldErrors.email && (
+            <span className={styles.fieldError} role="alert">
+              {fieldErrors.email}
+            </span>
+          )}
         </div>
 
         {/* 비밀번호 인풋 */}
@@ -69,16 +151,35 @@ export function LoginForm() {
             id="password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={handlePasswordChange}
             placeholder=""
             required
-            className={styles.inputPassword}
+            className={`${styles.inputPassword} ${
+              fieldErrors.password ? styles.inputError : ''
+            }`}
           />
+          {fieldErrors.password && (
+            <span className={styles.fieldError} role="alert">
+              {fieldErrors.password}
+            </span>
+          )}
         </div>
 
+        {/* 공통 에러 메시지 (401, 404 등) */}
+        {generalError && (
+          <div className={styles.generalError} role="alert">
+            {generalError}
+          </div>
+        )}
+
         {/* 로그인 버튼 */}
-        <Button type="submit" variant="primary" className={styles.loginButton}>
-          로그인
+        <Button
+          type="submit"
+          variant="primary"
+          className={styles.loginButton}
+          disabled={isLoading || !email.trim() || !password}
+        >
+          {isLoading ? '로그인 중...' : '로그인'}
         </Button>
 
         {/* 구분선 */}
