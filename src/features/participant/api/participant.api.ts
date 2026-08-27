@@ -1,29 +1,55 @@
-﻿import { getAdminParticipantProfileMock } from "./admin-participant.mock";
-import { getParticipantProfileMock } from "./participant.mock";
 import type {
+  Participant,
+  ParticipantGroup,
+  ParticipantListResponse,
   ParticipantProfile,
   ParticipantProfileResponse,
+  ParticipantSummaryResponse,
 } from "../types/participant.types";
+import { getGroupDetail } from "@/features/group/api/group.api";
+import { createApiRequestError } from "@/shared/api/apiError";
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { withAuthHeaders } from "@/shared/api/authToken";
 
-const API_BASE_URL = "https://mixmate.duckdns.org";
+const gradeLabels: Record<ParticipantProfileResponse["grade"], string> = {
+  FIRST: "1학년",
+  SECOND: "2학년",
+  THIRD: "3학년",
+  FOURTH: "4학년",
+};
 
-function toProfile(
+function toVisibility(visibility: ParticipantSummaryResponse["visibility"]) {
+  return visibility === "PUBLIC" ? "public" : "private";
+}
+
+function toGender(gender: ParticipantSummaryResponse["gender"]) {
+  return gender === "FEMALE" ? "female" : "male";
+}
+
+function toParticipant(summary: ParticipantSummaryResponse): Participant {
+  return {
+    id: String(summary.participantId),
+    name: summary.displayName,
+    department: summary.major,
+    visibility: toVisibility(summary.visibility),
+    role: "general",
+    gender: toGender(summary.gender),
+  };
+}
+
+export function toParticipantProfile(
   profile: ParticipantProfileResponse,
   participantId: string,
+  visibility: Participant["visibility"] = "public",
 ): ParticipantProfile {
   return {
     id: participantId,
     name: profile.displayName,
     department: profile.major,
-    visibility: "public",
+    visibility,
     role: profile.position === "STAFF" ? "staff" : "general",
     gender: profile.gender === "FEMALE" ? "female" : "male",
-    grade: {
-      FIRST: "1학년",
-      SECOND: "2학년",
-      THIRD: "3학년",
-      FOURTH: "4학년",
-    }[profile.grade],
+    grade: gradeLabels[profile.grade],
     mbti: profile.mbti,
     age: profile.age,
     instagramId: profile.instaId,
@@ -32,24 +58,56 @@ function toProfile(
   };
 }
 
+async function request(path: string, init?: RequestInit) {
+  return fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    ...init,
+    headers: withAuthHeaders({
+      Accept: "application/json",
+      ...init?.headers,
+    }),
+  });
+}
+
+export async function getParticipants(
+  groupId: string,
+): Promise<ParticipantGroup> {
+  const [groupDetail, participantsResponse] = await Promise.all([
+    getGroupDetail(groupId),
+    request(`/api/v1/groups/${groupId}/participants`),
+  ]);
+
+  if (!participantsResponse.ok) {
+    throw await createApiRequestError(
+      participantsResponse,
+      "참가자 목록을 불러오지 못했습니다.",
+    );
+  }
+
+  const data = (await participantsResponse.json()) as ParticipantListResponse;
+
+  return {
+    groupName: groupDetail.groupName,
+    participants: data.participantList.map(toParticipant),
+    teams: [],
+  };
+}
+
 export async function getParticipantProfile(
   groupId: string,
   participantId: string,
 ) {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/groups/${groupId}/participants/${participantId}`,
-      { credentials: "include" },
-    );
+  const response = await request(
+    `/api/v1/groups/${groupId}/participants/${participantId}`,
+  );
 
-    if (!response.ok) throw new Error("참가자 프로필 API 요청 실패");
-
-    const data = (await response.json()) as ParticipantProfileResponse;
-    return toProfile(data, participantId);
-  } catch {
-    return (
-      getAdminParticipantProfileMock(participantId) ??
-      getParticipantProfileMock(participantId)
+  if (!response.ok) {
+    throw await createApiRequestError(
+      response,
+      "참가자 프로필을 불러오지 못했습니다.",
     );
   }
+
+  const data = (await response.json()) as ParticipantProfileResponse;
+  return toParticipantProfile(data, participantId);
 }

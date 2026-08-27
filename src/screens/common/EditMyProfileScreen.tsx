@@ -14,9 +14,20 @@ import styles from "./EditMyProfileScreen.module.css";
 export default function EditMyProfileScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
-  const { data } = useMyGroupProfileQuery();
+  const { data } = useMyGroupProfileQuery(params.groupId);
   const { mutate, isPending } = useUpdateMyProfileMutation();
   const { message: toast, showToast } = useToast();
+
+  if (!data) {
+    return (
+      <MobileFrame
+        className={styles.screenFrame}
+        viewportClassName={styles.pageViewport}
+      >
+        <Header title="내 프로필 수정" onBack={() => router.back()} />
+      </MobileFrame>
+    );
+  }
 
   return (
     <MobileFrame
@@ -44,7 +55,7 @@ export default function EditMyProfileScreen() {
             showToast(
               result.ok
                 ? "프로필이 저장되었습니다."
-                : `${result.message} 임시 저장했습니다.`,
+                : result.message,
             );
           }}
         />

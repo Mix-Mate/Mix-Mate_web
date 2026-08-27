@@ -1,14 +1,47 @@
-﻿"use client";
+"use client";
 
-import { useMemo } from "react";
-import { getParticipantListMock } from "../api/participant.mock";
+import { useEffect, useState } from "react";
+import { getParticipants } from "../api/participant.api";
+import type { ParticipantGroup } from "../types/participant.types";
 
-export function useParticipantListQuery() {
-  const data = useMemo(() => getParticipantListMock(), []);
+const initialParticipantGroup: ParticipantGroup = {
+  groupName: "",
+  participants: [],
+  teams: [],
+};
+
+export function useParticipantListQuery(groupId: string) {
+  const [data, setData] = useState(initialParticipantGroup);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function fetchParticipants() {
+      setIsLoading(true);
+      setIsError(false);
+
+      try {
+        const participants = await getParticipants(groupId);
+        if (!ignore) setData(participants);
+      } catch {
+        if (!ignore) setIsError(true);
+      } finally {
+        if (!ignore) setIsLoading(false);
+      }
+    }
+
+    void fetchParticipants();
+
+    return () => {
+      ignore = true;
+    };
+  }, [groupId]);
 
   return {
     data,
-    isLoading: false,
-    isError: false,
+    isLoading,
+    isError,
   };
 }

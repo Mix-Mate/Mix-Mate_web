@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSecondRoundMutation";
+import { useLeaveGroupMutation } from "@/features/profile/hooks/useLeaveGroupMutation";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
 import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
@@ -48,9 +49,11 @@ export default function UserHomeScreen() {
     isPending: isDecidingSecondRound,
     error: decideSecondRoundError,
   } = useDecideSecondRoundMutation();
+  const { mutate: leaveGroup, isPending: isLeavingGroup } =
+    useLeaveGroupMutation();
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
-  const [leaveCompleted, setLeaveCompleted] = useState(false);
+  const [leaveCompletedMessage, setLeaveCompletedMessage] = useState("");
   const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
     null,
   );
@@ -65,13 +68,19 @@ export default function UserHomeScreen() {
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
   const closeLeaveDialog = useCallback(() => {
-    setLeaveDialogOpen(false);
-  }, []);
+    if (!isLeavingGroup) setLeaveDialogOpen(false);
+  }, [isLeavingGroup]);
 
-  const confirmLeave = useCallback(() => {
+  const confirmLeave = useCallback(async () => {
+    const result = await leaveGroup(params.groupId);
+    if (!result.ok) {
+      setLeaveCompletedMessage(result.message);
+      return;
+    }
+
     setLeaveDialogOpen(false);
-    setLeaveCompleted(true);
-  }, []);
+    setLeaveCompletedMessage("그룹 탈퇴가 처리됐습니다.");
+  }, [leaveGroup, params.groupId]);
 
   const closeEndRoundDialog = useCallback(() => {
     if (!isEndingRound) setEndRoundDialogOpen(false);
@@ -158,10 +167,8 @@ export default function UserHomeScreen() {
         onRequestEndRound={() => setEndRoundDialogOpen(true)}
       />
 
-      {leaveCompleted && (
-        <Toast className={styles.toast}>
-          Mock 환경에서 그룹 탈퇴가 처리됐습니다.
-        </Toast>
+      {leaveCompletedMessage && (
+        <Toast className={styles.toast}>{leaveCompletedMessage}</Toast>
       )}
 
       <UM01LeaveGroupDialog
