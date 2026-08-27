@@ -137,8 +137,16 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         return;
       }
 
-      // 200 성공 시: 응답받은 groupId, groupName을 상태로 전달하며 다음 단계(프로필/추가 정보 입력)로 전환
-      router.push(groupRoutes.extra(String(result.groupId)));
+      // 200 성공 시: 참여코드를 저장하고 추가 정보 입력 화면으로 전환
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("pendingInviteCode", fullCode);
+      }
+
+      router.push(
+        `${groupRoutes.extra(String(result.groupId))}?from=join&inviteCode=${encodeURIComponent(
+          fullCode,
+        )}`,
+      );
     } catch (err: unknown) {
       const errorObj =
         err instanceof Error

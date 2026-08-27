@@ -19,10 +19,14 @@ export function useGroupStatusPolling(groupId: string) {
   const isVoteFlowPage =
     pathname.startsWith(`${groupPath}/votes/`) ||
     pathname.startsWith(`${groupPath}/admin/votes/`);
+  const isExtraPage =
+    pathname?.includes("/extra") || pathname?.endsWith("/extra");
+  const isInvalidGroupId =
+    !groupId || groupId === "new" || isNaN(Number(groupId));
   const hasNavigatedRef = useRef(false);
 
   useEffect(() => {
-    if (isVoteFlowPage) {
+    if (isVoteFlowPage || isExtraPage || isInvalidGroupId) {
       hasNavigatedRef.current = false;
       return;
     }
@@ -85,5 +89,14 @@ export function useGroupStatusPolling(groupId: string) {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [groupStatus, hasGroup, isVoteFlowPage, mvpVotePath, refetch, router]);
+  }, [
+    groupStatus,
+    hasGroup,
+    isExtraPage,
+    isInvalidGroupId,
+    isVoteFlowPage,
+    mvpVotePath,
+    refetch,
+    router,
+  ]);
 }
