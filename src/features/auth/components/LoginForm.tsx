@@ -60,7 +60,19 @@ export function LoginForm() {
         refreshToken: response.refreshToken,
       });
 
-      router.push('/');
+      if (typeof window !== "undefined") {
+        if (response.userName) {
+          window.localStorage.setItem("userName", response.userName);
+        }
+        if (response.userId) {
+          window.localStorage.setItem("userId", String(response.userId));
+        }
+        if (response.email) {
+          window.localStorage.setItem("email", response.email);
+        }
+      }
+
+      router.push('/home');
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
         if (
