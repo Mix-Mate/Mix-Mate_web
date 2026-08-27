@@ -183,7 +183,7 @@ export default function GroupExtraInfoScreen({
         });
 
         alert("그룹이 성공적으로 생성되었습니다!");
-        router.push(groupRoutes.adminRecruitment(String(response.groupId)));
+        router.push(groupRoutes.adminHome(String(response.groupId)));
         return;
       }
 
@@ -197,9 +197,9 @@ export default function GroupExtraInfoScreen({
         alert("그룹에 성공적으로 참여하였습니다!");
         const targetGroupId = joinRes.groupId ? String(joinRes.groupId) : groupId;
         if (isAdmin) {
-          router.push(groupRoutes.adminRecruitment(targetGroupId));
+          router.push(groupRoutes.adminHome(targetGroupId));
         } else {
-          router.push(groupRoutes.home(targetGroupId));
+          router.push(groupRoutes.userHome(targetGroupId));
         }
         return;
       }
@@ -208,9 +208,9 @@ export default function GroupExtraInfoScreen({
         onSuccess(extraData);
       } else {
         if (isAdmin) {
-          router.push(groupRoutes.adminRecruitment(groupId));
+          router.push(groupRoutes.adminHome(groupId));
         } else {
-          router.push(groupRoutes.home(groupId));
+          router.push(groupRoutes.userHome(groupId));
         }
       }
     } catch (error: unknown) {
