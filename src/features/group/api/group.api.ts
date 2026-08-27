@@ -174,13 +174,25 @@ export interface JoinGroupResponse {
 export class GroupApiError extends Error {
   status?: number;
   code?: string;
+  fieldErrors?: Record<string, string>;
 
-  constructor(message: string, status?: number, code?: string) {
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    fieldErrors?: Record<string, string>,
+  ) {
     super(message);
     this.name = "GroupApiError";
     this.status = status;
     this.code = code;
+    this.fieldErrors = fieldErrors;
   }
+}
+
+export interface JoinGroupResponse {
+  groupId: string;
+  groupName?: string;
 }
 
 export async function joinGroupByCode(
@@ -216,3 +228,139 @@ export async function joinGroupByCode(
 
   return (await response.json()) as JoinGroupResponse;
 }
+
+export interface GroupJoinProfile {
+  displayName: string;
+  position: "STAFF" | "MEMBER" | string;
+  major: string;
+  isNew: boolean;
+  grade: "FIRST" | "SECOND" | "THIRD" | "FOURTH" | string;
+  gender: "MALE" | "FEMALE" | string;
+  mbti: string;
+  age: number;
+  instaId?: string;
+  bio?: string;
+  visibility: "PUBLIC" | "PRIVATE" | string;
+}
+
+export interface GroupJoinRequest {
+  inviteCode: string;
+  profile: GroupJoinProfile;
+}
+
+export interface GroupJoinResponse {
+  groupId: number;
+  groupName: string;
+}
+
+/**
+ * 그룹 입장 (참여코드 + 프로필) API
+ * POST /api/v1/groups/invitations/join
+ */
+export async function joinGroupByInvitationApi(
+  request: GroupJoinRequest,
+): Promise<GroupJoinResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/join`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(request),
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: {
+      code?: string;
+      message?: string;
+      errors?: Record<string, string>;
+    } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+        errors?: Record<string, string>;
+      };
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "유효하지 않은 초대코드입니다."
+            : response.status === 409
+              ? "이미 참여중인 그룹입니다."
+              : "그룹 참여에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  return (await response.json()) as GroupJoinResponse;
+}
+
+export interface VerifyInviteCodeRequest {
+  inviteCode: string;
+}
+
+export interface VerifyInviteCodeResponse {
+  groupId: number;
+  groupName: string;
+}
+
+/**
+ * 참여코드 검증 API
+ * POST /api/v1/groups/invitations/verify
+ */
+export async function verifyInviteCodeApi(
+  request: VerifyInviteCodeRequest,
+): Promise<VerifyInviteCodeResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/verify`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        inviteCode: request.inviteCode.trim().toUpperCase(),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: { code?: string; message?: string } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "참여코드를 입력해 주세요."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "유효하지 않은 초대코드입니다."
+            : "참여코드 검증에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(message, response.status, errorData?.code);
+  }
+
+  return (await response.json()) as VerifyInviteCodeResponse;
+}
+
