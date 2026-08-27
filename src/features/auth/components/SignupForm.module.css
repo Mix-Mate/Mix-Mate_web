@@ -76,15 +76,44 @@
   cursor: not-allowed;
 }
 
-.messageSent {
+.sideButtonSuccess {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldError {
   width: 100%;
-  color: #a1a1aa;
+  color: #ef4444;
   text-align: left;
   padding-left: 4px;
-  font-family: Arimo, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
+  margin-top: -2px;
+}
+
+.messageSent {
+  width: 100%;
+  color: #71717a;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timerBadge {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .messageVerified {
@@ -92,10 +121,9 @@
   color: #256ad3;
   text-align: left;
   padding-left: 4px;
-  font-family: Arimo, sans-serif;
   font-size: 13px;
-  font-weight: 500;
-  line-height: 24px;
+  font-weight: 600;
+  line-height: 20px;
 }
 
 .messageError {
@@ -103,15 +131,32 @@
   color: #ef4444;
   text-align: left;
   padding-left: 4px;
-  font-family: Arimo, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
+}
+
+.generalError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-sizing: border-box;
 }
 
 .submitWrapper {
   margin-top: 16px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .submitButton {
@@ -124,4 +169,10 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
