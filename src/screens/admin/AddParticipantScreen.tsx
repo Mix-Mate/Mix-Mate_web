@@ -49,6 +49,20 @@ const visibilityOptions: { label: string; value: ProfileVisibility }[] = [
   { label: "비공개", value: "PRIVATE" },
 ];
 
+type AddParticipantForm = {
+  displayName: string;
+  position: ProfilePosition | null;
+  major: string;
+  isNew: boolean | null;
+  grade: ProfileGrade | null;
+  gender: ProfileGender | null;
+  mbti: ProfileMbti | null;
+  age: null;
+  instaId: null;
+  bio: null;
+  visibility: ProfileVisibility | null;
+};
+
 export default function AddParticipantScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -56,23 +70,23 @@ export default function AddParticipantScreen() {
   const round = toAssignmentRound(searchParams.get("round") ?? "1");
   const { mutate, isPending } = useAddParticipantMutation();
   const { message: toast, showToast } = useToast();
-  const [form, setForm] = useState<ParticipantProfileRequest>({
-    displayName: "윤도현",
-    position: "MEMBER",
-    major: "기계공학과",
-    isNew: true,
-    grade: "FIRST",
-    gender: "MALE",
-    mbti: "ISTP",
+  const [form, setForm] = useState<AddParticipantForm>({
+    displayName: "",
+    position: null,
+    major: "",
+    isNew: null,
+    grade: null,
+    gender: null,
+    mbti: null,
     age: null,
     instaId: null,
     bio: null,
-    visibility: "PUBLIC",
+    visibility: null,
   });
 
-  const updateField = <TKey extends keyof ParticipantProfileRequest>(
+  const updateField = <TKey extends keyof AddParticipantForm>(
     field: TKey,
-    value: ParticipantProfileRequest[TKey],
+    value: AddParticipantForm[TKey],
   ) => {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
   };
@@ -89,17 +103,38 @@ export default function AddParticipantScreen() {
       return;
     }
 
-    const result = await mutate(params.groupId, {
+    if (
+      !form.grade ||
+      !form.gender ||
+      form.isNew === null ||
+      !form.position ||
+      !form.mbti ||
+      !form.visibility
+    ) {
+      showToast("학년, 성별, 신입 여부, 직급, MBTI, 공개 여부를 선택해주세요.");
+      return;
+    }
+
+    const requestBody: ParticipantProfileRequest = {
       ...form,
       displayName: form.displayName.trim(),
       major: form.major.trim(),
-    });
+      grade: form.grade,
+      gender: form.gender,
+      isNew: form.isNew,
+      position: form.position,
+      mbti: form.mbti,
+      visibility: form.visibility,
+    };
 
-    showToast(
-      result.source === "api"
-        ? "참가자를 추가했습니다."
-        : "API 인증 전이라 mock에 참가자를 추가했습니다.",
-    );
+    const result = await mutate(params.groupId, requestBody);
+
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+
+    showToast("참가자를 추가했습니다.");
 
     window.setTimeout(goToManagement, 350);
   };
@@ -199,7 +234,7 @@ export default function AddParticipantScreen() {
 
         <ProfileMbtiField
           value={form.mbti}
-          onChange={(value) => updateField("mbti", value as ProfileMbti)}
+          onChange={(value) => updateField("mbti", value)}
         />
 
         <div className={styles.field}>

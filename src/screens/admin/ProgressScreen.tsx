@@ -25,7 +25,7 @@ export default function ProgressScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: group, refetch } = useAdminGroupQuery(params.groupId);
+  const { data: group } = useAdminGroupQuery(params.groupId);
   const {
     mutate: finishFirstRound,
     isPending: isFinishingFirstRound,
@@ -37,20 +37,14 @@ export default function ProgressScreen() {
     error: endSecondRoundError,
   } = useEndRoundMutation();
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
-  const [isRefreshingGroup, setIsRefreshingGroup] = useState(false);
-  const [statusRefreshError, setStatusRefreshError] = useState<string | null>(
-    null,
-  );
   const currentStatus = group ? toEventStatus(group.status) : null;
   const currentRound = group ? getCurrentGroupRound(group.status) : null;
   const canEndCurrentRound =
     (currentRound === 1 && currentStatus === "FIRST_IN_PROGRESS") ||
     (currentRound === 2 && currentStatus === "SECOND_IN_PROGRESS");
-  const isEndingRound =
-    isFinishingFirstRound || isEndingSecondRound || isRefreshingGroup;
+  const isEndingRound = isFinishingFirstRound || isEndingSecondRound;
   const endRoundError =
-    statusRefreshError ??
-    (currentRound === 1 ? finishFirstRoundError : endSecondRoundError);
+    currentRound === 1 ? finishFirstRoundError : endSecondRoundError;
 
   const goHome = useCallback(() => {
     router.push(
@@ -66,33 +60,13 @@ export default function ProgressScreen() {
     if (!canEndCurrentRound || !currentRound) return;
 
     if (currentRound === 1) {
-      setStatusRefreshError(null);
-
       const didFinish = await finishFirstRound(params.groupId);
       if (!didFinish) return;
 
-      setIsRefreshingGroup(true);
-
-      try {
-        const refreshedGroup = await refetch();
-
-        if (!refreshedGroup) {
-          setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
-          return;
-        }
-
-        if (refreshedGroup.status !== "VOTING") {
-          setStatusRefreshError("투표 단계 전환을 확인하지 못했습니다.");
-          return;
-        }
-
-        setEndRoundDialogOpen(false);
-        router.replace(
-          withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
-        );
-      } finally {
-        setIsRefreshingGroup(false);
-      }
+      setEndRoundDialogOpen(false);
+      router.replace(
+        withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
+      );
 
       return;
     }
@@ -111,7 +85,6 @@ export default function ProgressScreen() {
     endRound,
     finishFirstRound,
     params.groupId,
-    refetch,
     router,
     searchParams,
   ]);
@@ -123,6 +96,7 @@ export default function ProgressScreen() {
       className={styles.phone}
       data-testid="admin-progress"
       data-group-id={params.groupId}
+      data-status={group.status}
     >
       <Header title="진행 현황 보기" onBack={goHome} />
 
@@ -151,10 +125,7 @@ export default function ProgressScreen() {
             variant="danger"
             className={styles.endButton}
             disabled={isEndingRound}
-            onClick={() => {
-              setStatusRefreshError(null);
-              setEndRoundDialogOpen(true);
-            }}
+            onClick={() => setEndRoundDialogOpen(true)}
           >
             <Power aria-hidden="true" size={21} strokeWidth={1.9} />
             {currentRound}차 술자리 종료하기

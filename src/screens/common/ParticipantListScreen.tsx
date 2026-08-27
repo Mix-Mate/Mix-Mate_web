@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantHelpBox from "@/features/participant/components/ParticipantHelpBox";
@@ -33,12 +33,13 @@ export default function ParticipantListScreen() {
 }
 
 function DefaultParticipantListScreen() {
+  const params = useParams<{ groupId: string }>();
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<ParticipantFilterValue>("all");
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
-  const { data } = useParticipantListQuery();
+  const { data } = useParticipantListQuery(params.groupId);
 
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();

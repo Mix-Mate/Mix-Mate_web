@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Info } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Toast from "@/shared/ui/Toast";
+import useToast from "@/shared/hooks/useToast";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupCreateScreen.module.css";
 
 interface GroupCreateScreenProps {
@@ -19,8 +22,10 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
   const [description, setDescription] = useState("");
   const [isCodeIssued, setIsCodeIssued] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showToast, setShowToast] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
+
+  // Shared toast hook (2000ms auto dismiss)
+  const { message, showToast } = useToast(2000);
 
   // Generate 6-digit random code (e.g., 7K2M91)
   const generateRandomCode = () => {
@@ -52,7 +57,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       if (onSuccess) {
         onSuccess(groupName.trim(), inviteCode);
       } else {
-        router.push("/groups/create/extra");
+        router.push(groupRoutes.createExtra());
       }
     }
   };
@@ -70,10 +75,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
     }
 
     // Flow ②: 토스트 2초간 노출
-    setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+    showToast("참여코드가 복사되었습니다.");
   };
 
   // Flow ③: 모달 닫기
@@ -161,6 +163,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       <BottomSheetDialog
         open={isModalOpen}
         titleId="issued-code-label"
+        scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={handleCloseModal}
       >
@@ -186,8 +189,8 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       </BottomSheetDialog>
 
       {/* 5. 클립보드 복사 성공 토스트 알림 */}
-      {showToast && (
-        <div className={styles.toastContainer} role="status">
+      {message && (
+        <Toast className={styles.toastContainer}>
           <svg
             width="16"
             height="16"
@@ -206,8 +209,8 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
               strokeLinejoin="round"
             />
           </svg>
-          <span>참여코드가 복사되었습니다.</span>
-        </div>
+          <span>{message}</span>
+        </Toast>
       )}
     </MobileFrame>
   );

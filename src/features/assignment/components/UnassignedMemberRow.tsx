@@ -1,22 +1,30 @@
 import clsx from "clsx";
+import { Lock } from "lucide-react";
+import Link from "next/link";
+import type { Participant } from "@/features/participant/types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import { toGender } from "../model/assignment.mapper";
-import type { ParticipantCandidate } from "../types/assignment.types";
+import type { AssignmentRound, ParticipantCandidate } from "../types/assignment.types";
 import styles from "./fixed-members.module.css";
 
 interface UnassignedMemberRowProps {
+  groupId: string;
+  round: AssignmentRound;
   member: ParticipantCandidate;
   onAssign: (member: ParticipantCandidate) => void;
+  onPrivateSelect: (participant: Participant) => void;
 }
 
 export default function UnassignedMemberRow({
+  groupId,
+  round,
   member,
   onAssign,
 }: UnassignedMemberRowProps) {
-  const isPublic = member.visibility === "PUBLIC";
+  const isPrivate = member.visibility === "PRIVATE";
 
-  return (
-    <li className={styles.unassignedRow}>
+  const content = (
+    <>
       <GenderAvatar
         gender={toGender(member.gender)}
         name={member.displayName}
@@ -27,15 +35,26 @@ export default function UnassignedMemberRow({
         <strong>{member.displayName}</strong>
         <span>{member.major}</span>
       </div>
+    </>
+  );
 
-      <span
-        className={clsx(
-          styles.visibilityBadge,
-          isPublic ? styles.visibilityPublic : styles.visibilityPrivate,
-        )}
+  return (
+    <li className={styles.unassignedRow}>
+      <Link
+        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin`}
+        className={styles.unassignedRowLink}
       >
-        {isPublic ? "공개" : "비공개"}
-      </span>
+        {content}
+      </Link>
+
+      {isPrivate && (
+        <span
+          className={clsx(styles.visibilityBadge, styles.visibilityPrivate)}
+          aria-label="비공개"
+        >
+          <Lock aria-hidden="true" size={16} strokeWidth={2} />
+        </span>
+      )}
 
       <button
         type="button"

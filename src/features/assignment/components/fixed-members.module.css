@@ -69,8 +69,8 @@
 .fixedRow {
   display: flex;
   align-items: center;
-  gap: 13px;
-  padding: 10px 16px 12px;
+  gap: 15px;
+  padding: 13px 18px;
   border-bottom: 1px solid #f0f0f2;
 }
 
@@ -78,23 +78,46 @@
   border-bottom: none;
 }
 
+.fixedRowLink {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 15px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .fixedInfo {
   display: flex;
   min-width: 0;
   flex: 1;
   flex-direction: column;
+  gap: 2px;
 }
 
 .fixedInfo strong {
+  overflow: hidden;
   color: #18181b;
   font-size: 16px;
   font-weight: 600;
-  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fixedInfo small {
+  overflow: hidden;
   color: #52525b;
   font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fixedRowActions {
@@ -168,6 +191,23 @@
   content: "";
 }
 
+.unassignedRowLink {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 15px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .unassignedInfo {
   display: flex;
   min-width: 0;
@@ -202,11 +242,6 @@
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
-}
-
-.visibilityPublic {
-  background: #eff6ff;
-  color: #3b82c4;
 }
 
 .visibilityPrivate {

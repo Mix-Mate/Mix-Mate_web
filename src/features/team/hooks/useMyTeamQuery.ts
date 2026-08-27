@@ -4,12 +4,18 @@ import { useEffect, useState } from "react";
 import { getMyTeam } from "../api/team.api";
 import type { Team, TeamRound } from "../types/team.types";
 
-export function useMyTeamQuery(groupId: string, round: TeamRound) {
+export function useMyTeamQuery(
+  groupId: string,
+  round: TeamRound,
+  enabled = true,
+) {
   const [data, setData] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
+
     let ignore = false;
 
     async function fetchMyTeam() {
@@ -38,12 +44,12 @@ export function useMyTeamQuery(groupId: string, round: TeamRound) {
     return () => {
       ignore = true;
     };
-  }, [groupId, round]);
+  }, [enabled, groupId, round]);
 
   return {
-    data,
-    isLoading,
-    error,
-    isError: error !== null,
+    data: enabled ? data : null,
+    isLoading: enabled ? isLoading : false,
+    error: enabled ? error : null,
+    isError: enabled && error !== null,
   };
 }

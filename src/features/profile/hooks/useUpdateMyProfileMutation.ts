@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { updateParticipantProfile } from "../api/profile.api";
-import { saveMyGroupProfile } from "../lib/profile-storage";
 import type {
   MyGroupProfile,
   ParticipantProfileRequest,
@@ -49,11 +48,8 @@ export function useUpdateMyProfileMutation() {
         groupId,
         toParticipantProfileRequest(profile),
       );
-      saveMyGroupProfile(profile);
       return { ok: true };
     } catch (error) {
-      saveMyGroupProfile(profile);
-
       return {
         ok: false,
         message:

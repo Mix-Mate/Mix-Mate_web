@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -29,11 +29,13 @@ export default function AdminGroupQueryProvider({
 }: AdminGroupQueryProviderProps) {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
+  const pathname = usePathname();
+  const isExtraPage = pathname?.includes("/extra");
   const groupId = params.groupId;
   const requestIdRef = useRef(0);
   const [data, setData] = useState<GroupDetail | null>(null);
   const [dataGroupId, setDataGroupId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isExtraPage);
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
@@ -66,6 +68,8 @@ export default function AdminGroupQueryProvider({
   }, [groupId]);
 
   useEffect(() => {
+    if (isExtraPage) return;
+
     let ignore = false;
     const requestId = ++requestIdRef.current;
 
@@ -102,10 +106,12 @@ export default function AdminGroupQueryProvider({
     return () => {
       ignore = true;
     };
-  }, [groupId]);
+  }, [groupId, isExtraPage, pathname]);
 
   const currentData = dataGroupId === groupId ? data : null;
-  const currentIsLoading = dataGroupId !== groupId || isLoading;
+  const currentIsLoading = isExtraPage
+    ? false
+    : dataGroupId !== groupId || isLoading;
   const value = useMemo<AdminGroupQueryResult>(
     () => ({
       groupId,
@@ -118,7 +124,7 @@ export default function AdminGroupQueryProvider({
     [currentData, currentIsLoading, error, groupId, refetch],
   );
 
-  if (!currentData) {
+  if (!currentData && !isExtraPage) {
     return (
       <MobileFrame
         className={styles.phone}

@@ -4,9 +4,8 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantList from "@/features/participant/components/ParticipantList";
-import ParticipantPageHeader from "@/features/participant/components/ParticipantPageHeader";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
 import ParticipantStats from "@/features/participant/components/ParticipantStats";
 import PrivateParticipantDialog from "@/features/participant/components/PrivateParticipantDialog";
@@ -18,6 +17,7 @@ import type {
   SecondRoundParticipant,
 } from "@/features/vote/types/voteResult.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import participantStyles from "./ParticipantListScreen.module.css";
 import styles from "./VoteResultListScreen.module.css";
@@ -99,6 +99,7 @@ export default function VoteResultListScreen({
   mode,
 }: VoteResultListScreenProps) {
   const params = useParams<{ groupId: string }>();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [privateParticipant, setPrivateParticipant] =
@@ -130,7 +131,7 @@ export default function VoteResultListScreen({
   const title = isMvpList ? "오늘의 MVP 명단" : "2차 참가자 목록";
   const statsLabel = isMvpList ? "전체 MVP" : "전체 참가자";
   const backHref = withSessionContext(
-    groupRoutes.voteResult(params.groupId),
+    `${groupRoutes.voteResult(params.groupId)}?view=overall`,
     searchParams,
   );
 
@@ -139,11 +140,11 @@ export default function VoteResultListScreen({
       className={participantStyles.screenFrame}
       viewportClassName={participantStyles.pageViewport}
     >
-      <ParticipantPageHeader
+      <Header
         title={title}
-        participantCount={totalCount}
-        backHref={backHref}
+        onBack={() => router.push(backHref)}
         backLabel="투표 결과로 이동"
+        rightAction={<span className={styles.headerCount}>{totalCount}명</span>}
       />
 
       <div className={participantStyles.content}>

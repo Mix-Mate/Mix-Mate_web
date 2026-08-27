@@ -1,7 +1,6 @@
 import { Clock3, History, Power, Trash2, UserRoundPen } from "lucide-react";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
-import { getEventStatusLabel } from "../model/event-status";
 import type { UserHomeSnapshot } from "../types/session.types";
 import SessionMenuGrid from "./SessionMenuGrid";
 import SessionStatusCard from "./SessionStatusCard";
@@ -10,6 +9,7 @@ import styles from "./session.module.css";
 interface UserSessionContentProps {
   groupId: string;
   snapshot: UserHomeSnapshot;
+  statusLabel: string;
   teamNumber: number | null;
   isTeamLoading: boolean;
   teamError: string | null;
@@ -21,6 +21,7 @@ interface UserSessionContentProps {
 export default function UserSessionContent({
   groupId,
   snapshot,
+  statusLabel,
   teamNumber,
   isTeamLoading,
   teamError,
@@ -31,7 +32,6 @@ export default function UserSessionContent({
   const isAssigned = teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
   const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
-  const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
   const profileRoute = snapshot.permissions.canEditProfile
     ? groupRoutes.profileEdit(groupId)
     : groupRoutes.profile(groupId);
@@ -47,9 +47,9 @@ export default function UserSessionContent({
     >
       <SessionStatusCard
         eyebrow={snapshot.statusEyebrow}
-        status={currentStatusLabel}
+        status={statusLabel}
         onClick={
-          isAdmin && snapshot.permissions.canEndRound
+          isAdmin
             ? () => onNavigate(groupRoutes.adminProgress(groupId))
             : undefined
         }

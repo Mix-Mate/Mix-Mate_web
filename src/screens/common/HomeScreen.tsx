@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, KeyRound, ChevronRight } from "lucide-react";
+<
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
@@ -64,18 +65,13 @@ export default function HomeScreen({
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-
-  // Form states
-  const [inviteCode, setInviteCode] = useState("");
-  const [joinError, setJoinError] = useState("");
 
   // Navigation handlers
   const handleGroupClick = (group: HomeScreenGroupItem) => {
     if (group.status === "FINISHED") {
-      router.push(`/groups/${group.id}/completed`);
+      router.push(groupRoutes.completed(group.id));
     } else {
-      router.push(`/groups/${group.id}/home`);
+      router.push(groupRoutes.home(group.id));
     }
   };
 
@@ -83,27 +79,6 @@ export default function HomeScreen({
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
     router.push("/login");
-  };
-
-  // Join group by invite code flow
-  const handleJoinByCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanCode = inviteCode.trim().toUpperCase();
-    if (!cleanCode) {
-      setJoinError("초대 코드를 입력해주세요.");
-      return;
-    }
-    if (cleanCode.length < 4) {
-      setJoinError("유효한 4자리 이상의 초대 코드를 입력해주세요.");
-      return;
-    }
-
-    setJoinError("");
-    setIsJoinModalOpen(false);
-    setInviteCode("");
-
-    // Navigate to the target group home
-    router.push(`/groups/${cleanCode.toLowerCase()}/home`);
   };
 
   return (
@@ -143,7 +118,7 @@ export default function HomeScreen({
           <button
             type="button"
             className={`${styles.actionCard} ${styles.actionCardCreate}`}
-            onClick={() => router.push("/groups/create")}
+            onClick={() => router.push(groupRoutes.create())}
           >
             <span className={styles.actionRoleAdmin}>관리자</span>
             <div className={styles.actionTextGroup}>
@@ -157,14 +132,11 @@ export default function HomeScreen({
           <button
             type="button"
             className={`${styles.actionCard} ${styles.actionCardJoin}`}
-            onClick={() => {
-              setJoinError("");
-              setIsJoinModalOpen(true);
-            }}
+            onClick={() => router.push(groupRoutes.join())}
           >
             <span className={styles.actionRoleUser}>일반 사용자</span>
             <div className={styles.actionTextGroup}>
-              <h3 className={styles.actionCardTitle}>그룹 입장</h3>
+              <h3 className={styles.actionCardTitle}>초대 코드로 입장</h3>
               <p className={styles.actionCardDesc}>
                 참여코드를 입력하여 참여
               </p>
@@ -283,6 +255,7 @@ export default function HomeScreen({
         open={isLogoutModalOpen}
         titleId="logout-dialog-title"
         descriptionId="logout-dialog-desc"
+        scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={() => setIsLogoutModalOpen(false)}
       >
@@ -324,73 +297,7 @@ export default function HomeScreen({
 
 
 
-      {/* 초대 코드로 입장 모달 */}
-      <BottomSheetDialog
-        open={isJoinModalOpen}
-        titleId="join-group-title"
-        descriptionId="join-group-desc"
-        sheetClassName={styles.modalSheet}
-        onClose={() => setIsJoinModalOpen(false)}
-      >
-        <div
-          className={`${styles.modalIcon} ${styles.modalIconPrimary}`}
-          aria-hidden="true"
-        >
-          <KeyRound size={26} strokeWidth={2.2} />
-        </div>
 
-        <div className={styles.modalContent}>
-          <h2 id="join-group-title" className={styles.modalTitle}>
-            초대 코드로 입장
-          </h2>
-          <p id="join-group-desc" className={styles.modalDescription}>
-            호스트에게 전달받은 모임 초대 코드를 입력해주세요.
-          </p>
-        </div>
-
-        <form onSubmit={handleJoinByCode} className={styles.modalForm}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="invite-code" className={styles.inputLabel}>
-              초대 코드
-            </label>
-            <input
-              id="invite-code"
-              type="text"
-              className={`${styles.inputField} ${styles.inputCode}`}
-              placeholder="CODE 입력"
-              value={inviteCode}
-              onChange={(e) => {
-                setInviteCode(e.target.value.toUpperCase());
-                setJoinError("");
-              }}
-              maxLength={10}
-              autoFocus
-            />
-            {joinError && (
-              <p className={styles.errorMessage} role="alert">
-                {joinError}
-              </p>
-            )}
-          </div>
-
-          <div className={styles.modalActions}>
-            <button
-              type="button"
-              className={styles.modalCancelButton}
-              onClick={() => setIsJoinModalOpen(false)}
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              className={styles.modalConfirmButton}
-              disabled={!inviteCode.trim()}
-            >
-              입장하기
-            </button>
-          </div>
-        </form>
-      </BottomSheetDialog>
     </MobileFrame>
   );
 }
