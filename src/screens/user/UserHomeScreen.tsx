@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDecideSecondRoundMutation } from "@/features/group/hooks/useDecideSecondRoundMutation";
+import { useFinishFirstRoundMutation } from "@/features/group/hooks/useFinishFirstRoundMutation";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
 import { useEndRoundMutation } from "@/features/session/hooks/useEndRoundMutation";
@@ -47,9 +48,14 @@ export default function UserHomeScreen() {
   );
   const {
     mutate: endRound,
-    isPending: isEndingRound,
-    error: endRoundError,
+    isPending: isEndingSecondRound,
+    error: endSecondRoundError,
   } = useEndRoundMutation();
+  const {
+    mutate: finishFirstRound,
+    isPending: isFinishingFirstRound,
+    error: finishFirstRoundError,
+  } = useFinishFirstRoundMutation();
   const {
     mutate: decideSecondRound,
     isPending: isDecidingSecondRound,
@@ -72,6 +78,9 @@ export default function UserHomeScreen() {
     isDecidingSecondRound || isRefreshingGroup;
   const secondRoundDecisionError =
     statusRefreshError ?? decideSecondRoundError;
+  const isEndingRound = isFinishingFirstRound || isEndingSecondRound;
+  const endRoundError =
+    snapshot?.round === 1 ? finishFirstRoundError : endSecondRoundError;
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
@@ -102,6 +111,17 @@ export default function UserHomeScreen() {
   const confirmEndRound = useCallback(async () => {
     if (!snapshot) return;
 
+    if (snapshot.round === 1) {
+      const didFinish = await finishFirstRound(params.groupId);
+      if (!didFinish) return;
+
+      setEndRoundDialogOpen(false);
+      router.replace(
+        withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
+      );
+      return;
+    }
+
     const result = await endRound(params.groupId, snapshot.round);
     if (!result) return;
 
@@ -117,7 +137,14 @@ export default function UserHomeScreen() {
     router.replace(
       withSessionContext(groupRoutes.completed(params.groupId), searchParams),
     );
-  }, [endRound, params.groupId, router, searchParams, snapshot]);
+  }, [
+    endRound,
+    finishFirstRound,
+    params.groupId,
+    router,
+    searchParams,
+    snapshot,
+  ]);
 
   const continueToRoundTwo = useCallback(async () => {
     if (!canDecideSecondRound || isSecondRoundDecisionPending) return;
