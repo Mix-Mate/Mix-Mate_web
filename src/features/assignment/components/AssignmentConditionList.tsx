@@ -53,6 +53,23 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
   },
 ];
 
+// 2차는 이전 회차 조 개수/대상과 어긋나면 400을 유발하는 조건이라
+// 인원 수 균등, 고정 멤버 유지를 아예 노출/전송하지 않는다.
+const ROUND_2_HIDDEN_CONDITION_KEYS: AssignmentConditionOption["key"][] = [
+  "MEMBER_COUNT_BALANCE",
+  "KEEP_FIXED_MEMBERS",
+];
+
+export function getVisibleConditionOptions(
+  round: AssignmentSetupInput["round"],
+) {
+  if (round !== 2) return assignmentConditionOptions;
+
+  return assignmentConditionOptions.filter(
+    (option) => !ROUND_2_HIDDEN_CONDITION_KEYS.includes(option.key),
+  );
+}
+
 interface AssignmentConditionListProps {
   round: AssignmentSetupInput["round"];
   selectedKeys: AssignmentConditionOption["key"][];
@@ -66,7 +83,7 @@ export default function AssignmentConditionList({
 }: AssignmentConditionListProps) {
   return (
     <div className={styles.conditionCard} aria-label="배치 조건 목록">
-      {assignmentConditionOptions.map((option) => {
+      {getVisibleConditionOptions(round).map((option) => {
         const isOn = selectedKeys.includes(option.key);
         // 2차부터는 직전 회차 조 배정이 있으므로 관리자가 직접 켜고 끌 수 있다.
         const isLocked = option.locked && round !== 2;
