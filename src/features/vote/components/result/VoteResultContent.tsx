@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ChevronRight, House, UsersRound } from "lucide-react";
 import Button from "@/shared/ui/Button";
 import type {
@@ -15,6 +15,8 @@ import styles from "./VoteResult.module.css";
 interface VoteResultContentProps {
   result: VoteResultResponse;
   introMvpWinner: MvpWinner | null;
+  showOverallResult: boolean;
+  onRevealOverallResult: () => void;
   onHome: () => void;
   onOpenMvpList: () => void;
   onOpenSecondRoundParticipantList: () => void;
@@ -43,18 +45,16 @@ function selectRandomMvpWinners(result: VoteResultResponse) {
 export default function VoteResultContent({
   result,
   introMvpWinner,
+  showOverallResult,
+  onRevealOverallResult,
   onHome,
   onOpenMvpList,
   onOpenSecondRoundParticipantList,
 }: VoteResultContentProps) {
-  const [showOverallResult, setShowOverallResult] = useState(false);
   const displayedMvpWinners = useMemo(
     () => selectRandomMvpWinners(result),
     [result],
   );
-  const revealOverallResult = useCallback(() => {
-    setShowOverallResult(true);
-  }, []);
 
   return (
     <section className={styles.resultScreen}>
@@ -74,7 +74,7 @@ export default function VoteResultContent({
           ) : (
             <MvpIntroAnimation
               winner={introMvpWinner}
-              onComplete={revealOverallResult}
+              onComplete={onRevealOverallResult}
             />
           )}
         </article>

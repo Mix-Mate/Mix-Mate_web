@@ -27,7 +27,7 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?round=${round}`}
+        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&role=admin`}
         className={styles.participantItem}
       >
         <GenderAvatar

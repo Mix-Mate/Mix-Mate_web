@@ -34,6 +34,7 @@ export function setAuthTokens(tokens: {
     window.localStorage.setItem("refreshToken", tokens.refreshToken);
   }
 
+ev
   document.cookie = `accessToken=${tokens.accessToken}; path=/; max-age=86400; SameSite=Lax`;
   if (tokens.refreshToken) {
     document.cookie = `refreshToken=${tokens.refreshToken}; path=/; max-age=604800; SameSite=Lax`;

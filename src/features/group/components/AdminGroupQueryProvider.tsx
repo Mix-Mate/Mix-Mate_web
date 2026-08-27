@@ -106,7 +106,7 @@ export default function AdminGroupQueryProvider({
     return () => {
       ignore = true;
     };
-  }, [groupId, isExtraPage]);
+  }, [groupId, isExtraPage, pathname]);
 
   const currentData = dataGroupId === groupId ? data : null;
   const currentIsLoading = isExtraPage

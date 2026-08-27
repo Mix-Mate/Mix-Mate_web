@@ -29,17 +29,6 @@ export function LoginForm() {
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (fieldErrors.password) {
-      setFieldErrors((prev) => {
-        const next = { ...prev };
-        delete next.password;
-        return next;
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
@@ -54,12 +43,13 @@ export function LoginForm() {
         password,
       });
 
+
       setAuthTokens({
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       });
 
-      router.push('/');
+
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
         if (
@@ -67,8 +57,7 @@ export function LoginForm() {
           error.fieldErrors &&
           Object.keys(error.fieldErrors).length > 0
         ) {
-          setFieldErrors(error.fieldErrors);
-        } else {
+
           setGeneralError(error.message);
         }
       } else {
