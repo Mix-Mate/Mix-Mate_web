@@ -6,6 +6,7 @@ import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Button from "@/shared/ui/Button";
+import { createGroupApi, GroupApiError, type GroupProfileDto } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupExtraInfoScreen.module.css";
 
@@ -121,7 +122,55 @@ export default function GroupExtraInfoScreen({
       isPublicProfile,
     };
 
+    const gradeMap: Record<string, string> = {
+      "1학년": "FIRST",
+      "2학년": "SECOND",
+      "3학년": "THIRD",
+      "4학년": "FOURTH",
+    };
+    const genderMap: Record<string, string> = {
+      남: "MALE",
+      여: "FEMALE",
+    };
+
+    const profileDto: GroupProfileDto = {
+      displayName: name.trim(),
+      position: rolePosition === "운영진" ? "STAFF" : "MEMBER",
+      major: department.trim(),
+      isNew: isNew === "신입",
+      grade: gradeMap[grade] || "FIRST",
+      gender: genderMap[gender] || "MALE",
+      mbti: mbti || "ENFP",
+      age: parseInt(age, 10) || 20,
+      instaId: instagramId.trim() || undefined,
+      bio: bio.trim() || undefined,
+      visibility: isPublicProfile === "전체 공개" ? "PUBLIC" : "PRIVATE",
+    };
+
     try {
+      if (groupId === "new") {
+        const groupNameParam =
+          searchParams.get("groupName") ||
+          (typeof window !== "undefined" &&
+            window.sessionStorage.getItem("pendingGroupName")) ||
+          `${name.trim()}의 모임`;
+        const descriptionParam =
+          searchParams.get("description") ||
+          (typeof window !== "undefined" &&
+            window.sessionStorage.getItem("pendingGroupDesc")) ||
+          "";
+
+        const response = await createGroupApi({
+          groupName: groupNameParam,
+          description: descriptionParam,
+          profile: profileDto,
+        });
+
+        alert("그룹이 성공적으로 생성되었습니다!");
+        router.push(groupRoutes.adminPreparation(String(response.groupId)));
+        return;
+      }
+
       if (onSuccess) {
         onSuccess(extraData);
       } else {
@@ -134,6 +183,13 @@ export default function GroupExtraInfoScreen({
           router.push(groupRoutes.home(groupId));
         }
       }
+    } catch (error: unknown) {
+      if (error instanceof GroupApiError && error.status === 401) {
+        alert("토큰이 없거나 만료되었습니다. 다시 로그인해 주세요.");
+        router.push("/login");
+        return;
+      }
+      alert(error instanceof Error ? error.message : "저장에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { getMyGroupsApi, type MyGroupItem } from "@/features/group/api/group.api";
+import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
@@ -30,7 +32,6 @@ export interface HomeScreenGroupItem {
 }
 
 const DEFAULT_ACTIVE_GROUPS: HomeScreenGroupItem[] = [];
-
 const DEFAULT_COMPLETED_GROUPS: HomeScreenGroupItem[] = [];
 
 const STATUS_CONFIG: Record<
@@ -43,6 +44,25 @@ const STATUS_CONFIG: Record<
   SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
   FINISHED: { label: "종료됨", className: styles.statusCompleted },
 };
+
+function mapStatus(status: string): GroupStatus {
+  const upper = (status || "").toUpperCase();
+  if (upper === "RECRUITING" || upper === "모집 중") return "RECRUITING";
+  if (upper === "PROGRESS" || upper === "FIRST_ROUND" || upper === "1차 진행 중")
+    return "FIRST_ROUND";
+  if (upper === "VOTING" || upper === "투표 진행 중") return "VOTING";
+  if (upper === "SECOND_ROUND" || upper === "2차 진행 중") return "SECOND_ROUND";
+  if (upper === "FINISHED" || upper === "종료됨") return "FINISHED";
+  return "RECRUITING";
+}
+
+function mapRole(role: string): GroupRole {
+  const upper = (role || "").toUpperCase();
+  if (upper === "HOST" || upper === "ADMIN" || upper === "STAFF" || upper === "관리자") {
+    return "HOST";
+  }
+  return "PARTICIPANT";
+}
 
 interface HomeScreenProps {
   userName?: string;
@@ -75,7 +95,9 @@ export default function HomeScreen({
             displayName?: string;
             name?: string;
           };
-          return parsed.userName || parsed.displayName || parsed.name || "사용자";
+          return (
+            parsed.userName || parsed.displayName || parsed.name || "사용자"
+          );
         } catch {
           return userStr;
         }
@@ -85,13 +107,75 @@ export default function HomeScreen({
   });
 
   // Group lists state
-  const [activeGroups] =
+  const [activeGroups, setActiveGroups] =
     useState<HomeScreenGroupItem[]>(initialActiveGroups);
-  const [completedGroups] =
+  const [completedGroups, setCompletedGroups] =
     useState<HomeScreenGroupItem[]>(initialCompletedGroups);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Fetch groups on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchMyGroups() {
+      setIsLoading(true);
+      try {
+        const [activeRes, finishedRes] = await Promise.allSettled([
+          getMyGroupsApi({ scope: "me", state: "active" }),
+          getMyGroupsApi({ scope: "me", state: "finished" }),
+        ]);
+
+        if (!isMounted) return;
+
+        if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
+          const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
+            (g: MyGroupItem) => ({
+              id: String(g.groupId),
+              name: g.groupName,
+              status: mapStatus(g.status),
+              role: mapRole(g.role),
+              memberCount: g.memberCount || 0,
+              date: g.date || "진행 중",
+              time: g.time,
+              location: g.location,
+            }),
+          );
+          setActiveGroups(mapped);
+        }
+
+        if (finishedRes.status === "fulfilled" && finishedRes.value?.groups) {
+          const mapped: HomeScreenGroupItem[] = finishedRes.value.groups.map(
+            (g: MyGroupItem) => ({
+              id: String(g.groupId),
+              name: g.groupName,
+              status: "FINISHED",
+              role: mapRole(g.role),
+              memberCount: g.memberCount || 0,
+              date: g.date || "종료",
+              time: g.time,
+              location: g.location,
+            }),
+          );
+          setCompletedGroups(mapped);
+        }
+      } catch (error) {
+        console.error("내 그룹 목록 조회 실패:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchMyGroups();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Navigation handlers
   const handleGroupClick = (group: HomeScreenGroupItem) => {
@@ -103,8 +187,9 @@ export default function HomeScreen({
   };
 
   // Logout flow
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setIsLogoutModalOpen(false);
+    await performLogout();
     router.push("/login");
   };
 
@@ -188,7 +273,12 @@ export default function HomeScreen({
               <h3 className={styles.sectionTitle}>내 그룹 목록</h3>
             </div>
 
-            {activeGroups.length > 0 ? (
+            {isLoading ? (
+              <div className={styles.skeletonList}>
+                <div className={styles.skeletonCard} />
+                <div className={styles.skeletonCard} />
+              </div>
+            ) : activeGroups.length > 0 ? (
               <div className={styles.groupList}>
                 {activeGroups.map((group) => {
                   const statusInfo =
@@ -217,10 +307,11 @@ export default function HomeScreen({
 
                         <div className={styles.roleTagWrap}>
                           <span
-                            className={`${styles.roleTag} ${group.role === "HOST"
+                            className={`${styles.roleTag} ${
+                              group.role === "HOST"
                                 ? styles.roleTagAdmin
                                 : styles.roleTagUser
-                              }`}
+                            }`}
                           >
                             {group.role === "HOST" ? "관리자" : "사용자"}
                           </span>
@@ -248,85 +339,85 @@ export default function HomeScreen({
             aria-hidden="true"
           />
 
-          {/* 4. 모임 목록 섹션 2: 종료된 그룹 목록 (단순 텍스트 / 비활성화 톤) */}
-          <section className={styles.halfSection} aria-label="종료된 그룹 목록">
+          {/* 4. 모임 목록 섹션 2: 완료된 모임 */}
+          <section className={styles.halfSection} aria-label="완료된 모임">
             <div className={styles.sectionHeader}>
-              <h3 className={`${styles.sectionTitle} ${styles.sectionTitleCompleted}`}>
-                종료된 그룹 목록
-              </h3>
+              <h3 className={styles.sectionTitle}>완료된 모임</h3>
             </div>
 
-            {completedGroups.length > 0 ? (
-              <div className={styles.completedGroupList}>
+            {isLoading ? (
+              <div className={styles.skeletonList}>
+                <div className={styles.skeletonCardCompleted} />
+              </div>
+            ) : completedGroups.length > 0 ? (
+              <div className={styles.completedList}>
                 {completedGroups.map((group) => (
-                  <div key={group.id} className={styles.completedGroupItem}>
-                    <span className={styles.completedGroupName}>
-                      {group.name}
-                    </span>
-                  </div>
+                  <article
+                    key={group.id}
+                    className={styles.completedCard}
+                    onClick={() => handleGroupClick(group)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleGroupClick(group);
+                      }
+                    }}
+                  >
+                    <div className={styles.completedCardLeft}>
+                      <span className={styles.completedGroupName}>
+                        {group.name}
+                      </span>
+                    </div>
+
+                    <div className={styles.completedCardRight}>
+                      <ChevronRight size={16} aria-hidden="true" />
+                    </div>
+                  </article>
                 ))}
               </div>
             ) : (
               <div className={styles.emptyState}>
-                <p className={styles.emptyText}>종료된 그룹이 없습니다.</p>
+                <p className={styles.emptyText}>완료된 모임이 없습니다.</p>
               </div>
             )}
           </section>
         </div>
       </main>
 
-      {/* ==========================================================================
-          모달 영역
-          ========================================================================== */}
-
-      {/* 로그아웃 확인 모달 */}
+      {/* 5. 로그아웃 확인 바텀시트 모달 */}
       <BottomSheetDialog
         open={isLogoutModalOpen}
-        titleId="logout-dialog-title"
-        descriptionId="logout-dialog-desc"
+        titleId="logout-modal-title"
         scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={() => setIsLogoutModalOpen(false)}
       >
-        <div
-          className={`${styles.modalIcon} ${styles.modalIconDanger}`}
-          aria-hidden="true"
-        >
-          <LogOut size={26} strokeWidth={2} />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h2 id="logout-dialog-title" className={styles.modalTitle}>
-            로그아웃할까요?
-          </h2>
-          <p id="logout-dialog-desc" className={styles.modalDescription}>
-            로그아웃 시 로그인 화면으로 이동하며,
-            <br />
-            언제든지 다시 로그인할 수 있습니다.
+        <div className={styles.modalBody}>
+          <p id="logout-modal-title" className={styles.modalDescription}>
+            로그아웃 하시겠습니까?
           </p>
-        </div>
 
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalCancelButton}
-            onClick={() => setIsLogoutModalOpen(false)}
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
-            onClick={handleConfirmLogout}
-          >
-            로그아웃
-          </button>
+          <div className={styles.modalActions}>
+            <button
+              type="button"
+              className={styles.modalCancelButton}
+              onClick={() => setIsLogoutModalOpen(false)}
+            >
+              취소
+            </button>
+
+            <button
+              type="button"
+              className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
+              onClick={handleConfirmLogout}
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
       </BottomSheetDialog>
-
-
-
-
     </MobileFrame>
   );
 }

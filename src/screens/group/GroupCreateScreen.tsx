@@ -52,12 +52,26 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       setInviteCode(newCode);
       setIsCodeIssued(true);
       setIsModalOpen(true);
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("pendingGroupName", groupName.trim());
+        window.sessionStorage.setItem("pendingGroupDesc", description.trim());
+      }
     } else {
       // Flow ④: 이미 발급된 상태에서 다시 클릭 시 다음 페이지로 이동
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("pendingGroupName", groupName.trim());
+        window.sessionStorage.setItem("pendingGroupDesc", description.trim());
+      }
+
       if (onSuccess) {
         onSuccess(groupName.trim(), inviteCode);
       } else {
-        router.push(groupRoutes.createExtra());
+        router.push(
+          `${groupRoutes.createExtra()}?groupName=${encodeURIComponent(
+            groupName.trim(),
+          )}&description=${encodeURIComponent(description.trim())}&role=admin`,
+        );
       }
     }
   };
