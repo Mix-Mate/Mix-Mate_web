@@ -73,6 +73,20 @@
   color: #256ad3;
 }
 
+.groupOption.disabled {
+  cursor: not-allowed;
+  border-color: #f0f0f2;
+  background: #fafafa;
+  color: #a1a1aa;
+}
+
+.groupCapacity {
+  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
 .check {
   display: inline-flex;
   flex: 0 0 auto;

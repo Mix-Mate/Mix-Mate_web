@@ -33,6 +33,25 @@ import styles from "@/features/assignment/components/fixed-members.module.css";
 
 const DEFAULT_GROUP_COUNT = 3;
 
+// 참가자 수를 조 개수만큼 최대한 균등하게 나눴을 때, 각 조가 받을 수 있는 최대 인원.
+// 나머지 인원은 앞쪽 조 번호부터 1명씩 더 배정된다 (조당 인원 라벨 계산과 동일한 규칙).
+function getTeamCapacityByNumber(
+  totalCount: number,
+  groupCount: number,
+): Record<number, number> {
+  if (groupCount <= 0) return {};
+
+  const base = Math.floor(totalCount / groupCount);
+  const remainder = totalCount % groupCount;
+  const capacities: Record<number, number> = {};
+
+  for (let team = 1; team <= groupCount; team += 1) {
+    capacities[team] = team <= remainder ? base + 1 : base;
+  }
+
+  return capacities;
+}
+
 export default function FixedMemberSetupScreen() {
   const params = useParams<{ groupId: string; round: string }>();
   const router = useRouter();
@@ -83,6 +102,32 @@ export default function FixedMemberSetupScreen() {
       );
     });
   }, [candidates, fixedTeamByParticipantId, keyword]);
+
+  const teamCapacityByNumber = useMemo(
+    () => getTeamCapacityByNumber(candidates.length, groupCount),
+    [candidates.length, groupCount],
+  );
+
+  const fixedCountByTeam = useMemo(() => {
+    const counts: Record<number, number> = {};
+
+    for (const [participantId, teamNumber] of Object.entries(
+      fixedTeamByParticipantId,
+    )) {
+      // 이동 중인 멤버 본인은 현재 조 인원 수에서 제외해야
+      // "그 조로 다시 선택"이 정원 초과로 막히지 않는다.
+      if (
+        assigningMember &&
+        Number(participantId) === assigningMember.participantId
+      ) {
+        continue;
+      }
+
+      counts[teamNumber] = (counts[teamNumber] ?? 0) + 1;
+    }
+
+    return counts;
+  }, [fixedTeamByParticipantId, assigningMember]);
 
   const removeFixedMember = (participantId: number) => {
     setFixedTeamByParticipantId((current) => {
@@ -270,6 +315,8 @@ export default function FixedMemberSetupScreen() {
             : null
         }
         groupCount={groupCount}
+        fixedCountByTeam={fixedCountByTeam}
+        capacityByTeam={teamCapacityByNumber}
         onClose={() => setAssigningMember(null)}
         onConfirm={confirmAssignment}
       />
