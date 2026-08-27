@@ -54,21 +54,21 @@ export function LoginForm() {
         password,
       });
 
-      // 200 성공 시: accessToken과 refreshToken을 스토리지/쿠키에 저장하고 메인(/)으로 navigate
+      // 200 성공 시: accessToken과 refreshToken을 스토리지/쿠키에 저장하고 메인 홈(/home)으로 이동
       setAuthTokens({
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       });
 
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         if (response.userName) {
-          window.localStorage.setItem("userName", response.userName);
+          window.localStorage.setItem('userName', response.userName);
         }
         if (response.userId) {
-          window.localStorage.setItem("userId", String(response.userId));
+          window.localStorage.setItem('userId', String(response.userId));
         }
         if (response.email) {
-          window.localStorage.setItem("email", response.email);
+          window.localStorage.setItem('email', response.email);
         }
       }
 
@@ -185,9 +185,9 @@ export function LoginForm() {
         {/* 구분선 */}
         <div className={styles.divider} />
 
-        {/* 회원가입 영역 */}
+        {/* 3. 회원가입 유도 영역 */}
         <div className={styles.signupWrapper}>
-          <span className={styles.signupText}>계정이 없나요?</span>
+          <span className={styles.signupText}>아직 계정이 없으신가요?</span>
           <Link href="/signup" className={styles.signupLink}>
             회원가입
           </Link>

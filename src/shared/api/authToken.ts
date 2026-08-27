@@ -1,10 +1,11 @@
-const TOKEN_STORAGE_KEYS = ["accessToken", "access_token", "token"];
-const REFRESH_TOKEN_STORAGE_KEYS = ["refreshToken", "refresh_token"];
+const ACCESS_TOKEN_KEYS = ["accessToken", "access_token", "token"];
+const REFRESH_TOKEN_KEYS = ["refreshToken", "refresh_token"];
+const USER_INFO_KEYS = ["userName", "userId", "email", "user"];
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
 
-  for (const key of TOKEN_STORAGE_KEYS) {
+  for (const key of ACCESS_TOKEN_KEYS) {
     const token = window.localStorage.getItem(key);
     if (token) return token;
   }
@@ -15,7 +16,7 @@ export function getAccessToken(): string | null {
 export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
 
-  for (const key of REFRESH_TOKEN_STORAGE_KEYS) {
+  for (const key of REFRESH_TOKEN_KEYS) {
     const token = window.localStorage.getItem(key);
     if (token) return token;
   }
@@ -23,33 +24,38 @@ export function getRefreshToken(): string | null {
   return null;
 }
 
-export function setAuthTokens(tokens: {
+export interface SetAuthTokensParams {
   accessToken: string;
   refreshToken?: string;
-}): void {
+}
+
+export function setAuthTokens({
+  accessToken,
+  refreshToken,
+}: SetAuthTokensParams): void {
   if (typeof window === "undefined") return;
 
-  window.localStorage.setItem("accessToken", tokens.accessToken);
-  if (tokens.refreshToken) {
-    window.localStorage.setItem("refreshToken", tokens.refreshToken);
-  }
+  window.localStorage.setItem("accessToken", accessToken);
+  document.cookie = `accessToken=${accessToken}; path=/; max-age=86400; SameSite=Lax`;
 
-  // Set cookies for SSR/middleware if applicable
-  document.cookie = `accessToken=${tokens.accessToken}; path=/; max-age=86400; SameSite=Lax`;
-  if (tokens.refreshToken) {
-    document.cookie = `refreshToken=${tokens.refreshToken}; path=/; max-age=604800; SameSite=Lax`;
+  if (refreshToken) {
+    window.localStorage.setItem("refreshToken", refreshToken);
+    document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`;
   }
 }
 
 export function clearAuthTokens(): void {
   if (typeof window === "undefined") return;
 
-  for (const key of [...TOKEN_STORAGE_KEYS, ...REFRESH_TOKEN_STORAGE_KEYS]) {
-    window.localStorage.removeItem(key);
-  }
+  [...ACCESS_TOKEN_KEYS, ...REFRESH_TOKEN_KEYS, ...USER_INFO_KEYS].forEach(
+    (key) => {
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    },
+  );
 
-  document.cookie = "accessToken=; path=/; max-age=0; SameSite=Lax";
-  document.cookie = "refreshToken=; path=/; max-age=0; SameSite=Lax";
+  document.cookie = "accessToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  document.cookie = "refreshToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
 }
 
 export function withAuthHeaders(headers: HeadersInit = {}): HeadersInit {
