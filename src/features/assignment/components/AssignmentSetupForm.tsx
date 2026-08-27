@@ -6,7 +6,7 @@ import Button from "@/shared/ui/Button";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import { useParticipantCandidatesQuery } from "../hooks/useParticipantCandidatesQuery";
 import AssignmentConditionList, {
-  assignmentConditionOptions,
+  getVisibleConditionOptions,
 } from "./AssignmentConditionList";
 import AssignmentParticipantStatusCard from "./AssignmentParticipantStatusCard";
 import GroupCountStepper from "./GroupCountStepper";
@@ -28,21 +28,13 @@ function getPerGroupRangeLabel(participantCount: number, groupCount: number) {
   return remainder === 0 ? `${base}명` : `${base}~${base + 1}명`;
 }
 
-function getMaxGroupCount(
-  participantCount: number,
-  round: AssignmentSetupInput["round"],
-) {
-  const groupCountByCapacity = Math.floor(
-    participantCount / MIN_MEMBERS_PER_GROUP,
+// 백엔드가 teamCount 최소 2를 강제하므로(1개조 편성 자체를 지원하지 않음),
+// 1차/2차 모두 항상 최소 2개조 기준으로 계산한다.
+function getMaxGroupCount(participantCount: number) {
+  return Math.max(
+    MIN_GROUP_COUNT,
+    Math.floor(participantCount / MIN_MEMBERS_PER_GROUP),
   );
-
-  // 1차는 항상 최소 2개조로 나뉘어야 하는 기존 운영 규칙을 유지한다.
-  // 2차는 재투표로 인원이 크게 줄 수 있어(예: 3명), 인원 수에 맞는 조 개수만 허용한다.
-  if (round !== 2) {
-    return Math.max(MIN_GROUP_COUNT, groupCountByCapacity);
-  }
-
-  return groupCountByCapacity;
 }
 
 interface AssignmentSetupFormProps {
@@ -72,9 +64,11 @@ export default function AssignmentSetupForm({
   const participantCount =
     round === 2 ? (voteStatus?.participateCount ?? 0) : candidates.length;
   const isParticipantCountLoading = round === 2 && isVoteStatusLoading;
-  const maxGroupCount = getMaxGroupCount(participantCount, round);
-  const minGroupCount = round === 2 ? 1 : MIN_GROUP_COUNT;
-  const canAssign = !isParticipantCountLoading && maxGroupCount >= minGroupCount;
+  const maxGroupCount = getMaxGroupCount(participantCount);
+  // 2개조 x 조당 최소 2명 미만이면 1인 조 없이는 조 편성이 불가능하다.
+  const minParticipantsToAssign = MIN_GROUP_COUNT * MIN_MEMBERS_PER_GROUP;
+  const canAssign =
+    !isParticipantCountLoading && participantCount >= minParticipantsToAssign;
   const [groupCount, setGroupCount] = useState(() =>
     Math.min(3, maxGroupCount),
   );
@@ -85,17 +79,10 @@ export default function AssignmentSetupForm({
     setGroupCount(Math.min(3, maxGroupCount));
   }, [maxGroupCount]);
   const [conditionKeys, setConditionKeys] = useState<AssignmentConditionKey[]>(
-    () => {
-      const defaultKeys = assignmentConditionOptions
+    () =>
+      getVisibleConditionOptions(round)
         .filter((option) => option.defaultEnabled)
-        .map((option) => option.key);
-
-      if (round === 2) {
-        return [...new Set([...defaultKeys, "KEEP_FIXED_MEMBERS" as const])];
-      }
-
-      return defaultKeys;
-    },
+        .map((option) => option.key),
   );
 
   const toggleCondition = (key: AssignmentConditionKey) => {
@@ -139,7 +126,7 @@ export default function AssignmentSetupForm({
           <div className={styles.setupCard}>
             <GroupCountStepper
               value={groupCount}
-              min={minGroupCount}
+              min={MIN_GROUP_COUNT}
               max={maxGroupCount}
               onChange={(value) => {
                 hasManualGroupCount.current = true;
@@ -156,7 +143,7 @@ export default function AssignmentSetupForm({
           </div>
         ) : (
           <InfoBanner>
-            참가자가 {MIN_MEMBERS_PER_GROUP}명 미만이라 조 편성을 진행할 수
+            참가자가 {minParticipantsToAssign}명 미만이라 조 편성을 진행할 수
             없습니다. 참가자를 더 모은 뒤 다시 시도해주세요.
           </InfoBanner>
         )}
@@ -165,7 +152,7 @@ export default function AssignmentSetupForm({
           <h2 className={styles.conditionsHeading}>
             배치 조건 선택
             <span className={styles.conditionsCount}>
-              총 {assignmentConditionOptions.length}개 조건
+              총 {getVisibleConditionOptions(round).length}개 조건
             </span>
           </h2>
         </div>
