@@ -40,7 +40,6 @@ export default function AdminGroupQueryProvider({
 
   const refetch = useCallback(async () => {
     const requestId = ++requestIdRef.current;
-    setIsLoading(true);
     setError(null);
 
     try {
@@ -74,7 +73,7 @@ export default function AdminGroupQueryProvider({
     const requestId = ++requestIdRef.current;
 
     async function fetchGroup() {
-      setData(null);
+      setData((prev) => (prev?.groupId === Number(groupId) ? prev : null));
       setDataGroupId(groupId);
       setIsLoading(true);
       setError(null);
@@ -106,7 +105,7 @@ export default function AdminGroupQueryProvider({
     return () => {
       ignore = true;
     };
-  }, [groupId, isExtraPage, pathname]);
+  }, [groupId, isExtraPage]);
 
   const currentData = dataGroupId === groupId ? data : null;
   const currentIsLoading = isExtraPage
