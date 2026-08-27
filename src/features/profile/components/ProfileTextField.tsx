@@ -7,6 +7,7 @@ interface ProfileTextFieldProps {
   onBlur?: () => void;
   required?: boolean;
   inputMode?: "text" | "numeric";
+  maxLength?: number;
 }
 
 export default function ProfileTextField({
@@ -16,6 +17,7 @@ export default function ProfileTextField({
   onBlur,
   required = false,
   inputMode = "text",
+  maxLength,
 }: ProfileTextFieldProps) {
   return (
     <label className={styles.field}>
@@ -27,6 +29,7 @@ export default function ProfileTextField({
         className={styles.textInput}
         value={value}
         inputMode={inputMode}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
       />

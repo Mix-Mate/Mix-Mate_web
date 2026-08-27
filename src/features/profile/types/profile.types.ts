@@ -1,6 +1,6 @@
 ﻿export type ProfileGender = "MALE" | "FEMALE";
 export type ProfileVisibility = "PUBLIC" | "PRIVATE";
-export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH";
+export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH" | "OTHER";
 export type ProfilePosition = "STAFF" | "MEMBER";
 
 export type ProfileMbti =

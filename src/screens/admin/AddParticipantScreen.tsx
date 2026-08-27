@@ -12,6 +12,10 @@ import type {
   ProfileVisibility,
 } from "@/features/participant/types/participant.types";
 import ProfileMbtiField from "@/features/profile/components/ProfileMbtiField";
+import {
+  getValidationMessage,
+  groupProfileSchema,
+} from "@/features/profile/schemas/group-profile.schema";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -27,6 +31,7 @@ const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "2학년", value: "SECOND" },
   { label: "3학년", value: "THIRD" },
   { label: "4학년", value: "FOURTH" },
+  { label: "기타", value: "OTHER" },
 ];
 
 const genderOptions: { label: string; value: ProfileGender }[] = [
@@ -98,34 +103,19 @@ export default function AddParticipantScreen() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.displayName.trim() || !form.major.trim()) {
-      showToast("이름과 소속을 입력해주세요.");
-      return;
-    }
-
-    if (
-      !form.grade ||
-      !form.gender ||
-      form.isNew === null ||
-      !form.position ||
-      !form.mbti ||
-      !form.visibility
-    ) {
-      showToast("학년, 성별, 신입 여부, 직급, MBTI, 공개 여부를 선택해주세요.");
-      return;
-    }
-
-    const requestBody: ParticipantProfileRequest = {
+    const formData = {
       ...form,
       displayName: form.displayName.trim(),
       major: form.major.trim(),
-      grade: form.grade,
-      gender: form.gender,
-      isNew: form.isNew,
-      position: form.position,
-      mbti: form.mbti,
-      visibility: form.visibility,
     };
+    const validation = groupProfileSchema.safeParse(formData);
+
+    if (!validation.success) {
+      showToast(getValidationMessage(validation.error));
+      return;
+    }
+
+    const requestBody: ParticipantProfileRequest = validation.data;
 
     const result = await mutate(params.groupId, requestBody);
 
@@ -156,6 +146,7 @@ export default function AddParticipantScreen() {
           <span>이름</span>
           <input
             value={form.displayName}
+            maxLength={10}
             onChange={(event) => updateField("displayName", event.target.value)}
           />
         </label>
@@ -196,6 +187,7 @@ export default function AddParticipantScreen() {
           <span>소속</span>
           <input
             value={form.major}
+            maxLength={15}
             onChange={(event) => updateField("major", event.target.value)}
           />
         </label>

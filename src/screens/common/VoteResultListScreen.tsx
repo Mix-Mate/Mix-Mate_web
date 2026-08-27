@@ -33,6 +33,7 @@ const gradeLabelByGrade: Record<MvpWinner["grade"], string> = {
   SECOND: "2학년",
   THIRD: "3학년",
   FOURTH: "4학년",
+  OTHER: "기타",
 };
 
 function toParticipant(

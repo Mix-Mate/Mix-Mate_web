@@ -3,7 +3,7 @@ export type ParticipantRole = "general" | "staff";
 export type ParticipantGender = "male" | "female";
 export type ParticipantViewMode = "all" | "team";
 
-export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH";
+export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH" | "OTHER";
 export type ProfilePosition = "STAFF" | "MEMBER";
 export type ProfileVisibility = "PUBLIC" | "PRIVATE";
 export type ProfileGender = "MALE" | "FEMALE";
