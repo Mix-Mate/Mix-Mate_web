@@ -503,7 +503,7 @@
   text-align: center;
   height: auto;
   max-height: 85%;
-  padding: 12px 20px 24px;
+  padding: 16px 24px 28px;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
@@ -517,30 +517,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
 }
 
 .modalIconDanger {
-  background: #fef2f2;
+  background: #fff1f2;
   color: #ef4444;
+  border: 1px solid #fecaca;
 }
 
 .modalIconPrimary {
   background: #eff6ff;
   color: #256ad3;
+  border: 1px solid #dbeafe;
 }
 
 .modalContent {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 6px;
   width: 100%;
 }
 
 .modalTitle {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 700;
   color: #18181b;
   margin: 0;
@@ -548,7 +551,7 @@
 }
 
 .modalDescription {
-  font-size: 13px;
+  font-size: 14.5px;
   color: #71717a;
   margin: 0;
   line-height: 1.5;
@@ -610,40 +613,49 @@
 }
 
 .modalActions {
-  display: flex;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .modalCancelButton {
-  flex: 1;
-  height: 48px;
+  height: 52px;
   border: 1px solid #e4e4e7;
   border-radius: 14px;
   background: #f4f4f5;
   color: #3f3f46;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .modalCancelButton:hover {
   background: #e4e4e7;
 }
 
+.modalCancelButton:active {
+  transform: scale(0.98);
+}
+
 .modalConfirmButton {
-  flex: 1;
-  height: 48px;
+  height: 52px;
   border: none;
   border-radius: 14px;
   background: #256ad3;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
 .modalConfirmButton:hover {
@@ -652,10 +664,16 @@
 
 .modalDangerButton {
   background: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .modalDangerButton:hover {
   background: #dc2626;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+.modalDangerButton:active {
+  transform: scale(0.98);
 }
 
 .modalConfirmButton:disabled,
