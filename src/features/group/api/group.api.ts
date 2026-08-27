@@ -186,12 +186,15 @@ export class GroupApiError extends Error {
 export async function joinGroupByCode(
   inviteCode: string,
 ): Promise<JoinGroupResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups/join`, {
-    method: "POST",
-    credentials: "include",
-    headers: withAuthHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/join`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
+    },
+  );
 
   if (!response.ok) {
     const message = await getErrorMessage(
