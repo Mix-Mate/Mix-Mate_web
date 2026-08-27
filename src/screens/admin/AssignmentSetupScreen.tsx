@@ -3,7 +3,7 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import AssignmentSetupForm from "@/features/assignment/components/AssignmentSetupForm";
-import { getTeams } from "@/features/assignment/api/assignment.api";
+import { getParticipants, getTeams } from "@/features/assignment/api/assignment.api";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
 import {
   toBackendConditions,
@@ -67,8 +67,19 @@ export default function AssignmentSetupScreen() {
 
     if (input.conditionKeys.includes("KEEP_FIXED_MEMBERS")) {
       try {
-        fixedMembers = toFixedMembersFromTeams(
-          await getTeams(params.groupId, 1),
+        const [firstRoundTeams, secondRoundCandidates] = await Promise.all([
+          getTeams(params.groupId, 1),
+          getParticipants(params.groupId, 2),
+        ]);
+
+        // 1차 멤버 중 2차 조 편성 대상(참가 확정자)이 아닌 사람은
+        // 고정 멤버로 보내면 백엔드가 400으로 거부하므로 제외한다.
+        const secondRoundParticipantIds = new Set(
+          secondRoundCandidates.map((candidate) => candidate.participantId),
+        );
+
+        fixedMembers = toFixedMembersFromTeams(firstRoundTeams).filter(
+          (member) => secondRoundParticipantIds.has(member.participantId),
         );
       } catch (fetchError) {
         setCarryOverError(
