@@ -104,8 +104,13 @@ describe("useGroupStatusPolling", () => {
     expect(replaceMock).toHaveBeenCalledWith("/groups/6/votes/mvp");
   });
 
-  it("이미 MVP 투표 화면이면 polling과 이동을 반복하지 않는다", async () => {
-    pathnameMock.mockReturnValue("/groups/6/votes/mvp");
+  it.each([
+    "/groups/6/votes/mvp",
+    "/groups/6/votes/attendance",
+    "/groups/6/votes/status",
+    "/groups/6/admin/votes/end",
+  ])("투표 흐름에서는 polling과 이동을 반복하지 않는다: %s", async (pathname) => {
+    pathnameMock.mockReturnValue(pathname);
     mockGroupQuery(createGroup("VOTING"));
 
     renderHook(() => useGroupStatusPolling("6"));

@@ -15,11 +15,14 @@ export function useGroupStatusPolling(groupId: string) {
   const groupStatus = group?.status;
   const hasGroup = group !== null;
   const mvpVotePath = groupRoutes.mvpVote(groupId);
-  const isMvpVotePage = pathname === mvpVotePath;
+  const groupPath = `/groups/${groupId}`;
+  const isVoteFlowPage =
+    pathname.startsWith(`${groupPath}/votes/`) ||
+    pathname.startsWith(`${groupPath}/admin/votes/`);
   const hasNavigatedRef = useRef(false);
 
   useEffect(() => {
-    if (isMvpVotePage) {
+    if (isVoteFlowPage) {
       hasNavigatedRef.current = false;
       return;
     }
@@ -82,5 +85,5 @@ export function useGroupStatusPolling(groupId: string) {
       isActive = false;
       window.clearInterval(intervalId);
     };
-  }, [groupStatus, hasGroup, isMvpVotePage, mvpVotePath, refetch, router]);
+  }, [groupStatus, hasGroup, isVoteFlowPage, mvpVotePath, refetch, router]);
 }
