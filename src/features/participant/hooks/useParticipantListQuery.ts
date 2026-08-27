@@ -10,6 +10,8 @@ const initialParticipantGroup: ParticipantGroup = {
   teams: [],
 };
 
+const PARTICIPANT_LIST_POLLING_INTERVAL_MS = 3000;
+
 export function useParticipantListQuery(groupId: string) {
   const [data, setData] = useState(initialParticipantGroup);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,9 +19,13 @@ export function useParticipantListQuery(groupId: string) {
 
   useEffect(() => {
     let ignore = false;
+    let isFetching = false;
 
-    async function fetchParticipants() {
-      setIsLoading(true);
+    async function fetchParticipants(showLoading = false) {
+      if (isFetching) return;
+
+      isFetching = true;
+      if (showLoading) setIsLoading(true);
       setIsError(false);
 
       try {
@@ -28,14 +34,19 @@ export function useParticipantListQuery(groupId: string) {
       } catch {
         if (!ignore) setIsError(true);
       } finally {
-        if (!ignore) setIsLoading(false);
+        isFetching = false;
+        if (!ignore && showLoading) setIsLoading(false);
       }
     }
 
-    void fetchParticipants();
+    void fetchParticipants(true);
+    const intervalId = window.setInterval(() => {
+      void fetchParticipants();
+    }, PARTICIPANT_LIST_POLLING_INTERVAL_MS);
 
     return () => {
       ignore = true;
+      window.clearInterval(intervalId);
     };
   }, [groupId]);
 
