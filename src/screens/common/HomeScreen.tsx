@@ -6,6 +6,7 @@ import { LogOut, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
@@ -65,6 +66,7 @@ export default function HomeScreen({
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Navigation handlers
   const handleGroupClick = (group: HomeScreenGroupItem) => {
@@ -76,9 +78,16 @@ export default function HomeScreen({
   };
 
   // Logout flow
-  const handleConfirmLogout = () => {
-    setIsLogoutModalOpen(false);
-    router.push("/login");
+  const handleConfirmLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await performLogout();
+    } finally {
+      setIsLoggingOut(false);
+      setIsLogoutModalOpen(false);
+      router.push("/login");
+    }
   };
 
   return (
@@ -282,6 +291,7 @@ export default function HomeScreen({
             type="button"
             className={styles.modalCancelButton}
             onClick={() => setIsLogoutModalOpen(false)}
+            disabled={isLoggingOut}
           >
             취소
           </button>
@@ -289,8 +299,9 @@ export default function HomeScreen({
             type="button"
             className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
             onClick={handleConfirmLogout}
+            disabled={isLoggingOut}
           >
-            로그아웃
+            {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
           </button>
         </div>
       </BottomSheetDialog>
