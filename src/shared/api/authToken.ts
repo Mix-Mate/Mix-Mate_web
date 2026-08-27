@@ -1,16 +1,61 @@
-// TODO(auth-integration): FE1이 로그인 흐름과 토큰 저장 방식을 구현하면
-// 실제 저장 키에 맞춰 이 파일만 수정하면 되도록 토큰 조회를 여기 한 곳에 모아둔다.
-const TOKEN_STORAGE_KEYS = ["accessToken", "access_token", "token"];
+const ACCESS_TOKEN_KEYS = ["accessToken", "access_token", "token"];
+const REFRESH_TOKEN_KEYS = ["refreshToken", "refresh_token"];
+const USER_INFO_KEYS = ["userName", "userId", "email", "user"];
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
 
-  for (const key of TOKEN_STORAGE_KEYS) {
+  for (const key of ACCESS_TOKEN_KEYS) {
     const token = window.localStorage.getItem(key);
     if (token) return token;
   }
 
   return null;
+}
+
+export function getRefreshToken(): string | null {
+  if (typeof window === "undefined") return null;
+
+  for (const key of REFRESH_TOKEN_KEYS) {
+    const token = window.localStorage.getItem(key);
+    if (token) return token;
+  }
+
+  return null;
+}
+
+export interface SetAuthTokensParams {
+  accessToken: string;
+  refreshToken?: string;
+}
+
+export function setAuthTokens({
+  accessToken,
+  refreshToken,
+}: SetAuthTokensParams): void {
+  if (typeof window === "undefined") return;
+
+  window.localStorage.setItem("accessToken", accessToken);
+  document.cookie = `accessToken=${accessToken}; path=/; SameSite=Lax`;
+
+  if (refreshToken) {
+    window.localStorage.setItem("refreshToken", refreshToken);
+    document.cookie = `refreshToken=${refreshToken}; path=/; SameSite=Lax`;
+  }
+}
+
+export function clearAuthTokens(): void {
+  if (typeof window === "undefined") return;
+
+  [...ACCESS_TOKEN_KEYS, ...REFRESH_TOKEN_KEYS, ...USER_INFO_KEYS].forEach(
+    (key) => {
+      window.localStorage.removeItem(key);
+      window.sessionStorage.removeItem(key);
+    },
+  );
+
+  document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 export function withAuthHeaders(headers: HeadersInit = {}): HeadersInit {

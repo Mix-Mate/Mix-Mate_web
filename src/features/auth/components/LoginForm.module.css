@@ -99,6 +99,32 @@
   box-sizing: border-box;
 }
 
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldError {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ef4444;
+  padding-left: 4px;
+}
+
+.generalError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+}
+
 .loginButton {
   width: 100%;
   height: 56px;
@@ -110,6 +136,12 @@
   border: none;
   cursor: pointer;
   margin-top: 8px;
+  transition: opacity 0.15s ease;
+}
+
+.loginButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .divider {
