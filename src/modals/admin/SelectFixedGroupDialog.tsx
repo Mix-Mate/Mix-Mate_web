@@ -15,6 +15,10 @@ interface SelectFixedGroupDialogProps {
   member: ParticipantCandidate | null;
   currentTeamNumber: number | null;
   groupCount: number;
+  /** 조 번호 -> 현재 그 조에 고정된 인원 수 (선택 중인 멤버 본인은 제외). */
+  fixedCountByTeam: Record<number, number>;
+  /** 조 번호 -> 그 조가 받을 수 있는 최대 인원 수. */
+  capacityByTeam: Record<number, number>;
   onClose: () => void;
   onConfirm: (teamNumber: number) => void;
 }
@@ -24,6 +28,8 @@ export default function SelectFixedGroupDialog({
   member,
   currentTeamNumber,
   groupCount,
+  fixedCountByTeam,
+  capacityByTeam,
   onClose,
   onConfirm,
 }: SelectFixedGroupDialogProps) {
@@ -59,6 +65,12 @@ export default function SelectFixedGroupDialog({
         {Array.from({ length: groupCount }, (_, index) => index + 1).map(
           (teamNumber) => {
             const isSelected = selected === teamNumber;
+            const capacity = capacityByTeam[teamNumber] ?? 0;
+            const fixedCount = fixedCountByTeam[teamNumber] ?? 0;
+            const isFull =
+              capacity > 0 &&
+              fixedCount >= capacity &&
+              teamNumber !== currentTeamNumber;
 
             return (
               <button
@@ -67,11 +79,18 @@ export default function SelectFixedGroupDialog({
                 className={clsx(
                   styles.groupOption,
                   isSelected && styles.selected,
+                  isFull && styles.disabled,
                 )}
                 aria-pressed={isSelected}
+                disabled={isFull}
                 onClick={() => setSelected(teamNumber)}
               >
                 {teamNumber}조
+                {capacity > 0 && (
+                  <span className={styles.groupCapacity}>
+                    {fixedCount}/{capacity}
+                  </span>
+                )}
                 {isSelected && (
                   <span className={styles.check} aria-hidden="true">
                     <Check size={16} strokeWidth={3} />
