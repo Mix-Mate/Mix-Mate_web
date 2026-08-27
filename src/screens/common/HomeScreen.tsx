@@ -51,11 +51,38 @@ interface HomeScreenProps {
 }
 
 export default function HomeScreen({
-  userName = "김민준",
+  userName: propUserName,
   initialActiveGroups = DEFAULT_ACTIVE_GROUPS,
   initialCompletedGroups = DEFAULT_COMPLETED_GROUPS,
 }: HomeScreenProps) {
   const router = useRouter();
+
+  // Dynamic logged in user name resolution
+  const [userName] = useState<string>(() => {
+    if (propUserName) return propUserName;
+    if (typeof window !== "undefined") {
+      const directName =
+        window.localStorage.getItem("userName") ||
+        window.localStorage.getItem("displayName") ||
+        window.localStorage.getItem("name");
+      if (directName) return directName;
+
+      const userStr = window.localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const parsed = JSON.parse(userStr) as {
+            userName?: string;
+            displayName?: string;
+            name?: string;
+          };
+          return parsed.userName || parsed.displayName || parsed.name || "사용자";
+        } catch {
+          return userStr;
+        }
+      }
+    }
+    return "사용자";
+  });
 
   // Group lists state
   const [activeGroups] =
@@ -107,7 +134,9 @@ export default function HomeScreen({
       <main className={styles.main}>
         {/* 환영 인사 영역 */}
         <section className={styles.welcomeSection}>
-          <h2 className={styles.welcomeTitle}>안녕하세요, {userName}님 👋</h2>
+          <h2 className={styles.welcomeTitle}>
+            {userName ? `안녕하세요, ${userName}님 👋` : "안녕하세요 👋"}
+          </h2>
         </section>
 
         {/* 2. 액션 섹션: '새 그룹 생성', '초대 코드로 입장' 2개 카드 (2열 그리드) */}
