@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -64,6 +64,40 @@ function mapRole(role: string): GroupRole {
   return "PARTICIPANT";
 }
 
+function subscribeStorage(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getStoredUserName(): string {
+  if (typeof window === "undefined") return "사용자";
+  const directName =
+    window.localStorage.getItem("userName") ||
+    window.localStorage.getItem("displayName") ||
+    window.localStorage.getItem("name");
+  if (directName) return directName;
+
+  const userStr = window.localStorage.getItem("user");
+  if (userStr) {
+    try {
+      const parsed = JSON.parse(userStr) as {
+        userName?: string;
+        displayName?: string;
+        name?: string;
+      };
+      return parsed.userName || parsed.displayName || parsed.name || "사용자";
+    } catch {
+      return userStr;
+    }
+  }
+  return "사용자";
+}
+
+function getServerUserNameSnapshot(): string {
+  return "사용자";
+}
+
 interface HomeScreenProps {
   userName?: string;
   initialActiveGroups?: HomeScreenGroupItem[];
@@ -77,34 +111,13 @@ export default function HomeScreen({
 }: HomeScreenProps) {
   const router = useRouter();
 
-  // Dynamic logged in user name resolution
-  const [userName] = useState<string>(() => {
-    if (propUserName) return propUserName;
-    if (typeof window !== "undefined") {
-      const directName =
-        window.localStorage.getItem("userName") ||
-        window.localStorage.getItem("displayName") ||
-        window.localStorage.getItem("name");
-      if (directName) return directName;
-
-      const userStr = window.localStorage.getItem("user");
-      if (userStr) {
-        try {
-          const parsed = JSON.parse(userStr) as {
-            userName?: string;
-            displayName?: string;
-            name?: string;
-          };
-          return (
-            parsed.userName || parsed.displayName || parsed.name || "사용자"
-          );
-        } catch {
-          return userStr;
-        }
-      }
-    }
-    return "사용자";
-  });
+  // Dynamic logged in user name resolution using useSyncExternalStore (SSR & Hydration safe)
+  const storedUserName = useSyncExternalStore(
+    subscribeStorage,
+    getStoredUserName,
+    getServerUserNameSnapshot,
+  );
+  const userName = propUserName || storedUserName;
 
   // Group lists state
   const [activeGroups, setActiveGroups] =
@@ -219,7 +232,7 @@ export default function HomeScreen({
       <main className={styles.main}>
         {/* 환영 인사 영역 */}
         <section className={styles.welcomeSection}>
-          <h2 className={styles.welcomeTitle}>
+          <h2 className={styles.welcomeTitle} suppressHydrationWarning>
             {userName ? `안녕하세요, ${userName}님 👋` : "안녕하세요 👋"}
           </h2>
         </section>
