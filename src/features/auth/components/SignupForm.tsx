@@ -120,11 +120,27 @@ export function SignupForm() {
   };
 
   // 1. [인증번호 발송] / [재발송] 클릭
-  const handleSendCode = async () => {
+  const handleSendCode = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    console.log('인증번호 발송 시도:', email);
+
     if (!email.trim()) {
       setFieldErrors((prev) => ({
         ...prev,
         email: '이메일을 입력해주세요.',
+      }));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        email: '올바른 이메일 형식을 입력해주세요.',
       }));
       return;
     }
@@ -138,11 +154,14 @@ export function SignupForm() {
     setVerificationStatus('SENDING');
 
     try {
-      await sendVerificationCodeApi({ email: email.trim() });
+      console.log('sendVerificationCodeApi 호출 시작:', email.trim());
+      const response = await sendVerificationCodeApi({ email: email.trim() });
+      console.log('sendVerificationCodeApi 호출 성공:', response);
       setVerificationStatus('SENT');
       setTimeLeft(VERIFICATION_TIME_LIMIT_SEC);
       setAuthCode('');
     } catch (error: unknown) {
+      console.error('sendVerificationCodeApi 호출 실패:', error);
       setVerificationStatus('IDLE');
       if (error instanceof AuthApiError) {
         setFieldErrors((prev) => ({
@@ -159,7 +178,14 @@ export function SignupForm() {
   };
 
   // 2. [인증번호 확인] 클릭
-  const handleVerifyCode = async () => {
+  const handleVerifyCode = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    console.log('인증번호 검증 시도:', { email, code: authCode });
+
     if (!authCode.trim()) {
       setFieldErrors((prev) => ({
         ...prev,
@@ -185,16 +211,22 @@ export function SignupForm() {
     setVerificationStatus('VERIFYING');
 
     try {
-      await verifyCodeApi({
+      console.log('verifyCodeApi 호출 시작:', {
         email: email.trim(),
         code: authCode.trim(),
       });
+      const response = await verifyCodeApi({
+        email: email.trim(),
+        code: authCode.trim(),
+      });
+      console.log('verifyCodeApi 호출 성공:', response);
 
       // 인증 성공
       setVerificationStatus('VERIFIED');
       setTimeLeft(0);
       if (timerRef.current) clearInterval(timerRef.current);
     } catch (error: unknown) {
+      console.error('verifyCodeApi 호출 실패:', error);
       setVerificationStatus('FAILED');
       if (error instanceof AuthApiError) {
         setFieldErrors((prev) => ({
