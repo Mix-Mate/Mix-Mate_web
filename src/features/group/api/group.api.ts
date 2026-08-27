@@ -60,7 +60,8 @@ export async function createGroupApi(
   request: CreateGroupRequest,
 ): Promise<CreateGroupResponse> {
   const userName =
-    (typeof window !== "undefined" && window.localStorage.getItem("userName")) ||
+    (typeof window !== "undefined" &&
+      window.localStorage.getItem("userName")) ||
     "호스트";
 
   const defaultProfile: GroupProfileDto = {
@@ -89,7 +90,11 @@ export async function createGroupApi(
   });
 
   if (!response.ok) {
-    let errorData: { message?: string; code?: string; errors?: Record<string, string> } | null = null;
+    let errorData: {
+      message?: string;
+      code?: string;
+      errors?: Record<string, string>;
+    } | null = null;
     try {
       errorData = await response.json();
     } catch {
@@ -299,6 +304,23 @@ export async function deleteGroup(groupId: string): Promise<void> {
   }
 }
 
+export async function leaveGroup(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "그룹 탈퇴에 실패했습니다."),
+    );
+  }
+}
+
 export interface JoinGroupWithProfileRequest {
   inviteCode: string;
   profile: GroupProfileDto;
@@ -330,7 +352,11 @@ export async function joinGroupWithProfileApi(
   );
 
   if (!response.ok) {
-    let errorData: { code?: string; message?: string; errors?: Record<string, string> } | null = null;
+    let errorData: {
+      code?: string;
+      message?: string;
+      errors?: Record<string, string>;
+    } | null = null;
     try {
       errorData = await response.json();
     } catch {
@@ -434,4 +460,3 @@ export async function verifyInviteCodeApi(
 
   return (await response.json()) as VerifyInviteCodeResponse;
 }
-
