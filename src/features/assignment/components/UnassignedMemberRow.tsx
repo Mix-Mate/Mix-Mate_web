@@ -7,17 +7,6 @@ import { toGender } from "../model/assignment.mapper";
 import type { AssignmentRound, ParticipantCandidate } from "../types/assignment.types";
 import styles from "./fixed-members.module.css";
 
-function toDialogParticipant(member: ParticipantCandidate): Participant {
-  return {
-    id: String(member.participantId),
-    name: member.displayName,
-    department: member.major,
-    visibility: member.visibility === "PUBLIC" ? "public" : "private",
-    role: "general",
-    gender: toGender(member.gender),
-  };
-}
-
 interface UnassignedMemberRowProps {
   groupId: string;
   round: AssignmentRound;
@@ -31,7 +20,6 @@ export default function UnassignedMemberRow({
   round,
   member,
   onAssign,
-  onPrivateSelect,
 }: UnassignedMemberRowProps) {
   const isPrivate = member.visibility === "PRIVATE";
 
@@ -52,22 +40,12 @@ export default function UnassignedMemberRow({
 
   return (
     <li className={styles.unassignedRow}>
-      {isPrivate ? (
-        <button
-          type="button"
-          className={styles.unassignedRowLink}
-          onClick={() => onPrivateSelect(toDialogParticipant(member))}
-        >
-          {content}
-        </button>
-      ) : (
-        <Link
-          href={`/groups/${groupId}/participants/${member.participantId}?round=${round}`}
-          className={styles.unassignedRowLink}
-        >
-          {content}
-        </Link>
-      )}
+      <Link
+        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin`}
+        className={styles.unassignedRowLink}
+      >
+        {content}
+      </Link>
 
       {isPrivate && (
         <span

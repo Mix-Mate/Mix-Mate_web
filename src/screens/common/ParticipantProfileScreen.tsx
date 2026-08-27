@@ -1,11 +1,14 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, LockKeyhole, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useDeleteParticipantMutation } from "@/features/participant/hooks/useDeleteParticipantMutation";
+import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
+import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
+import type { ParticipantProfile } from "@/features/participant/types/participant.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
@@ -26,25 +29,73 @@ export default function ParticipantProfileScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(groupId);
-  const { data: profile } = useParticipantProfileQuery(groupId, participantId);
   const { mutate: deleteParticipant, isPending: isDeleting } =
     useDeleteParticipantMutation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const isAdminView = group?.myRole === "HOST";
   const roundParam = searchParams.get("round");
   const adminRound =
     roundParam === "1" || roundParam === "2"
       ? (Number(roundParam) as 1 | 2)
       : undefined;
+  const resolvedRound = adminRound ?? 1;
+  const isAdminView = searchParams.get("role") === "admin" || group?.myRole === "HOST";
+  const { data: profileDetail } = useParticipantProfileQuery(
+    groupId,
+    participantId,
+    { enabled: !isAdminView },
+  );
+  const { data: adminParticipantGroup } = useAdminParticipantListQuery(
+    groupId,
+    resolvedRound,
+  );
+  const { data: participantGroup } = useParticipantListQuery(groupId);
+
+  const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
+    const adminParticipant = adminParticipantGroup.participants.find(
+      (participant) => participant.id === participantId,
+    );
+
+    if (adminParticipant) {
+      return adminParticipant;
+    }
+
+    const participant = participantGroup.participants.find(
+      (item) => item.id === participantId,
+    );
+
+    if (!participant) {
+      return null;
+    }
+
+    return {
+      ...participant,
+      grade: "",
+      mbti: "",
+      isNew: false,
+      age: undefined,
+      instagramId: undefined,
+      bio: undefined,
+    };
+  }, [
+    adminParticipantGroup.participants,
+    participantGroup.participants,
+    participantId,
+  ]);
+
+  const profile = profileDetail ?? fallbackProfile;
 
   if (!group || !profile) return null;
 
+  const canDeleteParticipant =
+    isAdminView && group.status === "RECRUITING";
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
   const bioText = profile.bio ?? "자기소개가 없습니다.";
 
   const handleDelete = async () => {
+    if (!canDeleteParticipant) return;
+
     const result = await deleteParticipant(groupId, participantId);
     if (!result.ok) return;
 
@@ -58,7 +109,7 @@ export default function ParticipantProfileScreen({
         <Header title="참가자 프로필" onBack={() => router.back()} smallTitle />
       )}
 
-      {!shouldBlockPrivateProfile && isAdminView && (
+      {!shouldBlockPrivateProfile && canDeleteParticipant && (
         <button
           type="button"
           className={styles.deleteIconButton}

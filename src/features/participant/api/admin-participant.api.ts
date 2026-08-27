@@ -64,10 +64,16 @@ async function request(path: string, init?: RequestInit) {
 async function getParticipantDetail(
   groupId: string,
   summary: ParticipantSummaryResponse,
+  signal?: AbortSignal,
 ): Promise<AdminParticipant> {
+  if (summary.visibility === "PRIVATE") {
+    return toDefaultAdminParticipant(summary);
+  }
+
   const participantId = String(summary.participantId);
   const response = await request(
     `/api/v1/groups/${groupId}/participants/${participantId}`,
+    { signal },
   );
 
   if (!response.ok) {
@@ -75,25 +81,37 @@ async function getParticipantDetail(
   }
 
   const profile = (await response.json()) as ParticipantProfileResponse;
-  return toParticipantProfile(profile, participantId, toVisibility(summary.visibility));
+  return toParticipantProfile(
+    profile,
+    participantId,
+    toVisibility(summary.visibility),
+  );
 }
 
 export async function getAdminParticipants(
   groupId: string,
   round: AssignmentRound,
+  signal?: AbortSignal,
 ): Promise<AdminParticipantGroup> {
   const [groupDetail, response] = await Promise.all([
     getGroupDetail(groupId),
-    request(`/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`),
+    request(`/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`, {
+      signal,
+    }),
   ]);
 
   if (!response.ok) {
-    throw await createRequestError(response, "참가자 목록을 불러오지 못했습니다.");
+    throw await createRequestError(
+      response,
+      "참가자 목록을 불러오지 못했습니다.",
+    );
   }
 
   const data = (await response.json()) as ParticipantListResponse;
   const participants = await Promise.all(
-    data.participantList.map((summary) => getParticipantDetail(groupId, summary)),
+    data.participantList.map((summary) =>
+      getParticipantDetail(groupId, summary, signal),
+    ),
   );
 
   return {
