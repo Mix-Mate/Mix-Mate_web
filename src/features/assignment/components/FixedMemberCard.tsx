@@ -1,22 +1,44 @@
-import { X } from "lucide-react";
+import clsx from "clsx";
+import { Lock, X } from "lucide-react";
+import Link from "next/link";
+import type { Participant } from "@/features/participant/types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import { toGender } from "../model/assignment.mapper";
-import type { ParticipantCandidate } from "../types/assignment.types";
+import type { AssignmentRound, ParticipantCandidate } from "../types/assignment.types";
 import styles from "./fixed-members.module.css";
 
+function toDialogParticipant(member: ParticipantCandidate): Participant {
+  return {
+    id: String(member.participantId),
+    name: member.displayName,
+    department: member.major,
+    visibility: member.visibility === "PUBLIC" ? "public" : "private",
+    role: "general",
+    gender: toGender(member.gender),
+  };
+}
+
 interface FixedMemberCardProps {
+  groupId: string;
+  round: AssignmentRound;
   member: ParticipantCandidate;
   teamNumber: number;
   onRemove: (participantId: number) => void;
+  onPrivateSelect: (participant: Participant) => void;
 }
 
 export default function FixedMemberCard({
+  groupId,
+  round,
   member,
   teamNumber,
   onRemove,
+  onPrivateSelect,
 }: FixedMemberCardProps) {
-  return (
-    <div className={styles.fixedRow}>
+  const isPrivate = member.visibility === "PRIVATE";
+
+  const content = (
+    <>
       <GenderAvatar
         gender={toGender(member.gender)}
         name={member.displayName}
@@ -27,8 +49,37 @@ export default function FixedMemberCard({
         <strong>{member.displayName}</strong>
         <small>{member.major}</small>
       </div>
+    </>
+  );
+
+  return (
+    <div className={styles.fixedRow}>
+      {isPrivate ? (
+        <button
+          type="button"
+          className={styles.fixedRowLink}
+          onClick={() => onPrivateSelect(toDialogParticipant(member))}
+        >
+          {content}
+        </button>
+      ) : (
+        <Link
+          href={`/groups/${groupId}/participants/${member.participantId}?round=${round}`}
+          className={styles.fixedRowLink}
+        >
+          {content}
+        </Link>
+      )}
 
       <div className={styles.fixedRowActions}>
+        {isPrivate && (
+          <span
+            className={clsx(styles.visibilityBadge, styles.visibilityPrivate)}
+            aria-label="비공개"
+          >
+            <Lock aria-hidden="true" size={16} strokeWidth={2} />
+          </span>
+        )}
         <span className={styles.fixedTeamBadge}>{teamNumber}조 고정</span>
         <button
           type="button"
