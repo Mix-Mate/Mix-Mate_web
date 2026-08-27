@@ -364,22 +364,23 @@
    6. Toast Notification
    ========================================================================== */
 .toastContainer {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
+  position: absolute !important;
+  bottom: 36px !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  z-index: 100 !important;
+  display: flex !important;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: #ecfdf3;
-  color: #027a48;
-  border: 1.656px solid #bffcd9;
-  border-radius: 19.875px;
-  box-shadow: 0 9.937px 29.812px 0 rgba(0, 0, 0, 0.1);
-  font-size: 13px;
-  font-weight: 600;
+  gap: 8px;
+  padding: 10px 20px !important;
+  background: #ecfdf3 !important;
+  color: #027a48 !important;
+  border: 1.656px solid #bffcd9 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
   white-space: nowrap;
   animation: toastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
@@ -394,7 +395,7 @@
 @keyframes toastPop {
   from {
     opacity: 0;
-    transform: translate(-50%, 16px) scale(0.92);
+    transform: translate(-50%, 14px) scale(0.94);
   }
   to {
     opacity: 1;
