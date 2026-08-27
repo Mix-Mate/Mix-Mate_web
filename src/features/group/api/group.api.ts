@@ -282,13 +282,22 @@ export async function deleteGroup(groupId: string): Promise<void> {
   }
 }
 
+export interface JoinGroupWithProfileRequest {
+  inviteCode: string;
+  profile: GroupProfileDto;
+}
+
 export interface JoinGroupResponse {
-  groupId: string;
+  groupId: number | string;
   groupName?: string;
 }
 
-export async function joinGroupByCode(
-  inviteCode: string,
+/**
+ * 그룹 입장(참여코드 + 프로필) API
+ * POST /api/v1/groups/invitations/join
+ */
+export async function joinGroupWithProfileApi(
+  request: JoinGroupWithProfileRequest,
 ): Promise<JoinGroupResponse> {
   const response = await fetch(
     `${API_BASE_URL}/api/v1/groups/invitations/join`,
@@ -296,29 +305,62 @@ export async function joinGroupByCode(
       method: "POST",
       credentials: "include",
       headers: withAuthHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ inviteCode: inviteCode.trim().toUpperCase() }),
+      body: JSON.stringify({
+        inviteCode: request.inviteCode.trim().toUpperCase(),
+        profile: request.profile,
+      }),
     },
   );
 
   if (!response.ok) {
-    const message = await getErrorMessage(
-      response,
-      "참여코드가 존재하지 않습니다.",
-    );
-    let code: string | undefined;
+    let errorData: { code?: string; message?: string; errors?: Record<string, string> } | null = null;
     try {
-      const data = (await response.clone().json()) as {
-        code?: string;
-        message?: string;
-      };
-      code = data.code;
+      errorData = await response.json();
     } catch {
-      // Ignore JSON parse errors for non-JSON responses
+      // Non-JSON response fallback
     }
-    throw new GroupApiError(message, response.status, code);
+
+    const message =
+      errorData?.message ||
+      (response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "참여코드가 존재하지 않습니다."
+            : "그룹 입장에 실패했습니다.");
+
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
   }
 
   return (await response.json()) as JoinGroupResponse;
+}
+
+export async function joinGroupByCode(
+  inviteCode: string,
+  profile?: GroupProfileDto,
+): Promise<JoinGroupResponse> {
+  const defaultProfile: GroupProfileDto = {
+    displayName: "참가자",
+    position: "MEMBER",
+    major: "기타",
+    isNew: false,
+    grade: "FIRST",
+    gender: "MALE",
+    mbti: "ENFP",
+    age: 20,
+    visibility: "PUBLIC",
+  };
+
+  return joinGroupWithProfileApi({
+    inviteCode,
+    profile: profile || defaultProfile,
+  });
 }
 
 export interface VerifyInviteCodeRequest {

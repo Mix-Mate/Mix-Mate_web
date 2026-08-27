@@ -6,7 +6,12 @@ import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Button from "@/shared/ui/Button";
-import { createGroupApi, GroupApiError, type GroupProfileDto } from "@/features/group/api/group.api";
+import {
+  createGroupApi,
+  joinGroupWithProfileApi,
+  GroupApiError,
+  type GroupProfileDto,
+} from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupExtraInfoScreen.module.css";
 
@@ -147,8 +152,19 @@ export default function GroupExtraInfoScreen({
       visibility: isPublicProfile === "전체 공개" ? "PUBLIC" : "PRIVATE",
     };
 
+    const fromParam = searchParams.get("from");
+    const roleParam = searchParams.get("role");
+    const inviteCodeParam =
+      searchParams.get("inviteCode") ||
+      (typeof window !== "undefined" &&
+        window.sessionStorage.getItem("pendingInviteCode")) ||
+      "";
+
+    const isCreateFlow = fromParam === "create" || groupId === "new";
+    const isAdmin = isCreateFlow || roleParam === "admin" || rolePosition === "운영진";
+
     try {
-      if (groupId === "new") {
+      if (isCreateFlow) {
         const groupNameParam =
           searchParams.get("groupName") ||
           (typeof window !== "undefined" &&
@@ -167,18 +183,32 @@ export default function GroupExtraInfoScreen({
         });
 
         alert("그룹이 성공적으로 생성되었습니다!");
-        router.push(groupRoutes.adminPreparation(String(response.groupId)));
+        router.push(groupRoutes.adminRecruitment(String(response.groupId)));
+        return;
+      }
+
+      // 일반 참여/입장 플로우: 참여코드와 함께 프로필 등록 API 호출
+      if (inviteCodeParam) {
+        const joinRes = await joinGroupWithProfileApi({
+          inviteCode: inviteCodeParam,
+          profile: profileDto,
+        });
+
+        alert("그룹에 성공적으로 참여하였습니다!");
+        const targetGroupId = joinRes.groupId ? String(joinRes.groupId) : groupId;
+        if (isAdmin) {
+          router.push(groupRoutes.adminRecruitment(targetGroupId));
+        } else {
+          router.push(groupRoutes.home(targetGroupId));
+        }
         return;
       }
 
       if (onSuccess) {
         onSuccess(extraData);
       } else {
-        // 관리자: 관리자 홈 - 그룹 준비 화면(/groups/[groupId]/admin/preparation)으로 이동
-        // 일반 사용자: 사용자 홈(/groups/[groupId]/home)으로 이동
-        const isAdmin = roleParam === "admin" || rolePosition === "운영진";
         if (isAdmin) {
-          router.push(groupRoutes.adminPreparation(groupId));
+          router.push(groupRoutes.adminRecruitment(groupId));
         } else {
           router.push(groupRoutes.home(groupId));
         }
