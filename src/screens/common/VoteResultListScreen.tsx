@@ -130,7 +130,7 @@ export default function VoteResultListScreen({
   const title = isMvpList ? "오늘의 MVP 명단" : "2차 참가자 목록";
   const statsLabel = isMvpList ? "전체 MVP" : "전체 참가자";
   const backHref = withSessionContext(
-    groupRoutes.voteResult(params.groupId),
+    `${groupRoutes.voteResult(params.groupId)}?view=overall`,
     searchParams,
   );
 

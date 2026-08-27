@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -26,6 +27,11 @@ export default function VoteResultScreen() {
   );
   const isAdmin = group?.myRole === "HOST";
   const homeHref = groupRoutes.home(params.groupId);
+  const overallResultHref = withSessionContext(
+    `${groupRoutes.voteResult(params.groupId)}?view=overall`,
+    searchParams,
+  );
+  const showOverallResult = searchParams.get("view") === "overall";
   const resultHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
     : `${homeHref}?scenario=round2-waiting`;
@@ -34,6 +40,9 @@ export default function VoteResultScreen() {
         (winner) => winner.teamNumber === firstRoundTeam.teamNumber,
       ) ?? null)
     : null;
+  const revealOverallResult = useCallback(() => {
+    router.replace(overallResultHref, { scroll: false });
+  }, [overallResultHref, router]);
 
   return (
     <VoteScreenLayout
@@ -48,6 +57,8 @@ export default function VoteResultScreen() {
         <VoteResultContent
           result={data}
           introMvpWinner={myTeamMvpWinner}
+          showOverallResult={showOverallResult}
+          onRevealOverallResult={revealOverallResult}
           onHome={() => router.replace(resultHomeHref)}
           onOpenMvpList={() =>
             router.push(
