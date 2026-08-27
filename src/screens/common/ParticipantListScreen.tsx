@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
@@ -13,6 +13,7 @@ import ParticipantStats from "@/features/participant/components/ParticipantStats
 import ParticipantTeamList from "@/features/participant/components/ParticipantTeamList";
 import ParticipantViewToggle from "@/features/participant/components/ParticipantViewToggle";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type {
   Participant,
   ParticipantViewMode,
@@ -40,18 +41,40 @@ function DefaultParticipantListScreen() {
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
   const { data } = useParticipantListQuery(params.groupId);
+  const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+
+  const isMyParticipant = useCallback((participant: Participant) => {
+    if (!myProfile) return false;
+
+    const myGender = myProfile.gender === "FEMALE" ? "female" : "male";
+
+    return (
+      participant.id === String(myProfile.id) ||
+      (participant.name === myProfile.displayName &&
+        participant.department === myProfile.major &&
+        participant.gender === myGender)
+    );
+  }, [myProfile]);
 
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    return data.participants.filter((participant) => {
+    const participants = data.participants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
 
       return matchesKeyword && matchesFilter;
     });
-  }, [data.participants, filter, keyword]);
+
+    return participants.sort((first, second) => {
+      const firstIsMe = isMyParticipant(first);
+      const secondIsMe = isMyParticipant(second);
+
+      if (firstIsMe === secondIsMe) return 0;
+      return firstIsMe ? -1 : 1;
+    });
+  }, [data.participants, filter, isMyParticipant, keyword]);
 
   const filteredTeams = useMemo(() => {
     const trimmedKeyword = keyword.trim();
