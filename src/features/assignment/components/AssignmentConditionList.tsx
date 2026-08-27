@@ -27,12 +27,6 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
     defaultEnabled: true,
   },
   {
-    key: "AFFILIATION_DISTRIBUTION",
-    label: "소속 분산",
-    description: "같은 학과·팀 분산",
-    defaultEnabled: true,
-  },
-  {
     key: "NEWCOMER_DISTRIBUTION",
     label: "신입 여부 분산",
     description: "신입이 고루 섞이도록",

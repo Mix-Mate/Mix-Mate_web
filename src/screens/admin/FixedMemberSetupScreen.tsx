@@ -18,6 +18,8 @@ import type { ParticipantCandidate } from "@/features/assignment/types/assignmen
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
+import PrivateParticipantDialog from "@/features/participant/components/PrivateParticipantDialog";
+import type { Participant } from "@/features/participant/types/participant.types";
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -47,6 +49,8 @@ export default function FixedMemberSetupScreen() {
   >({});
   const [assigningMember, setAssigningMember] =
     useState<ParticipantCandidate | null>(null);
+  const [privateParticipant, setPrivateParticipant] =
+    useState<Participant | null>(null);
 
   const {
     data: candidates,
@@ -56,9 +60,15 @@ export default function FixedMemberSetupScreen() {
 
   const fixedMembers = useMemo(
     () =>
-      candidates.filter(
-        (candidate) => candidate.participantId in fixedTeamByParticipantId,
-      ),
+      candidates
+        .filter(
+          (candidate) => candidate.participantId in fixedTeamByParticipantId,
+        )
+        .sort(
+          (a, b) =>
+            fixedTeamByParticipantId[a.participantId] -
+            fixedTeamByParticipantId[b.participantId],
+        ),
     [candidates, fixedTeamByParticipantId],
   );
 
@@ -182,9 +192,12 @@ export default function FixedMemberSetupScreen() {
             {fixedMembers.map((member) => (
               <FixedMemberCard
                 key={member.participantId}
+                groupId={params.groupId}
+                round={round}
                 member={member}
                 teamNumber={fixedTeamByParticipantId[member.participantId]}
                 onRemove={removeFixedMember}
+                onPrivateSelect={setPrivateParticipant}
               />
             ))}
           </div>
@@ -210,8 +223,11 @@ export default function FixedMemberSetupScreen() {
             {unassignedMembers.map((member) => (
               <UnassignedMemberRow
                 key={member.participantId}
+                groupId={params.groupId}
+                round={round}
                 member={member}
                 onAssign={setAssigningMember}
+                onPrivateSelect={setPrivateParticipant}
               />
             ))}
           </ul>
@@ -238,6 +254,11 @@ export default function FixedMemberSetupScreen() {
           <span className={styles.errorText}>{assignError}</span>
         )}
       </div>
+
+      <PrivateParticipantDialog
+        participant={privateParticipant}
+        onClose={() => setPrivateParticipant(null)}
+      />
 
       <SelectFixedGroupDialog
         key={assigningMember?.participantId ?? "none"}
