@@ -2,7 +2,7 @@
 
 import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
@@ -99,6 +99,47 @@ export default function AdminRecruitmentScreen() {
       showToast(`그룹 코드: ${group.inviteCode}`);
     }
   }, [group, showToast]);
+
+  useEffect(() => {
+    if (!group) return;
+
+    if (
+      group.status === "BEFORE_FIRST_ROUND" ||
+      group.status === "BEFORE_SECOND_ROUND"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminPreparation(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (
+      group.status === "FIRST_ROUND" ||
+      group.status === "SECOND_ROUND" ||
+      group.status === "VOTING" ||
+      group.status === "VOTE_CLOSED"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminProgress(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (group.status === "FINISHED") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.completed(params.groupId),
+          searchParams,
+        ),
+      );
+    }
+  }, [group, params.groupId, router, searchParams]);
 
   const goToParticipants = useCallback(() => {
     router.push(
