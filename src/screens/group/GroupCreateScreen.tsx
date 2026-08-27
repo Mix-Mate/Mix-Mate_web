@@ -163,6 +163,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       <BottomSheetDialog
         open={isModalOpen}
         titleId="issued-code-label"
+        scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={handleCloseModal}
       >

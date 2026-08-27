@@ -1,18 +1,17 @@
-/* GroupCreateScreen.module.css */
-
 .pageViewport.pageViewport {
-  height: auto;
-  min-height: var(--mobile-frame-height, 844px);
-  overflow: visible;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
   position: relative;
 }
 
 .screenFrame.screenFrame {
   display: flex;
-  min-height: var(--mobile-frame-height, 844px);
-  height: auto;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
+  position: relative;
   font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
@@ -79,6 +78,7 @@
    ========================================================================== */
 .main {
   flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   padding: 24px 20px 20px;
@@ -259,18 +259,34 @@
 /* ==========================================================================
    5. BottomSheet Modal (참여코드 발급 모달)
    ========================================================================== */
+.modalScrim {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  transform: none !important;
+  z-index: 50;
+  border-radius: inherit;
+}
+
 .modalSheet {
-  --bottom-sheet-border-radius: 36px 36px 0 0;
+  --bottom-sheet-border-radius: 28px 28px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  height: auto;
+  max-height: 85%;
   padding: 12px 24px 32px;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
-  border-top-left-radius: 36px;
-  border-top-right-radius: 36px;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .modalContent {

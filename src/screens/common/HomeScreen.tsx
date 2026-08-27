@@ -255,6 +255,7 @@ export default function HomeScreen({
         open={isLogoutModalOpen}
         titleId="logout-dialog-title"
         descriptionId="logout-dialog-desc"
+        scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={() => setIsLogoutModalOpen(false)}
       >
