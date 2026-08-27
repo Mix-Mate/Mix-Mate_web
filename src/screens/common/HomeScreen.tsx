@@ -403,32 +403,40 @@ export default function HomeScreen({
       <BottomSheetDialog
         open={isLogoutModalOpen}
         titleId="logout-modal-title"
+        descriptionId="logout-modal-description"
         scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={() => setIsLogoutModalOpen(false)}
       >
-        <div className={styles.modalBody}>
-          <p id="logout-modal-title" className={styles.modalDescription}>
-            로그아웃 하시겠습니까?
+        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`}>
+          <LogOut size={24} strokeWidth={2} aria-hidden="true" />
+        </div>
+
+        <div className={styles.modalContent}>
+          <h3 id="logout-modal-title" className={styles.modalTitle}>
+            로그아웃할까요?
+          </h3>
+          <p id="logout-modal-description" className={styles.modalDescription}>
+            언제든지 다시 로그인하여 서비스를 이용하실 수 있습니다.
           </p>
+        </div>
 
-          <div className={styles.modalActions}>
-            <button
-              type="button"
-              className={styles.modalCancelButton}
-              onClick={() => setIsLogoutModalOpen(false)}
-            >
-              취소
-            </button>
+        <div className={styles.modalActions}>
+          <button
+            type="button"
+            className={styles.modalCancelButton}
+            onClick={() => setIsLogoutModalOpen(false)}
+          >
+            취소
+          </button>
 
-            <button
-              type="button"
-              className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
-              onClick={handleConfirmLogout}
-            >
-              로그아웃
-            </button>
-          </div>
+          <button
+            type="button"
+            className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
+            onClick={handleConfirmLogout}
+          >
+            로그아웃
+          </button>
         </div>
       </BottomSheetDialog>
     </MobileFrame>
