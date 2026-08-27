@@ -387,15 +387,9 @@ export function SignupForm() {
             type="button"
             variant="primary"
             onClick={handleVerifyCode}
-            disabled={
-              isVerifyDisabled ||
-              verificationStatus === 'VERIFYING' ||
-              !authCode.trim()
-            }
+            disabled={isVerifyDisabled || !authCode.trim()}
             className={`${styles.sideButton} ${
-              isVerifyDisabled || verificationStatus === 'VERIFYING'
-                ? styles.sideButtonDisabled
-                : ''
+              isVerifyDisabled ? styles.sideButtonDisabled : ''
             }`}
           >
             {verificationStatus === 'VERIFYING' ? '확인 중...' : '인증번호 확인'}
