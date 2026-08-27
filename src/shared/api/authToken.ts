@@ -34,6 +34,7 @@ export function setAuthTokens(tokens: {
     window.localStorage.setItem("refreshToken", tokens.refreshToken);
   }
 
+
   document.cookie = `accessToken=${tokens.accessToken}; path=/; max-age=86400; SameSite=Lax`;
   if (tokens.refreshToken) {
     document.cookie = `refreshToken=${tokens.refreshToken}; path=/; max-age=604800; SameSite=Lax`;
@@ -43,9 +44,7 @@ export function setAuthTokens(tokens: {
 export function clearAuthTokens(): void {
   if (typeof window === "undefined") return;
 
-  for (const key of [...TOKEN_STORAGE_KEYS, ...REFRESH_TOKEN_STORAGE_KEYS, "user", "userName", "userId"]) {
-    window.localStorage.removeItem(key);
-    window.sessionStorage.removeItem(key);
+
   }
 
   document.cookie = "accessToken=; path=/; max-age=0; SameSite=Lax";

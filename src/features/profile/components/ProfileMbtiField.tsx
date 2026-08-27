@@ -6,7 +6,7 @@ import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import styles from "@/screens/common/EditMyProfileScreen.module.css";
 
 interface ProfileMbtiFieldProps {
-  value: ProfileMbti;
+  value: ProfileMbti | null;
   onChange: (value: ProfileMbti) => void;
 }
 
@@ -44,7 +44,7 @@ export default function ProfileMbtiField({
         className={styles.selectField}
         onClick={() => setOpen(true)}
       >
-        {value}
+        {value ?? "선택"}
       </button>
 
       <BottomSheetDialog
