@@ -101,7 +101,22 @@ export default function AssignmentResultScreen() {
       data-testid="assignment-result-screen"
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} />
+      <Header
+        title={group.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              round === 2
+                ? groupRoutes.adminAssignmentSetup(params.groupId, round)
+                : groupRoutes.adminAssignmentFixedMembers(
+                    params.groupId,
+                    round,
+                  ),
+              searchParams,
+            ),
+          )
+        }
+      />
 
       <TabNavigation
         items={[

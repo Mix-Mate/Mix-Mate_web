@@ -62,7 +62,7 @@ export default function AdminPreparationScreen() {
         <AdminPreparationActions
           onStartAssignment={() =>
             navigateWithSession(
-              groupRoutes.adminAssignmentSetup(params.groupId, round),
+              groupRoutes.adminParticipants(params.groupId, round),
             )
           }
           secondaryAction={{
