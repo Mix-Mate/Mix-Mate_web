@@ -240,6 +240,9 @@
 }
 
 .footer {
+  position: sticky;
+  z-index: 10;
+  bottom: 0;
   flex: 0 0 auto;
   margin-top: auto;
   padding: 14px 18px 20px;

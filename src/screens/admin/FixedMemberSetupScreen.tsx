@@ -33,25 +33,6 @@ import styles from "@/features/assignment/components/fixed-members.module.css";
 
 const DEFAULT_GROUP_COUNT = 3;
 
-// 참가자 수를 조 개수만큼 최대한 균등하게 나눴을 때, 각 조가 받을 수 있는 최대 인원.
-// 나머지 인원은 앞쪽 조 번호부터 1명씩 더 배정된다 (조당 인원 라벨 계산과 동일한 규칙).
-function getTeamCapacityByNumber(
-  totalCount: number,
-  groupCount: number,
-): Record<number, number> {
-  if (groupCount <= 0) return {};
-
-  const base = Math.floor(totalCount / groupCount);
-  const remainder = totalCount % groupCount;
-  const capacities: Record<number, number> = {};
-
-  for (let team = 1; team <= groupCount; team += 1) {
-    capacities[team] = team <= remainder ? base + 1 : base;
-  }
-
-  return capacities;
-}
-
 export default function FixedMemberSetupScreen() {
   const params = useParams<{ groupId: string; round: string }>();
   const router = useRouter();
@@ -103,10 +84,13 @@ export default function FixedMemberSetupScreen() {
     });
   }, [candidates, fixedTeamByParticipantId, keyword]);
 
-  const teamCapacityByNumber = useMemo(
-    () => getTeamCapacityByNumber(candidates.length, groupCount),
-    [candidates.length, groupCount],
-  );
+  // 참가자 수를 조 개수만큼 최대한 균등하게 나눴을 때의 기본 인원(base)과,
+  // "+1명"을 받을 수 있는 조의 개수(remainder). 어느 조가 그 +1을 가져갈지는
+  // 조 번호로 미리 정하지 않고, 고정 멤버를 먼저 채우는 조가 가져간다
+  // (SelectFixedGroupDialog에서 실시간으로 판단).
+  const base =
+    groupCount > 0 ? Math.floor(candidates.length / groupCount) : 0;
+  const remainder = groupCount > 0 ? candidates.length % groupCount : 0;
 
   const fixedCountByTeam = useMemo(() => {
     const counts: Record<number, number> = {};
@@ -194,7 +178,17 @@ export default function FixedMemberSetupScreen() {
       data-testid="fixed-member-setup-screen"
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} />
+      <Header
+        title={group.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              groupRoutes.adminAssignmentSetup(params.groupId, round),
+              searchParams,
+            ),
+          )
+        }
+      />
 
       <TabNavigation
         items={[
@@ -316,7 +310,8 @@ export default function FixedMemberSetupScreen() {
         }
         groupCount={groupCount}
         fixedCountByTeam={fixedCountByTeam}
-        capacityByTeam={teamCapacityByNumber}
+        base={base}
+        remainder={remainder}
         onClose={() => setAssigningMember(null)}
         onConfirm={confirmAssignment}
       />

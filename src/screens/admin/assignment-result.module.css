@@ -39,6 +39,9 @@
 }
 
 .footer {
+  position: sticky;
+  z-index: 10;
+  bottom: 0;
   display: flex;
   flex: 0 0 auto;
   gap: 10px;

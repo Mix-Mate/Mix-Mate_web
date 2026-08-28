@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AdminParticipantList from "@/features/participant/components/AdminParticipantList";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
 import type { ParticipantRole } from "@/features/participant/types/participant.types";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
@@ -64,7 +65,17 @@ export default function AdminParticipantManagementScreen() {
       viewportClassName={styles.viewport}
       data-testid="admin-participant-management"
     >
-      <Header title={data.groupName} onBack={() => router.back()} />
+      <Header
+        title={data.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              groupRoutes.adminPreparation(params.groupId),
+              searchParams,
+            ),
+          )
+        }
+      />
 
       <TabNavigation
         items={[
