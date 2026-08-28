@@ -1,5 +1,5 @@
-import AdminRecruitmentScreen from "@/screens/admin/AdminRecruitmentScreen";
+import AdminHomeScreen from "@/screens/admin/AdminHomeScreen";
 
 export default function GroupAdminPage() {
-  return <AdminRecruitmentScreen />;
+  return <AdminHomeScreen />;
 }

@@ -190,13 +190,16 @@ export default function HomeScreen({
     };
   }, []);
 
-  // Navigation handlers
   const handleGroupClick = (group: HomeScreenGroupItem) => {
     if (group.status === "FINISHED") {
       router.push(groupRoutes.completed(group.id));
-    } else {
-      router.push(groupRoutes.home(group.id));
+      return;
     }
+    if (group.role === "HOST") {
+      router.push(groupRoutes.adminHome(group.id));
+      return;
+    }
+    router.push(groupRoutes.userHome(group.id));
   };
 
   // Logout flow

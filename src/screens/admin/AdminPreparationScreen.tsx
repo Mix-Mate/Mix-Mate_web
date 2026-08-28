@@ -31,9 +31,46 @@ export default function AdminPreparationScreen() {
   );
 
   useEffect(() => {
-    if (group && !round) {
+    if (!group) return;
+
+    if (group.status === "RECRUITING") {
       router.replace(
-        withSessionContext(groupRoutes.home(params.groupId), searchParams),
+        withSessionContext(
+          groupRoutes.adminRecruitment(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (
+      group.status === "FIRST_ROUND" ||
+      group.status === "SECOND_ROUND" ||
+      group.status === "VOTING" ||
+      group.status === "VOTE_CLOSED"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminProgress(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (group.status === "FINISHED") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.completed(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (!round) {
+      router.replace(
+        withSessionContext(groupRoutes.adminHome(params.groupId), searchParams),
       );
     }
   }, [group, params.groupId, round, router, searchParams]);
