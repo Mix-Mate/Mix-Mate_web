@@ -12,6 +12,11 @@ import {
   GroupApiError,
   type GroupProfileDto,
 } from "@/features/group/api/group.api";
+import { normalizeMajor } from "@/features/profile/lib/normalize-major";
+import {
+  getValidationMessage,
+  groupProfileSchema,
+} from "@/features/profile/schemas/group-profile.schema";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupExtraInfoScreen.module.css";
 
@@ -22,13 +27,13 @@ const MBTI_LIST = [
   "ESTJ", "ESFJ", "ENFJ", "ENTJ",
 ] as const;
 
-export type GradeType = "1학년" | "2학년" | "3학년" | "4학년" | "";
+export type GradeType = "1학년" | "2학년" | "3학년" | "4학년" | "기타" | "";
 export type GenderType = "남" | "여" | "";
 export type NewStatusType = "신입" | "기존" | "";
 export type RolePositionType = "일반" | "운영진" | "";
 export type ProfilePublicType = "전체 공개" | "비공개";
 
-const gradeOptions: GradeType[] = ["1학년", "2학년", "3학년", "4학년"];
+const gradeOptions: GradeType[] = ["1학년", "2학년", "3학년", "4학년", "기타"];
 const genderOptions: GenderType[] = ["남", "여"];
 const isNewOptions: NewStatusType[] = ["신입", "기존"];
 const positionOptions: RolePositionType[] = ["일반", "운영진"];
@@ -132,24 +137,43 @@ export default function GroupExtraInfoScreen({
       "2학년": "SECOND",
       "3학년": "THIRD",
       "4학년": "FOURTH",
+      기타: "OTHER",
     };
     const genderMap: Record<string, string> = {
       남: "MALE",
       여: "FEMALE",
     };
 
-    const profileDto: GroupProfileDto = {
+    const profileFormData = {
       displayName: name.trim(),
-      position: rolePosition === "운영진" ? "STAFF" : "MEMBER",
-      major: department.trim(),
-      isNew: isNew === "신입",
-      grade: gradeMap[grade] || "FIRST",
-      gender: genderMap[gender] || "MALE",
-      mbti: mbti || "ENFP",
-      age: parseInt(age, 10) || 20,
-      instaId: instagramId.trim() || undefined,
-      bio: bio.trim() || undefined,
+      position: rolePosition
+        ? rolePosition === "운영진"
+          ? "STAFF"
+          : "MEMBER"
+        : undefined,
+      major: normalizeMajor(department.trim()),
+      isNew: isNew ? isNew === "신입" : undefined,
+      grade: grade ? gradeMap[grade] : undefined,
+      gender: gender ? genderMap[gender] : undefined,
+      mbti: mbti || undefined,
+      age: age.trim() ? Number(age) : null,
+      instaId: instagramId.trim() || null,
+      bio: bio.trim() || null,
       visibility: isPublicProfile === "전체 공개" ? "PUBLIC" : "PRIVATE",
+    };
+    const validation = groupProfileSchema.safeParse(profileFormData);
+
+    if (!validation.success) {
+      alert(getValidationMessage(validation.error));
+      setIsSubmitting(false);
+      return;
+    }
+
+    const profileDto: GroupProfileDto = {
+      ...validation.data,
+      age: validation.data.age ?? 20,
+      instaId: validation.data.instaId ?? undefined,
+      bio: validation.data.bio ?? undefined,
     };
 
     const fromParam = searchParams.get("from");
@@ -248,6 +272,7 @@ export default function GroupExtraInfoScreen({
           </span>
           <input
             value={name}
+            maxLength={10}
             onChange={(e) => setName(e.target.value)}
             placeholder="이름 입력"
             required
@@ -295,6 +320,7 @@ export default function GroupExtraInfoScreen({
           </span>
           <input
             value={department}
+            maxLength={15}
             onChange={(e) => setDepartment(e.target.value)}
             placeholder="소속 입력"
             required
@@ -385,12 +411,13 @@ export default function GroupExtraInfoScreen({
         <label className={styles.field}>
           <span>나이 (선택)</span>
           <input
-            type="number"
             value={age}
-            onChange={(e) => setAge(e.target.value)}
+            inputMode="numeric"
+            maxLength={10}
+            onChange={(e) =>
+              setAge(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))
+            }
             placeholder="나이 입력"
-            min={1}
-            max={120}
           />
         </label>
 
@@ -399,6 +426,7 @@ export default function GroupExtraInfoScreen({
           <span>인스타 ID (선택)</span>
           <input
             value={instagramId}
+            maxLength={15}
             onChange={(e) => setInstagramId(e.target.value)}
             placeholder="@아이디 입력"
           />
@@ -410,6 +438,7 @@ export default function GroupExtraInfoScreen({
           <textarea
             className={styles.textArea}
             value={bio}
+            maxLength={50}
             onChange={(e) => setBio(e.target.value)}
             placeholder="자기소개를 입력해 주세요"
           />

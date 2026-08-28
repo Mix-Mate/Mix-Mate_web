@@ -106,7 +106,7 @@ export default function ParticipantProfileScreen({
   return (
     <MobileFrame className={styles.phone} viewportClassName={styles.viewport}>
       {!shouldBlockPrivateProfile && (
-        <Header title="참가자 프로필" onBack={() => router.back()} smallTitle />
+        <Header title="참가자 프로필" onBack={() => router.back()} />
       )}
 
       {!shouldBlockPrivateProfile && canDeleteParticipant && (

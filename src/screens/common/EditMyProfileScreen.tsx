@@ -46,6 +46,7 @@ export default function EditMyProfileScreen() {
           initialProfile={data}
           isSubmitting={isPending}
           submitLabel="변경사항 저장"
+          onValidationError={showToast}
           onSubmit={async (profile) => {
             const result = await mutate({
               groupId: params.groupId,
