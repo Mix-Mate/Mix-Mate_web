@@ -40,10 +40,6 @@
     transform 100ms ease;
 }
 
-.editGroupButton:hover {
-  background: #dbeafe;
-}
-
 .editGroupButton:active {
   transform: scale(0.94);
 }

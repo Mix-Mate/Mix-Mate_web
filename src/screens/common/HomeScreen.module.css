@@ -76,12 +76,6 @@
     transform 0.1s ease;
 }
 
-.logoutButton:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #ef4444;
-}
-
 .logoutButton:active {
   transform: scale(0.96);
 }
@@ -144,11 +138,6 @@
   gap: 8px;
 }
 
-.actionCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-}
-
 .actionCard:active {
   transform: scale(0.98);
 }
@@ -158,17 +147,9 @@
   border-color: #dbeafe;
 }
 
-.actionCardCreate:hover {
-  border-color: #3b82c4;
-}
-
 .actionCardJoin {
   background: #f5f3ff;
   border-color: #ede9fe;
-}
-
-.actionCardJoin:hover {
-  border-color: #8b5cf6;
 }
 
 .actionRoleAdmin {
@@ -304,12 +285,6 @@
   box-sizing: border-box;
 }
 
-.groupCard:hover {
-  transform: translateY(-2px);
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-}
-
 .groupCard:active {
   transform: scale(0.985);
 }
@@ -387,11 +362,6 @@
     color 0.15s ease,
     transform 0.15s ease;
   flex-shrink: 0;
-}
-
-.groupCard:hover .groupCardRight {
-  color: #256ad3;
-  transform: translateX(2px);
 }
 
 /* ==========================================================================
@@ -635,10 +605,6 @@
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
-.modalCancelButton:hover {
-  background: #e4e4e7;
-}
-
 .modalCancelButton:active {
   transform: scale(0.98);
 }
@@ -658,18 +624,9 @@
   transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
-.modalConfirmButton:hover {
-  background: #1e56ab;
-}
-
 .modalDangerButton {
   background: #ef4444;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.modalDangerButton:hover {
-  background: #dc2626;
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
 }
 
 .modalDangerButton:active {

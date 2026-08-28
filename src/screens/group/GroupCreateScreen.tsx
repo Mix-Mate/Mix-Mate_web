@@ -4,9 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Info } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import Toast from "@/shared/ui/Toast";
-import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "./GroupCreateScreen.module.css";
 
@@ -20,22 +17,6 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
   // State requirements
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-  const [isCodeIssued, setIsCodeIssued] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [inviteCode, setInviteCode] = useState("");
-
-  // Shared toast hook (2000ms auto dismiss)
-  const { message, showToast } = useToast(2000);
-
-  // Generate 6-digit random code (e.g., 7K2M91)
-  const generateRandomCode = () => {
-    const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
-    let code = "";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
 
   const handleBack = () => {
     router.back();
@@ -46,55 +27,20 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
     e.preventDefault();
     if (!groupName.trim()) return;
 
-    if (!isCodeIssued) {
-      // Flow ①: 처음 클릭 시 참여코드 발급 후 모달 띄우기
-      const newCode = generateRandomCode();
-      setInviteCode(newCode);
-      setIsCodeIssued(true);
-      setIsModalOpen(true);
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("pendingGroupName", groupName.trim());
+      window.sessionStorage.setItem("pendingGroupDesc", description.trim());
+    }
 
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem("pendingGroupName", groupName.trim());
-        window.sessionStorage.setItem("pendingGroupDesc", description.trim());
-      }
+    if (onSuccess) {
+      onSuccess(groupName.trim(), "");
     } else {
-      // Flow ④: 이미 발급된 상태에서 다시 클릭 시 다음 페이지로 이동
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem("pendingGroupName", groupName.trim());
-        window.sessionStorage.setItem("pendingGroupDesc", description.trim());
-      }
-
-      if (onSuccess) {
-        onSuccess(groupName.trim(), inviteCode);
-      } else {
-        router.push(
-          `${groupRoutes.createExtra()}?groupName=${encodeURIComponent(
-            groupName.trim(),
-          )}&description=${encodeURIComponent(description.trim())}&role=admin`,
-        );
-      }
+      router.push(
+        `${groupRoutes.createExtra()}?groupName=${encodeURIComponent(
+          groupName.trim(),
+        )}&description=${encodeURIComponent(description.trim())}&role=admin&from=create`,
+      );
     }
-  };
-
-  // Modal action: [복사하기]
-  const handleCopyCode = async () => {
-    if (!inviteCode) return;
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(inviteCode);
-      }
-    } catch {
-      // Fallback
-    }
-
-    // Flow ②: 토스트 2초간 노출
-    showToast("참여코드가 복사되었습니다.");
-  };
-
-  // Flow ③: 모달 닫기
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
   };
 
   return (
@@ -172,60 +118,6 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
           조 편성하기
         </button>
       </footer>
-
-      {/* 4. 참여코드 발급 바텀시트 모달 */}
-      <BottomSheetDialog
-        open={isModalOpen}
-        titleId="issued-code-label"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
-        onClose={handleCloseModal}
-      >
-        <div className={styles.modalContent}>
-          <span id="issued-code-label" className={styles.codeLabel}>
-            참여코드
-          </span>
-
-          <p className={styles.codeText}>{inviteCode}</p>
-
-          <span className={styles.codeSubtext}>
-            클릭해서 복사하기
-          </span>
-        </div>
-
-        <button
-          type="button"
-          className={styles.copyButton}
-          onClick={handleCopyCode}
-        >
-          복사하기
-        </button>
-      </BottomSheetDialog>
-
-      {/* 5. 클립보드 복사 성공 토스트 알림 */}
-      {message && (
-        <Toast className={styles.toastContainer}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={styles.toastIcon}
-            aria-hidden="true"
-          >
-            <circle cx="8" cy="8" r="8" fill="#008A2E" />
-            <path
-              d="M4.5 8L6.8 10.3L11.5 5.5"
-              stroke="#FFFFFF"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span>{message}</span>
-        </Toast>
-      )}
     </MobileFrame>
   );
 }

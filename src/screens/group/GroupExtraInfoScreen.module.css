@@ -136,7 +136,6 @@
   color: #27272a;
 }
 
-.dropdownTrigger:hover,
 .dropdownTriggerActive {
   border-color: #3b82c4;
 }
@@ -200,11 +199,6 @@
     transform 0.1s ease;
 }
 
-.dropdownItem:hover:not(.dropdownItemActive) {
-  background: #f4f4f5;
-  border-color: #cbd5e1;
-}
-
 .dropdownItem:active {
   transform: scale(0.96);
 }
@@ -264,11 +258,6 @@
   box-sizing: border-box;
 }
 
-.chipGroup button:hover:not(.activeChip) {
-  border-color: #cbd5e1;
-  color: #18181b;
-}
-
 .chipGroup button:active {
   transform: scale(0.96);
 }
@@ -302,10 +291,6 @@
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;
-}
-
-.footer button:hover:not(:disabled) {
-  background-color: #1e56ab;
 }
 
 .footer button:active:not(:disabled) {

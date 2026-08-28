@@ -57,10 +57,6 @@
   padding: 0;
 }
 
-.backButton:hover {
-  background-color: #f4f4f5;
-}
-
 .backButton:active {
   transform: scale(0.94);
 }
@@ -242,10 +238,6 @@
     transform 0.1s ease;
 }
 
-.submitButton:hover:not(:disabled) {
-  background-color: #1e56ab;
-}
-
 .submitButton:active:not(:disabled) {
   transform: scale(0.985);
 }
@@ -254,151 +246,4 @@
   background-color: #e4e4e7;
   color: #a1a1aa;
   cursor: not-allowed;
-}
-
-/* ==========================================================================
-   5. BottomSheet Modal (참여코드 발급 모달)
-   ========================================================================== */
-.modalScrim {
-  position: absolute !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100% !important;
-  transform: none !important;
-  z-index: 50;
-  border-radius: inherit;
-}
-
-.modalSheet {
-  --bottom-sheet-border-radius: 28px 28px 0 0;
-  --bottom-sheet-handle-margin: 0 auto 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  height: auto;
-  max-height: 85%;
-  padding: 12px 24px 32px;
-  background: #ffffff;
-  box-sizing: border-box;
-  width: 100%;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
-}
-
-.modalContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.codeLabel {
-  color: #3b82c4;
-  text-align: center;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0;
-}
-
-.codeText {
-  color: #18181b;
-  text-align: center;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
-  font-size: 40px;
-  font-style: normal;
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: 6px;
-  margin: 4px 0 2px;
-  user-select: all;
-}
-
-.codeSubtext {
-  color: #71717a;
-  text-align: center;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.4;
-  margin: 0;
-}
-
-.copyButton {
-  width: 100%;
-  height: 54px;
-  background-color: #256ad3;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 16px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  transition:
-    background-color 0.15s ease,
-    transform 0.1s ease;
-}
-
-.copyButton:hover {
-  background-color: #1e56ab;
-}
-
-.copyButton:active {
-  transform: scale(0.985);
-}
-
-/* ==========================================================================
-   6. Toast Notification
-   ========================================================================== */
-.toastContainer {
-  position: absolute !important;
-  bottom: 36px !important;
-  left: 50% !important;
-  right: auto !important;
-  transform: translateX(-50%) !important;
-  z-index: 100 !important;
-  display: flex !important;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px !important;
-  background: #ecfdf3 !important;
-  color: #027a48 !important;
-  border: 1.656px solid #bffcd9 !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
-  font-size: 13.5px !important;
-  font-weight: 600 !important;
-  white-space: nowrap;
-  animation: toastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-}
-
-.toastIcon {
-  flex-shrink: 0;
-  fill: #008a2e;
-  color: #008a2e;
-}
-
-@keyframes toastPop {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 14px) scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-  }
 }
