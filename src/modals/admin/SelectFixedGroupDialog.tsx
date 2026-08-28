@@ -17,8 +17,11 @@ interface SelectFixedGroupDialogProps {
   groupCount: number;
   /** 조 번호 -> 현재 그 조에 고정된 인원 수 (선택 중인 멤버 본인은 제외). */
   fixedCountByTeam: Record<number, number>;
-  /** 조 번호 -> 그 조가 받을 수 있는 최대 인원 수. */
-  capacityByTeam: Record<number, number>;
+  /** 모든 조가 기본으로 받을 수 있는 인원 수. */
+  base: number;
+  /** "+1명"(base+1)을 받을 수 있는 조의 개수. 어느 조가 가져갈지는 정해져 있지 않고,
+   * 먼저 base+1을 채우는 조가 선점한다. */
+  remainder: number;
   onClose: () => void;
   onConfirm: (teamNumber: number) => void;
 }
@@ -29,7 +32,8 @@ export default function SelectFixedGroupDialog({
   currentTeamNumber,
   groupCount,
   fixedCountByTeam,
-  capacityByTeam,
+  base,
+  remainder,
   onClose,
   onConfirm,
 }: SelectFixedGroupDialogProps) {
@@ -38,6 +42,11 @@ export default function SelectFixedGroupDialog({
   );
 
   if (!member) return null;
+
+  const teamNumbers = Array.from({ length: groupCount }, (_, index) => index + 1);
+  const extraSlotUsedCount = teamNumbers.filter(
+    (teamNumber) => (fixedCountByTeam[teamNumber] ?? 0) >= base + 1,
+  ).length;
 
   return (
     <BottomSheetDialog
@@ -62,11 +71,14 @@ export default function SelectFixedGroupDialog({
       </div>
 
       <div className={styles.groupList}>
-        {Array.from({ length: groupCount }, (_, index) => index + 1).map(
+        {teamNumbers.map(
           (teamNumber) => {
             const isSelected = selected === teamNumber;
-            const capacity = capacityByTeam[teamNumber] ?? 0;
             const fixedCount = fixedCountByTeam[teamNumber] ?? 0;
+            const hasClaimedExtraSlot = fixedCount >= base + 1;
+            const extraSlotAvailable =
+              hasClaimedExtraSlot || extraSlotUsedCount < remainder;
+            const capacity = extraSlotAvailable ? base + 1 : base;
             const isFull =
               capacity > 0 &&
               fixedCount >= capacity &&
@@ -86,11 +98,6 @@ export default function SelectFixedGroupDialog({
                 onClick={() => setSelected(teamNumber)}
               >
                 {teamNumber}조
-                {capacity > 0 && (
-                  <span className={styles.groupCapacity}>
-                    {fixedCount}/{capacity}
-                  </span>
-                )}
                 {isSelected && (
                   <span className={styles.check} aria-hidden="true">
                     <Check size={16} strokeWidth={3} />

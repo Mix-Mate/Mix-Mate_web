@@ -68,6 +68,19 @@ type AddParticipantForm = {
   visibility: ProfileVisibility | null;
 };
 
+function getMissingFieldMessage(form: AddParticipantForm) {
+  if (!form.displayName.trim()) return "이름을 입력해주세요.";
+  if (!form.grade) return "학년을 선택해주세요.";
+  if (!form.gender) return "성별을 선택해주세요.";
+  if (!form.major.trim()) return "소속을 입력해주세요.";
+  if (form.isNew === null) return "신입 여부를 선택해주세요.";
+  if (!form.position) return "직급을 선택해주세요.";
+  if (!form.mbti) return "MBTI를 선택해주세요.";
+  if (!form.visibility) return "프로필 공개 여부를 선택해주세요.";
+
+  return null;
+}
+
 export default function AddParticipantScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -108,6 +121,13 @@ export default function AddParticipantScreen() {
       displayName: form.displayName.trim(),
       major: form.major.trim(),
     };
+    const missingFieldMessage = getMissingFieldMessage(formData);
+
+    if (missingFieldMessage) {
+      showToast(missingFieldMessage);
+      return;
+    }
+
     const validation = groupProfileSchema.safeParse(formData);
 
     if (!validation.success) {

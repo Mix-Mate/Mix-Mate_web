@@ -16,7 +16,11 @@ function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === "AbortError";
 }
 
-export function useParticipantListQuery(groupId: string) {
+export function useParticipantListQuery(
+  groupId: string,
+  options: { polling?: boolean } = {},
+) {
+  const polling = options.polling ?? false;
   const requestIdRef = useRef(0);
   const [data, setData] = useState(initialParticipantGroup);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +76,10 @@ export function useParticipantListQuery(groupId: string) {
   }, [fetchParticipants]);
 
   useEffect(() => {
+    if (!polling) {
+      return;
+    }
+
     let active = true;
     let pollingTimer: number | undefined;
     let requestController: AbortController | null = null;
@@ -102,7 +110,7 @@ export function useParticipantListQuery(groupId: string) {
         window.clearTimeout(pollingTimer);
       }
     };
-  }, [fetchParticipants]);
+  }, [fetchParticipants, polling]);
 
   return {
     data,

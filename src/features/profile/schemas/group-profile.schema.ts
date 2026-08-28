@@ -68,6 +68,32 @@ export const groupProfileSchema = z.object({
 
 export type GroupProfileFormValues = z.infer<typeof groupProfileSchema>;
 
+const validationFieldOrder = [
+  "displayName",
+  "grade",
+  "gender",
+  "major",
+  "isNew",
+  "position",
+  "mbti",
+  "age",
+  "instaId",
+  "bio",
+  "visibility",
+];
+
 export function getValidationMessage(error: z.ZodError) {
-  return error.issues[0]?.message ?? "입력값을 확인해주세요.";
+  const sortedIssue = [...error.issues].sort((first, second) => {
+    const firstField = String(first.path[0] ?? "");
+    const secondField = String(second.path[0] ?? "");
+    const firstOrder = validationFieldOrder.indexOf(firstField);
+    const secondOrder = validationFieldOrder.indexOf(secondField);
+
+    return (
+      (firstOrder === -1 ? validationFieldOrder.length : firstOrder) -
+      (secondOrder === -1 ? validationFieldOrder.length : secondOrder)
+    );
+  })[0];
+
+  return sortedIssue?.message ?? "입력값을 확인해주세요.";
 }
