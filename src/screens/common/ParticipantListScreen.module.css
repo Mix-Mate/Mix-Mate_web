@@ -148,10 +148,6 @@
   list-style: none;
 }
 
-.participantList > li:not(:last-child) {
-  border-bottom: 1px solid #eeeeee;
-}
-
 .participantSearch {
   flex: 0 0 46px;
   margin-top: 14px;
@@ -164,6 +160,10 @@
   gap: 16px;
   color: inherit;
   text-decoration: none;
+}
+
+.participantList > li:not(:last-child) .participantItem {
+  border-bottom: 1px solid #eeeeee;
 }
 
 .participantInfo {

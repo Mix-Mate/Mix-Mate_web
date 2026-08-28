@@ -59,14 +59,28 @@ export default function AdminParticipantManagementScreen() {
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    return data.participants.filter((participant) => {
+    const participants = data.participants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
 
       return matchesKeyword && matchesFilter;
     });
-  }, [data.participants, filter, keyword]);
+
+    return participants.sort((first, second) => {
+      const firstIsMe = first.id === String(group?.myParticipantId);
+      const secondIsMe = second.id === String(group?.myParticipantId);
+
+      if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
+
+      const firstIsStaff = first.role === "staff";
+      const secondIsStaff = second.role === "staff";
+
+      if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
+
+      return 0;
+    });
+  }, [data.participants, filter, group?.myParticipantId, keyword]);
 
   const goToAssignment = () => {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
