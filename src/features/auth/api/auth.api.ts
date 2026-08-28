@@ -289,3 +289,39 @@ export async function performLogout(): Promise<void> {
     clearAuthTokens();
   }
 }
+
+export interface ResetPasswordRequest {
+  email: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
+
+export interface ResetPasswordResponse {
+  message?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * 비밀번호 재설정 API (백엔드 실제 API 연동 전 Mock 함수)
+ */
+export async function resetPasswordApi(
+  data: ResetPasswordRequest,
+): Promise<ResetPasswordResponse> {
+  // 모의 네트워크 지연
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  if (!data.email.trim()) {
+    throw new AuthApiError("이메일을 입력해 주세요.", 400);
+  }
+
+  if (!data.newPassword || data.newPassword.length < 8) {
+    throw new AuthApiError("새 비밀번호는 8자 이상이어야 합니다.", 400);
+  }
+
+  if (data.confirmPassword && data.newPassword !== data.confirmPassword) {
+    throw new AuthApiError("비밀번호가 일치하지 않습니다.", 400);
+  }
+
+  return { message: "비밀번호가 성공적으로 변경되었습니다." };
+}
+

@@ -7,11 +7,11 @@ import InfoBanner from '@/shared/ui/InfoBanner';
 import {
   sendVerificationCodeApi,
   verifyCodeApi,
-  signupApi,
+  resetPasswordApi,
   AuthApiError,
 } from '../api/auth.api';
-import { signupSchema } from '../schemas/auth.schema';
-import styles from './SignupForm.module.css';
+import { resetPasswordSchema } from '../schemas/auth.schema';
+import styles from './FindPasswordForm.module.css';
 
 type VerificationStatus =
   | 'IDLE'
@@ -23,14 +23,13 @@ type VerificationStatus =
 
 const VERIFICATION_TIME_LIMIT_SEC = 300; // 5분 유효시간
 
-export function SignupForm() {
+export function FindPasswordForm() {
   const router = useRouter();
 
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [authCode, setAuthCode] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [verificationStatus, setVerificationStatus] =
     useState<VerificationStatus>('IDLE');
   const [timeLeft, setTimeLeft] = useState(0);
@@ -68,18 +67,6 @@ export function SignupForm() {
     return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
-    if (fieldErrors.userName || fieldErrors.name) {
-      setFieldErrors((prev) => {
-        const next = { ...prev };
-        delete next.userName;
-        delete next.name;
-        return next;
-      });
-    }
-  };
-
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     if (fieldErrors.email) {
@@ -110,35 +97,35 @@ export function SignupForm() {
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setPassword(val);
+    setNewPassword(val);
     setFieldErrors((prev) => {
       const next = { ...prev };
-      delete next.password;
+      delete next.newPassword;
       if (val && val.length < 8) {
-        next.password = '비밀번호는 8자 이상이어야 합니다.';
+        next.newPassword = '비밀번호는 8자 이상이어야 합니다.';
       }
-      if (passwordConfirm && val !== passwordConfirm) {
-        next.passwordConfirm = '비밀번호가 일치하지 않습니다.';
-      } else if (passwordConfirm && val === passwordConfirm) {
-        delete next.passwordConfirm;
+      if (confirmPassword && val !== confirmPassword) {
+        next.confirmPassword = '비밀번호가 일치하지 않습니다.';
+      } else if (confirmPassword && val === confirmPassword) {
+        delete next.confirmPassword;
       }
       return next;
     });
   };
 
-  const handlePasswordConfirmChange = (
+  const handleConfirmPasswordChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const val = e.target.value;
-    setPasswordConfirm(val);
+    setConfirmPassword(val);
     setFieldErrors((prev) => {
       const next = { ...prev };
-      if (password && val !== password) {
-        next.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+      if (newPassword && val !== newPassword) {
+        next.confirmPassword = '비밀번호가 일치하지 않습니다.';
       } else {
-        delete next.passwordConfirm;
+        delete next.confirmPassword;
       }
       return next;
     });
@@ -150,8 +137,6 @@ export function SignupForm() {
       e.preventDefault();
       e.stopPropagation();
     }
-
-    console.log('인증번호 발송 시도:', email);
 
     if (!email.trim()) {
       setFieldErrors((prev) => ({
@@ -179,14 +164,11 @@ export function SignupForm() {
     setVerificationStatus('SENDING');
 
     try {
-      console.log('sendVerificationCodeApi 호출 시작:', email.trim());
-      const response = await sendVerificationCodeApi({ email: email.trim() });
-      console.log('sendVerificationCodeApi 호출 성공:', response);
+      await sendVerificationCodeApi({ email: email.trim() });
       setVerificationStatus('SENT');
       setTimeLeft(VERIFICATION_TIME_LIMIT_SEC);
       setAuthCode('');
     } catch (error: unknown) {
-      console.error('sendVerificationCodeApi 호출 실패:', error);
       setVerificationStatus('IDLE');
       if (error instanceof AuthApiError) {
         setFieldErrors((prev) => ({
@@ -208,8 +190,6 @@ export function SignupForm() {
       e.preventDefault();
       e.stopPropagation();
     }
-
-    console.log('인증번호 검증 시도:', { email, code: authCode });
 
     if (!authCode.trim()) {
       setFieldErrors((prev) => ({
@@ -236,22 +216,16 @@ export function SignupForm() {
     setVerificationStatus('VERIFYING');
 
     try {
-      console.log('verifyCodeApi 호출 시작:', {
+      await verifyCodeApi({
         email: email.trim(),
         code: authCode.trim(),
       });
-      const response = await verifyCodeApi({
-        email: email.trim(),
-        code: authCode.trim(),
-      });
-      console.log('verifyCodeApi 호출 성공:', response);
 
       // 인증 성공
       setVerificationStatus('VERIFIED');
       setTimeLeft(0);
       if (timerRef.current) clearInterval(timerRef.current);
     } catch (error: unknown) {
-      console.error('verifyCodeApi 호출 실패:', error);
       setVerificationStatus('FAILED');
       if (error instanceof AuthApiError) {
         setFieldErrors((prev) => ({
@@ -267,7 +241,7 @@ export function SignupForm() {
     }
   };
 
-  // 3. [가입하기] 제출
+  // 3. [변경하기] 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -280,12 +254,10 @@ export function SignupForm() {
       return;
     }
 
-    const validationResult = signupSchema.safeParse({
-      userName: name.trim(),
+    const validationResult = resetPasswordSchema.safeParse({
       email: email.trim(),
-      authCode: authCode.trim(),
-      password,
-      passwordConfirm,
+      newPassword,
+      confirmPassword,
     });
 
     if (!validationResult.success) {
@@ -305,44 +277,26 @@ export function SignupForm() {
     setIsSubmitting(true);
 
     try {
-      await signupApi({
+      await resetPasswordApi({
         email: email.trim(),
-        password,
-        userName: name.trim(),
+        newPassword,
+        confirmPassword,
       });
 
-      // 200 성공 시: "회원가입이 완료되었습니다." 알림 후 로그인 화면(/login)으로 라우팅
-      alert('회원가입이 완료되었습니다.');
-      router.push('/login');
+      // 성공 시: "비밀번호가 성공적으로 변경되었습니다." 토스트 알림 트리거 및 로그인 화면(/login)으로 즉시 이동
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(
+          'authToast',
+          '비밀번호가 성공적으로 변경되었습니다.',
+        );
+      }
+      router.replace(
+        `/login?toast=${encodeURIComponent('비밀번호가 성공적으로 변경되었습니다.')}`,
+      );
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
-        if (
-          error.status === 400 &&
-          error.fieldErrors &&
-          Object.keys(error.fieldErrors).length > 0
-        ) {
-          const mappedErrors: Record<string, string> = { ...error.fieldErrors };
-          if (error.fieldErrors.name && !mappedErrors.userName) {
-            mappedErrors.userName = error.fieldErrors.name;
-          }
-          setFieldErrors(mappedErrors);
-        } else if (
-          error.code === 'EMAIL_NOT_VERIFIED' ||
-          error.message.includes('인증')
-        ) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            email: error.message || '이메일 인증이 완료되지 않았습니다.',
-          }));
-        } else if (
-          error.status === 409 ||
-          error.code === 'EMAIL_CONFLICTED' ||
-          error.message.includes('이미 가입된')
-        ) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            email: error.message || '이미 가입된 이메일입니다.',
-          }));
+        if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {
+          setFieldErrors(error.fieldErrors);
         } else {
           setGeneralError(error.message);
         }
@@ -350,7 +304,7 @@ export function SignupForm() {
         setGeneralError(
           error instanceof Error
             ? error.message
-            : '회원가입 중 오류가 발생했습니다.',
+            : '비밀번호 변경 중 오류가 발생했습니다.',
         );
       }
     } finally {
@@ -369,44 +323,20 @@ export function SignupForm() {
   const isSubmitDisabled =
     isSubmitting ||
     verificationStatus !== 'VERIFIED' ||
-    !name.trim() ||
-    !email.trim() ||
-    !password ||
-    password.length < 8 ||
-    !passwordConfirm ||
-    password !== passwordConfirm;
+    !newPassword ||
+    newPassword.length < 8 ||
+    !confirmPassword ||
+    newPassword !== confirmPassword;
 
   return (
     <form onSubmit={handleSubmit} className={styles.form} noValidate>
-      {/* 팀 공통 InfoBanner 적용 */}
+      {/* 안내 배너 */}
       <InfoBanner>
-        <p>이름과 이메일만으로 간단하게 가입합니다.</p>
-        <p>그룹별 상세 정보는 그룹 입장 후 입력합니다.</p>
+        <p>가입 시 등록한 이메일로 본인 인증 후</p>
+        <p>새로운 비밀번호를 설정할 수 있습니다.</p>
       </InfoBanner>
 
-      {/* 1. 이름 필드 */}
-      <div className={styles.fieldGroup}>
-        <label htmlFor="name" className={styles.label}>
-          이름 <span className={styles.required}>*</span>
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={handleNameChange}
-          required
-          className={`${styles.inputBase} ${
-            fieldErrors.userName || fieldErrors.name ? styles.inputError : ''
-          }`}
-        />
-        {(fieldErrors.userName || fieldErrors.name) && (
-          <span className={styles.fieldError} role="alert">
-            {fieldErrors.userName || fieldErrors.name}
-          </span>
-        )}
-      </div>
-
-      {/* 2. 이메일 & 인증번호 필드 */}
+      {/* 1. 이메일 & 인증번호 필드 */}
       <div className={styles.fieldGroup}>
         <label htmlFor="email" className={styles.label}>
           이메일 <span className={styles.required}>*</span>
@@ -491,7 +421,7 @@ export function SignupForm() {
           </span>
         )}
 
-        {/* 상태 1: 발송 성공 & 타이머 노출 */}
+        {/* 발송 성공 & 타이머 노출 */}
         {!fieldErrors.email &&
           !fieldErrors.authCode &&
           verificationStatus === 'SENT' && (
@@ -509,14 +439,14 @@ export function SignupForm() {
             </div>
           )}
 
-        {/* 상태 2: 인증 완료 메시지 */}
+        {/* 인증 완료 메시지 */}
         {!fieldErrors.email &&
           !fieldErrors.authCode &&
           verificationStatus === 'VERIFIED' && (
             <div className={styles.messageVerified}>인증이 완료되었습니다.</div>
           )}
 
-        {/* 상태 3: 인증 실패 메시지 */}
+        {/* 인증 실패 메시지 */}
         {!fieldErrors.authCode && verificationStatus === 'FAILED' && (
           <div className={styles.messageError}>
             인증번호가 일치하지 않습니다.
@@ -524,48 +454,48 @@ export function SignupForm() {
         )}
       </div>
 
-      {/* 3. 비밀번호 필드 */}
+      {/* 2. 새 비밀번호 필드 */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="password" className={styles.label}>
-          비밀번호 <span className={styles.required}>*</span>
+        <label htmlFor="newPassword" className={styles.label}>
+          새 비밀번호 <span className={styles.required}>*</span>
         </label>
         <input
-          id="password"
+          id="newPassword"
           type="password"
-          value={password}
-          onChange={handlePasswordChange}
+          value={newPassword}
+          onChange={handleNewPasswordChange}
           required
           className={`${styles.inputBase} ${styles.inputPassword} ${
-            fieldErrors.password ? styles.inputError : ''
+            fieldErrors.newPassword ? styles.inputError : ''
           }`}
         />
-        {fieldErrors.password && (
+        {fieldErrors.newPassword && (
           <span className={styles.fieldError} role="alert">
-            {fieldErrors.password}
+            {fieldErrors.newPassword}
           </span>
         )}
       </div>
 
-      {/* 4. 비밀번호 확인 필드 */}
+      {/* 3. 새 비밀번호 확인 필드 */}
       <div className={styles.fieldGroup}>
-        <label htmlFor="passwordConfirm" className={styles.label}>
-          비밀번호 확인 <span className={styles.required}>*</span>
+        <label htmlFor="confirmPassword" className={styles.label}>
+          새 비밀번호 확인 <span className={styles.required}>*</span>
         </label>
         <input
-          id="passwordConfirm"
+          id="confirmPassword"
           type="password"
-          value={passwordConfirm}
-          onChange={handlePasswordConfirmChange}
+          value={confirmPassword}
+          onChange={handleConfirmPasswordChange}
           required
           className={`${styles.inputBase} ${styles.inputPassword} ${
-            fieldErrors.passwordConfirm ? styles.inputError : ''
+            fieldErrors.confirmPassword ? styles.inputError : ''
           }`}
         />
-        {fieldErrors.passwordConfirm ? (
+        {fieldErrors.confirmPassword ? (
           <span className={styles.fieldError} role="alert">
-            {fieldErrors.passwordConfirm}
+            {fieldErrors.confirmPassword}
           </span>
-        ) : password && passwordConfirm && password === passwordConfirm && password.length >= 8 ? (
+        ) : newPassword && confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 ? (
           <span className={styles.messageMatch}>
             비밀번호가 일치합니다.
           </span>
@@ -579,7 +509,7 @@ export function SignupForm() {
         </div>
       )}
 
-      {/* 5. 가입하기 버튼 */}
+      {/* 4. 하단 변경하기 버튼 */}
       <div className={styles.submitWrapper}>
         <Button
           type="submit"
@@ -587,7 +517,7 @@ export function SignupForm() {
           className={styles.submitButton}
           disabled={isSubmitDisabled}
         >
-          {isSubmitting ? '가입 처리 중...' : '가입하기'}
+          {isSubmitting ? '변경 처리 중...' : '변경하기'}
         </Button>
       </div>
     </form>
