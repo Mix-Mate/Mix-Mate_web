@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import Button from "@/shared/ui/Button";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
+import { createGroupHomeSnapshot } from "@/features/session/model/group-session";
 import backgroundGlow from "@/shared/assets/session-completed/background-glow.svg";
 import iconPartyPopper from "@/shared/assets/session-completed/icon-party-popper.svg";
 import sparklesTop from "@/shared/assets/session-completed/sparkles-top.svg";
@@ -16,14 +16,11 @@ import styles from "./CompletedScreen.module.css";
 export default function CompletedScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
-  const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
-  const { data: snapshot } = useUserSessionQuery(
-    searchParams.get("scenario") ?? undefined,
-    group?.myRole === "HOST" ? "ADMIN" : "USER",
-  );
 
   if (!group) return null;
+
+  const snapshot = createGroupHomeSnapshot(group);
 
   return (
     <MobileFrame
@@ -96,7 +93,7 @@ export default function CompletedScreen() {
             unoptimized
           />
           <div className={styles.statusText}>
-            <p className={styles.statusMeta}>{snapshot.groupName}</p>
+            <p className={styles.statusMeta}>{group.groupName}</p>
             <p className={styles.statusLabel}>
               {snapshot.round}차 술자리까지 모두 완료
             </p>

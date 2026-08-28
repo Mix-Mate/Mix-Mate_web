@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { LockKeyhole } from "lucide-react";
@@ -60,7 +60,7 @@ export default function MyTeamScreen() {
       data-role={snapshot.role}
     >
       <Header
-        title={snapshot.groupName}
+        title={group.groupName || snapshot.groupName}
         onBack={() =>
           router.push(
             withSessionContext(groupRoutes.home(params.groupId), searchParams),
