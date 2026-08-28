@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AdminParticipantList from "@/features/participant/components/AdminParticipantList";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
 import type { ParticipantRole } from "@/features/participant/types/participant.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -26,10 +28,21 @@ export default function AdminParticipantManagementScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(searchParams.get("round") ?? "1");
-  const { data } = useAdminParticipantListQuery(params.groupId, round);
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const roundParam = searchParams.get("round");
+  const round = roundParam
+    ? toAssignmentRound(roundParam)
+    : group
+      ? getCurrentGroupRound(group.status)
+      : 1;
+  const isRoundResolved = Boolean(roundParam || group);
+  const { data } = useAdminParticipantListQuery(params.groupId, round, {
+    enabled: isRoundResolved,
+    polling: group?.status === "RECRUITING",
+  });
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
+  const canAddParticipant = round === 1;
 
   const stats = useMemo(
     () => ({
@@ -115,17 +128,19 @@ export default function AdminParticipantManagementScreen() {
             ))}
           </div>
 
-          <button
-            type="button"
-            className={styles.addButton}
-            onClick={() =>
-              router.push(
-                `/groups/${params.groupId}/admin/participants/new?round=${round}`,
-              )
-            }
-          >
-            사용자 추가
-          </button>
+          {canAddParticipant && (
+            <button
+              type="button"
+              className={styles.addButton}
+              onClick={() =>
+                router.push(
+                  `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+                )
+              }
+            >
+              사용자 추가
+            </button>
+          )}
         </div>
 
         <section className={styles.listCard} aria-label="참가자 목록">
