@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/shared/ui/Button';
+import Toast from '@/shared/ui/Toast';
+import useToast from '@/shared/hooks/useToast';
 import { setAuthTokens } from '@/shared/api/authToken';
 import { loginApi, AuthApiError } from '../api/auth.api';
 import logoIcon from '../../../../public/icons/logo.svg';
@@ -12,11 +14,29 @@ import styles from './LoginForm.module.css';
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { message: toastMessage, showToast } = useToast();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const toastParam = searchParams.get('toast');
+    const storedToast =
+      typeof window !== 'undefined'
+        ? sessionStorage.getItem('authToast')
+        : null;
+    const msg = toastParam || storedToast;
+    if (msg) {
+      showToast(msg);
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('authToast');
+      }
+    }
+  }, [searchParams, showToast]);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -129,7 +149,6 @@ export function LoginForm() {
             type="email"
             value={email}
             onChange={handleEmailChange}
-            placeholder=" "
             required
             className={`${styles.inputEmail} ${
               fieldErrors.email ? styles.inputError : ''
@@ -152,7 +171,6 @@ export function LoginForm() {
             type="password"
             value={password}
             onChange={handlePasswordChange}
-            placeholder=""
             required
             className={`${styles.inputPassword} ${
               fieldErrors.password ? styles.inputError : ''
@@ -185,14 +203,19 @@ export function LoginForm() {
         {/* 구분선 */}
         <div className={styles.divider} />
 
-        {/* 3. 회원가입 유도 영역 */}
-        <div className={styles.signupWrapper}>
-          <span className={styles.signupText}>아직 계정이 없으신가요?</span>
+        {/* 3. 하단 링크 영역: 비밀번호 찾기 & 회원가입 */}
+        <div className={styles.authLinksWrapper}>
+          <Link href="/find-password" className={styles.findPasswordLink}>
+            비밀번호 찾기
+          </Link>
           <Link href="/signup" className={styles.signupLink}>
             회원가입
           </Link>
         </div>
       </form>
+
+      {/* 토스트 알림 (비밀번호 변경 성공 등) */}
+      {toastMessage && <Toast className={styles.toast}>{toastMessage}</Toast>}
     </div>
   );
 }

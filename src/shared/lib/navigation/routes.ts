@@ -6,6 +6,7 @@ const groupBase = (groupId: string) => `/groups/${groupId}`;
 export const authRoutes = {
   login: () => "/login",
   signup: () => "/signup",
+  findPassword: () => "/find-password",
 };
 
 export const groupRoutes = {
