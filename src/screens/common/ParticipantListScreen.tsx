@@ -12,6 +12,7 @@ import ParticipantSearch from "@/features/participant/components/ParticipantSear
 import ParticipantStats from "@/features/participant/components/ParticipantStats";
 import ParticipantTeamList from "@/features/participant/components/ParticipantTeamList";
 import ParticipantViewToggle from "@/features/participant/components/ParticipantViewToggle";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type {
@@ -40,7 +41,10 @@ function DefaultParticipantListScreen() {
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
-  const { data } = useParticipantListQuery(params.groupId);
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data } = useParticipantListQuery(params.groupId, {
+    polling: group?.myRole === "HOST" && group.status === "RECRUITING",
+  });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
 
   const isMyParticipant = useCallback((participant: Participant) => {

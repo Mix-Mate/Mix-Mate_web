@@ -19,7 +19,10 @@ function isAbortError(error: unknown) {
 export function useAdminParticipantListQuery(
   groupId: string,
   round: AssignmentRound,
+  options: { enabled?: boolean; polling?: boolean } = {},
 ) {
+  const enabled = options.enabled ?? true;
+  const polling = options.polling ?? false;
   const requestIdRef = useRef(0);
   const [data, setData] = useState(initialAdminParticipantGroup);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +30,10 @@ export function useAdminParticipantListQuery(
 
   const fetchParticipants = useCallback(
     async (isInitialRequest: boolean, signal?: AbortSignal) => {
+      if (!enabled) {
+        return false;
+      }
+
       const requestId = ++requestIdRef.current;
 
       if (isInitialRequest) {
@@ -59,10 +66,14 @@ export function useAdminParticipantListQuery(
         }
       }
     },
-    [groupId, round],
+    [enabled, groupId, round],
   );
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const requestController = new AbortController();
     const initialRequestTimer = window.setTimeout(() => {
       void fetchParticipants(true, requestController.signal);
@@ -72,40 +83,45 @@ export function useAdminParticipantListQuery(
       window.clearTimeout(initialRequestTimer);
       requestController.abort();
     };
-  }, [fetchParticipants]);
+  }, [enabled, fetchParticipants]);
 
   useEffect(() => {
-    let active = true;
+    if (!enabled || !polling) {
+      return;
+    }
+
     let pollingTimer: number | undefined;
-    let requestController: AbortController | null = null;
+    let pollingController: AbortController | null = null;
 
-    const poll = async () => {
-      requestController = new AbortController();
-      const shouldContinuePolling = await fetchParticipants(
+    const pollParticipants = async () => {
+      pollingController?.abort();
+      pollingController = new AbortController();
+
+      const shouldContinue = await fetchParticipants(
         false,
-        requestController.signal,
+        pollingController.signal,
       );
-      requestController = null;
 
-      if (active && shouldContinuePolling) {
-        pollingTimer = window.setTimeout(() => {
-          void poll();
-        }, ADMIN_PARTICIPANT_LIST_POLLING_INTERVAL_MS);
+      if (shouldContinue) {
+        pollingTimer = window.setTimeout(
+          pollParticipants,
+          ADMIN_PARTICIPANT_LIST_POLLING_INTERVAL_MS,
+        );
       }
     };
 
-    pollingTimer = window.setTimeout(() => {
-      void poll();
-    }, ADMIN_PARTICIPANT_LIST_POLLING_INTERVAL_MS);
+    pollingTimer = window.setTimeout(
+      pollParticipants,
+      ADMIN_PARTICIPANT_LIST_POLLING_INTERVAL_MS,
+    );
 
     return () => {
-      active = false;
-      requestController?.abort();
       if (pollingTimer !== undefined) {
         window.clearTimeout(pollingTimer);
       }
+      pollingController?.abort();
     };
-  }, [fetchParticipants]);
+  }, [enabled, fetchParticipants, polling]);
 
   return {
     data,
