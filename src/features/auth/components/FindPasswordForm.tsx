@@ -343,7 +343,7 @@ export function FindPasswordForm() {
         </label>
 
         {/* 이메일 입력 + 발송/재발송 버튼 */}
-        <div className={styles.inputRow}>
+        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
           <input
             id="email"
             type="email"
@@ -351,16 +351,15 @@ export function FindPasswordForm() {
             onChange={handleEmailChange}
             disabled={verificationStatus === 'VERIFIED'}
             required
-            className={`${styles.inputBase} ${
+            className={`${styles.inputBase} flex-1 min-w-0 ${
               verificationStatus === 'VERIFIED' ? styles.inputDisabled : ''
             } ${fieldErrors.email ? styles.inputError : ''}`}
           />
-          <Button
+          <button
             type="button"
-            variant="primary"
             onClick={handleSendCode}
             disabled={isSendDisabled}
-            className={`${styles.sideButton} ${
+            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
               verificationStatus === 'VERIFIED' ? styles.sideButtonSuccess : ''
             }`}
           >
@@ -371,7 +370,7 @@ export function FindPasswordForm() {
                 : verificationStatus === 'VERIFIED'
                   ? '인증완료'
                   : '재발송'}
-          </Button>
+          </button>
         </div>
 
         {/* 이메일 에러 문구 */}
@@ -382,7 +381,7 @@ export function FindPasswordForm() {
         )}
 
         {/* 인증번호 입력 + 확인 버튼 */}
-        <div className={styles.inputRow}>
+        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
           <input
             id="authCode"
             type="text"
@@ -393,7 +392,7 @@ export function FindPasswordForm() {
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
             }
-            className={`${styles.inputBase} ${
+            className={`${styles.inputBase} flex-1 min-w-0 ${
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
@@ -401,17 +400,16 @@ export function FindPasswordForm() {
                 : ''
             } ${fieldErrors.authCode ? styles.inputError : ''}`}
           />
-          <Button
+          <button
             type="button"
-            variant="primary"
             onClick={handleVerifyCode}
             disabled={isVerifyDisabled || !authCode.trim()}
-            className={`${styles.sideButton} ${
+            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
               isVerifyDisabled ? styles.sideButtonDisabled : ''
             }`}
           >
             {verificationStatus === 'VERIFYING' ? '확인 중...' : '인증번호 확인'}
-          </Button>
+          </button>
         </div>
 
         {/* 인증번호 에러 문구 */}
