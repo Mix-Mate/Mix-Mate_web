@@ -32,9 +32,14 @@ export default function VoteResultScreen() {
     searchParams,
   );
   const showOverallResult = searchParams.get("view") === "overall";
+  const didJoinSecondRound = data?.secondRoundParticipants.some(
+    (participant) => participant.participantId === group?.myParticipantId,
+  );
   const resultHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
-    : `${homeHref}?scenario=round2-waiting`;
+    : didJoinSecondRound
+      ? `${homeHref}?scenario=round2-waiting`
+      : "/home";
   const myTeamMvpWinner = firstRoundTeam
     ? (data?.mvpWinners.find(
         (winner) => winner.teamNumber === firstRoundTeam.teamNumber,

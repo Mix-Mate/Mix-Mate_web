@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock3 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -19,6 +20,7 @@ import {
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamRound } from "@/features/team/types/team.types";
+import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
@@ -39,6 +41,27 @@ export default function UserHomeScreen() {
     () => (group ? createGroupHomeSnapshot(group) : null),
     [group],
   );
+  const shouldCheckSecondRoundAttendance =
+    group?.myRole === "PARTICIPANT" &&
+    (group.status === "VOTE_CLOSED" ||
+      group.status === "BEFORE_SECOND_ROUND" ||
+      group.status === "SECOND_ROUND");
+  const {
+    data: voteStatus,
+    isLoading: isVoteStatusLoading,
+    error: voteStatusError,
+  } = useVoteStatusQuery(params.groupId, {
+    enabled: shouldCheckSecondRoundAttendance,
+    pollingEnabled: false,
+  });
+  const currentParticipantChoice = voteStatus?.participants.find(
+    (participant) => participant.participantId === group?.myParticipantId,
+  )?.choice;
+  const isSecondRoundAbsent =
+    shouldCheckSecondRoundAttendance &&
+    currentParticipantChoice === "NOT_PARTICIPATE";
+  const isCheckingSecondRoundAttendance =
+    shouldCheckSecondRoundAttendance && isVoteStatusLoading;
   const teamRound: TeamRound =
     snapshot?.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
   const {
@@ -48,7 +71,11 @@ export default function UserHomeScreen() {
   } = useMyTeamQuery(
     params.groupId,
     teamRound,
-    group ? hasAssignedTeam(group.status) : false,
+    group
+      ? hasAssignedTeam(group.status) &&
+          !isCheckingSecondRoundAttendance &&
+          !isSecondRoundAbsent
+      : false,
   );
   const {
     mutate: finishFirstRound,
@@ -254,6 +281,63 @@ export default function UserHomeScreen() {
     shouldShowAdminPreparation
   ) {
     return null;
+  }
+
+  if (isCheckingSecondRoundAttendance) {
+    return (
+      <MobileFrame data-testid="second-round-attendance-loading">
+        <Header
+          title={snapshot.groupName}
+          onBack={() => router.replace("/home")}
+        />
+        <main className={styles.absentWaitingContent}>
+          <p className={styles.attendanceQueryState} role="status">
+            참여 여부를 확인하는 중입니다.
+          </p>
+        </main>
+      </MobileFrame>
+    );
+  }
+
+  if (isSecondRoundAbsent) {
+    return (
+      <MobileFrame
+        data-testid="absent-participant-waiting-screen"
+        data-status={group.status}
+      >
+        <Header
+          title={snapshot.groupName}
+          onBack={() => router.replace("/home")}
+        />
+        <main className={styles.absentWaitingContent}>
+          <section className={styles.absentWaitingCard} aria-live="polite">
+            <Clock3 aria-hidden="true" size={34} strokeWidth={1.7} />
+            <h2>아직 술자리가 진행중입니다</h2>
+            <p>
+              모임이 종료되면 완료된 모임에서
+              <br />
+              결과를 확인할 수 있어요.
+            </p>
+          </section>
+        </main>
+      </MobileFrame>
+    );
+  }
+
+  if (shouldCheckSecondRoundAttendance && voteStatusError) {
+    return (
+      <MobileFrame data-testid="second-round-attendance-error">
+        <Header
+          title={snapshot.groupName}
+          onBack={() => router.replace("/home")}
+        />
+        <main className={styles.absentWaitingContent}>
+          <p className={styles.attendanceQueryError} role="alert">
+            {voteStatusError}
+          </p>
+        </main>
+      </MobileFrame>
+    );
   }
 
   return (
