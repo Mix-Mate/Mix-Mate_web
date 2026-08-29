@@ -75,8 +75,14 @@ function DefaultParticipantListScreen() {
       const firstIsMe = isMyParticipant(first);
       const secondIsMe = isMyParticipant(second);
 
-      if (firstIsMe === secondIsMe) return 0;
-      return firstIsMe ? -1 : 1;
+      if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
+
+      const firstIsStaff = first.role === "staff";
+      const secondIsStaff = second.role === "staff";
+
+      if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
+
+      return 0;
     });
   }, [data.participants, filter, isMyParticipant, keyword]);
 

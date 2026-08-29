@@ -165,11 +165,10 @@
   align-items: center;
   gap: 14px;
   padding: 12px 22px;
-  border-bottom: 1px solid #eeeeee;
 }
 
-.participantItem:last-child {
-  border-bottom: 0;
+.participantList > li:not(:last-child) .participantItem {
+  border-bottom: 1px solid #eeeeee;
 }
 
 .participantInfo {
@@ -200,30 +199,15 @@
   white-space: nowrap;
 }
 
-.staffBadge,
-.newBadge,
-.existingBadge {
+.staffBadge {
   flex: 0 0 auto;
   border-radius: 999px;
   padding: 5px 10px;
+  background: #eff6ff;
+  color: #2f80d1;
   font-size: 13px;
   font-weight: 800;
   line-height: 18px;
-}
-
-.staffBadge {
-  background: #eff6ff;
-  color: #2f80d1;
-}
-
-.newBadge {
-  background: #ecfdf3;
-  color: #16a34a;
-}
-
-.existingBadge {
-  background: #f4f4f5;
-  color: #52525b;
 }
 
 .emptyState {
