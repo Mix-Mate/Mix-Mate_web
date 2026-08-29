@@ -21,6 +21,7 @@ export default function VoteStatusScreen() {
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
   const isAdmin = group?.myRole === "HOST";
+  const canForceEndVote = isAdmin && group?.status === "VOTING";
   const { data, isLoading, isRefreshing, error, isComplete } =
     useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =
@@ -116,13 +117,13 @@ export default function VoteStatusScreen() {
             {!isComplete && !error && (
               <p className={styles.waitingNotice}>
                 <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-                {isAdmin
+                {canForceEndVote
                   ? "미투표자가 있습니다. 관리자가 수동으로 투표를 종료할 수 있습니다."
                   : "미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다."}
               </p>
             )}
 
-            {isAdmin && !isComplete && (
+            {canForceEndVote && !isComplete && (
               <AdminVoteEndButton onEnd={showAdminVoteEnd} />
             )}
 
