@@ -116,7 +116,7 @@ export default function AdminPreparationScreen() {
               ),
           }}
           onEditProfile={() =>
-            navigateWithSession(groupRoutes.profileEdit(params.groupId))
+            navigateWithSession(groupRoutes.profile(params.groupId))
           }
           profileActionLabel="내 프로필 조회"
           footerPlacement="flow"
