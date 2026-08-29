@@ -290,38 +290,167 @@ export async function performLogout(): Promise<void> {
   }
 }
 
+export interface SendPasswordResetCodeParams {
+  email: string;
+}
+
+export interface VerifyPasswordResetCodeParams {
+  email: string;
+  code: string;
+}
+
 export interface ResetPasswordRequest {
   email: string;
   newPassword: string;
-  confirmPassword?: string;
 }
 
-export interface ResetPasswordResponse {
-  message?: string;
-  [key: string]: unknown;
+export type ResetPasswordResponse = string | { message?: string; [key: string]: unknown };
+
+/**
+ * 비밀번호 재설정 인증번호 발송 API
+ * POST /api/v1/auth/password/send?email=...
+ */
+export async function sendPasswordResetCodeApi(
+  params: SendPasswordResetCodeParams,
+): Promise<AuthApiResponse> {
+  const query = new URLSearchParams({ email: params.email.trim() }).toString();
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/password/send?${query}`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: AuthErrorResponse | null = null;
+    try {
+      errorData = (await response.json()) as AuthErrorResponse;
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const message =
+      errorData?.message ||
+      (response.status === 404
+        ? "가입되지 않은 이메일입니다."
+        : response.status === 400
+          ? "올바른 이메일 형식을 입력해 주세요."
+          : "인증번호 발송에 실패했습니다. 다시 시도해 주세요.");
+
+    throw new AuthApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as AuthApiResponse;
+  }
+  return await response.text();
 }
 
 /**
- * 비밀번호 재설정 API (백엔드 실제 API 연동 전 Mock 함수)
+ * 비밀번호 재설정 인증번호 검증 API
+ * POST /api/v1/auth/password/verify?email=...&code=...
+ */
+export async function verifyPasswordResetCodeApi(
+  params: VerifyPasswordResetCodeParams,
+): Promise<AuthApiResponse> {
+  const query = new URLSearchParams({
+    email: params.email.trim(),
+    code: params.code.trim(),
+  }).toString();
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/password/verify?${query}`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: AuthErrorResponse | null = null;
+    try {
+      errorData = (await response.json()) as AuthErrorResponse;
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const message =
+      errorData?.message ||
+      (response.status === 400
+        ? "인증번호가 올바르지 않거나 만료되었습니다."
+        : response.status === 404
+          ? "인증 요청을 찾을 수 없거나 만료되었습니다."
+          : "인증번호 확인에 실패했습니다.");
+
+    throw new AuthApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as AuthApiResponse;
+  }
+  return await response.text();
+}
+
+/**
+ * 비밀번호 재설정 최종 변경 API
+ * POST /api/v1/auth/password/reset
  */
 export async function resetPasswordApi(
   data: ResetPasswordRequest,
 ): Promise<ResetPasswordResponse> {
-  // 모의 네트워크 지연
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/password/reset`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      email: data.email.trim(),
+      newPassword: data.newPassword,
+    }),
+  });
 
-  if (!data.email.trim()) {
-    throw new AuthApiError("이메일을 입력해 주세요.", 400);
+  if (!response.ok) {
+    let errorData: AuthErrorResponse | null = null;
+    try {
+      errorData = (await response.json()) as AuthErrorResponse;
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "이메일 인증이 완료되지 않았습니다."
+        : response.status === 404
+          ? "사용자를 찾을 수 없습니다."
+          : "비밀번호 변경 중 오류가 발생했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+
+    throw new AuthApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
   }
 
-  if (!data.newPassword || data.newPassword.length < 8) {
-    throw new AuthApiError("새 비밀번호는 8자 이상이어야 합니다.", 400);
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as ResetPasswordResponse;
   }
-
-  if (data.confirmPassword && data.newPassword !== data.confirmPassword) {
-    throw new AuthApiError("비밀번호가 일치하지 않습니다.", 400);
-  }
-
-  return { message: "비밀번호가 성공적으로 변경되었습니다." };
+  return await response.text();
 }
 

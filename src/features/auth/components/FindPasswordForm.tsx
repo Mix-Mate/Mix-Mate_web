@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/shared/ui/Button';
+import Toast from '@/shared/ui/Toast';
 import InfoBanner from '@/shared/ui/InfoBanner';
+import useToast from '@/shared/hooks/useToast';
 import {
-  sendVerificationCodeApi,
-  verifyCodeApi,
+  sendPasswordResetCodeApi,
+  verifyPasswordResetCodeApi,
   resetPasswordApi,
   AuthApiError,
 } from '../api/auth.api';
@@ -25,6 +27,7 @@ const VERIFICATION_TIME_LIMIT_SEC = 300; // 5분 유효시간
 
 export function FindPasswordForm() {
   const router = useRouter();
+  const { message: toastMessage, showToast } = useToast();
 
   const [email, setEmail] = useState('');
   const [authCode, setAuthCode] = useState('');
@@ -164,10 +167,11 @@ export function FindPasswordForm() {
     setVerificationStatus('SENDING');
 
     try {
-      await sendVerificationCodeApi({ email: email.trim() });
+      await sendPasswordResetCodeApi({ email: email.trim() });
       setVerificationStatus('SENT');
       setTimeLeft(VERIFICATION_TIME_LIMIT_SEC);
       setAuthCode('');
+      showToast('인증번호가 발송되었습니다');
     } catch (error: unknown) {
       setVerificationStatus('IDLE');
       if (error instanceof AuthApiError) {
@@ -216,7 +220,7 @@ export function FindPasswordForm() {
     setVerificationStatus('VERIFYING');
 
     try {
-      await verifyCodeApi({
+      await verifyPasswordResetCodeApi({
         email: email.trim(),
         code: authCode.trim(),
       });
@@ -235,7 +239,7 @@ export function FindPasswordForm() {
       } else {
         setFieldErrors((prev) => ({
           ...prev,
-          authCode: '인증번호가 일치하지 않거나 만료되었습니다.',
+          authCode: '인증번호가 올바르지 않거나 만료되었습니다.',
         }));
       }
     }
@@ -280,7 +284,6 @@ export function FindPasswordForm() {
       await resetPasswordApi({
         email: email.trim(),
         newPassword,
-        confirmPassword,
       });
 
       // 성공 시: "비밀번호가 성공적으로 변경되었습니다." 토스트 알림 트리거 및 로그인 화면(/login)으로 즉시 이동
@@ -518,6 +521,13 @@ export function FindPasswordForm() {
           {isSubmitting ? '변경 처리 중...' : '변경하기'}
         </Button>
       </div>
+
+      {/* 토스트 알림 */}
+      {toastMessage && (
+        <Toast className={styles.toast} role="status">
+          {toastMessage}
+        </Toast>
+      )}
     </form>
   );
 }

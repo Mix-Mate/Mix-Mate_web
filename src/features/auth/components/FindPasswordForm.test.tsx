@@ -34,8 +34,8 @@ describe('FindPasswordForm', () => {
   });
 
   it('유효한 이메일 입력 후 인증번호 발송 및 인증 완료 시 인증완료 메시지가 표시된다', async () => {
-    vi.spyOn(authApi, 'sendVerificationCodeApi').mockResolvedValue('OK');
-    vi.spyOn(authApi, 'verifyCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'sendPasswordResetCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'verifyPasswordResetCodeApi').mockResolvedValue('OK');
 
     const { container } = render(<FindPasswordForm />);
 
@@ -48,9 +48,10 @@ describe('FindPasswordForm', () => {
     fireEvent.click(sendButton);
 
     await waitFor(() => {
-      expect(authApi.sendVerificationCodeApi).toHaveBeenCalledWith({
+      expect(authApi.sendPasswordResetCodeApi).toHaveBeenCalledWith({
         email: 'user@example.com',
       });
+      expect(screen.getByText('인증번호가 발송되었습니다')).toBeInTheDocument();
     });
 
     const authCodeInput = container.querySelector('#authCode')!;
@@ -60,7 +61,7 @@ describe('FindPasswordForm', () => {
     fireEvent.click(verifyButton);
 
     await waitFor(() => {
-      expect(authApi.verifyCodeApi).toHaveBeenCalledWith({
+      expect(authApi.verifyPasswordResetCodeApi).toHaveBeenCalledWith({
         email: 'user@example.com',
         code: '123456',
       });
@@ -72,8 +73,8 @@ describe('FindPasswordForm', () => {
   });
 
   it('비밀번호 변경 성공 시 sessionStorage에 토스트 메시지를 저장하고 /login으로 replace 이동한다', async () => {
-    vi.spyOn(authApi, 'sendVerificationCodeApi').mockResolvedValue('OK');
-    vi.spyOn(authApi, 'verifyCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'sendPasswordResetCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'verifyPasswordResetCodeApi').mockResolvedValue('OK');
     vi.spyOn(authApi, 'resetPasswordApi').mockResolvedValue({
       message: '비밀번호가 성공적으로 변경되었습니다.',
     });
@@ -119,7 +120,6 @@ describe('FindPasswordForm', () => {
       expect(authApi.resetPasswordApi).toHaveBeenCalledWith({
         email: 'test@example.com',
         newPassword: 'newPassword123!',
-        confirmPassword: 'newPassword123!',
       });
       expect(sessionStorage.getItem('authToast')).toBe(
         '비밀번호가 성공적으로 변경되었습니다.',
@@ -131,8 +131,8 @@ describe('FindPasswordForm', () => {
   });
 
   it('새 비밀번호와 확인 입력값이 불일치할 경우 에러 메시지가 표시되고 버튼이 비활성화된다', async () => {
-    vi.spyOn(authApi, 'sendVerificationCodeApi').mockResolvedValue('OK');
-    vi.spyOn(authApi, 'verifyCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'sendPasswordResetCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'verifyPasswordResetCodeApi').mockResolvedValue('OK');
 
     const { container } = render(<FindPasswordForm />);
 
@@ -170,5 +170,56 @@ describe('FindPasswordForm', () => {
       name: /변경하기/i,
     });
     expect(submitButton).toBeDisabled();
+  });
+
+  it('인증번호 발송 실패(404 가입되지 않은 이메일) 시 에러 메시지가 표시된다', async () => {
+    vi.spyOn(authApi, 'sendPasswordResetCodeApi').mockRejectedValue(
+      new authApi.AuthApiError('가입되지 않은 이메일입니다.', 404),
+    );
+
+    render(<FindPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText(/이메일/i), {
+      target: { value: 'notfound@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /인증번호 발송/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('가입되지 않은 이메일입니다.'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('인증번호 검증 실패(400) 시 에러 메시지가 표시된다', async () => {
+    vi.spyOn(authApi, 'sendPasswordResetCodeApi').mockResolvedValue('OK');
+    vi.spyOn(authApi, 'verifyPasswordResetCodeApi').mockRejectedValue(
+      new authApi.AuthApiError(
+        '인증번호가 올바르지 않거나 만료되었습니다.',
+        400,
+      ),
+    );
+
+    const { container } = render(<FindPasswordForm />);
+
+    fireEvent.change(screen.getByLabelText(/이메일/i), {
+      target: { value: 'user@example.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /인증번호 발송/i }));
+
+    await waitFor(() => {
+      expect(container.querySelector('#authCode')).toBeEnabled();
+    });
+
+    fireEvent.change(container.querySelector('#authCode')!, {
+      target: { value: '999999' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /인증번호 확인/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('인증번호가 올바르지 않거나 만료되었습니다.'),
+      ).toBeInTheDocument();
+    });
   });
 });
