@@ -7,6 +7,10 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { getMyGroupsApi, type MyGroupItem } from "@/features/group/api/group.api";
+import {
+  getGroupEntryRoute,
+  isGroupHost,
+} from "@/features/group/lib/group-entry-route";
 import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./HomeScreen.module.css";
 
@@ -57,11 +61,7 @@ function mapStatus(status: string): GroupStatus {
 }
 
 function mapRole(role: string): GroupRole {
-  const upper = (role || "").toUpperCase();
-  if (upper === "HOST" || upper === "ADMIN" || upper === "STAFF" || upper === "관리자") {
-    return "HOST";
-  }
-  return "PARTICIPANT";
+  return isGroupHost(role) ? "HOST" : "PARTICIPANT";
 }
 
 function subscribeStorage(callback: () => void) {
@@ -195,11 +195,7 @@ export default function HomeScreen({
       router.push(groupRoutes.completed(group.id));
       return;
     }
-    if (group.role === "HOST") {
-      router.push(groupRoutes.adminHome(group.id));
-      return;
-    }
-    router.push(groupRoutes.userHome(group.id));
+    router.push(getGroupEntryRoute(group.id, group.role, group.status));
   };
 
   // Logout flow

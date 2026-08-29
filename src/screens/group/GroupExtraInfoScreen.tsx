@@ -17,7 +17,7 @@ import {
   getValidationMessage,
   groupProfileSchema,
 } from "@/features/profile/schemas/group-profile.schema";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { getGroupEntryRoute } from "@/features/group/lib/group-entry-route";
 import styles from "./GroupExtraInfoScreen.module.css";
 
 const MBTI_LIST = [
@@ -177,7 +177,6 @@ export default function GroupExtraInfoScreen({
     };
 
     const fromParam = searchParams.get("from");
-    const roleParam = searchParams.get("role");
     const inviteCodeParam =
       searchParams.get("inviteCode") ||
       (typeof window !== "undefined" &&
@@ -185,7 +184,6 @@ export default function GroupExtraInfoScreen({
       "";
 
     const isCreateFlow = fromParam === "create" || groupId === "new";
-    const isAdmin = isCreateFlow || roleParam === "admin" || rolePosition === "운영진";
 
     try {
       if (isCreateFlow) {
@@ -207,7 +205,9 @@ export default function GroupExtraInfoScreen({
         });
 
         alert("그룹이 성공적으로 생성되었습니다!");
-        router.replace(groupRoutes.adminHome(String(response.groupId)));
+        router.replace(
+          getGroupEntryRoute(String(response.groupId), "HOST", "RECRUITING"),
+        );
         return;
       }
 
@@ -219,23 +219,17 @@ export default function GroupExtraInfoScreen({
         });
 
         alert("그룹에 성공적으로 참여하였습니다!");
-        const targetGroupId = joinRes.groupId ? String(joinRes.groupId) : groupId;
-        if (isAdmin) {
-          router.replace(groupRoutes.adminHome(targetGroupId));
-        } else {
-          router.replace(groupRoutes.userHome(targetGroupId));
-        }
+        const targetGroupId = joinRes.groupId
+          ? String(joinRes.groupId)
+          : groupId;
+        router.replace(getGroupEntryRoute(targetGroupId, "PARTICIPANT"));
         return;
       }
 
       if (onSuccess) {
         onSuccess(extraData);
       } else {
-        if (isAdmin) {
-          router.replace(groupRoutes.adminHome(groupId));
-        } else {
-          router.replace(groupRoutes.userHome(groupId));
-        }
+        router.replace(getGroupEntryRoute(groupId, "PARTICIPANT"));
       }
     } catch (error: unknown) {
       if (error instanceof GroupApiError && error.status === 401) {
