@@ -86,6 +86,20 @@ export default function ProgressScreen() {
         const didFinish = await finishFirstRound(params.groupId);
         if (!didFinish) return;
 
+        setIsRefreshingGroup(true);
+
+        const refreshedGroup = await refetch();
+
+        if (!refreshedGroup) {
+          setStatusRefreshError("그룹 상태를 다시 확인하지 못했습니다.");
+          return;
+        }
+
+        if (refreshedGroup.status !== "VOTING") {
+          setStatusRefreshError("투표 시작 상태를 확인하지 못했습니다.");
+          return;
+        }
+
         setEndRoundDialogOpen(false);
         router.replace(
           withSessionContext(groupRoutes.mvpVote(params.groupId), searchParams),
