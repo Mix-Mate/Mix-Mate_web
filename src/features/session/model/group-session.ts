@@ -90,7 +90,7 @@ export function createGroupHomeSnapshot(
     permissions: {
       canLeaveGroup: !isAdmin && (isRecruiting || isBeforeFirstRound),
       canEndRound: isAdmin && isRoundInProgress,
-      canEditProfile: !isAdmin && isRecruiting,
+      canEditProfile: isRecruiting,
     },
   };
 }

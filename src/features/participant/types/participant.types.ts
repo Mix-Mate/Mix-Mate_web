@@ -81,6 +81,13 @@ export type ParticipantSummaryResponse = {
   major: string;
   gender: ProfileGender;
   visibility: ProfileVisibility;
+  grade?: ProfileGrade;
+  isNew?: boolean;
+  position?: ProfilePosition;
+  mbti?: ProfileMbti;
+  age?: number | null;
+  instaId?: string | null;
+  bio?: string | null;
 };
 
 export type ParticipantListResponse = {

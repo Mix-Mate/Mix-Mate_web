@@ -87,7 +87,9 @@ export default function ParticipantProfileScreen({
   if (!group || !profile) return null;
 
   const canDeleteParticipant =
-    isAdminView && group.status === "RECRUITING";
+    isAdminView &&
+    (group.status === "RECRUITING" ||
+      group.status === "BEFORE_FIRST_ROUND");
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
