@@ -229,7 +229,7 @@ export default function AdminRecruitmentScreen() {
     if (!deleted) return;
 
     setDeleteDialogOpen(false);
-    router.replace("/");
+    router.replace("/home");
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
@@ -244,7 +244,7 @@ export default function AdminRecruitmentScreen() {
     >
       <Header
         title={group.groupName}
-        onBack={() => router.back()}
+        onBack={() => router.replace("/home")}
         compact
         rightAction={
           canEditGroup ? (

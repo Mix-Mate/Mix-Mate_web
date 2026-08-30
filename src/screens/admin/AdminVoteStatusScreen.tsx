@@ -13,9 +13,9 @@ import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import type { SecondRoundVoteStatusFilter } from "@/features/vote/types/secondRoundVoteStatus.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import VoteScreenLayout from "./VoteScreenLayout";
+import VoteScreenLayout from "../common/VoteScreenLayout";
 
-export default function VoteStatusScreen() {
+export default function AdminVoteStatusScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
@@ -54,6 +54,7 @@ export default function VoteStatusScreen() {
         },
       }[selectedFilter]
     : null;
+
   const showVoteResult = useCallback(() => {
     router.replace(
       withSessionContext(groupRoutes.voteResult(params.groupId), searchParams),
@@ -63,10 +64,11 @@ export default function VoteStatusScreen() {
   useEffect(() => {
     if (!group) return;
 
-    if (group.myRole === "HOST") {
+    // 비관리자가 접근한 경우 일반 사용자용 투표 현황 화면으로 리디렉션
+    if (group.myRole !== "HOST") {
       router.replace(
         withSessionContext(
-          groupRoutes.adminVoteStatus(params.groupId),
+          groupRoutes.voteStatus(params.groupId),
           searchParams,
         ),
       );
@@ -93,7 +95,7 @@ export default function VoteStatusScreen() {
     );
   }, [params.groupId, router, searchParams]);
 
-  if (isAdmin) {
+  if (!isAdmin) {
     return null;
   }
 
@@ -101,11 +103,11 @@ export default function VoteStatusScreen() {
     <VoteScreenLayout
       title="투표 현황"
       status={isComplete ? "CLOSED" : "OPEN"}
-      testId="vote-status-screen"
+      testId="admin-vote-status-screen"
     >
       <section
         className={styles.statusScreen}
-        data-role={isAdmin ? "ADMIN" : "USER"}
+        data-role="ADMIN"
       >
         {isLoading ? (
           <p className={styles.queryState} role="status">

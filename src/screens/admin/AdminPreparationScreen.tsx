@@ -85,7 +85,7 @@ export default function AdminPreparationScreen() {
       data-group-id={group.groupId}
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} compact />
+      <Header title={group.groupName} onBack={() => router.replace("/home")} compact />
 
       <div className={`${styles.content} ${styles.firstRoundContent}`}>
         <SessionStatusCard

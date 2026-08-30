@@ -2,6 +2,9 @@
 
 import { Info, Trophy } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import MvpVoteForm from "@/features/vote/components/mvp/MvpVoteForm";
 import styles from "@/features/vote/components/vote.module.css";
 import { useMvpVote } from "@/features/vote/hooks/useMvpVote";
@@ -13,15 +16,73 @@ export default function MvpVoteScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data: voteStatusData, isComplete } = useVoteStatusQuery(
+    params.groupId,
+    { pollingEnabled: false },
+  );
   const { context, isLoading, isSubmitting, error, submit } = useMvpVote(
     params.groupId,
   );
 
+  const isAdmin = group?.myRole === "HOST";
+  const myVote = voteStatusData?.participants.find(
+    (participant) => participant.participantId === group?.myParticipantId,
+  );
+  const hasVoted = myVote ? myVote.choice !== null : false;
+  const isVoteFinished = Boolean(
+    isComplete ||
+      group?.status === "VOTE_CLOSED" ||
+      group?.status === "BEFORE_SECOND_ROUND" ||
+      group?.status === "SECOND_ROUND" ||
+      group?.status === "FINISHED",
+  );
+
+  useEffect(() => {
+    if (!group) return;
+
+    if (isVoteFinished) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.voteResult(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (hasVoted) {
+      router.replace(
+        withSessionContext(
+          isAdmin
+            ? groupRoutes.adminVoteStatus(params.groupId)
+            : groupRoutes.voteResult(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+  }, [group, isVoteFinished, hasVoted, isAdmin, params.groupId, router, searchParams]);
+
   const handleSubmit = async (targetParticipantId: number) => {
-    if (await submit(targetParticipantId)) {
-      router.push(
+    const result = await submit(targetParticipantId);
+
+    if (result === true || (typeof result === "object" && result.success)) {
+      router.replace(
         withSessionContext(
           groupRoutes.attendanceVote(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (typeof result === "object" && result.isAlreadyVoted) {
+      router.replace(
+        withSessionContext(
+          isAdmin
+            ? groupRoutes.adminVoteStatus(params.groupId)
+            : groupRoutes.voteResult(params.groupId),
           searchParams,
         ),
       );
