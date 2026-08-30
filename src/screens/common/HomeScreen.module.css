@@ -121,11 +121,11 @@
 .actionCard {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
-  padding: 16px 14px;
-  min-height: 120px;
-  height: auto;
+  padding: 18px 16px;
+  min-height: 128px;
+  height: 100%;
   border-radius: 18px;
   border: 1px solid #e4e4e7;
   cursor: pointer;
@@ -182,39 +182,35 @@
   align-items: flex-start;
   text-align: left;
   width: 100%;
-  gap: 3px;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 .actionCardTitle {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
   color: #18181b;
   margin: 0;
   letter-spacing: -0.3px;
   text-align: left;
+  line-height: 20px;
 }
 
 .actionCardDesc {
-  font-size: 12.5px;
+  font-size: 12px;
   color: #71717a;
   margin: 0;
-  line-height: 1.45;
+  line-height: 17px;
+  min-height: 34px;
   word-break: keep-all;
   text-align: left;
 }
 
 /* ==========================================================================
-   4. Meeting Lists (50:50 Layout)
+   4. Meeting Lists (2-Tab Segmented UI)
    ========================================================================== */
-.listsContainer {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  gap: 12px;
-}
-
-.halfSection {
+.tabSection {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -222,47 +218,89 @@
   gap: 8px;
 }
 
-.sectionHeader {
+.tabBar {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #e4e4e7;
+  background: transparent;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.tabButton {
+  flex: 1;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-}
-
-.sectionTitle {
+  justify-content: center;
+  padding: 12px 0;
+  font-family: inherit;
   font-size: 15px;
-  font-weight: 700;
-  color: #18181b;
-  letter-spacing: -0.3px;
-  margin: 0;
+  font-weight: 500;
+  color: #a1a1aa;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  transition: color 0.15s ease, font-weight 0.15s ease;
+  user-select: none;
 }
 
-.sectionTitleCompleted {
+.tabButton:hover {
   color: #71717a;
 }
 
-.groupList {
+.tabButtonActive {
+  color: #18181b;
+  font-weight: 700;
+}
+
+.tabButtonActive::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #18181b;
+  border-radius: 2px 2px 0 0;
+}
+
+.tabContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.groupList,
+.completedList {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-right: 2px;
+  padding: 4px 2px 8px 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: #e4e4e7 transparent;
 }
 
-.groupList::-webkit-scrollbar {
+.groupList::-webkit-scrollbar,
+.completedList::-webkit-scrollbar {
   width: 4px;
 }
 
-.groupList::-webkit-scrollbar-thumb {
+.groupList::-webkit-scrollbar-thumb,
+.completedList::-webkit-scrollbar-thumb {
   background: #e4e4e7;
   border-radius: 4px;
 }
 
-.groupList::-webkit-scrollbar-track {
+.groupList::-webkit-scrollbar-track,
+.completedList::-webkit-scrollbar-track {
   background: transparent;
 }
 
@@ -289,7 +327,22 @@
   transform: scale(0.985);
 }
 
-.groupCardLeft {
+.completedCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #fafafa;
+  border: 1px solid #f4f4f5;
+  border-radius: 18px;
+  cursor: default;
+  user-select: none;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.groupCardLeft,
+.completedCardLeft {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -298,7 +351,8 @@
   min-width: 0;
 }
 
-.groupName {
+.groupName,
+.completedGroupName {
   font-size: 16px;
   font-weight: 700;
   color: #18181b;
@@ -311,7 +365,8 @@
   width: 100%;
 }
 
-.groupMetaText {
+.groupMetaText,
+.completedMetaText {
   color: #52525b;
   font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 13.5px;
@@ -353,7 +408,8 @@
   background: #f5f3ff;
 }
 
-.groupCardRight {
+.groupCardRight,
+.completedCardRight {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,76 +420,13 @@
   flex-shrink: 0;
 }
 
-/* ==========================================================================
-   5. Divider & Meeting List 2: Completed Groups
-   ========================================================================== */
-.sectionDivider {
-  width: 100%;
-  height: 2px;
-  flex-shrink: 0;
-  background: #e4e4e7;
-  margin: 2px 0;
-  border-radius: 9999px;
-}
-
-.completedGroupList {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #e4e4e7;
-  border-radius: 16px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #e4e4e7 transparent;
-}
-
-.completedGroupList::-webkit-scrollbar {
-  width: 4px;
-}
-
-.completedGroupList::-webkit-scrollbar-thumb {
-  background: #e4e4e7;
-  border-radius: 4px;
-}
-
-.completedGroupList::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.completedGroupItem {
-  display: flex;
-  align-items: center;
-  padding: 13px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid #f4f4f5;
-  cursor: default;
-}
-
-.completedGroupItem:last-child {
-  border-bottom: none;
-}
-
-.completedGroupName {
-  font-size: 13.5px;
-  font-weight: 500;
-  color: #a1a1aa;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.2px;
-}
-
 /* Empty State (Plain Text) */
 .emptyState {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 0;
+  padding: 32px 16px;
   width: 100%;
 }
 

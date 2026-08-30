@@ -24,6 +24,8 @@ export type GroupStatus =
   | "SECOND_ROUND"
   | "FINISHED";
 
+export type HomeTab = "ACTIVE" | "COMPLETED";
+
 export interface HomeScreenGroupItem {
   id: string;
   name: string;
@@ -103,12 +105,14 @@ interface HomeScreenProps {
   userName?: string;
   initialActiveGroups?: HomeScreenGroupItem[];
   initialCompletedGroups?: HomeScreenGroupItem[];
+  initialTab?: HomeTab;
 }
 
 export default function HomeScreen({
   userName: propUserName,
   initialActiveGroups = DEFAULT_ACTIVE_GROUPS,
   initialCompletedGroups = DEFAULT_COMPLETED_GROUPS,
+  initialTab = "ACTIVE",
 }: HomeScreenProps) {
   const router = useRouter();
 
@@ -119,6 +123,9 @@ export default function HomeScreen({
     getServerUserNameSnapshot,
   );
   const userName = propUserName || storedUserName;
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<HomeTab>(initialTab);
 
   // Group lists state
   const [activeGroups, setActiveGroups] =
@@ -235,7 +242,7 @@ export default function HomeScreen({
       viewportClassName={styles.pageViewport}
       data-testid="home-screen"
     >
-      {/* 1. 상단 헤더: MixMate 제목만 유지 (로고 제거) */}
+      {/* 1. 상단 헤더 */}
       <header className={styles.header}>
         <div className={styles.brand}>
           <h1 className={styles.brandTitle}>MixMate</h1>
@@ -260,7 +267,7 @@ export default function HomeScreen({
           </h2>
         </section>
 
-        {/* 2. 액션 섹션: '새 그룹 생성', '초대 코드로 입장' 2개 카드 (2열 그리드) */}
+        {/* 2. 액션 섹션: '새 그룹 생성', '초대 코드로 입장' 2개 카드 (2열 그리드 고정) */}
         <section
           className={styles.actionsGrid}
           aria-label="모임 생성 및 참여 액션"
@@ -274,7 +281,9 @@ export default function HomeScreen({
             <div className={styles.actionTextGroup}>
               <h3 className={styles.actionCardTitle}>새 그룹 생성</h3>
               <p className={styles.actionCardDesc}>
-                모임을 만들고 참여코드를 발급
+                모임을 만들고
+                <br />
+                참여코드를 발급
               </p>
             </div>
           </button>
@@ -288,101 +297,115 @@ export default function HomeScreen({
             <div className={styles.actionTextGroup}>
               <h3 className={styles.actionCardTitle}>초대 코드로 입장</h3>
               <p className={styles.actionCardDesc}>
-                참여코드를 입력하여 참여
+                참여코드를 입력하여
+                <br />
+                모임에 참여
               </p>
             </div>
           </button>
         </section>
 
-        {/* 섹션 구분선 (참여 중인 모임 위) */}
-        <div
-          className={styles.sectionDivider}
-          role="separator"
-          aria-hidden="true"
-        />
+        {/* 3. 모임 목록 2단 상단 탭 전환 UI */}
+        <section className={styles.tabSection} aria-label="모임 목록">
+          {/* 50% 균등 너비 2단 가로 탭 바 */}
+          <div className={styles.tabBar} role="tablist" aria-label="모임 구분 탭">
+            <button
+              type="button"
+              role="tab"
+              id="tab-active"
+              aria-selected={activeTab === "ACTIVE"}
+              aria-controls="tabpanel-active"
+              className={`${styles.tabButton} ${
+                activeTab === "ACTIVE" ? styles.tabButtonActive : ""
+              }`}
+              onClick={() => setActiveTab("ACTIVE")}
+            >
+              진행 중인 모임
+            </button>
 
-        {/* 남은 화면 50:50 분할 컨테이너 */}
-        <div className={styles.listsContainer}>
-          {/* 3. 모임 목록 섹션 1: 내 그룹 목록 */}
-          <section className={styles.halfSection} aria-label="내 그룹 목록">
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>내 그룹 목록</h3>
-            </div>
+            <button
+              type="button"
+              role="tab"
+              id="tab-completed"
+              aria-selected={activeTab === "COMPLETED"}
+              aria-controls="tabpanel-completed"
+              className={`${styles.tabButton} ${
+                activeTab === "COMPLETED" ? styles.tabButtonActive : ""
+              }`}
+              onClick={() => setActiveTab("COMPLETED")}
+            >
+              완료된 모임
+            </button>
+          </div>
 
-            {isLoading ? (
-              <div className={styles.skeletonList}>
-                <div className={styles.skeletonCard} />
-                <div className={styles.skeletonCard} />
-              </div>
-            ) : activeGroups.length > 0 ? (
-              <div className={styles.groupList}>
-                {activeGroups.map((group) => {
-                  const statusInfo =
-                    STATUS_CONFIG[group.status] || STATUS_CONFIG.FIRST_ROUND;
-
-                  return (
-                    <article
-                      key={group.id}
-                      className={styles.groupCard}
-                      onClick={() => handleGroupClick(group)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleGroupClick(group);
-                        }
-                      }}
-                    >
-                      <div className={styles.groupCardLeft}>
-                        <h4 className={styles.groupName}>{group.name}</h4>
-
-                        <p className={styles.groupMetaText}>
-                          {statusInfo.label} · {group.memberCount}명
-                        </p>
-
-                        <div className={styles.roleTagWrap}>
-                          <span
-                            className={`${styles.roleTag} ${
-                              group.role === "HOST"
-                                ? styles.roleTagAdmin
-                                : styles.roleTagUser
-                            }`}
-                          >
-                            {group.role === "HOST" ? "관리자" : "사용자"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className={styles.groupCardRight}>
-                        <ChevronRight size={18} aria-hidden="true" />
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className={styles.emptyState}>
-                <p className={styles.emptyText}>참여 중인 그룹이 없습니다.</p>
-              </div>
-            )}
-          </section>
-
-          {/* 섹션 구분선 */}
+          {/* 탭 콘텐츠 리스트 영역 */}
           <div
-            className={styles.sectionDivider}
-            role="separator"
-            aria-hidden="true"
-          />
+            id={activeTab === "ACTIVE" ? "tabpanel-active" : "tabpanel-completed"}
+            role="tabpanel"
+            aria-labelledby={activeTab === "ACTIVE" ? "tab-active" : "tab-completed"}
+            className={styles.tabContent}
+          >
+            {activeTab === "ACTIVE" ? (
+              isLoading ? (
+                <div className={styles.skeletonList}>
+                  <div className={styles.skeletonCard} />
+                  <div className={styles.skeletonCard} />
+                </div>
+              ) : activeGroups.length > 0 ? (
+                <div className={styles.groupList}>
+                  {activeGroups.map((group) => {
+                    const statusInfo =
+                      STATUS_CONFIG[group.status] || STATUS_CONFIG.FIRST_ROUND;
 
-          {/* 4. 모임 목록 섹션 2: 완료된 모임 */}
-          <section className={styles.halfSection} aria-label="완료된 모임">
-            <div className={styles.sectionHeader}>
-              <h3 className={styles.sectionTitle}>완료된 모임</h3>
-            </div>
+                    return (
+                      <article
+                        key={group.id}
+                        className={styles.groupCard}
+                        onClick={() => handleGroupClick(group)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleGroupClick(group);
+                          }
+                        }}
+                      >
+                        <div className={styles.groupCardLeft}>
+                          <h4 className={styles.groupName}>{group.name}</h4>
 
-            {isLoading ? (
+                          <p className={styles.groupMetaText}>
+                            {statusInfo.label} · {group.memberCount}명
+                          </p>
+
+                          <div className={styles.roleTagWrap}>
+                            <span
+                              className={`${styles.roleTag} ${
+                                group.role === "HOST"
+                                  ? styles.roleTagAdmin
+                                  : styles.roleTagUser
+                              }`}
+                            >
+                              {group.role === "HOST" ? "관리자" : "사용자"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.groupCardRight}>
+                          <ChevronRight size={18} aria-hidden="true" />
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <p className={styles.emptyText}>진행 중인 모임이 없습니다.</p>
+                </div>
+              )
+            ) : isLoading ? (
               <div className={styles.skeletonList}>
+                <div className={styles.skeletonCardCompleted} />
                 <div className={styles.skeletonCardCompleted} />
               </div>
             ) : completedGroups.length > 0 ? (
@@ -391,24 +414,12 @@ export default function HomeScreen({
                   <article
                     key={group.id}
                     className={styles.completedCard}
-                    onClick={() => handleGroupClick(group)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleGroupClick(group);
-                      }
-                    }}
                   >
                     <div className={styles.completedCardLeft}>
-                      <span className={styles.completedGroupName}>
-                        {group.name}
-                      </span>
-                    </div>
-
-                    <div className={styles.completedCardRight}>
-                      <ChevronRight size={16} aria-hidden="true" />
+                      <h4 className={styles.completedGroupName}>{group.name}</h4>
+                      <p className={styles.completedMetaText}>
+                        종료됨 · {group.memberCount}명
+                      </p>
                     </div>
                   </article>
                 ))}
@@ -418,11 +429,11 @@ export default function HomeScreen({
                 <p className={styles.emptyText}>완료된 모임이 없습니다.</p>
               </div>
             )}
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
 
-      {/* 5. 로그아웃 확인 바텀시트 모달 */}
+      {/* 4. 로그아웃 확인 바텀시트 모달 */}
       <BottomSheetDialog
         open={isLogoutModalOpen}
         titleId="logout-modal-title"
@@ -463,7 +474,7 @@ export default function HomeScreen({
         </div>
       </BottomSheetDialog>
 
-      {/* 6. 그룹 차단(추방) 알림 팝업 모달 */}
+      {/* 5. 그룹 차단(추방) 알림 팝업 모달 */}
       <BottomSheetDialog
         open={isBlockedModalOpen}
         titleId="blocked-alert-modal-title"

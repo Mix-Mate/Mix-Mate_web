@@ -467,5 +467,86 @@ describe("Blacklist Feature & API Integration", () => {
         ).not.toBeInTheDocument();
       });
     });
+
+    it("진행 중인 모임 및 완료된 모임 탭 간 전환이 정상 동작하고 각 Empty State가 표시된다", async () => {
+      vi.spyOn(blacklistApi, "checkUserBlockedInGroup").mockResolvedValue(null);
+      vi.spyOn(groupApi, "getMyGroupsApi").mockImplementation(
+        async (params) => {
+          if (params?.state === "active") {
+            return {
+              groups: [
+                {
+                  groupId: 101,
+                  groupName: "활성 프로젝트 모임",
+                  status: "FIRST_ROUND",
+                  role: "HOST",
+                  memberCount: 6,
+                },
+              ],
+            };
+          }
+          if (params?.state === "finished") {
+            return {
+              groups: [
+                {
+                  groupId: 102,
+                  groupName: "지난 주말 뒤풀이",
+                  status: "FINISHED",
+                  role: "PARTICIPANT",
+                  memberCount: 12,
+                },
+              ],
+            };
+          }
+          return { groups: [] };
+        },
+      );
+
+      render(<HomeScreen userName="홍길동" />);
+
+      // 1. 기본 탭 (진행 중인 모임) 활성화 확인
+      const activeTab = screen.getByRole("tab", { name: "진행 중인 모임" });
+      const completedTab = screen.getByRole("tab", { name: "완료된 모임" });
+
+      expect(activeTab).toHaveAttribute("aria-selected", "true");
+      expect(completedTab).toHaveAttribute("aria-selected", "false");
+
+      await waitFor(() => {
+        expect(screen.getByText("활성 프로젝트 모임")).toBeInTheDocument();
+      });
+
+      // 2. 완료된 모임 탭 클릭
+      fireEvent.click(completedTab);
+      expect(completedTab).toHaveAttribute("aria-selected", "true");
+      expect(activeTab).toHaveAttribute("aria-selected", "false");
+
+      await waitFor(() => {
+        expect(screen.getByText("지난 주말 뒤풀이")).toBeInTheDocument();
+        expect(screen.queryByText("활성 프로젝트 모임")).not.toBeInTheDocument();
+      });
+
+      // 3. 완료된 모임 클릭 시 이동하지 않고 단순 조회만 가능
+      fireEvent.click(screen.getByText("지난 주말 뒤풀이"));
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("그룹 목록이 없을 때 각 탭별로 적절한 안내 문구가 표시된다", async () => {
+      vi.spyOn(groupApi, "getMyGroupsApi").mockResolvedValue({ groups: [] });
+
+      render(<HomeScreen userName="홍길동" />);
+
+      // 진행 중인 모임 Empty State
+      await waitFor(() => {
+        expect(screen.getByText("진행 중인 모임이 없습니다.")).toBeInTheDocument();
+      });
+
+      // 완료된 모임 탭 전환 후 Empty State
+      const completedTab = screen.getByRole("tab", { name: "완료된 모임" });
+      fireEvent.click(completedTab);
+
+      await waitFor(() => {
+        expect(screen.getByText("완료된 모임이 없습니다.")).toBeInTheDocument();
+      });
+    });
   });
 });
