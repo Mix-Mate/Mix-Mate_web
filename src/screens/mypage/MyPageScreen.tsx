@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Lock, LogOut } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -11,45 +11,54 @@ import { authRoutes } from "@/shared/lib/navigation/routes";
 import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./MyPageScreen.module.css";
 
-interface StoredUserInfo {
-  userName: string;
-  email: string;
+function subscribeStorage(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
 }
 
-function getStoredUserInfo(): StoredUserInfo {
-  if (typeof window === "undefined") {
-    return {
-      userName: "사용자",
-      email: "user@mixmate.kr",
-    };
-  }
-
-  const userName =
+function getStoredUserName(): string {
+  if (typeof window === "undefined") return "사용자";
+  return (
     window.localStorage.getItem("userName") ||
     window.localStorage.getItem("displayName") ||
-    "사용자";
-  const email = window.localStorage.getItem("email") || "user@mixmate.kr";
+    "사용자"
+  );
+}
 
-  return {
-    userName,
-    email,
-  };
+function getStoredEmail(): string {
+  if (typeof window === "undefined") return "user@mixmate.kr";
+  return window.localStorage.getItem("email") || "user@mixmate.kr";
+}
+
+function getServerUserNameSnapshot(): string {
+  return "사용자";
+}
+
+function getServerEmailSnapshot(): string {
+  return "user@mixmate.kr";
 }
 
 export default function MyPageScreen() {
   const router = useRouter();
 
   // Storage synced user profile info
-  const [userInfo, setUserInfo] = useState<StoredUserInfo>(getStoredUserInfo);
+  const userName = useSyncExternalStore(
+    subscribeStorage,
+    getStoredUserName,
+    getServerUserNameSnapshot,
+  );
+
+  const email = useSyncExternalStore(
+    subscribeStorage,
+    getStoredEmail,
+    getServerEmailSnapshot,
+  );
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   // [회원탈퇴 보류] const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  useEffect(() => {
-    setUserInfo(getStoredUserInfo());
-  }, []);
 
   const handleBack = () => {
     router.back();
@@ -102,14 +111,14 @@ export default function MyPageScreen() {
         <section className={styles.profileCard} aria-label="프로필 요약">
           <GenderAvatar
             gender="male"
-            name={userInfo.userName}
+            name={userName}
             size={60}
             className={styles.profileAvatar}
           />
 
           <div className={styles.profileInfo}>
-            <h2 className={styles.profileName}>{userInfo.userName}</h2>
-            <p className={styles.profileEmail}>{userInfo.email}</p>
+            <h2 className={styles.profileName}>{userName}</h2>
+            <p className={styles.profileEmail}>{email}</p>
           </div>
         </section>
 
