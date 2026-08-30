@@ -82,14 +82,7 @@ export default function AssignmentSetupScreen() {
     <MobileFrame data-testid="assignment-setup-screen" data-round={round}>
       <Header
         title={group.groupName}
-        onBack={() =>
-          router.push(
-            withSessionContext(
-              groupRoutes.adminParticipants(params.groupId, round),
-              searchParams,
-            ),
-          )
-        }
+        onBack={() => router.replace("/home")}
       />
 
       <TabNavigation

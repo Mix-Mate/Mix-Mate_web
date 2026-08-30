@@ -49,11 +49,15 @@ export default function VoteResultScreen() {
     router.replace(overallResultHref, { scroll: false });
   }, [overallResultHref, router]);
 
+  const currentBackHref = showOverallResult
+    ? withSessionContext(groupRoutes.voteResult(params.groupId), searchParams)
+    : resultHomeHref;
+
   return (
     <VoteScreenLayout
       title="투표 결과"
       status="CLOSED"
-      backHref={homeHref}
+      backHref={currentBackHref}
       testId="vote-result-screen"
       showStatusBadge={false}
       flushContent

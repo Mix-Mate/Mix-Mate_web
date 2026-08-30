@@ -129,7 +129,18 @@ export default function UserHomeScreen() {
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
   useEffect(() => {
-    if (group?.status === "FINISHED") {
+    if (!group) return;
+
+    if (group.myRole === "HOST" && group.status === "VOTING") {
+      if (!postVoteDialogOpen && searchParams.get("dialog") !== "post-vote") {
+        router.replace(
+          withSessionContext(groupRoutes.adminVoteStatus(params.groupId), searchParams),
+        );
+        return;
+      }
+    }
+
+    if (group.status === "FINISHED") {
       router.replace(groupRoutes.completed(params.groupId));
       return;
     }
@@ -137,7 +148,14 @@ export default function UserHomeScreen() {
     if (shouldShowAdminPreparation) {
       router.replace(groupRoutes.adminPreparation(params.groupId));
     }
-  }, [group?.status, params.groupId, router, shouldShowAdminPreparation]);
+  }, [
+    group,
+    params.groupId,
+    postVoteDialogOpen,
+    router,
+    searchParams,
+    shouldShowAdminPreparation,
+  ]);
 
   const closeLeaveDialog = useCallback(() => {
     if (!isLeavingGroup) setLeaveDialogOpen(false);
@@ -150,7 +168,7 @@ export default function UserHomeScreen() {
     if (!left) return;
 
     setLeaveDialogOpen(false);
-    router.replace("/");
+    router.replace("/home");
   }, [canLeaveGroup, leaveGroup, params.groupId, router]);
 
   const closeEndRoundDialog = useCallback(() => {
@@ -347,7 +365,7 @@ export default function UserHomeScreen() {
       data-role={snapshot.role}
       data-status={group.status}
     >
-      <Header title={snapshot.groupName} onBack={() => router.back()} />
+      <Header title={snapshot.groupName} onBack={() => router.replace("/home")} />
 
       <UserSessionContent
         groupId={params.groupId}

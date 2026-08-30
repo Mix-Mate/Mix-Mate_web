@@ -25,6 +25,16 @@ export default function AdminHomeScreen() {
       return;
     }
 
+    if (group.status === "VOTING") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminVoteStatus(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
     if (group.status === "FINISHED") {
       router.replace(
         withSessionContext(groupRoutes.completed(params.groupId), searchParams),
@@ -44,11 +54,10 @@ export default function AdminHomeScreen() {
     return <AdminPreparationScreen />;
   }
 
-  // 2. 진행 중 / 투표 중 상태
+  // 2. 진행 중 상태
   if (
     group.status === "FIRST_ROUND" ||
     group.status === "SECOND_ROUND" ||
-    group.status === "VOTING" ||
     group.status === "VOTE_CLOSED"
   ) {
     return <ProgressScreen />;

@@ -33,7 +33,7 @@ export default function NotFoundScreen() {
       </main>
 
       <footer className={styles.footer}>
-        <Button onClick={() => router.replace("/")}>홈으로 돌아가기</Button>
+        <Button onClick={() => router.replace("/home")}>홈으로 돌아가기</Button>
       </footer>
     </MobileFrame>
   );

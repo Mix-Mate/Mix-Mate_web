@@ -2,19 +2,22 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getGroupDetail } from "@/features/group/api/group.api";
+import { voteSecondRound } from "../api/secondRoundVote.api";
+import { isAlreadyVotedError } from "../api/voteApiError";
 import type {
   AttendanceVoteContext,
   SecondRoundVoteChoice,
 } from "../types/secondRoundVote.types";
 import type { VoteStatus } from "../types/vote.types";
-import { useSecondRoundVoteMutation } from "./useSecondRoundVoteMutation";
+
+export interface AttendanceVoteSubmitResult {
+  success: boolean;
+  isAlreadyVoted?: boolean;
+}
 
 export function useAttendanceVote(groupId: string) {
-  const {
-    mutate: submitSecondRoundVote,
-    isPending: isSubmitting,
-    error: submissionError,
-  } = useSecondRoundVoteMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [status, setStatus] = useState<VoteStatus>("OPEN");
   const [isLoading, setIsLoading] = useState(true);
   const [groupError, setGroupError] = useState<string | null>(null);
@@ -28,6 +31,7 @@ export function useAttendanceVote(groupId: string) {
       setStatus("OPEN");
       setIsLoading(true);
       setGroupError(null);
+      setSubmissionError(null);
       setHasSubmitted(false);
 
       try {
@@ -54,23 +58,36 @@ export function useAttendanceVote(groupId: string) {
   }, [groupId]);
 
   const submit = useCallback(
-    async (choice: SecondRoundVoteChoice) => {
+    async (choice: SecondRoundVoteChoice): Promise<AttendanceVoteSubmitResult> => {
       if (hasSubmitted || isSubmitting || submissionInFlightRef.current) {
-        return false;
+        return { success: false };
       }
 
+      setSubmissionError(null);
+      setIsSubmitting(true);
       submissionInFlightRef.current = true;
 
       try {
-        const didSubmit = await submitSecondRoundVote(groupId, choice);
-
-        if (didSubmit) setHasSubmitted(true);
-        return didSubmit;
+        await voteSecondRound(groupId, choice);
+        setHasSubmitted(true);
+        return { success: true };
+      } catch (submitError) {
+        if (isAlreadyVotedError(submitError)) {
+          setHasSubmitted(true);
+          return { success: false, isAlreadyVoted: true };
+        }
+        setSubmissionError(
+          submitError instanceof Error
+            ? submitError.message
+            : "2차 참여 여부 투표에 실패했습니다.",
+        );
+        return { success: false };
       } finally {
+        setIsSubmitting(false);
         submissionInFlightRef.current = false;
       }
     },
-    [groupId, hasSubmitted, isSubmitting, submitSecondRoundVote],
+    [groupId, hasSubmitted, isSubmitting],
   );
 
   const context: AttendanceVoteContext = {
