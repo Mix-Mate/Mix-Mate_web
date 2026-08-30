@@ -65,7 +65,7 @@ export default function AttendanceVoteScreen() {
   const handleSubmit = async (choice: Parameters<typeof submit>[0]) => {
     const result = await submit(choice);
 
-    if (result === true || (typeof result === "object" && result.success)) {
+    if (result.success) {
       router.replace(
         withSessionContext(
           isAdmin
@@ -77,7 +77,7 @@ export default function AttendanceVoteScreen() {
       return;
     }
 
-    if (typeof result === "object" && result.isAlreadyVoted) {
+    if (result.isAlreadyVoted) {
       router.replace(
         withSessionContext(
           isAdmin

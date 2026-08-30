@@ -67,7 +67,7 @@ export default function MvpVoteScreen() {
   const handleSubmit = async (targetParticipantId: number) => {
     const result = await submit(targetParticipantId);
 
-    if (result === true || (typeof result === "object" && result.success)) {
+    if (result.success) {
       router.replace(
         withSessionContext(
           groupRoutes.attendanceVote(params.groupId),
@@ -77,7 +77,7 @@ export default function MvpVoteScreen() {
       return;
     }
 
-    if (typeof result === "object" && result.isAlreadyVoted) {
+    if (result.isAlreadyVoted) {
       router.replace(
         withSessionContext(
           isAdmin
