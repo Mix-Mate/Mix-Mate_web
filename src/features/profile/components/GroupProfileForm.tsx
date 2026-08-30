@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import type {
@@ -14,10 +14,15 @@ import {
   groupProfileSchema,
 } from "../schemas/group-profile.schema";
 import ProfileChipField from "./ProfileChipField";
+import ProfileInstagramField from "./ProfileInstagramField";
 import ProfileMbtiField from "./ProfileMbtiField";
 import ProfileTextAreaField from "./ProfileTextAreaField";
 import ProfileTextField from "./ProfileTextField";
 import ProfileVisibilityField from "./ProfileVisibilityField";
+import {
+  cleanInstagramForSubmit,
+  formatInstagramDisplay,
+} from "../lib/instagram";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/common/EditMyProfileScreen.module.css";
@@ -71,7 +76,7 @@ export default function GroupProfileForm({
     gender: initialProfile.gender,
     mbti: initialProfile.mbti,
     age: initialProfile.age,
-    instaId: initialProfile.instaId,
+    instaId: formatInstagramDisplay(initialProfile.instaId),
     bio: initialProfile.bio,
     visibility: initialProfile.visibility,
   });
@@ -93,6 +98,7 @@ export default function GroupProfileForm({
           ...initialProfile,
           ...profile,
           major: normalizeMajor(profile.major),
+          instaId: cleanInstagramForSubmit(profile.instaId),
         };
         const result = groupProfileSchema.safeParse(normalizedProfile);
 
@@ -183,11 +189,9 @@ export default function GroupProfileForm({
           }}
         />
 
-        <ProfileTextField
-          label="인스타 ID (선택)"
+        <ProfileInstagramField
           value={profile.instaId ?? ""}
-          maxLength={15}
-          onChange={(value) => updateField("instaId", value || null)}
+          onChange={(value) => updateField("instaId", value)}
         />
 
         <ProfileTextAreaField

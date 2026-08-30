@@ -18,6 +18,14 @@ import {
   groupProfileSchema,
 } from "@/features/profile/schemas/group-profile.schema";
 import { getGroupEntryRoute } from "@/features/group/lib/group-entry-route";
+import {
+  cleanInstagramForSubmit,
+  formatInstagramDisplay,
+  handleInstagramInputBlur,
+  handleInstagramInputChange,
+  handleInstagramInputFocus,
+  handleInstagramInputKeyDown,
+} from "@/features/profile/lib/instagram";
 import styles from "./GroupExtraInfoScreen.module.css";
 
 const MBTI_LIST = [
@@ -79,7 +87,9 @@ export default function GroupExtraInfoScreen({
   );
   const [mbti, setMbti] = useState<string>(initialData?.mbti ?? "");
   const [age, setAge] = useState(initialData?.age ?? "");
-  const [instagramId, setInstagramId] = useState(initialData?.instagramId ?? "");
+  const [instagramId, setInstagramId] = useState(
+    formatInstagramDisplay(initialData?.instagramId),
+  );
   const [bio, setBio] = useState(initialData?.bio ?? "");
   const [isPublicProfile, setIsPublicProfile] = useState<ProfilePublicType>(
     initialData?.isPublicProfile ?? "전체 공개",
@@ -118,6 +128,8 @@ export default function GroupExtraInfoScreen({
 
     setIsSubmitting(true);
 
+    const cleanedInstaId = cleanInstagramForSubmit(instagramId);
+
     const extraData: GroupExtraInfoData = {
       name: name.trim(),
       grade,
@@ -127,7 +139,7 @@ export default function GroupExtraInfoScreen({
       rolePosition,
       mbti,
       age: age.trim(),
-      instagramId: instagramId.trim(),
+      instagramId: cleanedInstaId ?? "",
       bio: bio.trim(),
       isPublicProfile,
     };
@@ -157,7 +169,7 @@ export default function GroupExtraInfoScreen({
       gender: gender ? genderMap[gender] : undefined,
       mbti: mbti || undefined,
       age: age.trim() ? Number(age) : null,
-      instaId: instagramId.trim() || null,
+      instaId: cleanedInstaId,
       bio: bio.trim() || null,
       visibility: isPublicProfile === "전체 공개" ? "PUBLIC" : "PRIVATE",
     };
@@ -420,9 +432,15 @@ export default function GroupExtraInfoScreen({
           <span>인스타 ID (선택)</span>
           <input
             value={instagramId}
-            maxLength={15}
-            onChange={(e) => setInstagramId(e.target.value)}
+            maxLength={31}
+            onChange={(e) => handleInstagramInputChange(e, setInstagramId)}
+            onFocus={() => handleInstagramInputFocus(instagramId, setInstagramId)}
+            onBlur={() => handleInstagramInputBlur(instagramId, setInstagramId)}
+            onKeyDown={handleInstagramInputKeyDown}
             placeholder="@아이디 입력"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
           />
         </label>
 
