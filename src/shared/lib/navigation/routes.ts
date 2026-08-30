@@ -7,6 +7,8 @@ export const authRoutes = {
   login: () => "/login",
   signup: () => "/signup",
   findPassword: () => "/find-password",
+  changePassword: () => "/change-password",
+  myPage: () => "/mypage",
 };
 
 export const groupRoutes = {

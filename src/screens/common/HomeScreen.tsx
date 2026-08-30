@@ -2,17 +2,16 @@
 
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, LogOut, ChevronRight } from "lucide-react";
+import { Ban, User, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import { getMyGroupsApi, type MyGroupItem } from "@/features/group/api/group.api";
 import {
   getGroupEntryRoute,
   isGroupHost,
 } from "@/features/group/lib/group-entry-route";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
-import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
@@ -135,7 +134,6 @@ export default function HomeScreen({
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [blockedModalInfo, setBlockedModalInfo] = useState<{
     groupName: string;
@@ -223,17 +221,9 @@ export default function HomeScreen({
     }
 
     if (group.status === "FINISHED") {
-      router.push(groupRoutes.completed(group.id));
       return;
     }
     router.push(getGroupEntryRoute(group.id, group.role, group.status));
-  };
-
-  // Logout flow
-  const handleConfirmLogout = async () => {
-    setIsLogoutModalOpen(false);
-    await performLogout();
-    router.push("/login");
   };
 
   return (
@@ -250,12 +240,12 @@ export default function HomeScreen({
 
         <button
           type="button"
-          className={styles.logoutButton}
-          onClick={() => setIsLogoutModalOpen(true)}
-          aria-label="로그아웃"
+          className={styles.myPageButton}
+          onClick={() => router.push(authRoutes.myPage())}
+          aria-label="마이페이지"
         >
-          <LogOut size={15} aria-hidden="true" />
-          <span>로그아웃</span>
+          <User size={15} strokeWidth={2} aria-hidden="true" />
+          <span>마이페이지</span>
         </button>
       </header>
 
@@ -433,48 +423,7 @@ export default function HomeScreen({
         </section>
       </main>
 
-      {/* 4. 로그아웃 확인 바텀시트 모달 */}
-      <BottomSheetDialog
-        open={isLogoutModalOpen}
-        titleId="logout-modal-title"
-        descriptionId="logout-modal-description"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
-        onClose={() => setIsLogoutModalOpen(false)}
-      >
-        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`}>
-          <LogOut size={24} strokeWidth={2} aria-hidden="true" />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h3 id="logout-modal-title" className={styles.modalTitle}>
-            로그아웃할까요?
-          </h3>
-          <p id="logout-modal-description" className={styles.modalDescription}>
-            언제든지 다시 로그인하여 서비스를 이용하실 수 있습니다.
-          </p>
-        </div>
-
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalCancelButton}
-            onClick={() => setIsLogoutModalOpen(false)}
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
-            onClick={handleConfirmLogout}
-          >
-            로그아웃
-          </button>
-        </div>
-      </BottomSheetDialog>
-
-      {/* 5. 그룹 차단(추방) 알림 팝업 모달 */}
+      {/* 그룹 차단(추방) 알림 팝업 모달 */}
       <BottomSheetDialog
         open={isBlockedModalOpen}
         titleId="blocked-alert-modal-title"
