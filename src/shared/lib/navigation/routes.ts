@@ -19,6 +19,7 @@ export const groupRoutes = {
   userHome: (groupId: string) => `${groupBase(groupId)}`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
   participants: (groupId: string) => `${groupBase(groupId)}/participants`,
+  blacklist: (groupId: string) => `${groupBase(groupId)}/blacklist`,
   profile: (groupId: string) => `${groupBase(groupId)}/profile`,
   profileEdit: (groupId: string) => `${groupBase(groupId)}/profile/edit`,
   team: (groupId: string) => `${groupBase(groupId)}/team`,

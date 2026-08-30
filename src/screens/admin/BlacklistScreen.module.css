@@ -1,0 +1,247 @@
+.screenFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
+  background: #f7f9fb;
+}
+
+.pageViewport {
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
+}
+
+.header {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 72px;
+  flex: 0 0 72px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border-bottom: 1px solid #e5e8ec;
+  background: #ffffff;
+}
+
+.backButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #273746;
+}
+
+.titleArea {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateY(2px);
+}
+
+.titleArea h1 {
+  overflow: hidden;
+  margin: 0;
+  color: #172b3d;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleArea p {
+  overflow: hidden;
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px 40px;
+  overflow-y: auto;
+}
+
+.helpBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff1f2;
+  border: 1px solid #ffe4e6;
+  border-radius: 16px;
+}
+
+.helpIcon {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.helpText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.helpText strong {
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.helpText p {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 12.5px;
+  line-height: 18px;
+}
+
+.statsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.statsBar span {
+  color: #71717a;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.statsBar strong {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.listBox {
+  width: 100%;
+}
+
+.participantList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.participantItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.participantItem:hover,
+.participantItem:active {
+  transform: translateY(-1px);
+  border-color: #fca5a5;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08);
+}
+
+.participantInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.nameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.nameRow strong {
+  color: #18181b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.department {
+  color: #71717a;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.reasonText {
+  color: #ef4444;
+  font-size: 12.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badgeWrapper {
+  flex-shrink: 0;
+}
+
+.blockedBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #ef4444;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: 999px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #a1a1aa;
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #71717a;
+}
+
+.toast {
+  position: absolute;
+  bottom: 24px;
+  left: 20px;
+  right: 20px;
+  z-index: 50;
+}

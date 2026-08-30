@@ -1,22 +1,27 @@
-﻿.viewport {
-  height: auto;
-  min-height: var(--mobile-frame-height);
-  overflow: visible;
+.viewport {
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
 }
 
 .phone {
-  height: auto;
-  min-height: var(--mobile-frame-height);
-  overflow: visible;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
   background: #ffffff;
 }
 
 .content {
   position: relative;
+  flex: 1;
+  overflow-y: auto;
   padding: 24px 22px;
 }
 
-.deleteIconButton {
+.actionIconButton {
   position: absolute;
   z-index: 2;
   top: 92px;
@@ -30,6 +35,67 @@
   border-radius: 50%;
   background: #fff1f2;
   color: #ef4444;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.actionIconButton:active {
+  transform: scale(0.94);
+  background: #ffe4e6;
+}
+
+.reasonInputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin: 12px 0 20px;
+  text-align: left;
+}
+
+.reasonLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.reasonLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.charCounter {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.reasonTextarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #18181b;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.reasonTextarea:focus {
+  border-color: #ef4444;
+  background-color: #ffffff;
+}
+
+.reasonError {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+  padding-left: 2px;
 }
 
 .privateContent {

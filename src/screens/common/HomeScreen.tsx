@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, ChevronRight } from "lucide-react";
+import { Ban, LogOut, ChevronRight } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -11,6 +11,7 @@ import {
   getGroupEntryRoute,
   isGroupHost,
 } from "@/features/group/lib/group-entry-route";
+import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import { performLogout } from "@/features/auth/api/auth.api";
 import styles from "./HomeScreen.module.css";
 
@@ -128,6 +129,12 @@ export default function HomeScreen({
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
+  const [blockedModalInfo, setBlockedModalInfo] = useState<{
+    groupName: string;
+    reason: string;
+    blockedAt?: string;
+  } | null>(null);
 
   // Fetch groups on mount
   useEffect(() => {
@@ -190,7 +197,24 @@ export default function HomeScreen({
     };
   }, []);
 
-  const handleGroupClick = (group: HomeScreenGroupItem) => {
+  const handleGroupClick = async (group: HomeScreenGroupItem) => {
+    // 관리자가 아닌 경우 차단 여부 먼저 확인
+    if (group.role !== "HOST") {
+      const blocked = await checkUserBlockedInGroup(group.id, {
+        name: userName,
+      });
+
+      if (blocked) {
+        setBlockedModalInfo({
+          groupName: group.name,
+          reason: blocked.reason || "관리자에 의해 그룹에서 차단되었습니다.",
+          blockedAt: blocked.blockedAt,
+        });
+        setIsBlockedModalOpen(true);
+        return;
+      }
+    }
+
     if (group.status === "FINISHED") {
       router.push(groupRoutes.completed(group.id));
       return;
@@ -435,6 +459,51 @@ export default function HomeScreen({
             onClick={handleConfirmLogout}
           >
             로그아웃
+          </button>
+        </div>
+      </BottomSheetDialog>
+
+      {/* 6. 그룹 차단(추방) 알림 팝업 모달 */}
+      <BottomSheetDialog
+        open={isBlockedModalOpen}
+        titleId="blocked-alert-modal-title"
+        descriptionId="blocked-alert-modal-description"
+        scrimClassName={styles.modalScrim}
+        sheetClassName={styles.modalSheet}
+        onClose={() => setIsBlockedModalOpen(false)}
+      >
+        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`}>
+          <Ban size={24} strokeWidth={2} aria-hidden="true" />
+        </div>
+
+        <div className={styles.modalContent}>
+          <h3 id="blocked-alert-modal-title" className={styles.modalTitle}>
+            그룹에서 차단되었습니다
+          </h3>
+          <p
+            id="blocked-alert-modal-description"
+            className={styles.modalDescription}
+          >
+            <strong>{blockedModalInfo?.groupName}</strong> 그룹 관리자에 의해
+            <br />
+            그룹 이용이 차단(추방)되었습니다.
+          </p>
+
+          <div className={styles.blockedReasonBox}>
+            <span className={styles.blockedReasonLabel}>차단 사유</span>
+            <p className={styles.blockedReasonText}>
+              {blockedModalInfo?.reason || "등록된 차단 사유가 없습니다."}
+            </p>
+          </div>
+        </div>
+
+        <div className={styles.modalSingleAction}>
+          <button
+            type="button"
+            className={styles.modalSingleActionButton}
+            onClick={() => setIsBlockedModalOpen(false)}
+          >
+            확인
           </button>
         </div>
       </BottomSheetDialog>
