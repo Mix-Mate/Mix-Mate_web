@@ -56,7 +56,7 @@ export const groupProfileSchema = z.object({
   instaId: z
     .string()
     .trim()
-    .max(15, "인스타 ID는 15자까지 입력할 수 있습니다.")
+    .max(30, "인스타 ID는 30자까지 입력할 수 있습니다.")
     .nullable(),
   bio: z
     .string()
