@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, LockKeyhole, Trash2 } from "lucide-react";
+import { Ban, LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { useDeleteParticipantMutation } from "@/features/participant/hooks/useDeleteParticipantMutation";
+import { useBlockParticipantMutation } from "@/features/blacklist/hooks/useBlockParticipantMutation";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
@@ -29,9 +29,13 @@ export default function ParticipantProfileScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(groupId);
-  const { mutate: deleteParticipant, isPending: isDeleting } =
-    useDeleteParticipantMutation();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { mutate: blockParticipant, isPending: isBlocking } =
+    useBlockParticipantMutation();
+
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState("");
+  const [blockReasonError, setBlockReasonError] = useState("");
+
   const roundParam = searchParams.get("round");
   const adminRound =
     roundParam === "1" || roundParam === "2"
@@ -86,22 +90,39 @@ export default function ParticipantProfileScreen({
 
   if (!group || !profile) return null;
 
-  const canDeleteParticipant =
-    isAdminView &&
-    (group.status === "RECRUITING" ||
-      group.status === "BEFORE_FIRST_ROUND");
+  const isSelf = Boolean(
+    group.myParticipantId &&
+      String(group.myParticipantId) === String(participantId),
+  );
+
+  const canBlockParticipant = isAdminView && !isSelf;
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
   const bioText = profile.bio ?? "자기소개가 없습니다.";
 
-  const handleDelete = async () => {
-    if (!canDeleteParticipant) return;
+  const handleBlock = async () => {
+    const trimmed = blockReason.trim();
+    if (trimmed.length > 30) {
+      setBlockReasonError("차단 사유는 30자를 넘을 수 없습니다.");
+      return;
+    }
 
-    const result = await deleteParticipant(groupId, participantId);
-    if (!result.ok) return;
+    const result = await blockParticipant(groupId, profile, {
+      reason: trimmed,
+    });
+    if (!result.ok) {
+      setBlockReasonError(result.message);
+      return;
+    }
 
-    setDeleteDialogOpen(false);
+    setBlockDialogOpen(false);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "adminToast",
+        `${profile.name}님을 그룹에서 차단했습니다.`,
+      );
+    }
     router.push(groupRoutes.adminParticipants(groupId, adminRound));
   };
 
@@ -111,14 +132,18 @@ export default function ParticipantProfileScreen({
         <Header title="참가자 프로필" onBack={() => router.back()} />
       )}
 
-      {!shouldBlockPrivateProfile && canDeleteParticipant && (
+      {!shouldBlockPrivateProfile && canBlockParticipant && (
         <button
           type="button"
-          className={styles.deleteIconButton}
-          aria-label="참가자 삭제"
-          onClick={() => setDeleteDialogOpen(true)}
+          className={styles.actionIconButton}
+          aria-label="참가자 그룹 차단"
+          onClick={() => {
+            setBlockReason("");
+            setBlockReasonError("");
+            setBlockDialogOpen(true);
+          }}
         >
-          <Trash2 aria-hidden="true" size={18} strokeWidth={1.8} />
+          <Ban aria-hidden="true" size={18} strokeWidth={1.8} />
         </button>
       )}
 
@@ -205,42 +230,72 @@ export default function ParticipantProfileScreen({
         )}
       </main>
 
+      {/* 참가자 차단 모달 */}
       <BottomSheetDialog
-        open={deleteDialogOpen}
-        titleId="delete-participant-title"
-        descriptionId="delete-participant-description"
+        open={blockDialogOpen}
+        titleId="block-participant-title"
+        descriptionId="block-participant-description"
         sheetClassName={styles.deleteSheet}
-        onClose={() => setDeleteDialogOpen(false)}
-        closeDisabled={isDeleting}
+        onClose={() => setBlockDialogOpen(false)}
+        closeDisabled={isBlocking}
       >
         <div className={styles.deleteDialogContent}>
           <span className={styles.warningIcon} aria-hidden="true">
-            <AlertTriangle size={22} strokeWidth={1.8} />
+            <Ban size={22} strokeWidth={1.8} />
           </span>
 
-          <h2 id="delete-participant-title">참가자를 삭제하시겠습니까?</h2>
-          <p id="delete-participant-description">
-            {profile.name}님을 삭제합니다.
+          <h2 id="block-participant-title">참가자를 그룹에서 차단하시겠습니까?</h2>
+          <p id="block-participant-description">
+            {profile.name}님을 그룹에서 차단합니다.
             <br />
-            이 작업은 되돌릴 수 없습니다.
+            차단된 사용자는 차단 목록에서 관리할 수 있습니다.
           </p>
+
+          <div className={styles.reasonInputWrapper}>
+            <div className={styles.reasonLabelRow}>
+              <label htmlFor="block-reason" className={styles.reasonLabel}>
+                차단 사유 (최대 30자)
+              </label>
+              <span className={styles.charCounter}>
+                {blockReason.length}/30
+              </span>
+            </div>
+            <textarea
+              id="block-reason"
+              value={blockReason}
+              maxLength={30}
+              onChange={(e) => {
+                const nextVal = e.target.value.slice(0, 30);
+                setBlockReason(nextVal);
+                if (blockReasonError) setBlockReasonError("");
+              }}
+              placeholder="차단 사유를 입력해주세요 (최대 30자)"
+              className={styles.reasonTextarea}
+              disabled={isBlocking}
+            />
+            {blockReasonError && (
+              <span className={styles.reasonError} role="alert">
+                {blockReasonError}
+              </span>
+            )}
+          </div>
 
           <div className={styles.deleteActions}>
             <Button
               variant="secondary"
               className={styles.dialogButton}
-              disabled={isDeleting}
-              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isBlocking}
+              onClick={() => setBlockDialogOpen(false)}
             >
               취소
             </Button>
             <Button
               variant="danger"
               className={styles.dialogButton}
-              disabled={isDeleting}
-              onClick={handleDelete}
+              disabled={isBlocking}
+              onClick={handleBlock}
             >
-              삭제하기
+              {isBlocking ? "차단 처리 중..." : "차단하기"}
             </Button>
           </div>
         </div>

@@ -1,15 +1,12 @@
 .scrim {
-  position: fixed;
-  z-index: 20;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: var(--mobile-frame-width);
-  transform: translateX(-50%);
+  position: absolute;
+  z-index: 100;
+  inset: 0;
   display: flex;
   align-items: flex-end;
   background: var(--bottom-sheet-scrim-background, rgba(24, 24, 27, 0.62));
   animation: fadeIn 160ms ease-out;
+  border-radius: inherit;
 }
 
 .sheet {
@@ -17,7 +14,7 @@
   padding: var(--bottom-sheet-padding, 16px 24px 24px);
   border-radius: var(--bottom-sheet-border-radius, 28px 28px 0 0);
   background: #fff;
-  animation: slideUp 220ms ease-out;
+  animation: slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .handle {
@@ -37,7 +34,11 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(32px);
+    transform: translateY(100%);
     opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

@@ -236,13 +236,13 @@
    ========================================================================== */
 .modalScrim {
   position: absolute !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0 !important;
   width: 100% !important;
+  height: 100% !important;
   transform: none !important;
-  z-index: 50;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: flex-end !important;
   border-radius: inherit;
 }
 

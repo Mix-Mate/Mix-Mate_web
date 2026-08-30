@@ -454,13 +454,13 @@
    ========================================================================== */
 .modalScrim {
   position: absolute !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0 !important;
   width: 100% !important;
+  height: 100% !important;
   transform: none !important;
-  z-index: 50;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: flex-end !important;
   border-radius: inherit;
 }
 
@@ -637,6 +637,61 @@
 .modalCancelButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Blocked Alert Modal */
+.blockedReasonBox {
+  width: 100%;
+  margin: 14px 0 10px;
+  padding: 14px 16px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 14px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.blockedReasonLabel {
+  display: block;
+  color: #ef4444;
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.blockedReasonText {
+  margin: 0;
+  color: #991b1b;
+  font-size: 13.5px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.modalSingleAction {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.modalSingleActionButton {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  background: #256ad3;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.modalSingleActionButton:active {
+  transform: scale(0.98);
 }
 
 .errorMessage {

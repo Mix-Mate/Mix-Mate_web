@@ -1,15 +1,80 @@
-﻿.header {
+.header {
+  position: relative;
   display: grid;
   width: 100%;
   height: 72px;
   flex: 0 0 72px;
-  overflow: hidden;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 8px;
   padding: 0 13px;
   border-bottom: 1px solid #e5e8ec;
   background: #ffffff;
+}
+
+.menuButton {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #273746;
+  transition: background-color 0.15s ease;
+}
+
+.menuButton:active {
+  background-color: #f3f4f6;
+}
+
+.menuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+}
+
+.menuDropdown {
+  position: absolute;
+  top: 64px;
+  right: 14px;
+  z-index: 50;
+  min-width: 180px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.menuItem:hover,
+.menuItem:active {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+.menuItemDanger {
+  color: #ef4444;
 }
 
 .backButton {

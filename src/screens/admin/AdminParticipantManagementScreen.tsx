@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Ban, Menu } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AdminParticipantList from "@/features/participant/components/AdminParticipantList";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -15,6 +16,8 @@ import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import SearchBar from "@/shared/ui/SearchBar";
 import TabNavigation from "@/shared/ui/TabNavigation";
+import Toast from "@/shared/ui/Toast";
+import useToast from "@/shared/hooks/useToast";
 import styles from "./AdminParticipantManagementScreen.module.css";
 
 type FilterValue = "all" | ParticipantRole;
@@ -43,7 +46,19 @@ export default function AdminParticipantManagementScreen() {
   });
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { message: toastMessage, showToast } = useToast();
   const canAddParticipant = round === 1;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("adminToast");
+      if (stored) {
+        showToast(stored);
+        sessionStorage.removeItem("adminToast");
+      }
+    }
+  }, [showToast]);
 
   const stats = useMemo(
     () => ({
@@ -86,6 +101,45 @@ export default function AdminParticipantManagementScreen() {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
 
+  const handleNavigateBlacklist = () => {
+    setMenuOpen(false);
+    router.push(`/groups/${params.groupId}/blacklist`);
+  };
+
+  const headerRightAction = (
+    <div className={styles.menuWrapper}>
+      <button
+        type="button"
+        className={styles.menuButton}
+        aria-label="관리자 메뉴 열기"
+        onClick={() => setMenuOpen((prev) => !prev)}
+      >
+        <Menu aria-hidden="true" size={22} strokeWidth={1.8} />
+      </button>
+
+      {menuOpen && (
+        <>
+          <div
+            className={styles.menuBackdrop}
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className={styles.menuDropdown} role="menu">
+            <button
+              type="button"
+              className={styles.menuItem}
+              role="menuitem"
+              onClick={handleNavigateBlacklist}
+            >
+              <Ban size={18} strokeWidth={2} />
+              <span>그룹 차단 목록</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   return (
     <MobileFrame
       className={styles.phone}
@@ -102,6 +156,7 @@ export default function AdminParticipantManagementScreen() {
             ),
           )
         }
+        rightAction={headerRightAction}
       />
 
       <TabNavigation
@@ -182,6 +237,12 @@ export default function AdminParticipantManagementScreen() {
           조 편성
         </Button>
       </footer>
+
+      {toastMessage && (
+        <Toast className={styles.toast} role="status">
+          {toastMessage}
+        </Toast>
+      )}
     </MobileFrame>
   );
 }
