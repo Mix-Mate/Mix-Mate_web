@@ -148,7 +148,14 @@ export default function UserHomeScreen() {
     if (shouldShowAdminPreparation) {
       router.replace(groupRoutes.adminPreparation(params.groupId));
     }
-  }, [group, params.groupId, router, searchParams, shouldShowAdminPreparation]);
+  }, [
+    group,
+    params.groupId,
+    postVoteDialogOpen,
+    router,
+    searchParams,
+    shouldShowAdminPreparation,
+  ]);
 
   const closeLeaveDialog = useCallback(() => {
     if (!isLeavingGroup) setLeaveDialogOpen(false);

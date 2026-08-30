@@ -55,7 +55,7 @@ describe("useMvpVote", () => {
       },
       isLoading: false,
       error: null,
-    } as any);
+    });
   });
 
   it("정상 투표 제출 시 success: true를 반환한다", async () => {

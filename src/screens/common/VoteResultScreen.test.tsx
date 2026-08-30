@@ -43,7 +43,13 @@ vi.mock("@/features/team/hooks/useMyTeamQuery", () => ({
 }));
 
 vi.mock("@/features/vote/components/result/VoteResultContent", () => ({
-  default: ({ onHome, onRevealOverallResult }: any) => (
+  default: ({
+    onHome,
+    onRevealOverallResult,
+  }: {
+    onHome: () => void;
+    onRevealOverallResult: () => void;
+  }) => (
     <div>
       <span>투표 결과 컨텐츠</span>
       <button onClick={onHome}>홈으로</button>

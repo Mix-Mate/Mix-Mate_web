@@ -9,9 +9,19 @@ const { replaceMock, useAdminGroupQueryMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...rest }: any) => (
+  default: ({
+    src,
+    alt,
+    ...rest
+  }: React.ImgHTMLAttributes<HTMLImageElement> & {
+    src: string | { src?: string };
+  }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={typeof src === "string" ? src : src?.src || ""} alt={alt || ""} {...rest} />
+    <img
+      src={typeof src === "string" ? src : src?.src || ""}
+      alt={alt || ""}
+      {...rest}
+    />
   ),
 }));
 
