@@ -4,9 +4,11 @@ import { useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
-import { getEventStatusLabel } from "@/features/session/model/event-status";
-import { withSessionContext } from "@/features/session/utils/session-navigation";
+import {
+  getCurrentGroupRound,
+  getGroupStatusLabel,
+} from "@/features/group/model/group-status";
+import { hasAssignedTeam } from "@/features/session/model/group-session";
 import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
@@ -25,19 +27,20 @@ export default function MyTeamScreen() {
   const [privateMember, setPrivateMember] = useState<TeamMember | null>(null);
   const { data: group } = useAdminGroupQuery(params.groupId);
 
-  const { data: snapshot } = useUserSessionQuery(
-    searchParams.get("scenario") ?? undefined,
-    group?.myRole === "HOST" ? "ADMIN" : "USER",
-  );
   const round: TeamRound =
-    snapshot.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
+    group && getCurrentGroupRound(group.status) === 2
+      ? "SECOND_ROUND"
+      : "FIRST_ROUND";
   const {
     data: team,
     isLoading,
     error,
-  } = useMyTeamQuery(params.groupId, round);
+  } = useMyTeamQuery(
+    params.groupId,
+    round,
+    group !== null && hasAssignedTeam(group.status),
+  );
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
-  const currentStatusLabel = getEventStatusLabel(snapshot.currentStatus);
 
   const handleMemberSelect = (member: TeamMember) => {
     if (member.visibility === "PRIVATE") {
@@ -52,29 +55,25 @@ export default function MyTeamScreen() {
 
   if (!group) return null;
 
+  const currentStatusLabel = getGroupStatusLabel(group.status);
+
   return (
     <MobileFrame
       className={styles.phone}
       data-testid="my-team-screen"
-      data-scenario={snapshot.scenario}
-      data-role={snapshot.role}
+      data-status={group.status}
+      data-role={group.myRole === "HOST" ? "ADMIN" : "USER"}
     >
       <Header
-        title={group.groupName || snapshot.groupName}
-        onBack={() =>
-          router.push(
-            withSessionContext(groupRoutes.home(params.groupId), searchParams),
-          )
-        }
+        title={group.groupName}
+        onBack={() => router.push(groupRoutes.home(params.groupId))}
         backLabel="사용자 홈으로 이동"
       />
 
       <TeamSectionTabs
         groupId={params.groupId}
         activeSection={activeTab}
-        onNavigate={(href) =>
-          router.push(withSessionContext(href, searchParams))
-        }
+        onNavigate={(href) => router.push(href)}
       />
 
       {activeTab === "team" ? (
