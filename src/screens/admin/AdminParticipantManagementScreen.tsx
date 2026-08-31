@@ -233,9 +233,7 @@ export default function AdminParticipantManagementScreen() {
       </main>
 
       <footer className={styles.footer}>
-        <Button onClick={goToAssignment} className={styles.assignmentButton}>
-          조 편성
-        </Button>
+        <Button onClick={goToAssignment}>조 편성</Button>
       </footer>
 
       {toastMessage && (

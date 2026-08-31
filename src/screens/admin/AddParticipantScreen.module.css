@@ -104,7 +104,7 @@
 
 .footer {
   margin-top: auto;
-  padding: 12px 0 14px;
+  padding: 12px 0 calc(14px + var(--safe-area-bottom));
   background: #fbfbfd;
 }
 

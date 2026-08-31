@@ -66,8 +66,8 @@
 .footer {
   position: relative;
   z-index: 1;
-  flex: 0 0 98.906px;
-  padding: 24.397px 16.484px 14.836px;
+  flex: 0 0 auto;
+  padding: 24.397px 16.484px calc(14.836px + var(--safe-area-bottom));
   border-top: 1.319px solid #e4e4e7;
   background: #fff;
 }
