@@ -11,12 +11,15 @@ export function useGroupStatusNavigation(groupId: string) {
   const { data: group } = useAdminGroupQuery(groupId);
   const lastNavigationRef = useRef<string | null>(null);
   const groupPath = `/groups/${groupId}`;
+  const isCurrentGroupPage =
+    pathname === groupPath || pathname.startsWith(`${groupPath}/`);
   const isVoteFlowPage =
     pathname.startsWith(`${groupPath}/votes/`) ||
     pathname.startsWith(`${groupPath}/admin/votes/`) ||
     pathname === `${groupPath}/admin/vote-status`;
   const target =
     group?.status === "VOTING" &&
+    isCurrentGroupPage &&
     !isVoteFlowPage &&
     !pathname.includes("/extra") &&
     /^[1-9]\d*$/.test(groupId)

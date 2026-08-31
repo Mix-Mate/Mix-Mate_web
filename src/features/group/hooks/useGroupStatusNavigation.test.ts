@@ -84,4 +84,15 @@ describe("useGroupStatusNavigation", () => {
     rerender();
     expect(router.replace).not.toHaveBeenCalled();
   });
+
+  it.each(["/home", "/groups/7", "/groups/60/team"])(
+    "그룹에서 %s로 떠나는 중 이전 상태가 남아 있어도 MVP로 되돌리지 않는다",
+    (pathname) => {
+      location.pathname = "/groups/6/votes/mvp";
+      const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
+      location.pathname = pathname;
+      rerender();
+      expect(router.replace).not.toHaveBeenCalled();
+    },
+  );
 });

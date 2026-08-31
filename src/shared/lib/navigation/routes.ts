@@ -3,6 +3,10 @@ type PlayActivity = "games" | "small-talk" | "balance";
 
 const groupBase = (groupId: string) => `/groups/${groupId}`;
 
+export const appRoutes = {
+  home: () => "/home",
+};
+
 export const authRoutes = {
   login: () => "/login",
   signup: () => "/signup",

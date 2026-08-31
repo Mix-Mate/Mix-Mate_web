@@ -14,6 +14,7 @@ const {
   useAdminGroupQueryMock,
   useMvpVoteMock,
   useVoteStatusQueryMock,
+  backMock,
 } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   replaceMock: vi.fn(),
@@ -21,16 +22,19 @@ const {
   useAdminGroupQueryMock: vi.fn(),
   useMvpVoteMock: vi.fn(),
   useVoteStatusQueryMock: vi.fn(),
+  backMock: vi.fn(),
 }));
+
+let mockSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "7" }),
   useRouter: () => ({
     push: pushMock,
     replace: replaceMock,
-    back: vi.fn(),
+    back: backMock,
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
@@ -65,6 +69,7 @@ function createGroup(
 describe("MvpVoteScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "PARTICIPANT"),
     });
@@ -130,7 +135,7 @@ describe("MvpVoteScreen", () => {
     },
   );
 
-  it("일반 참가자가 투표 제출 시 이미 투표 완료 에러(isAlreadyVoted)가 발생하면 router.replace로 결과 화면으로 이동한다", async () => {
+  it("일반 참가자가 이미 MVP를 제출했어도 미완료된 2차 참여 투표로 이동한다", async () => {
     submitMock.mockResolvedValue({ success: false, isAlreadyVoted: true });
     render(<MvpVoteScreen />);
 
@@ -144,12 +149,12 @@ describe("MvpVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith(2);
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/attendance");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("관리자(HOST)가 투표 제출 시 이미 투표 완료 에러가 발생하면 router.replace로 관리자 투표 현황 화면으로 이동한다", async () => {
+  it("관리자도 이미 MVP를 제출했다면 현황 화면으로 건너뛰지 않고 2차 참여 투표로 이동한다", async () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -166,9 +171,48 @@ describe("MvpVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith(2);
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/attendance");
     });
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["HOST", "PARTICIPANT"] as const)(
+    "%s는 직접 진입·새로고침 후에도 헤더 뒤로가기로 서비스 홈에 이동한다",
+    (myRole) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: createGroup("VOTING", myRole),
+      });
+      mockSearchParams = new URLSearchParams(
+        "role=admin&scenario=round2-waiting",
+      );
+      const { unmount } = render(<MvpVoteScreen />);
+      unmount();
+      render(<MvpVoteScreen />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
+      expect(pushMock).not.toHaveBeenCalled();
+      expect(backMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it("뒤로가기 이후 MVP 응답이 도착해도 다시 투표 화면으로 데려오지 않는다", async () => {
+    let resolve!: (result: { success: boolean }) => void;
+    submitMock.mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
+    render(<MvpVoteScreen />);
+    fireEvent.click(screen.getByDisplayValue("2"));
+    fireEvent.click(
+      screen.getByRole("button", { name: "다음 - 2차 참여 여부 투표 →" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    resolve({ success: true });
+    await waitFor(() => expect(submitMock).toHaveBeenCalledOnce());
+    expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
   });
 
   it("그룹 상태가 투표 종료 상태(VOTE_CLOSED)인 경우 router.replace로 결과 화면으로 즉시 리디렉션한다", () => {
@@ -181,7 +225,7 @@ describe("MvpVoteScreen", () => {
     expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
   });
 
-  it("일반 참가자가 이미 투표를 완료한 경우(hasVoted) router.replace로 결과 화면으로 리디렉션한다", () => {
+  it("MVP와 참여 투표를 마친 참가자는 전체 투표가 끝날 때까지 현황 화면으로 이동한다", () => {
     useVoteStatusQueryMock.mockReturnValue({
       data: {
         totalParticipantCount: 4,
@@ -198,7 +242,7 @@ describe("MvpVoteScreen", () => {
 
     render(<MvpVoteScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 
   it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) router.replace로 관리자 투표 현황 화면으로 리디렉션한다", () => {
