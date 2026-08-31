@@ -73,7 +73,7 @@
   background: #fff;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 389px) {
   .phone {
     border-right: 0;
     border-left: 0;
