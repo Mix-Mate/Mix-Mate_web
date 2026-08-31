@@ -25,16 +25,6 @@ export default function AdminHomeScreen() {
       return;
     }
 
-    if (group.status === "VOTING") {
-      router.replace(
-        withSessionContext(
-          groupRoutes.adminVoteStatus(params.groupId),
-          searchParams,
-        ),
-      );
-      return;
-    }
-
     if (group.status === "FINISHED") {
       router.replace(
         withSessionContext(groupRoutes.completed(params.groupId), searchParams),
@@ -42,7 +32,7 @@ export default function AdminHomeScreen() {
     }
   }, [group, params.groupId, router, searchParams]);
 
-  if (isLoading || !group) {
+  if (isLoading || !group || group.status === "VOTING") {
     return null;
   }
 

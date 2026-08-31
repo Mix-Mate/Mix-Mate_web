@@ -35,9 +35,9 @@ describe("group-entry-route", () => {
       );
     });
 
-    it("관리자(HOST)가 VOTING 상태일 때는 관리자 전용 투표 현황 화면(/groups/:id/admin/votes/status)으로 이동한다", () => {
+    it("관리자(HOST)도 VOTING 상태로 재진입하면 MVP 투표 화면(/groups/:id/votes/mvp)으로 이동한다", () => {
       expect(getGroupEntryRoute("10", "HOST", "VOTING")).toBe(
-        "/groups/10/admin/votes/status",
+        "/groups/10/votes/mvp",
       );
     });
 

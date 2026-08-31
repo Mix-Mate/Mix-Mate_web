@@ -20,9 +20,7 @@ export function useGroupStatusNavigation(groupId: string) {
     !isVoteFlowPage &&
     !pathname.includes("/extra") &&
     /^[1-9]\d*$/.test(groupId)
-      ? group.myRole === "HOST"
-        ? groupRoutes.adminVoteStatus(groupId)
-        : groupRoutes.mvpVote(groupId)
+      ? groupRoutes.mvpVote(groupId)
       : null;
 
   useEffect(() => {

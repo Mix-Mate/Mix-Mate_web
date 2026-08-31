@@ -104,24 +104,31 @@ describe("MvpVoteScreen", () => {
     });
   });
 
-  it("투표 제출 성공 시 router.push 대신 router.replace로 2차 참여 투표 화면으로 이동한다", async () => {
-    submitMock.mockResolvedValue({ success: true });
-    render(<MvpVoteScreen />);
+  it.each(["PARTICIPANT", "HOST"] as const)(
+    "%s가 MVP 투표를 제출하면 2차 참여 투표 화면으로 이동한다",
+    async (myRole) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: createGroup("VOTING", myRole),
+      });
+      submitMock.mockResolvedValue({ success: true });
+      render(<MvpVoteScreen />);
+      expect(replaceMock).not.toHaveBeenCalled();
 
-    const candidateRadio = screen.getByDisplayValue("2");
-    fireEvent.click(candidateRadio);
+      const candidateRadio = screen.getByDisplayValue("2");
+      fireEvent.click(candidateRadio);
 
-    const submitButton = screen.getByRole("button", {
-      name: "다음 - 2차 참여 여부 투표 →",
-    });
-    fireEvent.click(submitButton);
+      const submitButton = screen.getByRole("button", {
+        name: "다음 - 2차 참여 여부 투표 →",
+      });
+      fireEvent.click(submitButton);
 
-    expect(submitMock).toHaveBeenCalledWith(2);
-    await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/attendance");
-    });
-    expect(pushMock).not.toHaveBeenCalled();
-  });
+      expect(submitMock).toHaveBeenCalledWith(2);
+      await waitFor(() => {
+        expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/attendance");
+      });
+      expect(pushMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("일반 참가자가 투표 제출 시 이미 투표 완료 에러(isAlreadyVoted)가 발생하면 router.replace로 결과 화면으로 이동한다", async () => {
     submitMock.mockResolvedValue({ success: false, isAlreadyVoted: true });

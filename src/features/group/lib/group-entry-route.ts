@@ -11,19 +11,16 @@ export function getGroupEntryRoute(
 ): string {
   const normalizedStatus = status?.trim().toUpperCase();
 
+  if (normalizedStatus === "VOTING") {
+    return groupRoutes.mvpVote(groupId);
+  }
+
   if (!isGroupHost(role)) {
-    if (normalizedStatus === "VOTING") {
-      return groupRoutes.mvpVote(groupId);
-    }
     return groupRoutes.userHome(groupId);
   }
 
   if (normalizedStatus === "RECRUITING") {
     return groupRoutes.adminRecruitment(groupId);
-  }
-
-  if (normalizedStatus === "VOTING") {
-    return groupRoutes.adminVoteStatus(groupId);
   }
 
   return groupRoutes.adminHome(groupId);

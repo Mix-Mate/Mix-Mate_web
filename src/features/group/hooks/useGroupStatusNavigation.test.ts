@@ -34,26 +34,22 @@ describe("useGroupStatusNavigation", () => {
     };
   });
 
-  it("투표가 시작되면 참가자를 MVP 투표 화면으로 한 번 이동시킨다", () => {
-    query.data!.status = "FIRST_ROUND";
-    const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
-    expect(router.replace).not.toHaveBeenCalled();
-    query.data = { ...query.data!, status: "VOTING" };
-    rerender();
-    query.data = { ...query.data! };
-    rerender();
-    expect(router.replace).toHaveBeenCalledExactlyOnceWith(
-      "/groups/6/votes/mvp",
-    );
-  });
-
-  it("관리자는 MVP 투표가 아니라 관리자 투표 현황으로 이동시킨다", () => {
-    query.data!.myRole = "HOST";
-    renderHook(() => useGroupStatusNavigation("6"));
-    expect(router.replace).toHaveBeenCalledExactlyOnceWith(
-      "/groups/6/admin/votes/status",
-    );
-  });
+  it.each(["PARTICIPANT", "HOST"] as const)(
+    "투표가 시작되면 %s를 MVP 투표 화면으로 한 번 이동시킨다",
+    (myRole) => {
+      query.data!.myRole = myRole;
+      query.data!.status = "FIRST_ROUND";
+      const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
+      expect(router.replace).not.toHaveBeenCalled();
+      query.data = { ...query.data!, status: "VOTING" };
+      rerender();
+      query.data = { ...query.data! };
+      rerender();
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith(
+        "/groups/6/votes/mvp",
+      );
+    },
+  );
 
   it.each([
     "/groups/6/votes/mvp",
@@ -78,5 +74,14 @@ describe("useGroupStatusNavigation", () => {
     expect(router.replace).toHaveBeenCalledExactlyOnceWith(
       "/groups/6/votes/mvp",
     );
+  });
+
+  it("관리자가 투표 완료 후 현황 화면에 있으면 MVP 투표로 되돌리지 않는다", () => {
+    query.data!.myRole = "HOST";
+    location.pathname = "/groups/6/admin/votes/status";
+    const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
+    query.data = { ...query.data! };
+    rerender();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });

@@ -10,6 +10,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearAuthTokens, setAuthTokens } from "@/shared/api/authToken";
 import UserHomeScreen from "@/screens/user/UserHomeScreen";
+import AdminHomeScreen from "@/screens/admin/AdminHomeScreen";
 import VoteStatusScreen from "@/screens/common/VoteStatusScreen";
 import { useAdminGroupQuery } from "../hooks/useAdminGroupQuery";
 import type { GroupDetail, GroupStatus } from "../types/group.types";
@@ -97,9 +98,11 @@ function Probe() {
 
 function App({
   home = false,
+  adminHome = false,
   vote = false,
 }: {
   home?: boolean;
+  adminHome?: boolean;
   vote?: boolean;
 }) {
   return (
@@ -107,6 +110,7 @@ function App({
       <GroupStatusNavigationBoundary>
         <Probe />
         {home && <UserHomeScreen />}
+        {adminHome && <AdminHomeScreen />}
         {vote && <VoteStatusScreen />}
       </GroupStatusNavigationBoundary>
     </AdminGroupQueryProvider>
@@ -200,6 +204,31 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(router.replace).toHaveBeenCalledWith("/groups/6/votes/result");
     expect(subscriptions[0].stop).not.toHaveBeenCalled();
   });
+
+  it.each(["/groups/6/home", "/groups/6/admin"])(
+    "관리자도 %s에서 투표 시작 이벤트를 받으면 MVP 투표로 한 번만 이동한다",
+    async (pathname) => {
+      route.pathname = pathname;
+      getGroupDetail.mockResolvedValue({
+        ...group("FIRST_ROUND"),
+        myRole: "HOST",
+      });
+      render(
+        <App
+          home={pathname.endsWith("/home")}
+          adminHome={pathname.endsWith("/admin")}
+        />,
+      );
+      await screen.findByTestId("group-state");
+      await emit("VOTING");
+      await emit("VOTING");
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith(
+        "/groups/6/votes/mvp",
+      );
+      expect(subscribe).toHaveBeenCalledOnce();
+      expect(subscriptions[0].stop).not.toHaveBeenCalled();
+    },
+  );
 
   it("REST 응답과 반환값 모두 요청 중 받은 SSE 상태를 유지하고 다른 필드는 갱신한다", async () => {
     render(<App />);
