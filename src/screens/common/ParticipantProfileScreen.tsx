@@ -9,12 +9,16 @@ import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAd
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
 import type { ParticipantProfile } from "@/features/participant/types/participant.types";
+import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
+import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./ParticipantProfileScreen.module.css";
 
 interface ParticipantProfileScreenProps {
@@ -35,12 +39,10 @@ export default function ParticipantProfileScreen({
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockReason, setBlockReason] = useState("");
   const [blockReasonError, setBlockReasonError] = useState("");
+  const { message: toastMessage, showToast } = useToast();
 
   const roundParam = searchParams.get("round");
-  const adminRound =
-    roundParam === "1" || roundParam === "2"
-      ? (Number(roundParam) as 1 | 2)
-      : undefined;
+  const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
   const resolvedRound = adminRound ?? 1;
   const isAdminView = searchParams.get("role") === "admin" || group?.myRole === "HOST";
   const { data: profileDetail } = useParticipantProfileQuery(
@@ -52,7 +54,9 @@ export default function ParticipantProfileScreen({
     groupId,
     resolvedRound,
   );
-  const { data: participantGroup } = useParticipantListQuery(groupId);
+  const { data: participantGroup } = useParticipantListQuery(groupId, {
+    round: resolvedRound,
+  });
 
   const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
     const adminParticipant = adminParticipantGroup.participants.find(
@@ -95,11 +99,25 @@ export default function ParticipantProfileScreen({
       String(group.myParticipantId) === String(participantId),
   );
 
-  const canBlockParticipant = isAdminView && !isSelf;
+  const canBlockParticipant =
+    isAdminView && !isSelf && group.status === "RECRUITING";
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
-  const instagramText = profile.instagramId ?? "등록된 인스타 ID가 없습니다.";
+  const instagramText = profile.instagramId
+    ? formatInstagramDisplay(profile.instagramId)
+    : "등록된 인스타 ID가 없습니다.";
   const bioText = profile.bio ?? "자기소개가 없습니다.";
+
+  const copyInstagramId = async () => {
+    if (!profile.instagramId) return;
+
+    try {
+      await navigator.clipboard.writeText(instagramText);
+      showToast("인스타 ID가 복사되었습니다.");
+    } catch {
+      showToast(instagramText);
+    }
+  };
 
   const handleBlock = async () => {
     const trimmed = blockReason.trim();
@@ -123,7 +141,7 @@ export default function ParticipantProfileScreen({
         `${profile.name}님을 그룹에서 차단했습니다.`,
       );
     }
-    router.push(groupRoutes.adminParticipants(groupId, adminRound));
+    router.push(groupRoutes.adminParticipants(groupId, resolvedRound));
   };
 
   return (
@@ -157,7 +175,12 @@ export default function ParticipantProfileScreen({
         )}
 
         <section className={styles.profileHeader}>
-          <GenderAvatar gender={profile.gender} name={profile.name} size={72} />
+          <GenderAvatar
+            gender={profile.gender}
+            name={profile.name}
+            toneKey={profile.id}
+            size={72}
+          />
           <h2>{profile.name}</h2>
           <p>{profile.department}</p>
 
@@ -216,9 +239,18 @@ export default function ParticipantProfileScreen({
 
               <div>
                 <span>인스타 ID</span>
-                <strong className={profile.instagramId ? styles.instagram : ""}>
-                  {instagramText}
-                </strong>
+                {profile.instagramId ? (
+                  <button
+                    type="button"
+                    className={styles.instagramButton}
+                    onClick={copyInstagramId}
+                    aria-label={`인스타 ID ${instagramText} 복사`}
+                  >
+                    {instagramText}
+                  </button>
+                ) : (
+                  <strong>{instagramText}</strong>
+                )}
               </div>
             </section>
 
@@ -300,6 +332,8 @@ export default function ParticipantProfileScreen({
           </div>
         </div>
       </BottomSheetDialog>
+
+      {toastMessage && <Toast className={styles.toast}>{toastMessage}</Toast>}
     </MobileFrame>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getParticipants } from "../api/participant.api";
+import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import type { ParticipantGroup } from "../types/participant.types";
 
 const initialParticipantGroup: ParticipantGroup = {
@@ -18,9 +19,10 @@ function isAbortError(error: unknown) {
 
 export function useParticipantListQuery(
   groupId: string,
-  options: { polling?: boolean } = {},
+  options: { polling?: boolean; round?: AssignmentRound } = {},
 ) {
   const polling = options.polling ?? false;
+  const round = options.round ?? 1;
   const requestIdRef = useRef(0);
   const [data, setData] = useState(initialParticipantGroup);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +38,7 @@ export function useParticipantListQuery(
       setIsError(false);
 
       try {
-        const participants = await getParticipants(groupId, 1, signal);
+        const participants = await getParticipants(groupId, round, signal);
 
         if (requestId === requestIdRef.current) {
           setData(participants);
@@ -60,7 +62,7 @@ export function useParticipantListQuery(
         }
       }
     },
-    [groupId],
+    [groupId, round],
   );
 
   useEffect(() => {

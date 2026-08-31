@@ -3,6 +3,7 @@
 import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import type { Participant } from "../types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
@@ -10,21 +11,37 @@ import styles from "@/screens/common/ParticipantListScreen.module.css";
 interface ParticipantCardProps {
   participant: Participant;
   groupId?: string;
+  round?: AssignmentRound;
   onPrivateSelect?: (participant: Participant) => void;
+  canViewPrivateProfiles?: boolean;
 }
 
 export default function ParticipantCard({
   participant,
   groupId,
+  round,
   onPrivateSelect,
+  canViewPrivateProfiles = false,
 }: ParticipantCardProps) {
   const params = useParams<{ groupId: string }>();
   const resolvedGroupId = groupId ?? params.groupId ?? "1";
-  const canViewProfile = participant.visibility === "public";
+  const canViewProfile =
+    participant.visibility === "public" || canViewPrivateProfiles;
+  const profileSearchParams = [
+    round ? `round=${round}` : null,
+    canViewPrivateProfiles ? "role=admin" : null,
+  ].filter(Boolean);
+  const profileHref = `/groups/${resolvedGroupId}/participants/${participant.id}${
+    profileSearchParams.length > 0 ? `?${profileSearchParams.join("&")}` : ""
+  }`;
 
   const content = (
     <>
-      <GenderAvatar gender={participant.gender} name={participant.name} />
+      <GenderAvatar
+        gender={participant.gender}
+        name={participant.name}
+        toneKey={participant.id}
+      />
 
       <div className={styles.participantInfo}>
         <strong>{participant.name}</strong>
@@ -43,7 +60,7 @@ export default function ParticipantCard({
     <li>
       {canViewProfile ? (
         <Link
-          href={`/groups/${resolvedGroupId}/participants/${participant.id}`}
+          href={profileHref}
           className={styles.participantItem}
         >
           {content}

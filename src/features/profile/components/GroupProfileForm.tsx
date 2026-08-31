@@ -122,6 +122,7 @@ export default function GroupProfileForm({
         <GenderAvatar
           gender={profile.gender === "MALE" ? "male" : "female"}
           name={profile.displayName}
+          toneKey={initialProfile.id}
           size={52}
           className={styles.profileAvatar}
         />

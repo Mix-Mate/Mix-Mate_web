@@ -16,10 +16,6 @@
   font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
-.phone > header {
-  flex: 0 0 72px;
-}
-
 .content {
   display: flex;
   flex: 0 0 auto;
