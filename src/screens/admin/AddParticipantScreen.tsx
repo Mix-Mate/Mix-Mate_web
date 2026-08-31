@@ -12,6 +12,10 @@ import type {
   ProfileVisibility,
 } from "@/features/participant/types/participant.types";
 import ProfileMbtiField from "@/features/profile/components/ProfileMbtiField";
+import {
+  getValidationMessage,
+  groupProfileSchema,
+} from "@/features/profile/schemas/group-profile.schema";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -27,6 +31,7 @@ const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "2학년", value: "SECOND" },
   { label: "3학년", value: "THIRD" },
   { label: "4학년", value: "FOURTH" },
+  { label: "기타", value: "OTHER" },
 ];
 
 const genderOptions: { label: string; value: ProfileGender }[] = [
@@ -49,6 +54,33 @@ const visibilityOptions: { label: string; value: ProfileVisibility }[] = [
   { label: "비공개", value: "PRIVATE" },
 ];
 
+type AddParticipantForm = {
+  displayName: string;
+  position: ProfilePosition | null;
+  major: string;
+  isNew: boolean | null;
+  grade: ProfileGrade | null;
+  gender: ProfileGender | null;
+  mbti: ProfileMbti | null;
+  age: null;
+  instaId: null;
+  bio: null;
+  visibility: ProfileVisibility | null;
+};
+
+function getMissingFieldMessage(form: AddParticipantForm) {
+  if (!form.displayName.trim()) return "이름을 입력해주세요.";
+  if (!form.grade) return "학년을 선택해주세요.";
+  if (!form.gender) return "성별을 선택해주세요.";
+  if (!form.major.trim()) return "소속을 입력해주세요.";
+  if (form.isNew === null) return "신입 여부를 선택해주세요.";
+  if (!form.position) return "직급을 선택해주세요.";
+  if (!form.mbti) return "MBTI를 선택해주세요.";
+  if (!form.visibility) return "프로필 공개 여부를 선택해주세요.";
+
+  return null;
+}
+
 export default function AddParticipantScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -56,23 +88,23 @@ export default function AddParticipantScreen() {
   const round = toAssignmentRound(searchParams.get("round") ?? "1");
   const { mutate, isPending } = useAddParticipantMutation();
   const { message: toast, showToast } = useToast();
-  const [form, setForm] = useState<ParticipantProfileRequest>({
-    displayName: "윤도현",
-    position: "MEMBER",
-    major: "기계공학과",
-    isNew: true,
-    grade: "FIRST",
-    gender: "MALE",
-    mbti: "ISTP",
+  const [form, setForm] = useState<AddParticipantForm>({
+    displayName: "",
+    position: null,
+    major: "",
+    isNew: null,
+    grade: null,
+    gender: null,
+    mbti: null,
     age: null,
     instaId: null,
     bio: null,
-    visibility: "PUBLIC",
+    visibility: null,
   });
 
-  const updateField = <TKey extends keyof ParticipantProfileRequest>(
+  const updateField = <TKey extends keyof AddParticipantForm>(
     field: TKey,
-    value: ParticipantProfileRequest[TKey],
+    value: AddParticipantForm[TKey],
   ) => {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
   };
@@ -84,22 +116,35 @@ export default function AddParticipantScreen() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!form.displayName.trim() || !form.major.trim()) {
-      showToast("이름과 소속을 입력해주세요.");
-      return;
-    }
-
-    const result = await mutate(params.groupId, {
+    const formData = {
       ...form,
       displayName: form.displayName.trim(),
       major: form.major.trim(),
-    });
+    };
+    const missingFieldMessage = getMissingFieldMessage(formData);
 
-    showToast(
-      result.source === "api"
-        ? "참가자를 추가했습니다."
-        : "API 인증 전이라 mock에 참가자를 추가했습니다.",
-    );
+    if (missingFieldMessage) {
+      showToast(missingFieldMessage);
+      return;
+    }
+
+    const validation = groupProfileSchema.safeParse(formData);
+
+    if (!validation.success) {
+      showToast(getValidationMessage(validation.error));
+      return;
+    }
+
+    const requestBody: ParticipantProfileRequest = validation.data;
+
+    const result = await mutate(params.groupId, requestBody);
+
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+
+    showToast("참가자를 추가했습니다.");
 
     window.setTimeout(goToManagement, 350);
   };
@@ -121,6 +166,7 @@ export default function AddParticipantScreen() {
           <span>이름</span>
           <input
             value={form.displayName}
+            maxLength={10}
             onChange={(event) => updateField("displayName", event.target.value)}
           />
         </label>
@@ -161,6 +207,7 @@ export default function AddParticipantScreen() {
           <span>소속</span>
           <input
             value={form.major}
+            maxLength={15}
             onChange={(event) => updateField("major", event.target.value)}
           />
         </label>
@@ -199,7 +246,7 @@ export default function AddParticipantScreen() {
 
         <ProfileMbtiField
           value={form.mbti}
-          onChange={(value) => updateField("mbti", value as ProfileMbti)}
+          onChange={(value) => updateField("mbti", value)}
         />
 
         <div className={styles.field}>

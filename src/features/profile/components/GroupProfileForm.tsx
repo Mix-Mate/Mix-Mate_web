@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import type {
@@ -9,11 +9,20 @@ import type {
   ProfilePosition,
 } from "../types/profile.types";
 import { normalizeMajor } from "../lib/normalize-major";
+import {
+  getValidationMessage,
+  groupProfileSchema,
+} from "../schemas/group-profile.schema";
 import ProfileChipField from "./ProfileChipField";
+import ProfileInstagramField from "./ProfileInstagramField";
 import ProfileMbtiField from "./ProfileMbtiField";
 import ProfileTextAreaField from "./ProfileTextAreaField";
 import ProfileTextField from "./ProfileTextField";
 import ProfileVisibilityField from "./ProfileVisibilityField";
+import {
+  cleanInstagramForSubmit,
+  formatInstagramDisplay,
+} from "../lib/instagram";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/common/EditMyProfileScreen.module.css";
@@ -24,6 +33,7 @@ interface GroupProfileFormProps {
   isSubmitting: boolean;
   submitLabel: string;
   onSubmit: (profile: MyGroupProfile) => void | Promise<void>;
+  onValidationError?: (message: string) => void;
 }
 
 const gradeOptions: { label: string; value: ProfileGrade }[] = [
@@ -31,6 +41,7 @@ const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "2학년", value: "SECOND" },
   { label: "3학년", value: "THIRD" },
   { label: "4학년", value: "FOURTH" },
+  { label: "기타", value: "OTHER" },
 ];
 
 const genderOptions: { label: string; value: ProfileGender }[] = [
@@ -54,6 +65,7 @@ export default function GroupProfileForm({
   isSubmitting,
   submitLabel,
   onSubmit,
+  onValidationError,
 }: GroupProfileFormProps) {
   const [profile, setProfile] = useState<EditableGroupProfile>({
     displayName: initialProfile.displayName,
@@ -64,7 +76,7 @@ export default function GroupProfileForm({
     gender: initialProfile.gender,
     mbti: initialProfile.mbti,
     age: initialProfile.age,
-    instaId: initialProfile.instaId,
+    instaId: formatInstagramDisplay(initialProfile.instaId),
     bio: initialProfile.bio,
     visibility: initialProfile.visibility,
   });
@@ -82,10 +94,27 @@ export default function GroupProfileForm({
       data-mode={mode}
       onSubmit={(event) => {
         event.preventDefault();
-        void onSubmit({
+        const normalizedProfile = {
           ...initialProfile,
           ...profile,
           major: normalizeMajor(profile.major),
+          instaId: cleanInstagramForSubmit(profile.instaId),
+        };
+        const result = groupProfileSchema.safeParse(normalizedProfile);
+
+        if (!result.success) {
+          const message = getValidationMessage(result.error);
+          if (onValidationError) {
+            onValidationError(message);
+          } else {
+            window.alert(message);
+          }
+          return;
+        }
+
+        void onSubmit({
+          ...normalizedProfile,
+          ...result.data,
         });
       }}
     >
@@ -101,6 +130,7 @@ export default function GroupProfileForm({
           label="이름"
           value={profile.displayName}
           required
+          maxLength={10}
           onChange={(value) => updateField("displayName", value)}
         />
 
@@ -121,6 +151,7 @@ export default function GroupProfileForm({
         <ProfileTextField
           label="소속 (학과·팀 등)"
           value={profile.major}
+          maxLength={15}
           onChange={(value) => updateField("major", value)}
           onBlur={() => updateField("major", normalizeMajor(profile.major))}
         />
@@ -148,24 +179,25 @@ export default function GroupProfileForm({
           label="나이 (선택)"
           value={profile.age === null ? "" : String(profile.age)}
           inputMode="numeric"
+          maxLength={10}
           onChange={(value) => {
-            const trimmedValue = value.trim();
+            const trimmedValue = value.replace(/[^0-9]/g, "").slice(0, 10);
             updateField(
               "age",
-              trimmedValue ? Number(trimmedValue.replace(/[^0-9]/g, "")) : null,
+              trimmedValue ? Number(trimmedValue) : null,
             );
           }}
         />
 
-        <ProfileTextField
-          label="인스타 ID (선택)"
+        <ProfileInstagramField
           value={profile.instaId ?? ""}
-          onChange={(value) => updateField("instaId", value || null)}
+          onChange={(value) => updateField("instaId", value)}
         />
 
         <ProfileTextAreaField
           label="자기소개 (선택)"
           value={profile.bio ?? ""}
+          maxLength={50}
           onChange={(value) => updateField("bio", value || null)}
         />
 

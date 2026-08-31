@@ -11,7 +11,6 @@ export const assignmentSetupSchema = z.object({
       "GENDER_BALANCE",
       "MBTI_BALANCE",
       "GRADE_DISTRIBUTION",
-      "AFFILIATION_DISTRIBUTION",
       "NEWCOMER_DISTRIBUTION",
       "ADMIN_DISTRIBUTION",
       "MEMBER_COUNT_BALANCE",

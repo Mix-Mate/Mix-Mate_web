@@ -12,6 +12,7 @@ interface GenderAvatarProps {
   size?: number;
   shape?: GenderAvatarShape;
   className?: string;
+  backgroundColor?: string;
 }
 
 const genderIconPaths: Record<GenderAvatarGender, string> = {
@@ -19,20 +20,36 @@ const genderIconPaths: Record<GenderAvatarGender, string> = {
   female: "/icons/participant-female.svg",
 };
 
+const avatarColors = ["#DBE6FF", "#C2D2F1", "#7C9EF8", "#829AE4", "#7C8DC1"];
+
+function getAvatarToneIndex(name: string) {
+  return Array.from(name).reduce(
+    (sum, char) => sum + char.charCodeAt(0),
+    0,
+  ) % avatarColors.length;
+}
+
 export default function GenderAvatar({
   gender,
   name,
   size = 50,
   shape = "rounded",
   className,
+  backgroundColor,
 }: GenderAvatarProps) {
   const iconSrc = genderIconPaths[gender];
+  const toneIndex = getAvatarToneIndex(name);
+  const avatarColor = backgroundColor ?? avatarColors[toneIndex];
 
   return (
     <span
       className={clsx(styles.avatar, styles[shape], className)}
-      style={{ width: size, height: size }}
-      aria-label={`${name} 프로필 아바타`}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: avatarColor,
+      }}
+      aria-label={name}
       role="img"
     >
       <Image
@@ -40,7 +57,7 @@ export default function GenderAvatar({
         alt=""
         width={size}
         height={size}
-        className={styles.icon}
+        className={clsx(styles.icon, styles[`tone${toneIndex}`])}
       />
     </span>
   );

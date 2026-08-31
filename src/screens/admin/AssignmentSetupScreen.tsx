@@ -3,12 +3,8 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import AssignmentSetupForm from "@/features/assignment/components/AssignmentSetupForm";
-import { getTeams } from "@/features/assignment/api/assignment.api";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
-import {
-  toBackendConditions,
-  toFixedMembersFromTeams,
-} from "@/features/assignment/model/assignment.mapper";
+import { toBackendConditions } from "@/features/assignment/model/assignment.mapper";
 import {
   saveAssignmentResultDraft,
   saveAssignmentSetupDraft,
@@ -33,7 +29,6 @@ export default function AssignmentSetupScreen() {
   const [warningMessages, setWarningMessages] = useState<string[] | null>(
     null,
   );
-  const [carryOverError, setCarryOverError] = useState<string | null>(null);
   const {
     mutate: createAssignment,
     isPending: isAssigning,
@@ -62,29 +57,12 @@ export default function AssignmentSetupScreen() {
       return;
     }
 
-    setCarryOverError(null);
-
-    let fixedMembers: ReturnType<typeof toFixedMembersFromTeams> = [];
-
-    if (input.conditionKeys.includes("KEEP_FIXED_MEMBERS")) {
-      try {
-        fixedMembers = toFixedMembersFromTeams(
-          await getTeams(params.groupId, 1),
-        );
-      } catch (fetchError) {
-        setCarryOverError(
-          fetchError instanceof Error
-            ? fetchError.message
-            : "1차 조 편성 결과를 불러오지 못했습니다.",
-        );
-        return;
-      }
-    }
-
+    // 2차는 1차 조 편성 결과를 고정 멤버로 넘기지 않는다.
+    // (조 개수/대상 참가자가 회차마다 달라져 백엔드 검증과 계속 어긋났음)
     const result = await createAssignment(params.groupId, round, {
       teamCount: input.groupCount,
       conditions: toBackendConditions(input.conditionKeys),
-      fixedMembers,
+      fixedMembers: [],
     });
 
     if (!result) return;
@@ -108,7 +86,10 @@ export default function AssignmentSetupScreen() {
       data-testid="assignment-setup-screen"
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} />
+      <Header
+        title={group.groupName}
+        onBack={() => router.replace("/home")}
+      />
 
       <TabNavigation
         items={[
@@ -133,7 +114,7 @@ export default function AssignmentSetupScreen() {
         groupId={params.groupId}
         round={round}
         isSubmitting={isAssigning}
-        errorMessage={carryOverError ?? assignError}
+        errorMessage={assignError}
         onSubmit={handleSubmit}
       />
 

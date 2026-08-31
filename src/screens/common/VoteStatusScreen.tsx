@@ -2,7 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import AdminVoteEndButton from "@/features/vote/components/status/AdminVoteEndButton";
 import VoteCompletionWatcher from "@/features/vote/components/status/VoteCompletionWatcher";
@@ -21,6 +21,7 @@ export default function VoteStatusScreen() {
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
   const isAdmin = group?.myRole === "HOST";
+  const canForceEndVote = isAdmin && group?.status === "VOTING";
   const { data, isLoading, isRefreshing, error, isComplete } =
     useVoteStatusQuery(params.groupId);
   const [selectedFilter, setSelectedFilter] =
@@ -58,6 +59,31 @@ export default function VoteStatusScreen() {
       withSessionContext(groupRoutes.voteResult(params.groupId), searchParams),
     );
   }, [params.groupId, router, searchParams]);
+
+  useEffect(() => {
+    if (!group) return;
+
+    if (group.myRole === "HOST") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminVoteStatus(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    const isVoteFinished =
+      group.status === "VOTE_CLOSED" ||
+      group.status === "BEFORE_SECOND_ROUND" ||
+      group.status === "SECOND_ROUND" ||
+      group.status === "FINISHED";
+
+    if (isVoteFinished) {
+      showVoteResult();
+    }
+  }, [group, params.groupId, router, searchParams, showVoteResult]);
+
   const showAdminVoteEnd = useCallback(() => {
     router.push(
       withSessionContext(
@@ -66,6 +92,10 @@ export default function VoteStatusScreen() {
       ),
     );
   }, [params.groupId, router, searchParams]);
+
+  if (isAdmin) {
+    return null;
+  }
 
   return (
     <VoteScreenLayout
@@ -116,13 +146,13 @@ export default function VoteStatusScreen() {
             {!isComplete && !error && (
               <p className={styles.waitingNotice}>
                 <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-                {isAdmin
+                {canForceEndVote
                   ? "미투표자가 있습니다. 관리자가 수동으로 투표를 종료할 수 있습니다."
                   : "미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다."}
               </p>
             )}
 
-            {isAdmin && !isComplete && (
+            {canForceEndVote && !isComplete && (
               <AdminVoteEndButton onEnd={showAdminVoteEnd} />
             )}
 

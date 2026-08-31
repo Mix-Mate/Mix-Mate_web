@@ -3,7 +3,7 @@ export type ParticipantRole = "general" | "staff";
 export type ParticipantGender = "male" | "female";
 export type ParticipantViewMode = "all" | "team";
 
-export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH";
+export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH" | "OTHER";
 export type ProfilePosition = "STAFF" | "MEMBER";
 export type ProfileVisibility = "PUBLIC" | "PRIVATE";
 export type ProfileGender = "MALE" | "FEMALE";
@@ -79,7 +79,15 @@ export type ParticipantSummaryResponse = {
   participantId: number;
   displayName: string;
   major: string;
+  gender: ProfileGender;
   visibility: ProfileVisibility;
+  grade?: ProfileGrade;
+  isNew?: boolean;
+  position?: ProfilePosition;
+  mbti?: ProfileMbti;
+  age?: number | null;
+  instaId?: string | null;
+  bio?: string | null;
 };
 
 export type ParticipantListResponse = {

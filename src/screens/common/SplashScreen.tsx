@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getAccessToken } from "@/shared/api/authToken";
 import BrandLogo from "@/shared/ui/BrandLogo";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./SplashScreen.module.css";
@@ -12,15 +13,14 @@ interface SplashScreenProps {
   nextHref?: string;
 }
 
-const NEXT_HREF = "/login";
-
 export default function SplashScreen({
-  nextHref = NEXT_HREF,
+  nextHref,
 }: SplashScreenProps) {
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => router.replace(nextHref), HOLD_MS);
+    const target = nextHref || (getAccessToken() ? "/home" : "/login");
+    const timer = setTimeout(() => router.replace(target), HOLD_MS);
     return () => clearTimeout(timer);
   }, [nextHref, router]);
 

@@ -18,6 +18,8 @@ import type { ParticipantCandidate } from "@/features/assignment/types/assignmen
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
+import PrivateParticipantDialog from "@/features/participant/components/PrivateParticipantDialog";
+import type { Participant } from "@/features/participant/types/participant.types";
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -47,6 +49,8 @@ export default function FixedMemberSetupScreen() {
   >({});
   const [assigningMember, setAssigningMember] =
     useState<ParticipantCandidate | null>(null);
+  const [privateParticipant, setPrivateParticipant] =
+    useState<Participant | null>(null);
 
   const {
     data: candidates,
@@ -56,9 +60,15 @@ export default function FixedMemberSetupScreen() {
 
   const fixedMembers = useMemo(
     () =>
-      candidates.filter(
-        (candidate) => candidate.participantId in fixedTeamByParticipantId,
-      ),
+      candidates
+        .filter(
+          (candidate) => candidate.participantId in fixedTeamByParticipantId,
+        )
+        .sort(
+          (a, b) =>
+            fixedTeamByParticipantId[a.participantId] -
+            fixedTeamByParticipantId[b.participantId],
+        ),
     [candidates, fixedTeamByParticipantId],
   );
 
@@ -73,6 +83,35 @@ export default function FixedMemberSetupScreen() {
       );
     });
   }, [candidates, fixedTeamByParticipantId, keyword]);
+
+  // 참가자 수를 조 개수만큼 최대한 균등하게 나눴을 때의 기본 인원(base)과,
+  // "+1명"을 받을 수 있는 조의 개수(remainder). 어느 조가 그 +1을 가져갈지는
+  // 조 번호로 미리 정하지 않고, 고정 멤버를 먼저 채우는 조가 가져간다
+  // (SelectFixedGroupDialog에서 실시간으로 판단).
+  const base =
+    groupCount > 0 ? Math.floor(candidates.length / groupCount) : 0;
+  const remainder = groupCount > 0 ? candidates.length % groupCount : 0;
+
+  const fixedCountByTeam = useMemo(() => {
+    const counts: Record<number, number> = {};
+
+    for (const [participantId, teamNumber] of Object.entries(
+      fixedTeamByParticipantId,
+    )) {
+      // 이동 중인 멤버 본인은 현재 조 인원 수에서 제외해야
+      // "그 조로 다시 선택"이 정원 초과로 막히지 않는다.
+      if (
+        assigningMember &&
+        Number(participantId) === assigningMember.participantId
+      ) {
+        continue;
+      }
+
+      counts[teamNumber] = (counts[teamNumber] ?? 0) + 1;
+    }
+
+    return counts;
+  }, [fixedTeamByParticipantId, assigningMember]);
 
   const removeFixedMember = (participantId: number) => {
     setFixedTeamByParticipantId((current) => {
@@ -139,7 +178,17 @@ export default function FixedMemberSetupScreen() {
       data-testid="fixed-member-setup-screen"
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} />
+      <Header
+        title={group.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              groupRoutes.adminAssignmentSetup(params.groupId, round),
+              searchParams,
+            ),
+          )
+        }
+      />
 
       <TabNavigation
         items={[
@@ -182,9 +231,12 @@ export default function FixedMemberSetupScreen() {
             {fixedMembers.map((member) => (
               <FixedMemberCard
                 key={member.participantId}
+                groupId={params.groupId}
+                round={round}
                 member={member}
                 teamNumber={fixedTeamByParticipantId[member.participantId]}
                 onRemove={removeFixedMember}
+                onPrivateSelect={setPrivateParticipant}
               />
             ))}
           </div>
@@ -210,8 +262,11 @@ export default function FixedMemberSetupScreen() {
             {unassignedMembers.map((member) => (
               <UnassignedMemberRow
                 key={member.participantId}
+                groupId={params.groupId}
+                round={round}
                 member={member}
                 onAssign={setAssigningMember}
+                onPrivateSelect={setPrivateParticipant}
               />
             ))}
           </ul>
@@ -239,6 +294,11 @@ export default function FixedMemberSetupScreen() {
         )}
       </div>
 
+      <PrivateParticipantDialog
+        participant={privateParticipant}
+        onClose={() => setPrivateParticipant(null)}
+      />
+
       <SelectFixedGroupDialog
         key={assigningMember?.participantId ?? "none"}
         open={assigningMember !== null}
@@ -249,6 +309,9 @@ export default function FixedMemberSetupScreen() {
             : null
         }
         groupCount={groupCount}
+        fixedCountByTeam={fixedCountByTeam}
+        base={base}
+        remainder={remainder}
         onClose={() => setAssigningMember(null)}
         onConfirm={confirmAssignment}
       />

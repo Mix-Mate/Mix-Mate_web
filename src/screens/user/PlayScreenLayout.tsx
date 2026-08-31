@@ -41,7 +41,7 @@ export default function PlayScreenLayout({
       data-role={snapshot.role}
     >
       <Header
-        title={snapshot.groupName}
+        title={group.groupName || snapshot.groupName}
         onBack={() => router.push(withSessionContext(backHref, searchParams))}
       />
 

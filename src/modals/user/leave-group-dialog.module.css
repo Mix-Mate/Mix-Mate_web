@@ -50,6 +50,13 @@
   font-size: 12px;
 }
 
+.error {
+  display: block;
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 13px;
+}
+
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -75,4 +82,10 @@
 .leaveButton {
   background: #ef4444;
   color: #fff;
+}
+
+.cancelButton:disabled,
+.leaveButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }

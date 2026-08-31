@@ -3,9 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getGroupDetail } from "@/features/group/api/group.api";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
+import { voteMvp } from "../api/mvpVote.api";
+import { isAlreadyVotedError } from "../api/voteApiError";
 import type { MvpCandidate, MvpVoteContext } from "../types/mvpVote.types";
 import type { VoteStatus } from "../types/vote.types";
-import { useMvpVoteMutation } from "./useMvpVoteMutation";
+
+export interface MvpVoteSubmitResult {
+  success: boolean;
+  isAlreadyVoted?: boolean;
+}
 
 export function useMvpVote(groupId: string) {
   const {
@@ -13,11 +19,8 @@ export function useMvpVote(groupId: string) {
     isLoading: isTeamLoading,
     error: teamError,
   } = useMyTeamQuery(groupId, "FIRST_ROUND");
-  const {
-    mutate: submitMvpVote,
-    isPending: isSubmitting,
-    error: submissionError,
-  } = useMvpVoteMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [currentParticipantId, setCurrentParticipantId] = useState<
     number | null
   >(null);
@@ -36,6 +39,7 @@ export function useMvpVote(groupId: string) {
       setIsGroupLoading(true);
       setGroupError(null);
       setValidationError(null);
+      setSubmissionError(null);
       setHasSubmitted(false);
       setStatus("OPEN");
 
@@ -80,9 +84,9 @@ export function useMvpVote(groupId: string) {
   }, [currentParticipantId, team]);
 
   const submit = useCallback(
-    async (targetParticipantId: number) => {
+    async (targetParticipantId: number): Promise<MvpVoteSubmitResult> => {
       if (hasSubmitted || isSubmitting || submissionInFlightRef.current) {
-        return false;
+        return { success: false };
       }
 
       if (
@@ -93,22 +97,35 @@ export function useMvpVote(groupId: string) {
         setValidationError(
           "현재 같은 조에 속한 팀원에게만 투표할 수 있습니다.",
         );
-        return false;
+        return { success: false };
       }
 
       setValidationError(null);
+      setSubmissionError(null);
+      setIsSubmitting(true);
       submissionInFlightRef.current = true;
 
       try {
-        const didSubmit = await submitMvpVote(groupId, targetParticipantId);
-
-        if (didSubmit) setHasSubmitted(true);
-        return didSubmit;
+        await voteMvp(groupId, targetParticipantId);
+        setHasSubmitted(true);
+        return { success: true };
+      } catch (submitError) {
+        if (isAlreadyVotedError(submitError)) {
+          setHasSubmitted(true);
+          return { success: false, isAlreadyVoted: true };
+        }
+        setSubmissionError(
+          submitError instanceof Error
+            ? submitError.message
+            : "MVP 투표에 실패했습니다.",
+        );
+        return { success: false };
       } finally {
+        setIsSubmitting(false);
         submissionInFlightRef.current = false;
       }
     },
-    [candidates, groupId, hasSubmitted, isSubmitting, submitMvpVote],
+    [candidates, groupId, hasSubmitted, isSubmitting],
   );
 
   const context: MvpVoteContext = {

@@ -16,7 +16,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     ...baseSnapshot,
     scenario: "recruiting",
     round: 1,
-    currentStatus: "FIRST_PREPARING",
+    currentStatus: "RECRUITING",
     teamNumber: null,
     teamHistoryAvailable: false,
     permissions: {
@@ -33,7 +33,7 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     teamNumber: null,
     teamHistoryAvailable: false,
     permissions: {
-      canLeaveGroup: true,
+      canLeaveGroup: false,
       canEndRound: false,
       canEditProfile: false,
     },
@@ -43,6 +43,19 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     scenario: "round1-active",
     round: 1,
     currentStatus: "FIRST_IN_PROGRESS",
+    teamNumber: 3,
+    teamHistoryAvailable: false,
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound: false,
+      canEditProfile: false,
+    },
+  },
+  voting: {
+    ...baseSnapshot,
+    scenario: "voting",
+    round: 1,
+    currentStatus: "SECOND_VOTING",
     teamNumber: 3,
     teamHistoryAvailable: false,
     permissions: {
@@ -69,6 +82,19 @@ const snapshots: Record<UserHomeScenario, UserHomeSnapshot> = {
     scenario: "round2-active",
     round: 2,
     currentStatus: "SECOND_IN_PROGRESS",
+    teamNumber: 5,
+    teamHistoryAvailable: true,
+    permissions: {
+      canLeaveGroup: false,
+      canEndRound: false,
+      canEditProfile: false,
+    },
+  },
+  completed: {
+    ...baseSnapshot,
+    scenario: "completed",
+    round: 2,
+    currentStatus: "COMPLETED",
     teamNumber: 5,
     teamHistoryAvailable: true,
     permissions: {

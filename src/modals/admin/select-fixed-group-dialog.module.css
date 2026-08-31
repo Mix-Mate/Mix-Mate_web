@@ -73,6 +73,13 @@
   color: #256ad3;
 }
 
+.groupOption.disabled {
+  cursor: not-allowed;
+  border-color: #f0f0f2;
+  background: #fafafa;
+  color: #a1a1aa;
+}
+
 .check {
   display: inline-flex;
   flex: 0 0 auto;

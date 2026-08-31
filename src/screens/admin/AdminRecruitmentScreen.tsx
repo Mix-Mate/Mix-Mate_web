@@ -2,7 +2,7 @@
 
 import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
@@ -23,6 +23,8 @@ import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
 import styles from "./AdminRecruitmentScreen.module.css";
+
+const RECRUITMENT_POLLING_INTERVAL_MS = 3000;
 
 interface InviteCodeExpirationNoticeProps {
   createdAt: string;
@@ -81,6 +83,7 @@ export default function AdminRecruitmentScreen() {
   const { message: toast, showToast } = useToast();
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
+  const isRecruiting = group?.status === "RECRUITING";
   const editInitialValues = useMemo<UpdateGroupInput>(
     () => ({
       name: group?.groupName ?? "",
@@ -88,6 +91,20 @@ export default function AdminRecruitmentScreen() {
     }),
     [group?.description, group?.groupName],
   );
+
+  useEffect(() => {
+    if (!isRecruiting) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refetch();
+    }, RECRUITMENT_POLLING_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isRecruiting, refetch]);
 
   const copyInviteCode = useCallback(async () => {
     if (!group) return;
@@ -99,6 +116,47 @@ export default function AdminRecruitmentScreen() {
       showToast(`그룹 코드: ${group.inviteCode}`);
     }
   }, [group, showToast]);
+
+  useEffect(() => {
+    if (!group) return;
+
+    if (
+      group.status === "BEFORE_FIRST_ROUND" ||
+      group.status === "BEFORE_SECOND_ROUND"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminPreparation(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (
+      group.status === "FIRST_ROUND" ||
+      group.status === "SECOND_ROUND" ||
+      group.status === "VOTING" ||
+      group.status === "VOTE_CLOSED"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminProgress(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (group.status === "FINISHED") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.completed(params.groupId),
+          searchParams,
+        ),
+      );
+    }
+  }, [group, params.groupId, router, searchParams]);
 
   const goToParticipants = useCallback(() => {
     router.push(
@@ -171,7 +229,7 @@ export default function AdminRecruitmentScreen() {
     if (!deleted) return;
 
     setDeleteDialogOpen(false);
-    router.replace("/");
+    router.replace("/home");
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
@@ -187,7 +245,7 @@ export default function AdminRecruitmentScreen() {
     >
       <Header
         title={group.groupName}
-        onBack={() => router.back()}
+        onBack={() => router.replace("/home")}
         compact
         rightAction={
           canEditGroup ? (

@@ -1,10 +1,14 @@
-﻿"use client";
+"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Ban, Menu } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import AdminParticipantList from "@/features/participant/components/AdminParticipantList";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
 import type { ParticipantRole } from "@/features/participant/types/participant.types";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
@@ -12,6 +16,8 @@ import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import SearchBar from "@/shared/ui/SearchBar";
 import TabNavigation from "@/shared/ui/TabNavigation";
+import Toast from "@/shared/ui/Toast";
+import useToast from "@/shared/hooks/useToast";
 import styles from "./AdminParticipantManagementScreen.module.css";
 
 type FilterValue = "all" | ParticipantRole;
@@ -26,10 +32,33 @@ export default function AdminParticipantManagementScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(searchParams.get("round") ?? "1");
-  const { data } = useAdminParticipantListQuery(params.groupId, round);
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const roundParam = searchParams.get("round");
+  const round = roundParam
+    ? toAssignmentRound(roundParam)
+    : group
+      ? getCurrentGroupRound(group.status)
+      : 1;
+  const isRoundResolved = Boolean(roundParam || group);
+  const { data } = useAdminParticipantListQuery(params.groupId, round, {
+    enabled: isRoundResolved,
+    polling: group?.status === "RECRUITING",
+  });
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { message: toastMessage, showToast } = useToast();
+  const canAddParticipant = round === 1;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("adminToast");
+      if (stored) {
+        showToast(stored);
+        sessionStorage.removeItem("adminToast");
+      }
+    }
+  }, [showToast]);
 
   const stats = useMemo(
     () => ({
@@ -45,18 +74,71 @@ export default function AdminParticipantManagementScreen() {
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    return data.participants.filter((participant) => {
+    const participants = data.participants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
 
       return matchesKeyword && matchesFilter;
     });
-  }, [data.participants, filter, keyword]);
+
+    return participants.sort((first, second) => {
+      const firstIsMe = first.id === String(group?.myParticipantId);
+      const secondIsMe = second.id === String(group?.myParticipantId);
+
+      if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
+
+      const firstIsStaff = first.role === "staff";
+      const secondIsStaff = second.role === "staff";
+
+      if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
+
+      return 0;
+    });
+  }, [data.participants, filter, group?.myParticipantId, keyword]);
 
   const goToAssignment = () => {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
+
+  const handleNavigateBlacklist = () => {
+    setMenuOpen(false);
+    router.push(`/groups/${params.groupId}/blacklist`);
+  };
+
+  const headerRightAction = (
+    <div className={styles.menuWrapper}>
+      <button
+        type="button"
+        className={styles.menuButton}
+        aria-label="관리자 메뉴 열기"
+        onClick={() => setMenuOpen((prev) => !prev)}
+      >
+        <Menu aria-hidden="true" size={22} strokeWidth={1.8} />
+      </button>
+
+      {menuOpen && (
+        <>
+          <div
+            className={styles.menuBackdrop}
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className={styles.menuDropdown} role="menu">
+            <button
+              type="button"
+              className={styles.menuItem}
+              role="menuitem"
+              onClick={handleNavigateBlacklist}
+            >
+              <Ban size={18} strokeWidth={2} />
+              <span>그룹 차단 목록</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 
   return (
     <MobileFrame
@@ -64,7 +146,18 @@ export default function AdminParticipantManagementScreen() {
       viewportClassName={styles.viewport}
       data-testid="admin-participant-management"
     >
-      <Header title={data.groupName} onBack={() => router.back()} />
+      <Header
+        title={data.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              groupRoutes.adminPreparation(params.groupId),
+              searchParams,
+            ),
+          )
+        }
+        rightAction={headerRightAction}
+      />
 
       <TabNavigation
         items={[
@@ -115,17 +208,19 @@ export default function AdminParticipantManagementScreen() {
             ))}
           </div>
 
-          <button
-            type="button"
-            className={styles.addButton}
-            onClick={() =>
-              router.push(
-                `/groups/${params.groupId}/admin/participants/new?round=${round}`,
-              )
-            }
-          >
-            사용자 추가
-          </button>
+          {canAddParticipant && (
+            <button
+              type="button"
+              className={styles.addButton}
+              onClick={() =>
+                router.push(
+                  `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+                )
+              }
+            >
+              사용자 추가
+            </button>
+          )}
         </div>
 
         <section className={styles.listCard} aria-label="참가자 목록">
@@ -142,6 +237,12 @@ export default function AdminParticipantManagementScreen() {
           조 편성
         </Button>
       </footer>
+
+      {toastMessage && (
+        <Toast className={styles.toast} role="status">
+          {toastMessage}
+        </Toast>
+      )}
     </MobileFrame>
   );
 }

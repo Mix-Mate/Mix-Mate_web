@@ -27,12 +27,6 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
     defaultEnabled: true,
   },
   {
-    key: "AFFILIATION_DISTRIBUTION",
-    label: "소속 분산",
-    description: "같은 학과·팀 분산",
-    defaultEnabled: true,
-  },
-  {
     key: "NEWCOMER_DISTRIBUTION",
     label: "신입 여부 분산",
     description: "신입이 고루 섞이도록",
@@ -50,14 +44,24 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
     description: "조별 인원 차이 최소화",
     defaultEnabled: true,
   },
-  {
-    key: "KEEP_FIXED_MEMBERS",
-    label: "고정 멤버 유지",
-    description: "지정한 멤버는 그대로 유지",
-    defaultEnabled: false,
-    locked: true,
-  },
 ];
+
+// 2차는 이전 회차 조 개수/대상과 어긋나면 400을 유발하는 조건이라
+// 인원 수 균등을 아예 노출/전송하지 않는다.
+// 고정 멤버 유지는 1차/2차 모두 토글 자체를 없앴다 (assignmentConditionOptions에서 제거).
+const ROUND_2_HIDDEN_CONDITION_KEYS: AssignmentConditionOption["key"][] = [
+  "MEMBER_COUNT_BALANCE",
+];
+
+export function getVisibleConditionOptions(
+  round: AssignmentSetupInput["round"],
+) {
+  if (round !== 2) return assignmentConditionOptions;
+
+  return assignmentConditionOptions.filter(
+    (option) => !ROUND_2_HIDDEN_CONDITION_KEYS.includes(option.key),
+  );
+}
 
 interface AssignmentConditionListProps {
   round: AssignmentSetupInput["round"];
@@ -72,10 +76,8 @@ export default function AssignmentConditionList({
 }: AssignmentConditionListProps) {
   return (
     <div className={styles.conditionCard} aria-label="배치 조건 목록">
-      {assignmentConditionOptions.map((option) => {
+      {getVisibleConditionOptions(round).map((option) => {
         const isOn = selectedKeys.includes(option.key);
-        // 2차부터는 직전 회차 조 배정이 있으므로 관리자가 직접 켜고 끌 수 있다.
-        const isLocked = option.locked && round !== 2;
 
         return (
           <div key={option.key} className={styles.conditionRow}>
@@ -88,12 +90,8 @@ export default function AssignmentConditionList({
               role="switch"
               aria-checked={isOn}
               aria-label={option.label}
-              disabled={isLocked}
               className={clsx(styles.toggle, isOn && styles.toggleOn)}
-              onClick={() => {
-                if (isLocked) return;
-                onToggle(option.key);
-              }}
+              onClick={() => onToggle(option.key)}
             >
               <span className={styles.toggleKnob} />
             </button>

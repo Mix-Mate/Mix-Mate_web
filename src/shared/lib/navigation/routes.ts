@@ -3,10 +3,25 @@ type PlayActivity = "games" | "small-talk" | "balance";
 
 const groupBase = (groupId: string) => `/groups/${groupId}`;
 
+export const authRoutes = {
+  login: () => "/login",
+  signup: () => "/signup",
+  findPassword: () => "/find-password",
+  changePassword: () => "/change-password",
+  myPage: () => "/mypage",
+};
+
 export const groupRoutes = {
-  home: (groupId: string) => `${groupBase(groupId)}/home`,
+  create: () => `/groups/create`,
+  createExtra: () => `/groups/create/extra`,
+  join: () => `/groups/join`,
+  extra: (groupId: string) => `${groupBase(groupId)}/extra`,
+  home: (groupId: string) => `${groupBase(groupId)}`,
+  adminHome: (groupId: string) => `${groupBase(groupId)}/admin`,
+  userHome: (groupId: string) => `${groupBase(groupId)}`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
   participants: (groupId: string) => `${groupBase(groupId)}/participants`,
+  blacklist: (groupId: string) => `${groupBase(groupId)}/blacklist`,
   profile: (groupId: string) => `${groupBase(groupId)}/profile`,
   profileEdit: (groupId: string) => `${groupBase(groupId)}/profile/edit`,
   team: (groupId: string) => `${groupBase(groupId)}/team`,
@@ -30,6 +45,8 @@ export const groupRoutes = {
   adminPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
+  adminVoteStatus: (groupId: string) =>
+    `${groupBase(groupId)}/admin/votes/status`,
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
   adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>
     `${groupBase(groupId)}/admin/assignments/${round}/setup`,

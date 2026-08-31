@@ -1,0 +1,356 @@
+.pageViewport.pageViewport {
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  overflow: hidden;
+  position: relative;
+}
+
+.screenFrame.screenFrame {
+  display: flex;
+  height: var(--mobile-frame-height, 844px);
+  max-height: var(--mobile-frame-height, 844px);
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  background: var(--color-surface, #fcfcff);
+  color: var(--color-text, #18181b);
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   1. Header
+   ========================================================================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e4e4e7;
+  background: rgba(252, 252, 255, 0.95);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: #18181b;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.15s ease;
+  padding: 0;
+}
+
+.backButton:active {
+  transform: scale(0.94);
+}
+
+.headerTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ==========================================================================
+   2. Main Content
+   ========================================================================== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 20px 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 36px;
+  width: 100%;
+}
+
+.mainTitle {
+  color: #18181b;
+  text-align: center;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-size: 19.715px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 29.573px;
+  /* 150% */
+  margin: 0 0 8px 0;
+  word-break: keep-all;
+  width: 100%;
+}
+
+.subTitle {
+  font-size: 14.5px;
+  font-weight: 400;
+  color: #71717a;
+  line-height: 1.5;
+  margin: 0;
+  word-break: keep-all;
+  text-align: center;
+  width: 100%;
+}
+
+/* ==========================================================================
+   3. OTP 6-Digit Code Input
+   ========================================================================== */
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+.otpContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 auto 24px;
+  box-sizing: border-box;
+}
+
+.otpInput {
+  width: 48px;
+  height: 58px;
+  max-width: 50px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 16.429px;
+  border: 1.643px solid #e4e4e7;
+  background: #f9f9fa;
+  color: #18181b;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+  caret-color: #256ad3;
+}
+
+.otpInput:focus {
+  border-color: #93c5fd;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.25);
+  transform: translateY(-2px);
+}
+
+.otpInputFilled {
+  border-color: #93c5fd;
+  background: #ffffff;
+}
+
+.otpInputError {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.errorMessage {
+  font-size: 13.5px;
+  color: #ef4444;
+  margin: 4px 0 0 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   4. Footer & Action Button
+   ========================================================================== */
+.footer {
+  padding: 16px 20px 24px;
+  background: var(--color-surface, #fcfcff);
+  border-top: 1px solid #e4e4e7;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+.submitButton {
+  width: 100%;
+  height: 56px;
+  background-color: #256ad3;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.1s ease;
+}
+
+.submitButton:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.submitButton:disabled {
+  background-color: #e4e4e7;
+  color: #a1a1aa;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   5. Warning / Error Modal (BottomSheet)
+   ========================================================================== */
+.modalScrim {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  border-radius: inherit;
+}
+
+.modalSheet {
+  --bottom-sheet-border-radius: 28px 28px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: auto;
+  max-height: 85%;
+  padding: 12px 20px 24px;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.modalIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #fef2f2;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 19px;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+  letter-spacing: -0.4px;
+  word-break: keep-all;
+}
+
+.modalDescription {
+  font-size: 13.5px;
+  color: #71717a;
+  margin: 0;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modalCancelButton {
+  flex: 1;
+  height: 48px;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  background: #f4f4f5;
+  color: #18181b;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.modalCancelButton:active {
+  transform: scale(0.985);
+}
+
+.modalRetryButton {
+  flex: 1;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.modalRetryButton:active {
+  transform: scale(0.985);
+}

@@ -2,8 +2,10 @@ export type UserHomeScenario =
   | "recruiting"
   | "round1-waiting"
   | "round1-active"
+  | "voting"
   | "round2-waiting"
-  | "round2-active";
+  | "round2-active"
+  | "completed";
 
 export type GroupRole = "USER" | "ADMIN";
 

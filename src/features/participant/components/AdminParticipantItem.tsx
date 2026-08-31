@@ -15,19 +15,11 @@ export default function AdminParticipantItem({
   round,
 }: AdminParticipantItemProps) {
   const roleLabel = participant.role === "staff" ? "운영진" : "일반";
-  const badgeLabel =
-    participant.role === "staff" ? "운영진" : participant.isNew ? "신입" : "기존";
-  const badgeClassName =
-    participant.role === "staff"
-      ? styles.staffBadge
-      : participant.isNew
-        ? styles.newBadge
-        : styles.existingBadge;
 
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?round=${round}`}
+        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&role=admin`}
         className={styles.participantItem}
       >
         <GenderAvatar
@@ -43,7 +35,9 @@ export default function AdminParticipantItem({
           </span>
         </div>
 
-        <span className={badgeClassName}>{badgeLabel}</span>
+        {participant.role === "staff" && (
+          <span className={styles.staffBadge}>운영진</span>
+        )}
       </Link>
     </li>
   );

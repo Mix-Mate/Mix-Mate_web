@@ -17,6 +17,8 @@ interface VoteStatusQueryState {
 
 interface UseVoteStatusQueryOptions {
   pollingEnabled?: boolean;
+  /** false면 초기 조회도 하지 않는다 (조건부로 훅을 써야 할 때 사용). */
+  enabled?: boolean;
 }
 
 interface FetchVoteStatusResult {
@@ -36,7 +38,7 @@ function createInitialQueryState(groupId: string): VoteStatusQueryState {
 
 export function useVoteStatusQuery(
   groupId: string,
-  { pollingEnabled = true }: UseVoteStatusQueryOptions = {},
+  { pollingEnabled = true, enabled = true }: UseVoteStatusQueryOptions = {},
 ) {
   const requestIdRef = useRef(0);
   const [queryState, setQueryState] = useState<VoteStatusQueryState>(() =>
@@ -112,6 +114,8 @@ export function useVoteStatusQuery(
   );
 
   useEffect(() => {
+    if (!enabled) return;
+
     const requestController = new AbortController();
     const initialRequestTimer = window.setTimeout(() => {
       void fetchStatus(true, requestController.signal);
@@ -121,10 +125,10 @@ export function useVoteStatusQuery(
       window.clearTimeout(initialRequestTimer);
       requestController.abort();
     };
-  }, [fetchStatus]);
+  }, [fetchStatus, enabled]);
 
   useEffect(() => {
-    if (!pollingEnabled) return;
+    if (!pollingEnabled || !enabled) return;
 
     let active = true;
     let pollingTimer: number | undefined;
@@ -151,7 +155,7 @@ export function useVoteStatusQuery(
       requestController?.abort();
       if (pollingTimer !== undefined) window.clearTimeout(pollingTimer);
     };
-  }, [fetchStatus, pollingEnabled]);
+  }, [fetchStatus, pollingEnabled, enabled]);
 
   const refetch = useCallback(async () => {
     const result = await fetchStatus(false);

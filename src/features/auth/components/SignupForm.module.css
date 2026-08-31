@@ -1,0 +1,211 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.label {
+  font-size: 15px;
+  font-weight: 500;
+  color: #52525b;
+  padding-left: 4px;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.inputBase {
+  width: 100%;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 24px;
+  font-size: 16px;
+  color: #18181b;
+  background-color: #f7f9fc;
+  border-style: solid;
+  border-color: #b8c6d8;
+  border-top-width: 2.57px;
+  border-right-width: 2.57px;
+  border-bottom-width: 2.57px;
+  border-left-width: 7.7px;
+  border-radius: 18px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inputPassword {
+  background-color: #fbf8fc;
+  border-color: #c8bdd6;
+}
+
+.inputDisabled {
+  background-color: #f4f4f5;
+}
+
+.inputRow {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.inputRow .inputBase {
+  flex: 1 1 0%;
+  min-width: 0;
+  height: 56px;
+  min-height: 56px;
+}
+
+.sideButton {
+  flex: 0 0 120px !important;
+  flex-shrink: 0 !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 18px;
+  border: none;
+  cursor: pointer;
+  background-color: #256ad3;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  white-space: nowrap;
+  transition: background-color 120ms ease, opacity 120ms ease;
+}
+
+.sideButton:disabled,
+.sideButtonDisabled {
+  cursor: not-allowed;
+  background-color: #cbd6e5 !important;
+  color: #f8fafc !important;
+  opacity: 0.7;
+}
+
+.sideButtonSuccess {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldError {
+  width: 100%;
+  color: #ef4444;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  margin-top: -2px;
+}
+
+.messageSent {
+  width: 100%;
+  color: #71717a;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timerBadge {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.messageVerified {
+  width: 100%;
+  color: #256ad3;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.messageMatch {
+  width: 100%;
+  color: #059669;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.messageError {
+  width: 100%;
+  color: #ef4444;
+  text-align: left;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.generalError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 14px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+}
+
+.submitWrapper {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.submitButton {
+  width: 100%;
+  height: 56px;
+  min-height: 56px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

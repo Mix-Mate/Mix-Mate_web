@@ -5,7 +5,6 @@ export type AssignmentConditionKey =
   | "GENDER_BALANCE"
   | "MBTI_BALANCE"
   | "GRADE_DISTRIBUTION"
-  | "AFFILIATION_DISTRIBUTION"
   | "NEWCOMER_DISTRIBUTION"
   | "ADMIN_DISTRIBUTION"
   | "MEMBER_COUNT_BALANCE"
@@ -15,7 +14,6 @@ export type BackendConditionKey =
   | "GENDER_BALANCE"
   | "MBTI_BALANCE"
   | "GRADE_SPREAD"
-  | "MAJOR_SPREAD"
   | "NEWCOMER_SPREAD"
   | "POSITION_SPREAD";
 
@@ -26,7 +24,6 @@ export interface AssignmentConditionOption {
   label: string;
   description: string;
   defaultEnabled: boolean;
-  locked?: boolean;
 }
 
 export interface AssignmentSetupInput {

@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantHelpBox from "@/features/participant/components/ParticipantHelpBox";
@@ -12,7 +12,9 @@ import ParticipantSearch from "@/features/participant/components/ParticipantSear
 import ParticipantStats from "@/features/participant/components/ParticipantStats";
 import ParticipantTeamList from "@/features/participant/components/ParticipantTeamList";
 import ParticipantViewToggle from "@/features/participant/components/ParticipantViewToggle";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type {
   Participant,
   ParticipantViewMode,
@@ -33,24 +35,56 @@ export default function ParticipantListScreen() {
 }
 
 function DefaultParticipantListScreen() {
+  const params = useParams<{ groupId: string }>();
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<ParticipantFilterValue>("all");
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
-  const { data } = useParticipantListQuery();
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data } = useParticipantListQuery(params.groupId, {
+    polling: group?.myRole === "HOST" && group.status === "RECRUITING",
+  });
+  const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+
+  const isMyParticipant = useCallback((participant: Participant) => {
+    if (!myProfile) return false;
+
+    const myGender = myProfile.gender === "FEMALE" ? "female" : "male";
+
+    return (
+      participant.id === String(myProfile.id) ||
+      (participant.name === myProfile.displayName &&
+        participant.department === myProfile.major &&
+        participant.gender === myGender)
+    );
+  }, [myProfile]);
 
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    return data.participants.filter((participant) => {
+    const participants = data.participants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
 
       return matchesKeyword && matchesFilter;
     });
-  }, [data.participants, filter, keyword]);
+
+    return participants.sort((first, second) => {
+      const firstIsMe = isMyParticipant(first);
+      const secondIsMe = isMyParticipant(second);
+
+      if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
+
+      const firstIsStaff = first.role === "staff";
+      const secondIsStaff = second.role === "staff";
+
+      if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
+
+      return 0;
+    });
+  }, [data.participants, filter, isMyParticipant, keyword]);
 
   const filteredTeams = useMemo(() => {
     const trimmedKeyword = keyword.trim();

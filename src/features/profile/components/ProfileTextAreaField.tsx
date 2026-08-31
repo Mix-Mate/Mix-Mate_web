@@ -4,12 +4,14 @@ interface ProfileTextAreaFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  maxLength?: number;
 }
 
 export default function ProfileTextAreaField({
   label,
   value,
   onChange,
+  maxLength,
 }: ProfileTextAreaFieldProps) {
   return (
     <label className={styles.field}>
@@ -17,6 +19,7 @@ export default function ProfileTextAreaField({
       <textarea
         className={styles.textArea}
         value={value}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
       />
     </label>

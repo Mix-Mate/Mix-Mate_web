@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -26,20 +27,37 @@ export default function VoteResultScreen() {
   );
   const isAdmin = group?.myRole === "HOST";
   const homeHref = groupRoutes.home(params.groupId);
+  const overallResultHref = withSessionContext(
+    `${groupRoutes.voteResult(params.groupId)}?view=overall`,
+    searchParams,
+  );
+  const showOverallResult = searchParams.get("view") === "overall";
+  const didJoinSecondRound = data?.secondRoundParticipants.some(
+    (participant) => participant.participantId === group?.myParticipantId,
+  );
   const resultHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
-    : `${homeHref}?scenario=round2-waiting`;
+    : didJoinSecondRound
+      ? `${homeHref}?scenario=round2-waiting`
+      : "/home";
   const myTeamMvpWinner = firstRoundTeam
     ? (data?.mvpWinners.find(
         (winner) => winner.teamNumber === firstRoundTeam.teamNumber,
       ) ?? null)
     : null;
+  const revealOverallResult = useCallback(() => {
+    router.replace(overallResultHref, { scroll: false });
+  }, [overallResultHref, router]);
+
+  const currentBackHref = showOverallResult
+    ? withSessionContext(groupRoutes.voteResult(params.groupId), searchParams)
+    : resultHomeHref;
 
   return (
     <VoteScreenLayout
       title="투표 결과"
       status="CLOSED"
-      backHref={homeHref}
+      backHref={currentBackHref}
       testId="vote-result-screen"
       showStatusBadge={false}
       flushContent
@@ -48,6 +66,8 @@ export default function VoteResultScreen() {
         <VoteResultContent
           result={data}
           introMvpWinner={myTeamMvpWinner}
+          showOverallResult={showOverallResult}
+          onRevealOverallResult={revealOverallResult}
           onHome={() => router.replace(resultHomeHref)}
           onOpenMvpList={() =>
             router.push(

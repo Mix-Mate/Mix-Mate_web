@@ -30,9 +30,11 @@ export default function AssignmentResultScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const round = toAssignmentRound(params.round);
-  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
+    params.groupId,
+  );
 
-  const [result, setResult] = useState(() =>
+  const [result] = useState(() =>
     getAssignmentResultDraft(params.groupId, round),
   );
 
@@ -65,7 +67,6 @@ export default function AssignmentResultScreen() {
     if (!response) return;
 
     saveAssignmentResultDraft(params.groupId, round, response.teams);
-    setResult(response.teams);
     router.push(
       withSessionContext(
         groupRoutes.adminAssignmentProcessing(params.groupId, round),
@@ -79,8 +80,13 @@ export default function AssignmentResultScreen() {
     if (!confirmed) return;
 
     clearAssignmentResultDraft(params.groupId, round);
+
+    // 확정 직후 그룹 상태를 다시 불러오지 않으면 홈 화면이 캐시된
+    // "회차 준비 중" 상태로 렌더링되어 조편성 전 화면으로 되돌아간다.
+    await refetchGroup();
+
     const scenario = round === 2 ? "round2-active" : "round1-active";
-    router.push(`${groupRoutes.home(params.groupId)}?scenario=${scenario}`);
+    router.replace(`${groupRoutes.home(params.groupId)}?scenario=${scenario}`);
   };
 
   const isBusy = isReshuffling || isConfirming;
@@ -94,7 +100,22 @@ export default function AssignmentResultScreen() {
       data-testid="assignment-result-screen"
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} />
+      <Header
+        title={group.groupName}
+        onBack={() =>
+          router.push(
+            withSessionContext(
+              round === 2
+                ? groupRoutes.adminAssignmentSetup(params.groupId, round)
+                : groupRoutes.adminAssignmentFixedMembers(
+                    params.groupId,
+                    round,
+                  ),
+              searchParams,
+            ),
+          )
+        }
+      />
 
       <TabNavigation
         items={[

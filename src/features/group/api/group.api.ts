@@ -11,15 +11,193 @@ async function getErrorMessage(response: Response, fallback: string) {
   }
 }
 
-export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+export interface GroupProfileDto {
+  displayName: string;
+  position: string; // 'STAFF' | 'MEMBER'
+  major: string;
+  isNew: boolean;
+  grade: string; // 'FIRST' | 'SECOND' | 'THIRD' | 'FOURTH'
+  gender: string; // 'MALE' | 'FEMALE'
+  mbti: string;
+  age: number;
+  instaId?: string;
+  bio?: string;
+  visibility: string; // 'PUBLIC' | 'PRIVATE'
+}
+
+export interface CreateGroupRequest {
+  groupName: string;
+  description?: string;
+  profile?: GroupProfileDto;
+}
+
+export interface CreateGroupResponse {
+  groupId: number;
+  groupName: string;
+  inviteCode: string;
+}
+
+export class GroupApiError extends Error {
+  status?: number;
+  code?: string;
+  fieldErrors?: Record<string, string>;
+
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    fieldErrors?: Record<string, string>,
+  ) {
+    super(message);
+    this.name = "GroupApiError";
+    this.status = status;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export async function createGroupApi(
+  request: CreateGroupRequest,
+): Promise<CreateGroupResponse> {
+  const userName =
+    (typeof window !== "undefined" &&
+      window.localStorage.getItem("userName")) ||
+    "호스트";
+
+  const defaultProfile: GroupProfileDto = {
+    displayName: userName,
+    position: "STAFF",
+    major: "자유전공",
+    isNew: false,
+    grade: "FIRST",
+    gender: "MALE",
+    mbti: "ENFP",
+    age: 20,
+    visibility: "PUBLIC",
+  };
+
+  const payload: CreateGroupRequest = {
+    groupName: request.groupName,
+    description: request.description || "",
+    profile: request.profile || defaultProfile,
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups`, {
+    method: "POST",
+    credentials: "include",
+    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let errorData: {
+      message?: string;
+      code?: string;
+      errors?: Record<string, string>;
+    } | null = null;
+    try {
+      errorData = await response.json();
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const message =
+      errorData?.message ||
+      (response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : "그룹 생성에 실패했습니다.");
+
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  return (await response.json()) as CreateGroupResponse;
+}
+
+export interface GetMyGroupsRequest {
+  scope?: "me";
+  state?: "active" | "finished";
+}
+
+export interface MyGroupItem {
+  groupId: number;
+  groupName: string;
+  status: string; // 'RECRUITING' | 'PROGRESS' | 'FINISHED' | 'FIRST_ROUND' | 'VOTING' | 'SECOND_ROUND'
+  memberCount: number;
+  role: string; // 'HOST' | 'MEMBER' | 'PARTICIPANT'
+  date?: string;
+  time?: string;
+  location?: string;
+}
+
+export interface GetMyGroupsResponse {
+  groups: MyGroupItem[];
+}
+
+/**
+ * 내 그룹 목록 조회 API
+ * GET /api/v1/groups?scope=me&state=active | finished
+ */
+export async function getMyGroupsApi(
+  params: GetMyGroupsRequest = { scope: "me", state: "active" },
+): Promise<GetMyGroupsResponse> {
+  const query = new URLSearchParams({
+    scope: params.scope || "me",
+    state: params.state || "active",
+  }).toString();
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/groups?${query}`, {
+    method: "GET",
     credentials: "include",
     headers: withAuthHeaders(),
   });
 
   if (!response.ok) {
-    throw new Error(
+    let errorData: { message?: string; code?: string } | null = null;
+    try {
+      errorData = await response.json();
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const message =
+      errorData?.message ||
+      (response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : "그룹 목록을 불러오지 못했습니다.");
+
+    throw new GroupApiError(message, response.status, errorData?.code);
+  }
+
+  return (await response.json()) as GetMyGroupsResponse;
+}
+
+export const createGroup = createGroupApi;
+
+export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+      credentials: "include",
+      headers: withAuthHeaders(),
+    });
+  } catch {
+    throw new GroupApiError("그룹 정보를 불러오지 못했습니다.");
+  }
+
+  if (!response.ok) {
+    throw new GroupApiError(
       await getErrorMessage(response, "그룹 정보를 불러오지 못했습니다."),
+      response.status,
     );
   }
 
@@ -77,6 +255,23 @@ export async function decideSecondRound(groupId: string): Promise<void> {
   }
 }
 
+export async function finishGroup(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/finish`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "모임 종료에 실패했습니다."),
+    );
+  }
+}
+
 export async function updateGroup(
   groupId: string,
   request: UpdateGroupRequest,
@@ -107,4 +302,161 @@ export async function deleteGroup(groupId: string): Promise<void> {
       await getErrorMessage(response, "그룹 삭제에 실패했습니다."),
     );
   }
+}
+
+export async function leaveGroup(groupId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      headers: withAuthHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "그룹 탈퇴에 실패했습니다."),
+    );
+  }
+}
+
+export interface JoinGroupWithProfileRequest {
+  inviteCode: string;
+  profile: GroupProfileDto;
+}
+
+export interface JoinGroupResponse {
+  groupId: number | string;
+  groupName?: string;
+}
+
+/**
+ * 그룹 입장(참여코드 + 프로필) API
+ * POST /api/v1/groups/invitations/join
+ */
+export async function joinGroupWithProfileApi(
+  request: JoinGroupWithProfileRequest,
+): Promise<JoinGroupResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/join`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        inviteCode: request.inviteCode.trim().toUpperCase(),
+        profile: request.profile,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: {
+      code?: string;
+      message?: string;
+      errors?: Record<string, string>;
+    } | null = null;
+    try {
+      errorData = await response.json();
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const message =
+      errorData?.message ||
+      (response.status === 400
+        ? "입력값이 올바르지 않습니다."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "참여코드가 존재하지 않습니다."
+            : "그룹 입장에 실패했습니다.");
+
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  return (await response.json()) as JoinGroupResponse;
+}
+
+export async function joinGroupByCode(
+  inviteCode: string,
+  profile?: GroupProfileDto,
+): Promise<JoinGroupResponse> {
+  const defaultProfile: GroupProfileDto = {
+    displayName: "참가자",
+    position: "MEMBER",
+    major: "기타",
+    isNew: false,
+    grade: "FIRST",
+    gender: "MALE",
+    mbti: "ENFP",
+    age: 20,
+    visibility: "PUBLIC",
+  };
+
+  return joinGroupWithProfileApi({
+    inviteCode,
+    profile: profile || defaultProfile,
+  });
+}
+
+export interface VerifyInviteCodeRequest {
+  inviteCode: string;
+}
+
+export interface VerifyInviteCodeResponse {
+  groupId: number;
+  groupName: string;
+}
+
+/**
+ * 참여코드 검증 API
+ * POST /api/v1/groups/invitations/verify
+ */
+export async function verifyInviteCodeApi(
+  request: VerifyInviteCodeRequest,
+): Promise<VerifyInviteCodeResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/invitations/verify`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        inviteCode: request.inviteCode.trim().toUpperCase(),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    let errorData: { code?: string; message?: string } | null = null;
+    try {
+      errorData = (await response.clone().json()) as {
+        code?: string;
+        message?: string;
+      };
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const defaultMessage =
+      response.status === 400
+        ? "참여코드를 입력해 주세요."
+        : response.status === 401
+          ? "토큰이 없거나 만료되었습니다."
+          : response.status === 404
+            ? "유효하지 않은 초대코드입니다."
+            : "참여코드 검증에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+    throw new GroupApiError(message, response.status, errorData?.code);
+  }
+
+  return (await response.json()) as VerifyInviteCodeResponse;
 }

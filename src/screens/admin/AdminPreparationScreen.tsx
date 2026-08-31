@@ -31,9 +31,46 @@ export default function AdminPreparationScreen() {
   );
 
   useEffect(() => {
-    if (group && !round) {
+    if (!group) return;
+
+    if (group.status === "RECRUITING") {
       router.replace(
-        withSessionContext(groupRoutes.home(params.groupId), searchParams),
+        withSessionContext(
+          groupRoutes.adminRecruitment(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (
+      group.status === "FIRST_ROUND" ||
+      group.status === "SECOND_ROUND" ||
+      group.status === "VOTING" ||
+      group.status === "VOTE_CLOSED"
+    ) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminProgress(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (group.status === "FINISHED") {
+      router.replace(
+        withSessionContext(
+          groupRoutes.completed(params.groupId),
+          searchParams,
+        ),
+      );
+      return;
+    }
+
+    if (!round) {
+      router.replace(
+        withSessionContext(groupRoutes.adminHome(params.groupId), searchParams),
       );
     }
   }, [group, params.groupId, round, router, searchParams]);
@@ -49,7 +86,7 @@ export default function AdminPreparationScreen() {
       data-group-id={group.groupId}
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.back()} compact />
+      <Header title={group.groupName} onBack={() => router.replace("/home")} compact />
 
       <div className={`${styles.content} ${styles.firstRoundContent}`}>
         <SessionStatusCard
@@ -63,7 +100,7 @@ export default function AdminPreparationScreen() {
         <AdminPreparationActions
           onStartAssignment={() =>
             navigateWithSession(
-              groupRoutes.adminAssignmentSetup(params.groupId, round),
+              groupRoutes.adminParticipants(params.groupId, round),
             )
           }
           secondaryAction={{
@@ -80,7 +117,7 @@ export default function AdminPreparationScreen() {
               ),
           }}
           onEditProfile={() =>
-            navigateWithSession(groupRoutes.profileEdit(params.groupId))
+            navigateWithSession(groupRoutes.profile(params.groupId))
           }
           profileActionLabel="내 프로필 조회"
           footerPlacement="flow"
