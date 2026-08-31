@@ -153,6 +153,7 @@ export default function EndVoteScreen() {
   return (
     <MobileFrame
       className={styles.phone}
+      fillHeight
       data-testid="admin-vote-end-screen"
       data-group-id={params.groupId}
       data-role="ADMIN"

@@ -26,6 +26,7 @@ export default function CompletedScreen() {
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="completed-screen"
       data-group-id={params.groupId}
     >

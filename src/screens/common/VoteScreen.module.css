@@ -1,16 +1,19 @@
 .phone {
+  display: flex;
+  flex-direction: column;
   color: #172b3d;
 }
 
 .content {
-  width: 390px;
-  height: 772px;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
   padding: 16px;
+  overflow-y: auto;
   background: #fbfbfd;
 }
 
 .flushContent {
-  height: 772px;
   padding: 0;
   background: #fcfcff;
 }

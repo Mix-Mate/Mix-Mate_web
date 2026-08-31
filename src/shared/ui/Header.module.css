@@ -1,17 +1,16 @@
 .header {
   display: grid;
-  width: 390px;
-  height: 72px;
+  height: calc(72px + var(--safe-area-top));
   grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  padding: 0 13px;
+  padding: var(--safe-area-top) 13px 0;
   border-bottom: 1px solid #e5e8ec;
   background: #fff;
 }
 
 .compact {
-  height: 64px;
+  height: calc(64px + var(--safe-area-top));
 }
 
 .backButton {

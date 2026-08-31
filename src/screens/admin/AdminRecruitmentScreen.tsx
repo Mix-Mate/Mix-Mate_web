@@ -239,6 +239,7 @@ export default function AdminRecruitmentScreen() {
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
+      fillHeight
       data-testid="admin-recruitment"
       data-group-id={group.groupId}
     >

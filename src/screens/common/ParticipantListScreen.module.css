@@ -2,12 +2,12 @@
   position: relative;
   display: grid;
   width: 100%;
-  height: 72px;
-  flex: 0 0 72px;
+  height: calc(72px + var(--safe-area-top));
+  flex: 0 0 auto;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   gap: 8px;
-  padding: 0 13px;
+  padding: var(--safe-area-top) 13px 0;
   border-bottom: 1px solid #e5e8ec;
   background: #ffffff;
 }

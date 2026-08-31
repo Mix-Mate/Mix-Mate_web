@@ -1,7 +1,9 @@
 .viewport {
   display: flex;
-  width: var(--mobile-frame-width);
-  height: var(--mobile-frame-height);
+  width: 100%;
+  height: calc(
+    var(--mobile-frame-height) + var(--safe-area-top) + var(--safe-area-bottom)
+  );
   margin: 0 auto;
   align-items: flex-start;
   justify-content: center;
@@ -10,9 +12,38 @@
 
 .phone {
   position: relative;
-  width: var(--mobile-frame-width);
-  height: var(--mobile-frame-height);
+  width: 100%;
+  height: calc(
+    var(--mobile-frame-height) + var(--safe-area-top) + var(--safe-area-bottom)
+  );
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+/* 실제 폰 폭(대부분 430px 이하)에서는 화면을 꽉 채우고,
+   그보다 넓은 데스크톱 브라우저에서만 목업처럼 고정폭으로 보여줌 */
+@media (min-width: 481px) {
+  .viewport,
+  .phone {
+    width: var(--mobile-frame-width);
+  }
+}
+
+/* fillHeight: 컨텐츠가 flex로 남은 공간을 채우는 화면 전용.
+   바깥(.viewport)만 실기기 높이(100dvh)를 기준으로 잡고,
+   안쪽(.phone)은 그 바깥 박스에 100%로 딱 맞춰서 둘 사이 오차가 안 생기게 함 */
+.viewport.fillHeight {
+  height: 100dvh;
+}
+
+.phone.fillHeight {
+  height: 100%;
+}
+
+@media (min-width: 481px) {
+  .viewport.fillHeight,
+  .phone.fillHeight {
+    height: var(--mobile-frame-height);
+  }
 }

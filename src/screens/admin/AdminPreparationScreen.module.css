@@ -1,6 +1,12 @@
+.phone {
+  display: flex;
+  flex-direction: column;
+}
+
 .content {
   display: flex;
-  height: 738px;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   gap: 26px;
@@ -9,7 +15,6 @@
 }
 
 .firstRoundContent {
-  height: 746px;
   gap: 16px;
 }
 

@@ -149,6 +149,7 @@ export default function ProgressScreen() {
   return (
     <MobileFrame
       className={styles.phone}
+      fillHeight
       data-testid="admin-progress"
       data-group-id={params.groupId}
       data-status={group.status}

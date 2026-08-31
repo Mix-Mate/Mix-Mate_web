@@ -35,6 +35,7 @@ export default function PlayScreenLayout({
   return (
     <MobileFrame
       className={styles.phone}
+      fillHeight
       data-testid={testId}
       data-scenario={snapshot.scenario}
       data-role={snapshot.role}
