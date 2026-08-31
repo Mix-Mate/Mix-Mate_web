@@ -34,7 +34,7 @@ export default function AssignmentResultScreen() {
     params.groupId,
   );
 
-  const [result, setResult] = useState(() =>
+  const [result] = useState(() =>
     getAssignmentResultDraft(params.groupId, round),
   );
 
@@ -67,7 +67,6 @@ export default function AssignmentResultScreen() {
     if (!response) return;
 
     saveAssignmentResultDraft(params.groupId, round, response.teams);
-    setResult(response.teams);
     router.push(
       withSessionContext(
         groupRoutes.adminAssignmentProcessing(params.groupId, round),
