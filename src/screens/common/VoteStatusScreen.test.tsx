@@ -1,6 +1,10 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus, UserRole } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupMemberRole,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import VoteStatusScreen from "./VoteStatusScreen";
 
 const { pushMock, replaceMock, useAdminGroupQueryMock, useVoteStatusQueryMock } =
@@ -39,7 +43,7 @@ vi.mock("@/features/vote/components/status/VoteCompletionWatcher", () => ({
 
 function createGroup(
   status: GroupStatus = "VOTING",
-  myRole: UserRole = "PARTICIPANT",
+  myRole: GroupMemberRole = "PARTICIPANT",
 ): GroupDetail {
   return {
     groupId: 6,

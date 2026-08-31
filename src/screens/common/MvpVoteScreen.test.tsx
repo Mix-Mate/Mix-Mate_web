@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus, UserRole } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupMemberRole,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import MvpVoteScreen from "./MvpVoteScreen";
 
 const {
@@ -43,7 +47,7 @@ vi.mock("@/features/vote/hooks/useMvpVote", () => ({
 
 function createGroup(
   status: GroupStatus = "VOTING",
-  myRole: UserRole = "PARTICIPANT",
+  myRole: GroupMemberRole = "PARTICIPANT",
 ): GroupDetail {
   return {
     groupId: 7,
