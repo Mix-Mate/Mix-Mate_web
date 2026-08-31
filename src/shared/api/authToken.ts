@@ -1,6 +1,21 @@
 const ACCESS_TOKEN_KEYS = ["accessToken", "access_token", "token"];
 const REFRESH_TOKEN_KEYS = ["refreshToken", "refresh_token"];
 const USER_INFO_KEYS = ["userName", "userId", "email", "user"];
+const AUTH_TOKEN_CHANGE_EVENT = "mixmate:auth-token-change";
+
+export function subscribeAccessToken(onChange: () => void): () => void {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === null || ACCESS_TOKEN_KEYS.includes(event.key)) onChange();
+  };
+
+  window.addEventListener(AUTH_TOKEN_CHANGE_EVENT, onChange);
+  window.addEventListener("storage", onStorage);
+
+  return () => {
+    window.removeEventListener(AUTH_TOKEN_CHANGE_EVENT, onChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -42,6 +57,8 @@ export function setAuthTokens({
     window.localStorage.setItem("refreshToken", refreshToken);
     document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`;
   }
+
+  window.dispatchEvent(new Event(AUTH_TOKEN_CHANGE_EVENT));
 }
 
 export function clearAuthTokens(): void {
@@ -54,8 +71,11 @@ export function clearAuthTokens(): void {
     },
   );
 
-  document.cookie = "accessToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
-  document.cookie = "refreshToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  document.cookie =
+    "accessToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  document.cookie =
+    "refreshToken=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+  window.dispatchEvent(new Event(AUTH_TOKEN_CHANGE_EVENT));
 }
 
 export function withAuthHeaders(headers: HeadersInit = {}): HeadersInit {

@@ -131,15 +131,6 @@ export default function UserHomeScreen() {
   useEffect(() => {
     if (!group) return;
 
-    if (group.myRole === "HOST" && group.status === "VOTING") {
-      if (!postVoteDialogOpen && searchParams.get("dialog") !== "post-vote") {
-        router.replace(
-          withSessionContext(groupRoutes.adminVoteStatus(params.groupId), searchParams),
-        );
-        return;
-      }
-    }
-
     if (group.status === "FINISHED") {
       router.replace(groupRoutes.completed(params.groupId));
       return;
@@ -151,9 +142,7 @@ export default function UserHomeScreen() {
   }, [
     group,
     params.groupId,
-    postVoteDialogOpen,
     router,
-    searchParams,
     shouldShowAdminPreparation,
   ]);
 

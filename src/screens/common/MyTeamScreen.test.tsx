@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AdminGroupQueryProvider from "@/features/group/components/AdminGroupQueryProvider";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -25,6 +31,17 @@ vi.mock("next/navigation", () => ({
   }),
   useSearchParams: () => searchParams,
 }));
+
+// 조 조회 테스트에서는 네트워크 SSE를 격리한다. 스트림 통합은 Provider 테스트에서 검증한다.
+vi.mock(
+  "@/features/group/api/groupStatusStream.api",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("@/features/group/api/groupStatusStream.api")
+    >()),
+    subscribeGroupStatus: vi.fn(() => vi.fn()),
+  }),
+);
 
 const groupUrl = `${API_BASE_URL}/api/v1/groups/6`;
 const firstRoundTeamUrl = `${groupUrl}/rounds/FIRST_ROUND/teams/my-team`;
@@ -85,6 +102,7 @@ function renderMyTeam() {
 describe("MyTeamScreen API 회차 조회", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.setItem("accessToken", "test-token");
     searchParams = new URLSearchParams();
     group = {
       groupId: 6,
@@ -114,6 +132,8 @@ describe("MyTeamScreen API 회차 조회", () => {
   });
 
   afterEach(() => {
+    cleanup();
+    localStorage.clear();
     vi.unstubAllGlobals();
   });
 
