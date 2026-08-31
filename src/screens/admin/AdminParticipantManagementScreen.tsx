@@ -172,55 +172,57 @@ export default function AdminParticipantManagementScreen() {
       />
 
       <main className={styles.content}>
-        <section className={styles.statsGrid} aria-label="참가자 통계">
-          <article>
-            <strong>{stats.total}</strong>
-            <span>전체</span>
-          </article>
-          <article>
-            <strong>{stats.staff}</strong>
-            <span>운영진</span>
-          </article>
-          <article>
-            <strong>{stats.freshman}</strong>
-            <span>신입</span>
-          </article>
-        </section>
+        <div className={styles.topSection}>
+          <section className={styles.statsGrid} aria-label="참가자 통계">
+            <article>
+              <strong>{stats.total}</strong>
+              <span>전체</span>
+            </article>
+            <article>
+              <strong>{stats.staff}</strong>
+              <span>운영진</span>
+            </article>
+            <article>
+              <strong>{stats.freshman}</strong>
+              <span>신입</span>
+            </article>
+          </section>
 
-        <SearchBar
-          value={keyword}
-          placeholder="이름 검색"
-          onChange={setKeyword}
-          className={styles.searchBar}
-        />
+          <SearchBar
+            value={keyword}
+            placeholder="이름 검색"
+            onChange={setKeyword}
+            className={styles.searchBar}
+          />
 
-        <div className={styles.filterRow}>
-          <div className={styles.filters} aria-label="참가자 필터">
-            {filterOptions.map((option) => (
+          <div className={styles.filterRow}>
+            <div className={styles.filters} aria-label="참가자 필터">
+              {filterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={filter === option.value ? styles.activeFilter : ""}
+                  onClick={() => setFilter(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            {canAddParticipant && (
               <button
-                key={option.value}
                 type="button"
-                className={filter === option.value ? styles.activeFilter : ""}
-                onClick={() => setFilter(option.value)}
+                className={styles.addButton}
+                onClick={() =>
+                  router.push(
+                    `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+                  )
+                }
               >
-                {option.label}
+                사용자 추가
               </button>
-            ))}
+            )}
           </div>
-
-          {canAddParticipant && (
-            <button
-              type="button"
-              className={styles.addButton}
-              onClick={() =>
-                router.push(
-                  `/groups/${params.groupId}/admin/participants/new?round=${round}`,
-                )
-              }
-            >
-              사용자 추가
-            </button>
-          )}
         </div>
 
         <section className={styles.listCard} aria-label="참가자 목록">

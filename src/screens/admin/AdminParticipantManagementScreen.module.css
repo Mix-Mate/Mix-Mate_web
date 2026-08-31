@@ -27,6 +27,14 @@
   background: #fbfbfd;
 }
 
+.topSection {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex: 0 0 auto;
+  background: #fbfbfd;
+}
+
 .statsGrid {
   display: grid;
   flex: 0 0 auto;
