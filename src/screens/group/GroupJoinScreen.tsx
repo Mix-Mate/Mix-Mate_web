@@ -210,6 +210,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     <MobileFrame
       className={styles.screenFrame}
       viewportClassName={styles.pageViewport}
+      fillHeight
       data-testid="group-join-screen"
     >
       {/* 1. 상단 헤더: 뒤로가기(<) 버튼 + '그룹 입장하기' 헤더 타이틀 */}

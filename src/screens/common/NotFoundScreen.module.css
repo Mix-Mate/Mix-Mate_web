@@ -102,7 +102,7 @@
   background: #fff;
 }
 
-@media (max-width: 389px) {
+@media (max-width: 480px) {
   .phone {
     border-right: 0;
     border-left: 0;
