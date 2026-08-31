@@ -103,7 +103,7 @@ export default function AdminParticipantManagementScreen() {
 
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
-    router.push(`/groups/${params.groupId}/blacklist`);
+    router.push(`/groups/${params.groupId}/admin/blacklist`);
   };
 
   const headerRightAction = (
@@ -147,7 +147,7 @@ export default function AdminParticipantManagementScreen() {
       data-testid="admin-participant-management"
     >
       <Header
-        title={data.groupName}
+        title={group?.groupName ?? data.groupName}
         onBack={() =>
           router.push(
             withSessionContext(
@@ -156,6 +156,7 @@ export default function AdminParticipantManagementScreen() {
             ),
           )
         }
+        compact
         rightAction={headerRightAction}
       />
 

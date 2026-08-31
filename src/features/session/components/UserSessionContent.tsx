@@ -77,7 +77,11 @@ export default function UserSessionContent({
             <span>나 몇 조?</span>
             <strong>배정 결과 확인하기 →</strong>
           </button>
-          <SessionMenuGrid groupId={groupId} onNavigate={onNavigate} />
+          <SessionMenuGrid
+            groupId={groupId}
+            round={snapshot.round}
+            onNavigate={onNavigate}
+          />
         </>
       ) : (
         <section className={styles.waitingCard} aria-live="polite">

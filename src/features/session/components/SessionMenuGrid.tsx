@@ -5,6 +5,7 @@ import styles from "./session.module.css";
 
 interface SessionMenuGridProps {
   groupId: string;
+  round: 1 | 2;
   onNavigate: (href: string) => void;
 }
 
@@ -16,6 +17,7 @@ interface SessionMenuItem {
 
 export default function SessionMenuGrid({
   groupId,
+  round,
   onNavigate,
 }: SessionMenuGridProps) {
   const menuItems: SessionMenuItem[] = [
@@ -27,7 +29,7 @@ export default function SessionMenuGrid({
     {
       title: "참가자 목록",
       // TODO(participants-integration): 참가자 목록 담당자의 페이지가 완성되면 이 경로에서 연결된다.
-      href: groupRoutes.participants(groupId),
+      href: groupRoutes.participants(groupId, round),
       icon: Users,
     },
     {

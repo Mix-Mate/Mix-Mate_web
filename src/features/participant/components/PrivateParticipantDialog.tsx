@@ -28,6 +28,7 @@ export default function PrivateParticipantDialog({
           <GenderAvatar
             gender={participant.gender}
             name={participant.name}
+            toneKey={participant.id}
             size={72}
           />
           <h2>{participant.name}</h2>

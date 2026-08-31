@@ -185,8 +185,21 @@
   text-align: right;
 }
 
-.instagram {
-  color: #2f80d1 !important;
+.instagramButton {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #2f80d1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: right;
+}
+
+.instagramButton:active {
+  opacity: 0.75;
 }
 
 .bioCard {
@@ -286,4 +299,12 @@
   height: 48px;
   border-radius: 12px;
   font-size: 14px;
+}
+
+.toast {
+  position: absolute;
+  right: 20px;
+  bottom: 24px;
+  left: 20px;
+  z-index: 50;
 }
