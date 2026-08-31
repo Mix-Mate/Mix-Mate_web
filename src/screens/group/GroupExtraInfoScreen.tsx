@@ -259,7 +259,6 @@ export default function GroupExtraInfoScreen({
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
-      fillHeight
       data-testid="group-extra-info-screen"
     >
       {/* 1. 상단 헤더: 공통 Header 컴포넌트 적용 */}

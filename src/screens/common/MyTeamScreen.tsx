@@ -60,7 +60,6 @@ export default function MyTeamScreen() {
   return (
     <MobileFrame
       className={styles.phone}
-      fillHeight
       data-testid="my-team-screen"
       data-status={group.status}
       data-role={group.myRole === "HOST" ? "ADMIN" : "USER"}

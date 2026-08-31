@@ -1,12 +1,6 @@
-.phone {
-  display: flex;
-  flex-direction: column;
-}
-
 .content {
   display: flex;
-  min-height: 0;
-  flex: 1;
+  height: calc(var(--mobile-frame-height) - 128px);
   align-items: center;
   justify-content: center;
   padding: 13px 16px;

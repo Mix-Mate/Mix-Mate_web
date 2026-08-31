@@ -8,7 +8,6 @@ import { withSessionContext } from "@/features/session/utils/session-navigation"
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import styles from "@/features/history/components/team-history.module.css";
 
 export default function TeamHistoryScreen() {
   const router = useRouter();
@@ -28,11 +27,7 @@ export default function TeamHistoryScreen() {
   };
 
   return (
-    <MobileFrame
-      className={styles.phone}
-      fillHeight
-      data-testid="team-history-screen"
-    >
+    <MobileFrame data-testid="team-history-screen">
       <Header
         title="이전 조 기록"
         compact

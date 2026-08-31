@@ -39,12 +39,7 @@ export default function AssignmentProcessingScreen() {
   if (!group) return null;
 
   return (
-    <MobileFrame
-      className={styles.phone}
-      fillHeight
-      data-testid="assignment-processing-screen"
-      data-round={round}
-    >
+    <MobileFrame data-testid="assignment-processing-screen" data-round={round}>
       <Header
         title={group.groupName}
         onBack={() =>

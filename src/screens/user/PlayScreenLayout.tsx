@@ -28,7 +28,6 @@ export default function PlayScreenLayout({
   return (
     <MobileFrame
       className={styles.phone}
-      fillHeight
       data-testid={testId}
       data-status={group.status}
       data-role={group.myRole === "HOST" ? "ADMIN" : "USER"}
