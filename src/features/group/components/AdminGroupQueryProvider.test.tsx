@@ -313,6 +313,23 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(getGroupDetail).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["/groups/6/votes/mvp", "/home"],
+    ["/groups/6/votes/attendance", "/groups/6/votes/mvp"],
+  ])(
+    "%s 새로고침 중에도 헤더 뒤로가기는 히스토리에 의존하지 않는다",
+    (pathname, target) => {
+      route.pathname = pathname;
+      getGroupDetail.mockReturnValue(new Promise(() => {}));
+      render(<App />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith(target);
+      expect(router.back).not.toHaveBeenCalled();
+    },
+  );
+
   it("같은 탭에서 로그아웃하면 즉시 구독을 정리한다", async () => {
     render(<App />);
     await screen.findByTestId("group-state");

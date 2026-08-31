@@ -18,7 +18,11 @@ import type { GroupDetail, GroupStatusEvent } from "../types/group.types";
 import type { GroupStatusStreamError } from "../api/groupStatusStream.api";
 import { useGroupStatusStream } from "../hooks/useGroupStatusStream";
 import { clearAuthTokens } from "@/shared/api/authToken";
-import { authRoutes } from "@/shared/lib/navigation/routes";
+import {
+  appRoutes,
+  authRoutes,
+  groupRoutes,
+} from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -191,12 +195,23 @@ export default function AdminGroupQueryProvider({
   );
 
   if (!currentData && !isExtraPage) {
+    const backHref =
+      pathname === groupRoutes.mvpVote(groupId)
+        ? appRoutes.home()
+        : pathname === groupRoutes.attendanceVote(groupId)
+          ? groupRoutes.mvpVote(groupId)
+          : null;
+
     return (
       <MobileFrame
         className={styles.phone}
         data-testid="admin-group-query-state"
       >
-        <Header title="그룹 정보" onBack={() => router.back()} compact />
+        <Header
+          title="그룹 정보"
+          onBack={() => (backHref ? router.replace(backHref) : router.back())}
+          compact
+        />
 
         <main className={styles.content}>
           {currentIsLoading ? (
