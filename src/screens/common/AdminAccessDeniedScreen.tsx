@@ -19,7 +19,6 @@ export default function AdminAccessDeniedScreen({
     <MobileFrame
       className={styles.phone}
       viewportClassName={styles.viewport}
-      fillHeight
       data-testid="admin-access-denied"
     >
       <Header title="접근 불가" onBack={onBack} compact />

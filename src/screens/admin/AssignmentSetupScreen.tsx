@@ -18,7 +18,6 @@ import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import TabNavigation from "@/shared/ui/TabNavigation";
-import formStyles from "@/features/assignment/components/assignment.module.css";
 
 export default function AssignmentSetupScreen() {
   const params = useParams<{ groupId: string; round: string }>();
@@ -80,12 +79,7 @@ export default function AssignmentSetupScreen() {
   if (!group) return null;
 
   return (
-    <MobileFrame
-      className={formStyles.phone}
-      fillHeight
-      data-testid="assignment-setup-screen"
-      data-round={round}
-    >
+    <MobileFrame data-testid="assignment-setup-screen" data-round={round}>
       <Header
         title={group.groupName}
         onBack={() => router.replace("/home")}

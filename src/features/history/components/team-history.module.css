@@ -1,13 +1,6 @@
-.phone {
-  display: flex;
-  flex-direction: column;
-}
-
 .content {
-  min-height: 0;
-  flex: 1;
+  height: 780px;
   padding: 14px 18px 32px;
-  overflow-y: auto;
   background: #fcfcff;
 }
 

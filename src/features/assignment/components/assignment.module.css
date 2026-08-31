@@ -1,12 +1,6 @@
-.phone {
-  display: flex;
-  flex-direction: column;
-}
-
 .form {
   display: flex;
-  min-height: 0;
-  flex: 1;
+  height: calc(var(--mobile-frame-height) - 128px);
   flex-direction: column;
 }
 

@@ -3,7 +3,8 @@
 .topicScreen,
 .balanceScreen {
   display: flex;
-  width: 100%;
+  width: 358px;
+  height: 684px;
   flex-direction: column;
 }
 
@@ -63,8 +64,7 @@
 
 .menuCard {
   display: flex;
-  width: 100%;
-  max-width: 358px;
+  width: 358px;
   min-height: 107px;
   cursor: pointer;
   align-items: center;
@@ -123,8 +123,7 @@
 
 .featureCard {
   display: flex;
-  width: 100%;
-  max-width: 358px;
+  width: 358px;
   min-height: 117px;
   flex: 0 0 117px;
   align-items: center;

@@ -24,15 +24,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 실기기(폰 폭)에서는 프레임이 화면을 꽉 채우므로, 상태바·홈 인디케이터 등
-   안전영역 자리에 body 회색 배경이 비쳐 보이지 않도록 화면 배경색과 맞춤.
-   데스크톱에서는 목업 바깥 여백이 필요하므로 기존 회색을 유지 */
-@media (max-width: 480px) {
-  body {
-    background: var(--color-surface);
-  }
-}
-
 button,
 a {
   font: inherit;

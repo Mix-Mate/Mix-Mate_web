@@ -1,34 +1,27 @@
 .phone {
-  display: flex;
-  flex-direction: column;
   color: #172b3d;
 }
 
 .content {
   display: flex;
-  min-height: 0;
-  flex: 1;
+  height: 716px;
   flex-direction: column;
   align-items: center;
   padding: 152px 16px 32px;
-  overflow-y: auto;
   background: #fbfbfd;
 }
 
 .membersContent {
-  width: 100%;
-  min-height: 0;
-  flex: 1;
+  width: 390px;
+  height: 716px;
   padding: 16px 16px 32px;
-  overflow-y: auto;
   background: #fcfcff;
 }
 
 .assignmentOrb {
   display: flex;
-  width: min(328px, 100%);
-  height: auto;
-  aspect-ratio: 1;
+  width: 328px;
+  height: 328px;
   flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
