@@ -47,6 +47,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
     <MobileFrame
       className={styles.screenFrame}
       viewportClassName={styles.pageViewport}
+      fillHeight
       data-testid="group-create-screen"
     >
       {/* 1. 상단 헤더: 뒤로가기(<) 버튼 + '새 그룹 생성하기' 타이틀 */}

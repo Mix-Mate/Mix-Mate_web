@@ -316,7 +316,7 @@
   z-index: 50;
 }
 
-@media (max-width: 389px) {
+@media (max-width: 480px) {
   .viewport,
   .phone {
     width: 100vw;
