@@ -1,10 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { useUserSessionQuery } from "@/features/session/hooks/useUserSessionQuery";
-import { withSessionContext } from "@/features/session/utils/session-navigation";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -23,12 +21,7 @@ export default function PlayScreenLayout({
 }: PlayScreenLayoutProps) {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
-  const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(params.groupId);
-  const { data: snapshot } = useUserSessionQuery(
-    searchParams.get("scenario") ?? undefined,
-    group?.myRole === "HOST" ? "ADMIN" : "USER",
-  );
 
   if (!group) return null;
 
@@ -37,20 +30,18 @@ export default function PlayScreenLayout({
       className={styles.phone}
       fillHeight
       data-testid={testId}
-      data-scenario={snapshot.scenario}
-      data-role={snapshot.role}
+      data-status={group.status}
+      data-role={group.myRole === "HOST" ? "ADMIN" : "USER"}
     >
       <Header
-        title={group.groupName || snapshot.groupName}
-        onBack={() => router.push(withSessionContext(backHref, searchParams))}
+        title={group.groupName}
+        onBack={() => router.push(backHref)}
       />
 
       <TeamSectionTabs
         groupId={params.groupId}
         activeSection="play"
-        onNavigate={(href) =>
-          router.push(withSessionContext(href, searchParams))
-        }
+        onNavigate={(href) => router.push(href)}
       />
 
       <div className={styles.content}>{children}</div>

@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus, UserRole } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupMemberRole,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import type { VoteResultResponse } from "@/features/vote/types/voteResult.types";
 import VoteResultScreen from "./VoteResultScreen";
 
@@ -60,7 +64,7 @@ vi.mock("@/features/vote/components/result/VoteResultContent", () => ({
 
 function createGroup(
   status: GroupStatus = "VOTING",
-  myRole: UserRole = "HOST",
+  myRole: GroupMemberRole = "HOST",
 ): GroupDetail {
   return {
     groupId: 10,
@@ -81,14 +85,19 @@ const mockVoteResult: VoteResultResponse = {
       teamNumber: 1,
       participantId: 2,
       displayName: "우승자",
-      major: "컴공",
-      voteCount: 3,
+      grade: "FIRST",
+      mbti: "ENFP",
     },
   ],
   secondRoundParticipants: [
-    { participantId: 1, displayName: "나", major: "컴공" },
+    {
+      participantId: 1,
+      displayName: "나",
+      major: "컴공",
+      gender: "MALE",
+      visibility: "PUBLIC",
+    },
   ],
-  nonParticipants: [],
 };
 
 describe("VoteResultScreen", () => {
