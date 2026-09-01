@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   GroupDetail,
@@ -7,13 +7,17 @@ import type {
 } from "@/features/group/types/group.types";
 import VoteStatusScreen from "./VoteStatusScreen";
 
-const { pushMock, replaceMock, useAdminGroupQueryMock, useVoteStatusQueryMock } =
-  vi.hoisted(() => ({
-    pushMock: vi.fn(),
-    replaceMock: vi.fn(),
-    useAdminGroupQueryMock: vi.fn(),
-    useVoteStatusQueryMock: vi.fn(),
-  }));
+const {
+  pushMock,
+  replaceMock,
+  useAdminGroupQueryMock,
+  useVoteStatusQueryMock,
+} = vi.hoisted(() => ({
+  pushMock: vi.fn(),
+  replaceMock: vi.fn(),
+  useAdminGroupQueryMock: vi.fn(),
+  useVoteStatusQueryMock: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "6" }),
@@ -96,7 +100,28 @@ describe("VoteStatusScreen (User-facing)", () => {
 
     render(<VoteStatusScreen />);
 
-    expect(replaceMock).not.toHaveBeenCalledWith("/groups/6/admin/votes/status");
+    expect(replaceMock).not.toHaveBeenCalledWith(
+      "/groups/6/admin/votes/status",
+    );
+  });
+
+  it("헤더 뒤로가기에서 확인 후 메인 홈으로 이동한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "PARTICIPANT"),
+    });
+
+    render(<VoteStatusScreen />);
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+
+    expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("투표 종료 상태인 경우 결과 화면으로 이동한다", () => {
