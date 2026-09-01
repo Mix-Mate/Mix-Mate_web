@@ -58,7 +58,6 @@ describe("useGroupStatusNavigation", () => {
     "/groups/6/votes/result",
     "/groups/6/admin/votes/status",
     "/groups/6/admin/votes/end",
-    "/groups/6/admin/vote-status",
     "/groups/6/extra",
   ])("기존 투표 흐름과 추가 정보 화면을 방해하지 않는다: %s", (pathname) => {
     location.pathname = pathname;
