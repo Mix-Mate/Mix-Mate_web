@@ -19,6 +19,8 @@ const {
   useVoteStatusQueryMock: vi.fn(),
 }));
 
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "12" }),
   useRouter: () => ({
@@ -26,7 +28,7 @@ vi.mock("next/navigation", () => ({
     replace: replaceMock,
     back: backMock,
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
@@ -88,6 +90,7 @@ const mockGroup: GroupDetail = {
 describe("UserHomeScreen Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     useAdminGroupQueryMock.mockReturnValue({
       data: mockGroup,
       refetch: vi.fn(),
@@ -144,5 +147,20 @@ describe("UserHomeScreen Navigation", () => {
     expect(replaceMock).toHaveBeenCalledWith("/home");
     expect(backMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("관리자가 투표 종료 후 명시적인 post-vote 경로로 들어오면 다음 단계 선택 팝업을 보여준다", () => {
+    mockSearchParams = new URLSearchParams("dialog=post-vote");
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...mockGroup, status: "VOTE_CLOSED" },
+      refetch: vi.fn(),
+    });
+
+    render(<UserHomeScreen />);
+
+    expect(
+      screen.getByRole("dialog", { name: "1차 술자리가 종료되었습니다" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 });
