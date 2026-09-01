@@ -82,4 +82,12 @@ describe("resolveGroupEntryRoute", () => {
     expect(getGroupDetailMock).not.toHaveBeenCalled();
     expect(getSecondRoundVoteStatusMock).not.toHaveBeenCalled();
   });
+
+  it("투표가 종료된 그룹은 추가 API 조회 없이 결과 화면으로 이동한다", async () => {
+    await expect(
+      resolveGroupEntryRoute("50", "HOST", "VOTE_CLOSED"),
+    ).resolves.toBe("/groups/50/votes/result");
+    expect(getGroupDetailMock).not.toHaveBeenCalled();
+    expect(getSecondRoundVoteStatusMock).not.toHaveBeenCalled();
+  });
 });
