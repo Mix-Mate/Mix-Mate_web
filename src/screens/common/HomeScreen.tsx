@@ -11,17 +11,13 @@ import {
   getGroupEntryRoute,
   isGroupHost,
 } from "@/features/group/lib/group-entry-route";
+import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
 
-export type GroupStatus =
-  | "RECRUITING"
-  | "FIRST_ROUND"
-  | "VOTING"
-  | "SECOND_ROUND"
-  | "FINISHED";
+export type GroupStatus = ApiGroupStatus;
 
 export type HomeTab = "ACTIVE" | "COMPLETED";
 
@@ -45,8 +41,17 @@ const STATUS_CONFIG: Record<
   { label: string; className: string }
 > = {
   RECRUITING: { label: "모집 중", className: styles.statusRecruiting },
+  BEFORE_FIRST_ROUND: {
+    label: "1차 준비 중",
+    className: styles.statusInProgress,
+  },
   FIRST_ROUND: { label: "1차 진행 중", className: styles.statusInProgress },
   VOTING: { label: "투표 진행 중", className: styles.statusVoting },
+  VOTE_CLOSED: { label: "투표 종료", className: styles.statusVoting },
+  BEFORE_SECOND_ROUND: {
+    label: "2차 준비 중",
+    className: styles.statusInProgress,
+  },
   SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
   FINISHED: { label: "종료됨", className: styles.statusCompleted },
 };
@@ -54,12 +59,19 @@ const STATUS_CONFIG: Record<
 function mapStatus(status: string): GroupStatus {
   const upper = (status || "").toUpperCase();
   if (upper === "RECRUITING" || upper === "모집 중") return "RECRUITING";
+  if (upper === "BEFORE_FIRST_ROUND" || upper === "1차 준비 중")
+    return "BEFORE_FIRST_ROUND";
   if (upper === "PROGRESS" || upper === "FIRST_ROUND" || upper === "1차 진행 중")
     return "FIRST_ROUND";
   if (upper === "VOTING" || upper === "투표 진행 중") return "VOTING";
+  if (upper === "VOTE_CLOSED" || upper === "투표 종료")
+    return "VOTE_CLOSED";
+  if (upper === "BEFORE_SECOND_ROUND" || upper === "2차 준비 중")
+    return "BEFORE_SECOND_ROUND";
   if (upper === "SECOND_ROUND" || upper === "2차 진행 중") return "SECOND_ROUND";
   if (upper === "FINISHED" || upper === "종료됨") return "FINISHED";
-  return "RECRUITING";
+  // 알 수 없는 활성 상태를 모집 중으로 간주하면 모집 화면이 잘못 노출된다.
+  return "FIRST_ROUND";
 }
 
 function mapRole(role: string): GroupRole {
