@@ -24,7 +24,7 @@ describe("HomeScreen 그룹 진입", () => {
 
   it.each([
     ["BEFORE_FIRST_ROUND", "/groups/31/admin"],
-    ["VOTE_CLOSED", "/groups/31/admin"],
+    ["VOTE_CLOSED", "/groups/31/votes/result"],
     ["BEFORE_SECOND_ROUND", "/groups/31/admin"],
     ["RECRUITING", "/groups/31/admin/recruitment"],
   ])(

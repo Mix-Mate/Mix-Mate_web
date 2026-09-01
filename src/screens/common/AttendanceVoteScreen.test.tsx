@@ -141,7 +141,7 @@ describe("AttendanceVoteScreen", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("관리자(HOST)가 2차 참여 여부 제출 성공 시 router.replace로 관리자 투표 현황(/admin/votes/status) 화면으로 이동한다", async () => {
+  it("관리자(HOST)가 2차 참여 여부 제출 성공 시 공통 투표 현황 화면으로 이동한다", async () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -158,7 +158,7 @@ describe("AttendanceVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith("PARTICIPATE");
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
@@ -182,7 +182,7 @@ describe("AttendanceVoteScreen", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("관리자(HOST)가 이미 투표 완료 에러 발생 시 router.replace로 관리자 투표 현황 화면으로 이동한다", async () => {
+  it("관리자(HOST)가 이미 투표 완료 에러 발생 시 공통 투표 현황 화면으로 이동한다", async () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -199,7 +199,7 @@ describe("AttendanceVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith("PARTICIPATE");
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
@@ -234,7 +234,7 @@ describe("AttendanceVoteScreen", () => {
     expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 
-  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) router.replace로 관리자 투표 현황 화면으로 리디렉션한다", () => {
+  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) 공통 투표 현황 화면으로 리디렉션한다", () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -254,6 +254,6 @@ describe("AttendanceVoteScreen", () => {
 
     render(<AttendanceVoteScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 });

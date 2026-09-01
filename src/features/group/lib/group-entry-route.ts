@@ -15,6 +15,10 @@ export function getGroupEntryRoute(
     return groupRoutes.mvpVote(groupId);
   }
 
+  if (normalizedStatus === "VOTE_CLOSED") {
+    return groupRoutes.voteResult(groupId);
+  }
+
   if (!isGroupHost(role)) {
     return groupRoutes.userHome(groupId);
   }

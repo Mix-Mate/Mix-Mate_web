@@ -25,7 +25,6 @@ export default function AttendanceVoteScreen() {
     params.groupId,
   );
 
-  const isAdmin = group?.myRole === "HOST";
   const myVote = voteStatusData?.participants.find(
     (participant) => participant.participantId === group?.myParticipantId,
   );
@@ -54,9 +53,7 @@ export default function AttendanceVoteScreen() {
     if (result.success) {
       replace(
         withSessionContext(
-          isAdmin
-            ? groupRoutes.adminVoteStatus(params.groupId)
-            : groupRoutes.voteStatus(params.groupId),
+          groupRoutes.voteStatus(params.groupId),
           searchParams,
         ),
       );
@@ -66,9 +63,7 @@ export default function AttendanceVoteScreen() {
     if (result.isAlreadyVoted) {
       replace(
         withSessionContext(
-          isAdmin
-            ? groupRoutes.adminVoteStatus(params.groupId)
-            : groupRoutes.voteStatus(params.groupId),
+          groupRoutes.voteStatus(params.groupId),
           searchParams,
         ),
       );

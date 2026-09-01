@@ -23,9 +23,7 @@ export function getVotePageRedirect(
   }
 
   if (hasAttendanceVote) {
-    return group.myRole === "HOST"
-      ? groupRoutes.adminVoteStatus(groupId)
-      : groupRoutes.voteStatus(groupId);
+    return groupRoutes.voteStatus(groupId);
   }
 
   return null;
