@@ -32,7 +32,13 @@ export default function AdminHomeScreen() {
     }
   }, [group, params.groupId, router, searchParams]);
 
-  if (isLoading || !group || group.status === "VOTING") {
+  if (
+    isLoading ||
+    !group ||
+    group.myRole !== "HOST" ||
+    group.status === "VOTING" ||
+    group.status === "FINISHED"
+  ) {
     return null;
   }
 
@@ -53,6 +59,10 @@ export default function AdminHomeScreen() {
     return <ProgressScreen />;
   }
 
-  // 3. 기본 상태: 모집 중
-  return <AdminRecruitmentScreen />;
+  // 3. 모집 중 상태
+  if (group.status === "RECRUITING") {
+    return <AdminRecruitmentScreen />;
+  }
+
+  return null;
 }

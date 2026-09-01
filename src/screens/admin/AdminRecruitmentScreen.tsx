@@ -233,7 +233,7 @@ export default function AdminRecruitmentScreen() {
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
-  if (!group) return null;
+  if (!group || group.status !== "RECRUITING") return null;
 
   return (
     <MobileFrame
