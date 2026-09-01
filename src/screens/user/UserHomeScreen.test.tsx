@@ -104,7 +104,7 @@ describe("UserHomeScreen Navigation", () => {
     });
   });
 
-  it("조 편성 확정 후(또는 세션 진행 중) 그룹 홈 화면에서 뒤로가기 클릭 시 router.back() 대신 router.replace('/home')로 이동한다", () => {
+  it("그룹 홈에서 뒤로가기 클릭 시 메인 홈 이동 확인 팝업을 띄운다", () => {
     render(<UserHomeScreen />);
 
     const backButton = screen.getByRole("button", {
@@ -113,6 +113,32 @@ describe("UserHomeScreen Navigation", () => {
     expect(backButton).toBeInTheDocument();
 
     fireEvent.click(backButton);
+
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(backMock).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("확인 팝업에서 취소하면 그룹 홈에 머무른다", () => {
+    render(<UserHomeScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(
+      screen.queryByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).not.toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("확인 팝업에서 나가기를 선택하면 메인 홈으로 이동한다", () => {
+    render(<UserHomeScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
 
     expect(replaceMock).toHaveBeenCalledTimes(1);
     expect(replaceMock).toHaveBeenCalledWith("/home");
