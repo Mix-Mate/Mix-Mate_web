@@ -7,10 +7,8 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import { getMyGroupsApi, type MyGroupItem } from "@/features/group/api/group.api";
-import {
-  getGroupEntryRoute,
-  isGroupHost,
-} from "@/features/group/lib/group-entry-route";
+import { isGroupHost } from "@/features/group/lib/group-entry-route";
+import { resolveGroupEntryRoute } from "@/features/group/lib/resolve-group-entry-route";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import styles from "./HomeScreen.module.css";
 
@@ -223,7 +221,9 @@ export default function HomeScreen({
     if (group.status === "FINISHED") {
       return;
     }
-    router.push(getGroupEntryRoute(group.id, group.role, group.status));
+    router.push(
+      await resolveGroupEntryRoute(group.id, group.role, group.status),
+    );
   };
 
   return (
