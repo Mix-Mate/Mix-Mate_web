@@ -15,8 +15,7 @@ export function useGroupStatusNavigation(groupId: string) {
     pathname === groupPath || pathname.startsWith(`${groupPath}/`);
   const isVoteFlowPage =
     pathname.startsWith(`${groupPath}/votes/`) ||
-    pathname.startsWith(`${groupPath}/admin/votes/`) ||
-    pathname === `${groupPath}/admin/vote-status`;
+    pathname.startsWith(`${groupPath}/admin/votes/`);
   const target =
     group?.status === "VOTING" &&
     isCurrentGroupPage &&

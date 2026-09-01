@@ -2,7 +2,7 @@
 
 import { Info, Trophy } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import MvpVoteForm from "@/features/vote/components/mvp/MvpVoteForm";
@@ -11,6 +11,7 @@ import { useMvpVote } from "@/features/vote/hooks/useMvpVote";
 import { useVoteNavigation } from "@/features/vote/hooks/useVoteNavigation";
 import { getVotePageRedirect } from "@/features/vote/lib/vote-page-route";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
 import { appRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
@@ -36,7 +37,23 @@ export default function MvpVoteScreen() {
     isComplete,
     hasVoted,
   );
-  const { back, replace } = useVoteNavigation(appRoutes.home());
+  const { back: navigateToMainHome, replace } = useVoteNavigation(
+    appRoutes.home(),
+  );
+  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
+
+  const requestMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(true);
+  }, []);
+
+  const closeMainHomeExitPopup = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+  }, []);
+
+  const confirmMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+    navigateToMainHome();
+  }, [navigateToMainHome]);
 
   useEffect(() => {
     if (redirect) replace(withSessionContext(redirect, searchParams));
@@ -61,7 +78,7 @@ export default function MvpVoteScreen() {
     <VoteScreenLayout
       title="MVP 투표"
       status={context.status}
-      onBack={back}
+      onBack={requestMainHomeExit}
       testId="mvp-vote-screen"
     >
       <section className={styles.mvpScreen}>
@@ -102,6 +119,12 @@ export default function MvpVoteScreen() {
           }}
         />
       </section>
+
+      <MainHomeExitPopup
+        open={mainHomeExitPopupOpen}
+        onClose={closeMainHomeExitPopup}
+        onConfirm={confirmMainHomeExit}
+      />
     </VoteScreenLayout>
   );
 }

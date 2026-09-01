@@ -46,10 +46,7 @@ export default function EndVoteScreen() {
 
   const showVoteStatus = useCallback(() => {
     router.push(
-      withSessionContext(
-        groupRoutes.adminVoteStatus(params.groupId),
-        searchParams,
-      ),
+      withSessionContext(groupRoutes.voteStatus(params.groupId), searchParams),
     );
   }, [params.groupId, router, searchParams]);
 
