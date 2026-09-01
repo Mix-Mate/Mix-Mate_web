@@ -13,6 +13,7 @@ import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
@@ -141,7 +142,12 @@ export default function ParticipantProfileScreen({
         `${profile.name}님을 그룹에서 차단했습니다.`,
       );
     }
-    router.push(groupRoutes.adminParticipants(groupId, resolvedRound));
+    router.push(
+      withSessionContext(
+        groupRoutes.adminParticipants(groupId, resolvedRound),
+        searchParams,
+      ),
+    );
   };
 
   return (
