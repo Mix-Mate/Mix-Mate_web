@@ -50,8 +50,6 @@ export const groupRoutes = {
   adminPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
-  adminVoteStatus: (groupId: string) =>
-    `${groupBase(groupId)}/admin/votes/status`,
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
   adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>
     `${groupBase(groupId)}/admin/assignments/${round}/setup`,

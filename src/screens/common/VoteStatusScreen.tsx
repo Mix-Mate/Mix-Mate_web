@@ -67,16 +67,6 @@ export default function VoteStatusScreen() {
   useEffect(() => {
     if (!group) return;
 
-    if (group.myRole === "HOST") {
-      router.replace(
-        withSessionContext(
-          groupRoutes.adminVoteStatus(params.groupId),
-          searchParams,
-        ),
-      );
-      return;
-    }
-
     const isVoteFinished =
       group.status === "VOTE_CLOSED" ||
       group.status === "BEFORE_SECOND_ROUND" ||
@@ -109,10 +99,6 @@ export default function VoteStatusScreen() {
     setMainHomeExitPopupOpen(false);
     navigateToMainHome();
   }, [navigateToMainHome]);
-
-  if (isAdmin) {
-    return null;
-  }
 
   return (
     <VoteScreenLayout

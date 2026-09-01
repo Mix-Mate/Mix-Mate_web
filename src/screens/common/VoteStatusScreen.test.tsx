@@ -62,7 +62,7 @@ function createGroup(
   };
 }
 
-describe("VoteStatusScreen (User-facing)", () => {
+describe("VoteStatusScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useVoteStatusQueryMock.mockReturnValue({
@@ -83,46 +83,57 @@ describe("VoteStatusScreen (User-facing)", () => {
     });
   });
 
-  it("관리자(HOST)가 접근하면 관리자 전용 투표 현황 화면(/admin/votes/status)으로 즉시 리디렉션한다", () => {
+  it("관리자(HOST)는 공통 현황 화면에서 전체 투표 종료 버튼을 사용할 수 있다", () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
 
     render(<VoteStatusScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/6/admin/votes/status");
-  });
+    fireEvent.click(screen.getByRole("button", { name: "전체 투표 종료하기" }));
 
-  it("일반 참가자(PARTICIPANT)가 접근 시 관리자 화면으로 리디렉션되지 않는다", () => {
-    useAdminGroupQueryMock.mockReturnValue({
-      data: createGroup("VOTING", "PARTICIPANT"),
-    });
-
-    render(<VoteStatusScreen />);
-
-    expect(replaceMock).not.toHaveBeenCalledWith(
-      "/groups/6/admin/votes/status",
+    expect(pushMock).toHaveBeenCalledExactlyOnceWith(
+      "/groups/6/admin/votes/end",
     );
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 
-  it("헤더 뒤로가기에서 확인 후 메인 홈으로 이동한다", () => {
+  it("일반 참가자(PARTICIPANT)에게는 전체 투표 종료 버튼을 노출하지 않는다", () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "PARTICIPANT"),
     });
 
     render(<VoteStatusScreen />);
-    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
 
     expect(
-      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: "전체 투표 종료하기" }),
+    ).not.toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
-
-    expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
-    expect(pushMock).not.toHaveBeenCalled();
   });
+
+  it.each(["PARTICIPANT", "HOST"] as const)(
+    "%s는 헤더 뒤로가기에서 확인 후 메인 홈으로 이동한다",
+    (myRole) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: createGroup("VOTING", myRole),
+      });
+
+      render(<VoteStatusScreen />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+
+      expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
+      expect(pushMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("투표 종료 상태인 경우 결과 화면으로 이동한다", () => {
     useAdminGroupQueryMock.mockReturnValue({

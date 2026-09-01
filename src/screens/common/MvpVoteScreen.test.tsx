@@ -266,7 +266,7 @@ describe("MvpVoteScreen", () => {
     expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 
-  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) router.replace로 관리자 투표 현황 화면으로 리디렉션한다", () => {
+  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) 공통 투표 현황 화면으로 리디렉션한다", () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -286,6 +286,6 @@ describe("MvpVoteScreen", () => {
 
     render(<MvpVoteScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 });

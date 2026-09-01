@@ -56,7 +56,6 @@ describe("useGroupStatusNavigation", () => {
     "/groups/6/votes/attendance",
     "/groups/6/votes/status",
     "/groups/6/votes/result",
-    "/groups/6/admin/votes/status",
     "/groups/6/admin/votes/end",
     "/groups/6/extra",
   ])("기존 투표 흐름과 추가 정보 화면을 방해하지 않는다: %s", (pathname) => {
@@ -75,9 +74,9 @@ describe("useGroupStatusNavigation", () => {
     );
   });
 
-  it("관리자가 투표 완료 후 현황 화면에 있으면 MVP 투표로 되돌리지 않는다", () => {
+  it("투표 완료 후 공통 현황 화면에 있으면 MVP 투표로 되돌리지 않는다", () => {
     query.data!.myRole = "HOST";
-    location.pathname = "/groups/6/admin/votes/status";
+    location.pathname = "/groups/6/votes/status";
     const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
     query.data = { ...query.data! };
     rerender();
