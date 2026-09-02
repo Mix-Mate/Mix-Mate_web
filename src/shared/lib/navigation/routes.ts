@@ -47,6 +47,10 @@ export const groupRoutes = {
     `${groupBase(groupId)}/admin/recruitment`,
   adminParticipants: (groupId: string, round?: AssignmentRound) =>
     `${groupBase(groupId)}/admin/participants${round ? `?round=${round}` : ""}`,
+  adminParticipantStatistics: (groupId: string, round?: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/participants/statistics${
+      round ? `?round=${round}` : ""
+    }`,
   adminPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,

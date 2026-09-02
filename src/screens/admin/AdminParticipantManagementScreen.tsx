@@ -101,6 +101,15 @@ export default function AdminParticipantManagementScreen() {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
 
+  const goToStatistics = () => {
+    router.push(
+      withSessionContext(
+        groupRoutes.adminParticipantStatistics(params.groupId, round),
+        searchParams,
+      ),
+    );
+  };
+
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
     router.push(`/groups/${params.groupId}/admin/blacklist`);
@@ -142,8 +151,6 @@ export default function AdminParticipantManagementScreen() {
 
   return (
     <MobileFrame
-      className={styles.phone}
-      viewportClassName={styles.viewport}
       data-testid="admin-participant-management"
     >
       <Header
@@ -156,18 +163,19 @@ export default function AdminParticipantManagementScreen() {
             ),
           )
         }
-        compact
         rightAction={headerRightAction}
       />
 
       <TabNavigation
         items={[
           { id: "participants", label: "참가자" },
+          { id: "statistics", label: "통계" },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="participants"
         ariaLabel="관리자 메뉴"
         onSelect={(item) => {
+          if (item.id === "statistics") goToStatistics();
           if (item.id === "assignment") goToAssignment();
         }}
       />

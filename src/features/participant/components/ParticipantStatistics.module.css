@@ -1,0 +1,389 @@
+.statistics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 18px 18px;
+}
+
+.summaryCard,
+.card,
+.tableCard {
+  border: 1px solid #e6e8ee;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgb(15 23 42 / 4%);
+}
+
+.summaryCard {
+  padding: 15px 14px 14px;
+}
+
+.eyebrow,
+.cardHeader h3,
+.summaryDescription,
+.cardHeader p,
+.departmentHeader span {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #18181b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 19px;
+}
+
+.total {
+  display: block;
+  margin-top: 3px;
+  color: #256ad3;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 34px;
+}
+
+.summaryDescription {
+  margin-top: 2px;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quickGrid article {
+  min-height: 50px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #f6f7f9;
+}
+
+.quickGrid span {
+  display: block;
+  color: #8b93a1;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.quickGrid strong {
+  display: block;
+  margin-top: 4px;
+  color: #263241;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 17px;
+}
+
+.card {
+  padding: 16px 14px;
+}
+
+.cardHeader h3 {
+  color: #18181b;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 21px;
+}
+
+.cardHeader p {
+  margin-top: 3px;
+  color: #8b93a1;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 15px;
+}
+
+.chartRow {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.donutWrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 8px 12px rgb(37 106 211 / 18%));
+}
+
+.donut {
+  width: 96px;
+  height: 96px;
+  transform: rotate(-90deg);
+}
+
+.donutTrack,
+.donutPrimary,
+.donutSecondary {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 14;
+}
+
+.donutTrack {
+  stroke: #edf1f6;
+}
+
+.donutPrimary,
+.donutSecondary {
+  stroke-dasharray: 0 270.18;
+  animation: drawDonut 900ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.donutPrimary {
+  animation-delay: 120ms;
+}
+
+.donutSecondary {
+  stroke-dashoffset: var(--offset);
+  animation-delay: 260ms;
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #256ad3;
+  text-align: center;
+}
+
+.donutCenter strong {
+  align-self: end;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 24px;
+}
+
+.donutCenter span {
+  align-self: start;
+  color: #5f6875;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.legendList {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.legendTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.legendTop span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendTop i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+}
+
+.primaryDot {
+  background: #256ad3;
+}
+
+.secondaryDot {
+  background: #66b9f4;
+}
+
+.legendTop strong {
+  flex: 0 0 auto;
+  color: #18181b;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 15px;
+}
+
+.progressTrack {
+  height: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eef0f3;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left center;
+  animation: growBar 720ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.primaryBar {
+  background: #256ad3;
+}
+
+.secondaryBar {
+  background: #0ea5e9;
+  animation-delay: 130ms;
+}
+
+.departmentHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.departmentHeader span {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.departmentList {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.departmentItem {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 7px;
+}
+
+.departmentItem span {
+  overflow: hidden;
+  color: #5f6875;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.departmentTrack {
+  height: 13px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf0f4;
+}
+
+.departmentTrack i {
+  display: block;
+  height: 100%;
+  min-width: 8px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #68a5f2, #256ad3);
+  transform-origin: left center;
+  animation: growBar 760ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.departmentItem strong {
+  color: #18181b;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 14px;
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+.tableToggle {
+  display: flex;
+  width: 100%;
+  height: 44px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border: 0;
+  background: #ffffff;
+  color: #18181b;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.tableToggle svg {
+  color: #6b7280;
+  transition: transform 160ms ease;
+}
+
+.openIcon {
+  transform: rotate(180deg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid #eef0f3;
+}
+
+.table th,
+.table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f0f2f5;
+  color: #4b5563;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: left;
+}
+
+.table th {
+  color: #8b93a1;
+  font-weight: 800;
+}
+
+.table td:nth-child(3),
+.table td:nth-child(4),
+.table th:nth-child(3),
+.table th:nth-child(4) {
+  text-align: right;
+}
+
+@keyframes drawDonut {
+  to {
+    stroke-dasharray: calc(var(--arc) * 1px) calc(var(--rest) * 1px);
+  }
+}
+
+@keyframes growBar {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
