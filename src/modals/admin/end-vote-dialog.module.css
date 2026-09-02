@@ -78,12 +78,16 @@
 }
 
 .pendingSection {
+  display: flex;
   min-height: 0;
-  margin-bottom: 16px;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin-bottom: 20px;
   text-align: left;
 }
 
 .pendingSection h3 {
+  flex: 0 0 auto;
   margin: 20px 0 12px;
   color: #a1a1aa;
   font-size: 12px;
@@ -94,7 +98,9 @@
 
 .pendingList {
   display: flex;
+  min-height: 0;
   max-height: 214px;
+  flex: 1 1 auto;
   margin: 0;
   padding: 0;
   overflow-y: auto;
@@ -170,6 +176,7 @@
 
 .actions {
   display: grid;
+  flex: 0 0 auto;
   grid-template-columns: 1fr 1fr;
   gap: 11px;
   margin-top: auto;
