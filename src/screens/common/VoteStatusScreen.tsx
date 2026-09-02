@@ -52,7 +52,8 @@ export default function VoteStatusScreen() {
         PENDING: {
           title: "미투표 멤버",
           members: data.participants.filter(
-            (participant) => participant.choice === null,
+            (participant) =>
+              participant.manualEntry || participant.choice === null,
           ),
           emptyMessage: "모든 참가자가 투표를 완료했습니다.",
         },
