@@ -1,16 +1,3 @@
-.viewport {
-  background: var(--color-app-background);
-}
-
-.phone {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #e4e4e7;
-  border-radius: 26px;
-  background: #fbfbfd;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
-}
-
 .content {
   display: flex;
   min-height: 0;
@@ -296,15 +283,4 @@
   left: 20px;
   right: 20px;
   z-index: 50;
-}
-
-@media (max-width: 389px) {
-  .viewport,
-  .phone {
-    width: 100vw;
-  }
-
-  .phone {
-    border-radius: 0;
-  }
 }

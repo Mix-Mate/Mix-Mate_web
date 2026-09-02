@@ -193,6 +193,7 @@ export default function FixedMemberSetupScreen() {
       <TabNavigation
         items={[
           { id: "participants", label: "참가자" },
+          { id: "statistics", label: "통계" },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="assignment"
@@ -202,6 +203,14 @@ export default function FixedMemberSetupScreen() {
             router.push(
               withSessionContext(
                 groupRoutes.adminParticipants(params.groupId, round),
+                searchParams,
+              ),
+            );
+          }
+          if (item.id === "statistics") {
+            router.push(
+              withSessionContext(
+                groupRoutes.adminParticipantStatistics(params.groupId, round),
                 searchParams,
               ),
             );

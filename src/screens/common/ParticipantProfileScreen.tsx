@@ -100,8 +100,11 @@ export default function ParticipantProfileScreen({
       String(group.myParticipantId) === String(participantId),
   );
 
+  const canManageParticipant =
+    group.status === "RECRUITING" ||
+    (group.status === "BEFORE_FIRST_ROUND" && resolvedRound === 1);
   const canBlockParticipant =
-    isAdminView && !isSelf && group.status === "RECRUITING";
+    isAdminView && !isSelf && canManageParticipant;
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId
