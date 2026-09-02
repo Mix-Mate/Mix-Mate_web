@@ -22,6 +22,21 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => ({
   getMyGroupsApi: vi.fn(),
 }));
 
+vi.mock("@/features/group/lib/resolve-group-entry-route", () => ({
+  resolveGroupEntryRoute: vi.fn(
+    async (groupId: string, role: string | null | undefined, status?: string) => {
+      const normalizedStatus = status?.trim().toUpperCase();
+      if (normalizedStatus === "VOTE_CLOSED") return `/groups/${groupId}/votes/result`;
+      if (normalizedStatus === "VOTING") return `/groups/${groupId}/votes/mvp`;
+      if (role?.trim().toUpperCase() === "HOST") {
+        if (normalizedStatus === "RECRUITING") return `/groups/${groupId}/admin/recruitment`;
+        return `/groups/${groupId}/admin`;
+      }
+      return `/groups/${groupId}`;
+    },
+  ),
+}));
+
 vi.mock("@/features/blacklist/api/blacklist.api", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/features/blacklist/api/blacklist.api")
@@ -42,8 +57,8 @@ describe("HomeScreen", () => {
     vi.clearAllMocks();
     localStorage.clear();
     sessionStorage.clear();
-    // 기본적으로 유효한 토큰 설정
-    const futureExp = Math.floor(Date.now() / 1000) + 3600;
+    // 기본적으로 유효한 토큰 설정 (만료되지 않은 24시간 유효 토큰)
+    const futureExp = Math.floor(Date.now() / 1000) + 86400;
     setAuthTokens({ accessToken: createMockJwt(futureExp) });
   });
 
@@ -227,6 +242,7 @@ describe("HomeScreen", () => {
                     status,
                     role,
                     memberCount: 6,
+                    createdAt: "2026-09-01T10:00:00Z",
                   },
                 ]
               : [],
@@ -234,7 +250,10 @@ describe("HomeScreen", () => {
 
         render(<HomeScreen userName="테스터" />);
 
-        fireEvent.click(await screen.findByText("라우팅 테스트 모임"));
+        const groupCard = await screen.findByRole("button", {
+          name: /라우팅 테스트 모임/,
+        });
+        fireEvent.click(groupCard);
 
         await waitFor(() => {
           expect(push).toHaveBeenCalledWith(expectedRoute);
@@ -265,6 +284,7 @@ describe("HomeScreen", () => {
                   status: "FIRST_ROUND",
                   role: "PARTICIPANT",
                   memberCount: 4,
+                  createdAt: "2026-09-01T10:00:00Z",
                 },
               ]
             : [],
@@ -272,7 +292,10 @@ describe("HomeScreen", () => {
 
       render(<HomeScreen userName="테스터" />);
 
-      fireEvent.click(await screen.findByText("차단된 모임"));
+      const blockedCard = await screen.findByRole("button", {
+        name: /차단된 모임/,
+      });
+      fireEvent.click(blockedCard);
 
       expect(
         await screen.findByText("그룹에서 차단되었습니다"),
