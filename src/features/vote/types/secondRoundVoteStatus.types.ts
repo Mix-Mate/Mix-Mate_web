@@ -6,6 +6,7 @@ export interface SecondRoundVoteParticipant {
   participantId: number;
   displayName: string;
   choice: SecondRoundVoteChoice | null;
+  manualEntry: boolean;
 }
 
 export interface SecondRoundVoteStatusResponse {

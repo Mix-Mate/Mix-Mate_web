@@ -144,7 +144,7 @@ export default function EndVoteScreen() {
   }
 
   const pendingMembers = data.participants.filter(
-    (participant) => participant.choice === null,
+    (participant) => participant.manualEntry || participant.choice === null,
   );
 
   return (
@@ -229,11 +229,15 @@ export default function EndVoteScreen() {
 
       <EndVoteDialog
         open={endVoteDialogOpen}
+        groupId={params.groupId}
         pendingMembers={pendingMembers}
         isEnding={isFinishingVote}
         error={endVoteError}
         onClose={closeEndVoteDialog}
         onConfirm={confirmEndVote}
+        onVoteChange={() => {
+          void refetchVoteStatus();
+        }}
       />
     </MobileFrame>
   );

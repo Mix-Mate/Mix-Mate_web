@@ -37,8 +37,8 @@ describe("resolveGroupEntryRoute", () => {
       participateCount: 0,
       notParticipateCount: 0,
       participants: [
-        { participantId: 1, displayName: "나", choice: null },
-        { participantId: 2, displayName: "상대", choice: null },
+        { participantId: 1, displayName: "나", choice: null, manualEntry: false },
+        { participantId: 2, displayName: "상대", choice: null, manualEntry: false },
       ],
     });
 
@@ -56,8 +56,13 @@ describe("resolveGroupEntryRoute", () => {
         participateCount: choice === "PARTICIPATE" ? 1 : 0,
         notParticipateCount: choice === "NOT_PARTICIPATE" ? 1 : 0,
         participants: [
-          { participantId: 1, displayName: "나", choice },
-          { participantId: 2, displayName: "상대", choice: null },
+          { participantId: 1, displayName: "나", choice, manualEntry: false },
+          {
+            participantId: 2,
+            displayName: "상대",
+            choice: null,
+            manualEntry: false,
+          },
         ],
       });
 

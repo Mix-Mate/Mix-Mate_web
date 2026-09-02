@@ -1,7 +1,12 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { Check, CircleCheck, CircleX, TriangleAlert } from "lucide-react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  correctSecondRoundVoteByHost,
+  voteSecondRoundByHost,
+} from "@/features/vote/api/adminSecondRoundVote.api";
+import type { SecondRoundVoteChoice } from "@/features/vote/types/secondRoundVote.types";
 import type { SecondRoundVoteParticipant } from "@/features/vote/types/secondRoundVoteStatus.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
@@ -9,11 +14,13 @@ import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
   open: boolean;
+  groupId: string;
   pendingMembers: SecondRoundVoteParticipant[];
   isEnding?: boolean;
   error?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+  onVoteChange: () => void;
 }
 
 interface PendingListDragState {
@@ -22,16 +29,25 @@ interface PendingListDragState {
   startScrollTop: number;
 }
 
+interface RowState {
+  isSubmitting: boolean;
+  error: string | null;
+}
+
 export default function EndVoteDialog({
   open,
+  groupId,
   pendingMembers,
   isEnding = false,
   error,
   onClose,
   onConfirm,
+  onVoteChange,
 }: EndVoteDialogProps) {
   const pendingListRef = useRef<HTMLUListElement>(null);
   const pendingListDragRef = useRef<PendingListDragState | null>(null);
+  const [openMemberId, setOpenMemberId] = useState<number | null>(null);
+  const [rowStates, setRowStates] = useState<Record<number, RowState>>({});
 
   const startPendingListDrag = (
     event: ReactPointerEvent<HTMLUListElement>,
@@ -68,6 +84,45 @@ export default function EndVoteDialog({
     }
   };
 
+  const handleSelectChoice = async (
+    member: SecondRoundVoteParticipant,
+    choice: SecondRoundVoteChoice,
+  ) => {
+    setOpenMemberId(null);
+    setRowStates((prev) => ({
+      ...prev,
+      [member.participantId]: { isSubmitting: true, error: null },
+    }));
+
+    try {
+      if (member.choice === null) {
+        await voteSecondRoundByHost(groupId, member.participantId, choice);
+      } else {
+        await correctSecondRoundVoteByHost(
+          groupId,
+          member.participantId,
+          choice,
+        );
+      }
+      setRowStates((prev) => ({
+        ...prev,
+        [member.participantId]: { isSubmitting: false, error: null },
+      }));
+      onVoteChange();
+    } catch (submitError) {
+      setRowStates((prev) => ({
+        ...prev,
+        [member.participantId]: {
+          isSubmitting: false,
+          error:
+            submitError instanceof Error
+              ? submitError.message
+              : "처리에 실패했습니다.",
+        },
+      }));
+    }
+  };
+
   return (
     <BottomSheetDialog
       open={open}
@@ -96,7 +151,7 @@ export default function EndVoteDialog({
         className={styles.pendingSection}
         aria-labelledby="pending-members-title"
       >
-        <h3 id="pending-members-title">미투표자 {pendingMembers.length}명</h3>
+        <h3 id="pending-members-title">미투표 명단</h3>
         <ul
           ref={pendingListRef}
           className={styles.pendingList}
@@ -110,12 +165,132 @@ export default function EndVoteDialog({
             pendingListDragRef.current = null;
           }}
         >
-          {pendingMembers.map((member) => (
-            <li className={styles.pendingMember} key={member.participantId}>
-              <strong>{member.displayName}</strong>
-              <span className={styles.absenceBadge}>불참 처리</span>
-            </li>
-          ))}
+          {pendingMembers.map((member) => {
+            const rowState = rowStates[member.participantId];
+            const isMenuOpen = openMemberId === member.participantId;
+
+            return (
+              <li className={styles.pendingMember} key={member.participantId}>
+                <strong>{member.displayName}</strong>
+
+                {member.manualEntry ? (
+                  <div className={styles.voteDropdown}>
+                    <button
+                      type="button"
+                      className={`${styles.voteDropdownTrigger} ${
+                        isMenuOpen ? styles.voteDropdownTriggerActive : ""
+                      }`}
+                      disabled={rowState?.isSubmitting}
+                      onClick={() =>
+                        setOpenMemberId(isMenuOpen ? null : member.participantId)
+                      }
+                      aria-expanded={isMenuOpen}
+                      aria-label={`${member.displayName} 수동 투표`}
+                    >
+                      {member.choice === "PARTICIPATE" && (
+                        <CircleCheck
+                          className={styles.attendanceIcon}
+                          size={16}
+                          strokeWidth={2}
+                        />
+                      )}
+                      {member.choice === "NOT_PARTICIPATE" && (
+                        <CircleX
+                          className={styles.absenceIcon}
+                          size={16}
+                          strokeWidth={2}
+                        />
+                      )}
+                      {member.choice === null && <span>수동 투표</span>}
+                      <span
+                        className={`${styles.voteDropdownArrow} ${
+                          isMenuOpen ? styles.voteDropdownArrowOpen : ""
+                        }`}
+                      >
+                        ▾
+                      </span>
+                    </button>
+
+                    {isMenuOpen && (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.voteDropdownBackdrop}
+                          aria-hidden="true"
+                          tabIndex={-1}
+                          onClick={() => setOpenMemberId(null)}
+                        />
+                        <div className={styles.voteDropdownMenu} role="menu">
+                          <button
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={member.choice === "PARTICIPATE"}
+                            className={`${styles.voteDropdownItem} ${
+                              member.choice === "PARTICIPATE"
+                                ? styles.voteDropdownItemActive
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleSelectChoice(member, "PARTICIPATE")
+                            }
+                          >
+                            <CircleCheck
+                              className={styles.attendanceIcon}
+                              size={16}
+                              strokeWidth={2}
+                            />
+                            참가
+                            {member.choice === "PARTICIPATE" && (
+                              <Check
+                                className={styles.voteDropdownCheck}
+                                size={14}
+                                strokeWidth={2.5}
+                              />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={member.choice === "NOT_PARTICIPATE"}
+                            className={`${styles.voteDropdownItem} ${
+                              member.choice === "NOT_PARTICIPATE"
+                                ? styles.voteDropdownItemActive
+                                : ""
+                            }`}
+                            onClick={() =>
+                              handleSelectChoice(member, "NOT_PARTICIPATE")
+                            }
+                          >
+                            <CircleX
+                              className={styles.absenceIcon}
+                              size={16}
+                              strokeWidth={2}
+                            />
+                            불참
+                            {member.choice === "NOT_PARTICIPATE" && (
+                              <Check
+                                className={styles.voteDropdownCheck}
+                                size={14}
+                                strokeWidth={2.5}
+                              />
+                            )}
+                          </button>
+                        </div>
+                      </>
+                    )}
+
+                    {rowState?.error && (
+                      <span className={styles.rowError} role="alert">
+                        {rowState.error}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className={styles.waitingBadge}>대기 중</span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
 
