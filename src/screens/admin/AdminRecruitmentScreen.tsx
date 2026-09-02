@@ -303,14 +303,9 @@ export default function AdminRecruitmentScreen() {
             <Clock3 size={25} strokeWidth={1.8} />
           </span>
           <h2>그룹을 모집하고 있습니다.</h2>
-          <p>
-            모집이 마감 이후 확정된 참가자 목록을 확인하고
-            <br />조 편성을 시작할 수 있습니다.
-          </p>
           <p className={styles.minimumParticipantText}>
-            1차 술자리는 참가자가{" "}
-            <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상일 때 시작할
-            수 있습니다.
+            참가자가{" "}
+            <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상 모이면 1차 술자리를 시작할 수 있어요.
           </p>
         </section>
 
