@@ -83,6 +83,7 @@ describe("Blacklist Feature & API Integration", () => {
     vi.clearAllMocks();
     sessionStorage.clear();
     localStorage.clear();
+    localStorage.setItem("accessToken", "mock-token");
   });
 
   describe("BlacklistScreen - Access Control & Viewing", () => {
