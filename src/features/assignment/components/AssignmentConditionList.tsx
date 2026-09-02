@@ -1,10 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type {
-  AssignmentConditionOption,
-  AssignmentSetupInput,
-} from "../types/assignment.types";
+import type { AssignmentConditionOption } from "../types/assignment.types";
 import styles from "./assignment.module.css";
 
 export const assignmentConditionOptions: AssignmentConditionOption[] = [
@@ -38,45 +35,20 @@ export const assignmentConditionOptions: AssignmentConditionOption[] = [
     description: "운영진을 각 조에 배치",
     defaultEnabled: true,
   },
-  {
-    key: "MEMBER_COUNT_BALANCE",
-    label: "인원 수 균등",
-    description: "조별 인원 차이 최소화",
-    defaultEnabled: true,
-  },
 ];
-
-// 2차는 이전 회차 조 개수/대상과 어긋나면 400을 유발하는 조건이라
-// 인원 수 균등을 아예 노출/전송하지 않는다.
-// 고정 멤버 유지는 1차/2차 모두 토글 자체를 없앴다 (assignmentConditionOptions에서 제거).
-const ROUND_2_HIDDEN_CONDITION_KEYS: AssignmentConditionOption["key"][] = [
-  "MEMBER_COUNT_BALANCE",
-];
-
-export function getVisibleConditionOptions(
-  round: AssignmentSetupInput["round"],
-) {
-  if (round !== 2) return assignmentConditionOptions;
-
-  return assignmentConditionOptions.filter(
-    (option) => !ROUND_2_HIDDEN_CONDITION_KEYS.includes(option.key),
-  );
-}
 
 interface AssignmentConditionListProps {
-  round: AssignmentSetupInput["round"];
   selectedKeys: AssignmentConditionOption["key"][];
   onToggle: (key: AssignmentConditionOption["key"]) => void;
 }
 
 export default function AssignmentConditionList({
-  round,
   selectedKeys,
   onToggle,
 }: AssignmentConditionListProps) {
   return (
     <div className={styles.conditionCard} aria-label="배치 조건 목록">
-      {getVisibleConditionOptions(round).map((option) => {
+      {assignmentConditionOptions.map((option) => {
         const isOn = selectedKeys.includes(option.key);
 
         return (

@@ -18,7 +18,6 @@ export function toGender(gender: BackendGender): Gender {
   return gender === "FEMALE" ? "female" : "male";
 }
 
-// 인원 수 균등(MEMBER_COUNT_BALANCE)은 서버가 항상 보장하므로 보내지 않고,
 // 고정 멤버 유지(KEEP_FIXED_MEMBERS)는 조건이 아니라 fixedMembers 배열로 표현된다.
 const conditionKeyMap: Partial<
   Record<AssignmentConditionKey, BackendConditionKey>
