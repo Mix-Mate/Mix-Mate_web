@@ -24,7 +24,7 @@ export default function VoteStatusScreen() {
   const { data: group } = useAdminGroupQuery(params.groupId);
   const isAdmin = group?.myRole === "HOST";
   const canForceEndVote = isAdmin && group?.status === "VOTING";
-  const { data, isLoading, isRefreshing, error, isComplete } =
+  const { data, isLoading, isRefreshing, error, isComplete, refetch } =
     useVoteStatusQuery(params.groupId);
   const { back: navigateToMainHome } = useVoteNavigation(appRoutes.home());
   const [selectedFilter, setSelectedFilter] =
@@ -138,6 +138,11 @@ export default function VoteStatusScreen() {
               title={listContent.title}
               members={listContent.members}
               emptyMessage={listContent.emptyMessage}
+              groupId={params.groupId}
+              canManageManualVote={isAdmin}
+              onVoteChange={() => {
+                void refetch();
+              }}
             />
 
             {error && (
