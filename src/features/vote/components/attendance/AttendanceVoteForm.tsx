@@ -3,6 +3,8 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
 import Button from "@/shared/ui/Button";
+import InfoBanner from "@/shared/ui/InfoBanner";
+import { SECOND_ROUND_MIN_PARTICIPANTS } from "../../lib/second-round";
 import type { SecondRoundVoteChoice } from "../../types/secondRoundVote.types";
 import styles from "../vote.module.css";
 import AttendanceOptionCard from "./AttendanceOptionCard";
@@ -39,6 +41,17 @@ export default function AttendanceVoteForm({
         }
       }}
     >
+      <InfoBanner
+        className={styles.attendanceThresholdNotice}
+        role="note"
+        aria-label="2차 술자리 진행 기준"
+      >
+        <p>
+          2차 참여 희망자가 {SECOND_ROUND_MIN_PARTICIPANTS}명 이상 모이면 2차
+          술자리가 진행됩니다.
+        </p>
+      </InfoBanner>
+
       <div className={styles.attendanceQuestion}>
         <h2>2차 술자리, 함께하실 건가요?</h2>
         <p>참여 여부를 선택해주세요</p>
