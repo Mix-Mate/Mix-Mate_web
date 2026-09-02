@@ -9,7 +9,7 @@ import Toast from '@/shared/ui/Toast';
 import useToast from '@/shared/hooks/useToast';
 import { setAuthTokens } from '@/shared/api/authToken';
 import { loginApi, AuthApiError } from '../api/auth.api';
-import logoIcon from '../../../../public/icons/logo.svg';
+import logoIcon from '../../../../public/icons/logo.png';
 import styles from './LoginForm.module.css';
 
 export function LoginForm() {
@@ -126,8 +126,8 @@ export function LoginForm() {
           <Image
             src={logoIcon}
             alt="MixMate 로고"
-            width={80}
-            height={80}
+            width={104}
+            height={104}
             className={styles.logoImage}
             priority
           />
