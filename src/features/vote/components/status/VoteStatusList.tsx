@@ -9,6 +9,7 @@ interface VoteStatusListProps {
   groupId: string;
   canManageManualVote: boolean;
   onVoteChange: () => void;
+  onManualVoteError: (message: string | null) => void;
 }
 
 export default function VoteStatusList({
@@ -18,6 +19,7 @@ export default function VoteStatusList({
   groupId,
   canManageManualVote,
   onVoteChange,
+  onManualVoteError,
 }: VoteStatusListProps) {
   return (
     <section
@@ -35,6 +37,7 @@ export default function VoteStatusList({
               groupId={groupId}
               canManageManualVote={canManageManualVote}
               onVoteChange={onVoteChange}
+              onManualVoteError={onManualVoteError}
             />
           ))}
         </ul>

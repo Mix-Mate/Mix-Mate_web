@@ -8,6 +8,7 @@ interface VoteStatusItemProps {
   groupId: string;
   canManageManualVote: boolean;
   onVoteChange: () => void;
+  onManualVoteError: (message: string | null) => void;
 }
 
 export default function VoteStatusItem({
@@ -15,6 +16,7 @@ export default function VoteStatusItem({
   groupId,
   canManageManualVote,
   onVoteChange,
+  onManualVoteError,
 }: VoteStatusItemProps) {
   const showManualVoteControl = canManageManualVote && member.manualEntry;
 
@@ -26,6 +28,7 @@ export default function VoteStatusItem({
           groupId={groupId}
           member={member}
           onVoteChange={onVoteChange}
+          onError={onManualVoteError}
         />
       ) : (
         <>

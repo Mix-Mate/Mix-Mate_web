@@ -45,6 +45,7 @@ export default function EndVoteDialog({
   // 대신 투표 요청이 서버에 닿기 전에 투표가 종료되면 그 지정이 유실되므로,
   // 제출 중인 행이 하나라도 있으면 종료 버튼을 잠근다.
   const [submittingIds, setSubmittingIds] = useState<number[]>([]);
+  const [manualVoteError, setManualVoteError] = useState<string | null>(null);
 
   const handleSubmittingChange = useCallback(
     (participantId: number, isSubmitting: boolean) => {
@@ -65,6 +66,14 @@ export default function EndVoteDialog({
     event: ReactPointerEvent<HTMLUListElement>,
   ) => {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+    // 버튼 위에서 시작한 드래그까지 포인터를 가로채면 클릭이 버튼에 닿지 않는다.
+    if (
+      event.target instanceof Element &&
+      event.target.closest("button, a, input, select, textarea")
+    ) {
+      return;
+    }
 
     pendingListDragRef.current = {
       pointerId: event.pointerId,
@@ -152,6 +161,7 @@ export default function EndVoteDialog({
                   member={member}
                   onVoteChange={onVoteChange}
                   onSubmittingChange={handleSubmittingChange}
+                  onError={setManualVoteError}
                 />
               ) : (
                 <span className={styles.waitingBadge}>대기 중</span>
@@ -161,9 +171,9 @@ export default function EndVoteDialog({
         </ul>
       </section>
 
-      {error && (
+      {(error || manualVoteError) && (
         <span className={styles.error} role="alert">
-          {error}
+          {error ?? manualVoteError}
         </span>
       )}
 

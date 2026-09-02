@@ -22,6 +22,8 @@ interface AdminManualVoteControlProps {
   member: SecondRoundVoteParticipant;
   onVoteChange: () => void;
   onSubmittingChange?: (participantId: number, isSubmitting: boolean) => void;
+  /** 행 안에서는 목록 overflow에 잘려 보이지 않으므로 화면 단위로 올려서 노출한다. */
+  onError?: (message: string | null) => void;
 }
 
 interface MenuPosition {
@@ -34,11 +36,11 @@ export default function AdminManualVoteControl({
   member,
   onVoteChange,
   onSubmittingChange,
+  onError,
 }: AdminManualVoteControlProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const isOpen = menuPosition !== null;
 
   const closeMenu = useCallback(() => setMenuPosition(null), []);
@@ -77,7 +79,7 @@ export default function AdminManualVoteControl({
   const handleSelect = async (choice: SecondRoundVoteChoice) => {
     closeMenu();
     setIsSubmitting(true);
-    setError(null);
+    onError?.(null);
     onSubmittingChange?.(member.participantId, true);
 
     try {
@@ -92,7 +94,7 @@ export default function AdminManualVoteControl({
       }
       onVoteChange();
     } catch (submitError) {
-      setError(
+      onError?.(
         submitError instanceof Error
           ? submitError.message
           : "처리에 실패했습니다.",
@@ -201,12 +203,6 @@ export default function AdminManualVoteControl({
           </>,
           document.body,
         )}
-
-      {error && (
-        <span className={styles.rowError} role="alert">
-          {error}
-        </span>
-      )}
     </div>
   );
 }

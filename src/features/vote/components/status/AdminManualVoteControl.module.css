@@ -100,13 +100,3 @@
   color: #3b82c4;
 }
 
-.rowError {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  color: #ef4444;
-  font-size: 11px;
-  line-height: 15px;
-  white-space: nowrap;
-}

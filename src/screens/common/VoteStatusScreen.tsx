@@ -30,6 +30,7 @@ export default function VoteStatusScreen() {
   const [selectedFilter, setSelectedFilter] =
     useState<SecondRoundVoteStatusFilter>("PENDING");
   const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
+  const [manualVoteError, setManualVoteError] = useState<string | null>(null);
   const pendingCount = data
     ? Math.max(0, data.totalParticipantCount - data.votedCount)
     : 0;
@@ -144,12 +145,13 @@ export default function VoteStatusScreen() {
               onVoteChange={() => {
                 void refetch();
               }}
+              onManualVoteError={setManualVoteError}
             />
 
-            {error && (
+            {(error || manualVoteError) && (
               <p className={styles.waitingNotice} role="alert">
                 <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-                {error}
+                {error ?? manualVoteError}
               </p>
             )}
 
