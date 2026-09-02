@@ -1,7 +1,12 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import AdminManualVoteControl from "@/features/vote/components/status/AdminManualVoteControl";
 import type { SecondRoundVoteParticipant } from "@/features/vote/types/secondRoundVoteStatus.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
@@ -37,6 +42,24 @@ export default function EndVoteDialog({
 }: EndVoteDialogProps) {
   const pendingListRef = useRef<HTMLUListElement>(null);
   const pendingListDragRef = useRef<PendingListDragState | null>(null);
+  // 대신 투표 요청이 서버에 닿기 전에 투표가 종료되면 그 지정이 유실되므로,
+  // 제출 중인 행이 하나라도 있으면 종료 버튼을 잠근다.
+  const [submittingIds, setSubmittingIds] = useState<number[]>([]);
+
+  const handleSubmittingChange = useCallback(
+    (participantId: number, isSubmitting: boolean) => {
+      setSubmittingIds((current) =>
+        isSubmitting
+          ? current.includes(participantId)
+            ? current
+            : [...current, participantId]
+          : current.filter((id) => id !== participantId),
+      );
+    },
+    [],
+  );
+
+  const isSubmittingManualVote = submittingIds.length > 0;
 
   const startPendingListDrag = (
     event: ReactPointerEvent<HTMLUListElement>,
@@ -128,6 +151,7 @@ export default function EndVoteDialog({
                   groupId={groupId}
                   member={member}
                   onVoteChange={onVoteChange}
+                  onSubmittingChange={handleSubmittingChange}
                 />
               ) : (
                 <span className={styles.waitingBadge}>대기 중</span>
@@ -156,7 +180,7 @@ export default function EndVoteDialog({
           variant="danger"
           className={styles.endButton}
           onClick={onConfirm}
-          disabled={isEnding}
+          disabled={isEnding || isSubmittingManualVote}
         >
           {isEnding ? "종료 중..." : "지금 종료하기"}
         </Button>

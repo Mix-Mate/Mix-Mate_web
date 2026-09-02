@@ -48,10 +48,11 @@
   transform: rotate(180deg);
 }
 
+/* 메뉴/백드롭은 body로 포털되므로 목록의 overflow에 잘리지 않는다 */
 .voteDropdownBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 200;
   border: 0;
   background: transparent;
   padding: 0;
@@ -59,12 +60,10 @@
 }
 
 .voteDropdownMenu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 41;
+  position: fixed;
+  z-index: 201;
   display: flex;
-  min-width: 120px;
+  width: 128px;
   flex-direction: column;
   gap: 4px;
   border: 1.5px solid #e4e4e7;
