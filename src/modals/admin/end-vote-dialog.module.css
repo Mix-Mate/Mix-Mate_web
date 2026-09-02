@@ -8,6 +8,7 @@
 
   position: relative;
   display: flex;
+  overflow: hidden;
   height: min(579px, calc(100dvh - 20px));
   flex-direction: column;
   text-align: center;
