@@ -6,7 +6,7 @@ import Button from "@/shared/ui/Button";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import { useParticipantCandidatesQuery } from "../hooks/useParticipantCandidatesQuery";
 import AssignmentConditionList, {
-  getVisibleConditionOptions,
+  assignmentConditionOptions,
 } from "./AssignmentConditionList";
 import AssignmentParticipantStatusCard from "./AssignmentParticipantStatusCard";
 import GroupCountStepper from "./GroupCountStepper";
@@ -80,7 +80,7 @@ export default function AssignmentSetupForm({
   }, [maxGroupCount]);
   const [conditionKeys, setConditionKeys] = useState<AssignmentConditionKey[]>(
     () =>
-      getVisibleConditionOptions(round)
+      assignmentConditionOptions
         .filter((option) => option.defaultEnabled)
         .map((option) => option.key),
   );
@@ -152,7 +152,7 @@ export default function AssignmentSetupForm({
           <h2 className={styles.conditionsHeading}>
             배치 조건 선택
             <span className={styles.conditionsCount}>
-              총 {getVisibleConditionOptions(round).length}개 조건
+              총 {assignmentConditionOptions.length}개 조건
             </span>
           </h2>
         </div>
@@ -162,7 +162,6 @@ export default function AssignmentSetupForm({
         )}
 
         <AssignmentConditionList
-          round={round}
           selectedKeys={conditionKeys}
           onToggle={toggleCondition}
         />
