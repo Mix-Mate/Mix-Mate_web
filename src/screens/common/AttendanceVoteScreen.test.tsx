@@ -99,6 +99,16 @@ describe("AttendanceVoteScreen", () => {
     });
   });
 
+  it("2차 참여 희망자가 8명 이상이면 진행된다는 안내 배너를 보여준다", () => {
+    render(<AttendanceVoteScreen />);
+
+    expect(
+      screen.getByRole("note", { name: "2차 술자리 진행 기준" }),
+    ).toHaveTextContent(
+      "2차 참여 희망자가 8명 이상 모이면 2차 술자리가 진행됩니다.",
+    );
+  });
+
   it.each(["HOST", "PARTICIPANT"] as const)(
     "%s는 Attendance 직접 진입·새로고침 뒤에도 MVP로 돌아간다",
     (myRole) => {

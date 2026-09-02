@@ -205,7 +205,24 @@
   width: 358px;
   height: 740px;
   flex-direction: column;
-  padding-top: 122px;
+  padding-top: 72px;
+}
+
+.attendanceThresholdNotice {
+  min-height: 62px;
+  margin-bottom: 30px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+}
+
+.attendanceThresholdNotice p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19px;
+  word-break: keep-all;
 }
 
 .attendanceQuestion {

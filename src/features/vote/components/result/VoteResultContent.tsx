@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { ChevronRight, House, UsersRound } from "lucide-react";
 import Button from "@/shared/ui/Button";
+import { SECOND_ROUND_MIN_PARTICIPANTS } from "../../lib/second-round";
 import type {
   MvpWinner,
   VoteResultResponse,
@@ -55,6 +56,9 @@ export default function VoteResultContent({
     () => selectRandomMvpWinners(result),
     [result],
   );
+  const shouldShowSecondRoundParticipantList =
+    showOverallResult &&
+    result.secondRoundParticipants.length >= SECOND_ROUND_MIN_PARTICIPANTS;
 
   return (
     <section className={styles.resultScreen}>
@@ -79,7 +83,7 @@ export default function VoteResultContent({
           )}
         </article>
 
-        {showOverallResult && (
+        {shouldShowSecondRoundParticipantList && (
           <button
             type="button"
             className={styles.participantListButton}

@@ -1,0 +1,1 @@
+export const SECOND_ROUND_MIN_PARTICIPANTS = 8;
