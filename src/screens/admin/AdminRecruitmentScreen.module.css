@@ -217,6 +217,17 @@
   line-height: 21px;
 }
 
+.recruitingCard .minimumParticipantText {
+  margin-top: 12px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.minimumParticipantText strong {
+  color: #ef4444;
+  font-weight: 800;
+}
+
 .participantCountCard {
   display: flex;
   width: 100%;

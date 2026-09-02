@@ -1,0 +1,1 @@
+export const FIRST_ROUND_MIN_PARTICIPANTS = 4;
