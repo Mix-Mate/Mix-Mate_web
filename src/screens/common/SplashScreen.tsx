@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getAccessToken } from "@/shared/api/authToken";
+import { getAccessToken, isTokenExpired } from "@/shared/api/authToken";
 import BrandLogo from "@/shared/ui/BrandLogo";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./SplashScreen.module.css";
@@ -19,7 +19,9 @@ export default function SplashScreen({
   const router = useRouter();
 
   useEffect(() => {
-    const target = nextHref || (getAccessToken() ? "/home" : "/login");
+    const token = getAccessToken();
+    const hasValidToken = !!token && !isTokenExpired(token);
+    const target = nextHref || (hasValidToken ? "/home" : "/login");
     const timer = setTimeout(() => router.replace(target), HOLD_MS);
     return () => clearTimeout(timer);
   }, [nextHref, router]);

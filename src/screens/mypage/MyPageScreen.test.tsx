@@ -6,11 +6,13 @@ import * as authApi from "@/features/auth/api/auth.api";
 
 const mockPush = vi.fn();
 const mockBack = vi.fn();
+const mockReplace = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
     back: mockBack,
+    replace: mockReplace,
   }),
 }));
 
@@ -18,6 +20,7 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    window.localStorage.setItem("accessToken", "mock-token");
   });
 
   describe("HomeScreen Header MyPage Button", () => {

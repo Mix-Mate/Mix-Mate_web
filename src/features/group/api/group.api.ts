@@ -134,6 +134,10 @@ export interface MyGroupItem {
   date?: string;
   time?: string;
   location?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  finishedAt?: string;
+  closedAt?: string;
 }
 
 export interface GetMyGroupsResponse {
