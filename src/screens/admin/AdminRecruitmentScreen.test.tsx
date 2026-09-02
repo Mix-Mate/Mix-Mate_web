@@ -101,13 +101,13 @@ describe("AdminRecruitmentScreen", () => {
     });
   });
 
-  it("조 편성 설명 아래에 최소 참가 인원을 강조해서 보여준다", () => {
+  it("모집 안내에 최소 참가 인원을 강조해서 보여준다", () => {
     render(<AdminRecruitmentScreen />);
 
     const minimumParticipantText = screen.getByText("4명");
 
     expect(minimumParticipantText.parentElement).toHaveTextContent(
-      "1차 술자리는 참가자가 4명 이상일 때 시작할 수 있습니다.",
+      "참가자가 4명 이상 모이면 1차 술자리를 시작할 수 있어요.",
     );
     expect(minimumParticipantText.tagName).toBe("STRONG");
     expect(minimumParticipantText.parentElement?.className).toContain(

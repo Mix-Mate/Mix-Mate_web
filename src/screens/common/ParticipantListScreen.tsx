@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantHelpBox from "@/features/participant/components/ParticipantHelpBox";
@@ -39,6 +39,7 @@ export default function ParticipantListScreen() {
 
 function DefaultParticipantListScreen() {
   const params = useParams<{ groupId: string }>();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<ParticipantFilterValue>("all");
@@ -58,7 +59,9 @@ function DefaultParticipantListScreen() {
     polling: group?.myRole === "HOST" && group.status === "RECRUITING",
   });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+  const isRecruiting = group?.status === "RECRUITING";
   const canViewPrivateProfiles = group?.myRole === "HOST";
+  const canAddParticipant = group?.myRole === "HOST" && isRecruiting;
   const myParticipantId =
     myProfile?.id && myProfile.id !== "me"
       ? myProfile.id
@@ -132,8 +135,29 @@ function DefaultParticipantListScreen() {
         <ParticipantHelpBox />
         <ParticipantSearch value={keyword} onChange={setKeyword} />
         <ParticipantStats count={data.participants.length} />
-        <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
-        <ParticipantFilter value={filter} onChange={setFilter} />
+        {!isRecruiting && (
+          <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
+        )}
+        <div className={styles.filterRow}>
+          <ParticipantFilter value={filter} onChange={setFilter} />
+          {canAddParticipant && (
+            <button
+              type="button"
+              className={styles.addParticipantButton}
+              onClick={() =>
+                router.push(
+                  groupRoutes.adminParticipantNew(
+                    params.groupId,
+                    round,
+                    "participant-list",
+                  ),
+                )
+              }
+            >
+              사용자 추가
+            </button>
+          )}
+        </div>
 
         <section className={styles.listBox}>
           {viewMode === "all" ? (

@@ -47,6 +47,14 @@ export const groupRoutes = {
     `${groupBase(groupId)}/admin/recruitment`,
   adminParticipants: (groupId: string, round?: AssignmentRound) =>
     `${groupBase(groupId)}/admin/participants${round ? `?round=${round}` : ""}`,
+  adminParticipantNew: (
+    groupId: string,
+    round: AssignmentRound,
+    returnTo?: "participant-list",
+  ) =>
+    `${groupBase(groupId)}/admin/participants/new?round=${round}${
+      returnTo ? `&returnTo=${returnTo}` : ""
+    }`,
   adminParticipantStatistics: (groupId: string, round?: AssignmentRound) =>
     `${groupBase(groupId)}/admin/participants/statistics${
       round ? `?round=${round}` : ""
