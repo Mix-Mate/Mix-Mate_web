@@ -32,6 +32,8 @@ export default function UserSessionContent({
   const isAssigned = teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
   const isRoundTwoWaiting = snapshot.scenario === "round2-waiting";
+  const isWaitingAfterVote =
+    isRoundTwoWaiting && snapshot.currentStatus === "SECOND_VOTING";
   const profileRoute = snapshot.permissions.canEditProfile
     ? groupRoutes.profileEdit(groupId)
     : groupRoutes.profile(groupId);
@@ -86,12 +88,25 @@ export default function UserSessionContent({
       ) : (
         <section className={styles.waitingCard} aria-live="polite">
           <Clock3 aria-hidden="true" size={28} strokeWidth={1.7} />
-          <strong>아직 자리 배치 전입니다</strong>
-          <p>
-            관리자가 배치를 완료하면
-            <br />
-            결과를 확인할 수 있어요
-          </p>
+          {isWaitingAfterVote ? (
+            <>
+              <strong>다음 진행을 기다리고 있습니다</strong>
+              <p>
+                관리자가 다음 단계를 준비하면
+                <br />
+                새로운 화면을 확인할 수 있어요
+              </p>
+            </>
+          ) : (
+            <>
+              <strong>아직 자리 배치 전입니다</strong>
+              <p>
+                관리자가 배치를 완료하면
+                <br />
+                결과를 확인할 수 있어요
+              </p>
+            </>
+          )}
         </section>
       )}
 

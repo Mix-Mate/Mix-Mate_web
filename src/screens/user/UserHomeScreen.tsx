@@ -63,6 +63,13 @@ export default function UserHomeScreen() {
     currentParticipantChoice === "NOT_PARTICIPATE";
   const isCheckingSecondRoundAttendance =
     shouldCheckSecondRoundAttendance && isVoteStatusLoading;
+  const shouldLoadMyTeam =
+    group !== null &&
+    snapshot !== null &&
+    hasAssignedTeam(group.status) &&
+    snapshot.scenario !== "round2-waiting" &&
+    !isCheckingSecondRoundAttendance &&
+    !isSecondRoundAbsent;
   const teamRound: TeamRound =
     snapshot?.round === 2 ? "SECOND_ROUND" : "FIRST_ROUND";
   const {
@@ -72,11 +79,7 @@ export default function UserHomeScreen() {
   } = useMyTeamQuery(
     params.groupId,
     teamRound,
-    group
-      ? hasAssignedTeam(group.status) &&
-          !isCheckingSecondRoundAttendance &&
-          !isSecondRoundAbsent
-      : false,
+    shouldLoadMyTeam,
   );
   const {
     mutate: finishFirstRound,
@@ -376,7 +379,7 @@ export default function UserHomeScreen() {
         groupId={params.groupId}
         snapshot={snapshot}
         statusLabel={getGroupStatusLabel(group.status)}
-        teamNumber={myTeam?.teamNumber ?? null}
+        teamNumber={shouldLoadMyTeam ? (myTeam?.teamNumber ?? null) : null}
         isTeamLoading={isTeamLoading}
         teamError={teamError}
         onNavigate={(href) =>

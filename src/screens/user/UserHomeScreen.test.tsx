@@ -163,4 +163,49 @@ describe("UserHomeScreen Navigation", () => {
     ).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
   });
+
+  it("2차 참여 참가자가 투표 종료 후 홈으로 돌아오면 1차 조가 아닌 대기 화면을 보여준다", () => {
+    mockSearchParams = new URLSearchParams("scenario=round2-waiting");
+    useAdminGroupQueryMock.mockReturnValue({
+      data: {
+        ...mockGroup,
+        groupName: "투표가 끝난 모임",
+        status: "VOTE_CLOSED",
+        myRole: "PARTICIPANT",
+      },
+      refetch: vi.fn(),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 6,
+        votedCount: 6,
+        participateCount: 4,
+        notParticipateCount: 2,
+        participants: [
+          { participantId: 1, displayName: "나", choice: "PARTICIPATE" },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    render(<UserHomeScreen />);
+
+    expect(screen.getByTestId("user-home")).toHaveAttribute(
+      "data-scenario",
+      "round2-waiting",
+    );
+    expect(screen.getByText("투표 종료")).toBeVisible();
+    expect(
+      screen.getByText("다음 진행을 기다리고 있습니다"),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /배정 결과 확인하기/ }),
+    ).not.toBeInTheDocument();
+    expect(useMyTeamQueryMock).toHaveBeenLastCalledWith(
+      "12",
+      "SECOND_ROUND",
+      false,
+    );
+  });
 });

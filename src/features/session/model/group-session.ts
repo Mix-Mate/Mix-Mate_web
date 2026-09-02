@@ -71,7 +71,11 @@ export function createGroupHomeSnapshot(
   group: GroupDetail,
 ): UserHomeSnapshot {
   const isAdmin = group.myRole === "HOST";
-  const sessionState = sessionStateByStatus[group.status];
+  const isParticipantWaitingAfterVote =
+    !isAdmin && group.status === "VOTE_CLOSED";
+  const sessionState = isParticipantWaitingAfterVote
+    ? sessionStateByStatus.BEFORE_SECOND_ROUND
+    : sessionStateByStatus[group.status];
   const isRecruiting = group.status === "RECRUITING";
   const isBeforeFirstRound = group.status === "BEFORE_FIRST_ROUND";
   const isRoundInProgress =
