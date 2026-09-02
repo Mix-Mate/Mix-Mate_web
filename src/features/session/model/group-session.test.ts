@@ -32,7 +32,7 @@ describe("createGroupHomeSnapshot", () => {
     ["BEFORE_FIRST_ROUND", "FIRST_PREPARING", 1, "round1-waiting"],
     ["FIRST_ROUND", "FIRST_IN_PROGRESS", 1, "round1-active"],
     ["VOTING", "SECOND_VOTING", 1, "voting"],
-    ["VOTE_CLOSED", "SECOND_VOTING", 1, "voting"],
+    ["VOTE_CLOSED", "SECOND_VOTING", 2, "round2-waiting"],
     ["BEFORE_SECOND_ROUND", "SECOND_PREPARING", 2, "round2-waiting"],
     ["SECOND_ROUND", "SECOND_IN_PROGRESS", 2, "round2-active"],
     ["FINISHED", "COMPLETED", 2, "completed"],
@@ -63,6 +63,16 @@ describe("createGroupHomeSnapshot", () => {
       createGroupHomeSnapshot(createGroup("VOTING", "HOST")).permissions
         .canEndRound,
     ).toBe(false);
+  });
+
+  it("관리자의 투표 종료 홈은 다음 단계 선택을 위해 기존 투표 상태를 유지한다", () => {
+    expect(
+      createGroupHomeSnapshot(createGroup("VOTE_CLOSED", "HOST")),
+    ).toMatchObject({
+      currentStatus: "SECOND_VOTING",
+      round: 1,
+      scenario: "voting",
+    });
   });
 
   it.each([
