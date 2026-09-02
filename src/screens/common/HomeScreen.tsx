@@ -8,12 +8,18 @@ import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import {
   getMyGroupsApi,
+  GroupApiError,
   type MyGroupItem,
 } from "@/features/group/api/group.api";
 import { isGroupHost } from "@/features/group/lib/group-entry-route";
 import { resolveGroupEntryRoute } from "@/features/group/lib/resolve-group-entry-route";
 import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  isTokenExpired,
+} from "@/shared/api/authToken";
 import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
@@ -32,6 +38,10 @@ export interface HomeScreenGroupItem {
   date: string;
   time?: string;
   location?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  finishedAt?: string;
+  closedAt?: string;
 }
 
 const DEFAULT_ACTIVE_GROUPS: HomeScreenGroupItem[] = [];
@@ -54,6 +64,84 @@ const STATUS_CONFIG: Record<GroupStatus, { label: string; className: string }> =
     SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
     FINISHED: { label: "종료됨", className: styles.statusCompleted },
   };
+
+function parseDateTimestamp(dateStr?: string, timeStr?: string): number {
+  if (!dateStr) return 0;
+  const directParsed = Date.parse(dateStr);
+  if (!Number.isNaN(directParsed)) {
+    return directParsed;
+  }
+  const cleaned = dateStr.replace(/\./g, "-").trim();
+  const fullStr = timeStr ? `${cleaned} ${timeStr.trim()}` : cleaned;
+  const parsed = Date.parse(fullStr);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * 진행 중인 모임 정렬: 가장 최근에 업데이트/생성된 순 (내림차순)
+ * 우선순위: updatedAt > createdAt > date/time > id(내림차순)
+ */
+export function sortActiveGroups(
+  groups: HomeScreenGroupItem[],
+): HomeScreenGroupItem[] {
+  return [...groups].sort((a, b) => {
+    const timeA =
+      parseDateTimestamp(a.updatedAt) ||
+      parseDateTimestamp(a.createdAt) ||
+      parseDateTimestamp(a.date, a.time);
+    const timeB =
+      parseDateTimestamp(b.updatedAt) ||
+      parseDateTimestamp(b.createdAt) ||
+      parseDateTimestamp(b.date, b.time);
+
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
+
+    const idA = Number(a.id);
+    const idB = Number(b.id);
+    if (!Number.isNaN(idA) && !Number.isNaN(idB)) {
+      return idB - idA;
+    }
+
+    return b.id.localeCompare(a.id);
+  });
+}
+
+/**
+ * 완료된 모임 정렬: 가장 최근에 완료/종료된 순 (내림차순)
+ * 우선순위: finishedAt > closedAt > updatedAt > date/time > createdAt > id(내림차순)
+ */
+export function sortCompletedGroups(
+  groups: HomeScreenGroupItem[],
+): HomeScreenGroupItem[] {
+  return [...groups].sort((a, b) => {
+    const timeA =
+      parseDateTimestamp(a.finishedAt) ||
+      parseDateTimestamp(a.closedAt) ||
+      parseDateTimestamp(a.updatedAt) ||
+      parseDateTimestamp(a.date, a.time) ||
+      parseDateTimestamp(a.createdAt);
+    const timeB =
+      parseDateTimestamp(b.finishedAt) ||
+      parseDateTimestamp(b.closedAt) ||
+      parseDateTimestamp(b.updatedAt) ||
+      parseDateTimestamp(b.date, b.time) ||
+      parseDateTimestamp(b.createdAt);
+
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
+
+    const idA = Number(a.id);
+    const idB = Number(b.id);
+    if (!Number.isNaN(idA) && !Number.isNaN(idB)) {
+      return idB - idA;
+    }
+
+    return b.id.localeCompare(a.id);
+  });
+}
 
 function mapStatus(status: string): GroupStatus {
   const upper = (status || "").toUpperCase();
@@ -141,12 +229,13 @@ export default function HomeScreen({
   // Tab state
   const [activeTab, setActiveTab] = useState<HomeTab>(initialTab);
 
-  // Group lists state
-  const [activeGroups, setActiveGroups] =
-    useState<HomeScreenGroupItem[]>(initialActiveGroups);
-  const [completedGroups, setCompletedGroups] = useState<HomeScreenGroupItem[]>(
-    initialCompletedGroups,
+  // Group lists state with initial sorting applied
+  const [activeGroups, setActiveGroups] = useState<HomeScreenGroupItem[]>(() =>
+    sortActiveGroups(initialActiveGroups),
   );
+  const [completedGroups, setCompletedGroups] = useState<
+    HomeScreenGroupItem[]
+  >(() => sortCompletedGroups(initialCompletedGroups));
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
@@ -157,9 +246,17 @@ export default function HomeScreen({
     blockedAt?: string;
   } | null>(null);
 
-  // Fetch groups on mount
+  // Fetch groups on mount & verify auth token
   useEffect(() => {
     let isMounted = true;
+
+    // 1. 토큰 만료 여부 확인: 토큰이 없거나 만료된 경우 로그인 화면으로 이동
+    const token = getAccessToken();
+    if (!token || isTokenExpired(token)) {
+      clearAuthTokens();
+      router.replace(authRoutes.login());
+      return;
+    }
 
     async function fetchMyGroups() {
       setIsLoading(true);
@@ -170,6 +267,30 @@ export default function HomeScreen({
         ]);
 
         if (!isMounted) return;
+
+        // 401 인증 만료/오류 여부 검사
+        const isUnauthorized = (res: PromiseSettledResult<unknown>) => {
+          if (res.status === "rejected") {
+            const err = res.reason;
+            if (err instanceof GroupApiError && err.status === 401) {
+              return true;
+            }
+            if (
+              err?.status === 401 ||
+              (typeof err?.message === "string" &&
+                err.message.includes("토큰이 없거나 만료"))
+            ) {
+              return true;
+            }
+          }
+          return false;
+        };
+
+        if (isUnauthorized(activeRes) || isUnauthorized(finishedRes)) {
+          clearAuthTokens();
+          router.replace(authRoutes.login());
+          return;
+        }
 
         if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
           const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
@@ -182,9 +303,13 @@ export default function HomeScreen({
               date: g.date || "진행 중",
               time: g.time,
               location: g.location,
+              createdAt: g.createdAt,
+              updatedAt: g.updatedAt,
+              finishedAt: g.finishedAt,
+              closedAt: g.closedAt,
             }),
           );
-          setActiveGroups(mapped);
+          setActiveGroups(sortActiveGroups(mapped));
         }
 
         if (finishedRes.status === "fulfilled" && finishedRes.value?.groups) {
@@ -198,9 +323,13 @@ export default function HomeScreen({
               date: g.date || "종료",
               time: g.time,
               location: g.location,
+              createdAt: g.createdAt,
+              updatedAt: g.updatedAt,
+              finishedAt: g.finishedAt,
+              closedAt: g.closedAt,
             }),
           );
-          setCompletedGroups(mapped);
+          setCompletedGroups(sortCompletedGroups(mapped));
         }
       } catch (error) {
         console.error("내 그룹 목록 조회 실패:", error);
@@ -216,7 +345,7 @@ export default function HomeScreen({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [router]);
 
   const handleGroupClick = async (group: HomeScreenGroupItem) => {
     // 관리자가 아닌 경우 차단 여부 먼저 확인
@@ -398,8 +527,8 @@ export default function HomeScreen({
                             <span
                               className={`${styles.roleTag} ${
                                 group.role === "HOST"
-                                  ? styles.roleTagAdmin
-                                  : styles.roleTagUser
+                                   ? styles.roleTagAdmin
+                                   : styles.roleTagUser
                               }`}
                             >
                               {group.role === "HOST" ? "관리자" : "사용자"}
