@@ -365,24 +365,43 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).toHaveBeenCalledOnce();
   });
 
-  it.each([403, 404])(
-    "%s 수신 시 그룹 화면을 닫고 사용자가 재시도할 때만 구독한다",
-    async (status) => {
-      render(<App />);
-      await screen.findByTestId("group-state");
-      await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
-      act(() =>
-        subscriptions[0].options.onError(new GroupStatusStreamError(status)),
-      );
-      expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        new GroupStatusStreamError(status).message,
-      );
-      expect(subscribe).toHaveBeenCalledOnce();
-      fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-      await waitFor(() => expect(subscribe).toHaveBeenCalledTimes(2));
-    },
-  );
+  it("404 수신 시 그룹 화면을 닫고 사용자가 다시 시도할 때만 재구독한다", async () => {
+    render(<App />);
+    await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
+    act(() =>
+      subscriptions[0].options.onError(new GroupStatusStreamError(404)),
+    );
+    expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      new GroupStatusStreamError(404).message,
+    );
+    expect(
+      screen.getByRole("button", { name: "다시 시도" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(subscribe).toHaveBeenCalledTimes(2));
+  });
+
+  it("403/차단 수신 시 다시 시도 버튼을 숨기고 홈으로 이동 단일 액션을 제공한다", async () => {
+    render(<App />);
+    await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
+    act(() =>
+      subscriptions[0].options.onError(new GroupStatusStreamError(403)),
+    );
+    expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      new GroupStatusStreamError(403).message,
+    );
+    expect(
+      screen.queryByRole("button", { name: "다시 시도" }),
+    ).not.toBeInTheDocument();
+    const homeBtn = screen.getByRole("button", { name: "홈으로 이동" });
+    expect(homeBtn).toBeInTheDocument();
+    fireEvent.click(homeBtn);
+    expect(router.replace).toHaveBeenCalledWith("/home");
+  });
 
   it("StrictMode에서도 동시에 남아 있는 구독은 하나다", async () => {
     const { unmount } = render(

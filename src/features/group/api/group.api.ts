@@ -199,9 +199,24 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
   }
 
   if (!response.ok) {
+    let errorData: { message?: string; code?: string } | null = null;
+    try {
+      errorData = (await response.json()) as { message?: string; code?: string };
+    } catch {
+      // Body may not be JSON
+    }
+    const message =
+      errorData?.message ||
+      (response.status === 403
+        ? "이 그룹에 참여하고 있지 않거나 차단되었습니다."
+        : response.status === 404
+          ? "존재하지 않는 그룹입니다."
+          : "그룹 정보를 불러오지 못했습니다.");
+
     throw new GroupApiError(
-      await getErrorMessage(response, "그룹 정보를 불러오지 못했습니다."),
+      message,
       response.status,
+      errorData?.code,
     );
   }
 
