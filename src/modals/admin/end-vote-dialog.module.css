@@ -78,6 +78,7 @@
 
 .pendingSection {
   min-height: 0;
+  margin-bottom: 16px;
   text-align: left;
 }
 
