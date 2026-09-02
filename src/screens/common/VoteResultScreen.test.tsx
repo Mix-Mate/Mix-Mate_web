@@ -221,7 +221,7 @@ describe("VoteResultScreen", () => {
 
     expect(
       screen.getByRole("dialog", {
-        name: "1차 술자리 완료",
+        name: "1차 술자리를 완료했습니다!",
       }),
     ).toBeInTheDocument();
     expect(
