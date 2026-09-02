@@ -144,7 +144,7 @@ export default function EndVoteScreen() {
   }
 
   const pendingMembers = data.participants.filter(
-    (participant) => participant.manualEntry || participant.choice === null,
+    (participant) => participant.choice === null,
   );
 
   return (
