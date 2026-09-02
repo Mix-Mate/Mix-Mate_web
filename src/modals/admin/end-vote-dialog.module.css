@@ -3,7 +3,7 @@
 }
 
 .bottomSheet {
-  --bottom-sheet-padding: 0 26px 26px;
+  --bottom-sheet-padding: 0 26px calc(26px + var(--safe-area-bottom));
   --bottom-sheet-border-radius: 36px 36px 0 0;
 
   position: relative;
