@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
 import ParticipantHelpBox from "@/features/participant/components/ParticipantHelpBox";
@@ -13,12 +13,15 @@ import ParticipantStats from "@/features/participant/components/ParticipantStats
 import ParticipantTeamList from "@/features/participant/components/ParticipantTeamList";
 import ParticipantViewToggle from "@/features/participant/components/ParticipantViewToggle";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type {
   Participant,
   ParticipantViewMode,
 } from "@/features/participant/types/participant.types";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./ParticipantListScreen.module.css";
 import VoteResultListScreen from "./VoteResultListScreen";
@@ -36,29 +39,43 @@ export default function ParticipantListScreen() {
 
 function DefaultParticipantListScreen() {
   const params = useParams<{ groupId: string }>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<ParticipantFilterValue>("all");
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const roundParam = searchParams.get("round");
+  const round =
+    roundParam
+      ? toAssignmentRound(roundParam)
+      : group
+        ? getCurrentGroupRound(group.status)
+        : 1;
   const { data } = useParticipantListQuery(params.groupId, {
+    round,
     polling: group?.myRole === "HOST" && group.status === "RECRUITING",
   });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+  const isRecruiting = group?.status === "RECRUITING";
+  const canViewPrivateProfiles = group?.myRole === "HOST";
+  const canAddParticipant = group?.myRole === "HOST" && isRecruiting;
+  const myParticipantId =
+    myProfile?.id && myProfile.id !== "me"
+      ? myProfile.id
+      : group?.myParticipantId
+        ? String(group.myParticipantId)
+        : null;
+  const backHref =
+    group?.myRole === "HOST" && group.status === "RECRUITING"
+      ? groupRoutes.adminRecruitment(params.groupId)
+      : groupRoutes.home(params.groupId);
 
   const isMyParticipant = useCallback((participant: Participant) => {
-    if (!myProfile) return false;
-
-    const myGender = myProfile.gender === "FEMALE" ? "female" : "male";
-
-    return (
-      participant.id === String(myProfile.id) ||
-      (participant.name === myProfile.displayName &&
-        participant.department === myProfile.major &&
-        participant.gender === myGender)
-    );
-  }, [myProfile]);
+    return Boolean(myParticipantId && participant.id === myParticipantId);
+  }, [myParticipantId]);
 
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
@@ -111,25 +128,51 @@ function DefaultParticipantListScreen() {
       <ParticipantPageHeader
         groupName={data.groupName}
         participantCount={data.participants.length}
+        backHref={backHref}
       />
 
       <div className={styles.content}>
         <ParticipantHelpBox />
         <ParticipantSearch value={keyword} onChange={setKeyword} />
         <ParticipantStats count={data.participants.length} />
-        <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
-        <ParticipantFilter value={filter} onChange={setFilter} />
+        {!isRecruiting && (
+          <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
+        )}
+        <div className={styles.filterRow}>
+          <ParticipantFilter value={filter} onChange={setFilter} />
+          {canAddParticipant && (
+            <button
+              type="button"
+              className={styles.addParticipantButton}
+              onClick={() =>
+                router.push(
+                  groupRoutes.adminParticipantNew(
+                    params.groupId,
+                    round,
+                    "participant-list",
+                  ),
+                )
+              }
+            >
+              사용자 추가
+            </button>
+          )}
+        </div>
 
         <section className={styles.listBox}>
           {viewMode === "all" ? (
             <ParticipantList
               participants={filteredParticipants}
+              round={round}
               onPrivateSelect={setPrivateParticipant}
+              canViewPrivateProfiles={canViewPrivateProfiles}
             />
           ) : (
             <ParticipantTeamList
               teams={filteredTeams}
+              round={round}
               onPrivateSelect={setPrivateParticipant}
+              canViewPrivateProfiles={canViewPrivateProfiles}
             />
           )}
         </section>

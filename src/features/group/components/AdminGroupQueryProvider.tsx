@@ -14,7 +14,15 @@ import {
   AdminGroupQueryContext,
   type AdminGroupQueryResult,
 } from "../hooks/useAdminGroupQuery";
-import type { GroupDetail } from "../types/group.types";
+import type { GroupDetail, GroupStatusEvent } from "../types/group.types";
+import type { GroupStatusStreamError } from "../api/groupStatusStream.api";
+import { useGroupStatusStream } from "../hooks/useGroupStatusStream";
+import { clearAuthTokens } from "@/shared/api/authToken";
+import {
+  appRoutes,
+  authRoutes,
+  groupRoutes,
+} from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -22,6 +30,21 @@ import styles from "@/features/session/components/admin-access-guard.module.css"
 
 interface AdminGroupQueryProviderProps {
   children: ReactNode;
+}
+
+function mergeStreamStatus(
+  group: GroupDetail,
+  snapshotAtRequest: GroupStatusEvent | null,
+  latestSnapshot: GroupStatusEvent | null,
+): GroupDetail {
+  // REST 요청 도중 받은 SSE 상태를 늦은 응답이 덮어쓰지 않게 한다.
+  if (
+    latestSnapshot !== snapshotAtRequest &&
+    latestSnapshot?.groupId === group.groupId
+  ) {
+    return { ...group, status: latestSnapshot.status };
+  }
+  return group;
 }
 
 export default function AdminGroupQueryProvider({
@@ -33,6 +56,7 @@ export default function AdminGroupQueryProvider({
   const isExtraPage = pathname?.includes("/extra");
   const groupId = params.groupId;
   const requestIdRef = useRef(0);
+  const latestStatusRef = useRef<GroupStatusEvent | null>(null);
   const [data, setData] = useState<GroupDetail | null>(null);
   const [dataGroupId, setDataGroupId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!isExtraPage);
@@ -40,10 +64,15 @@ export default function AdminGroupQueryProvider({
 
   const refetch = useCallback(async () => {
     const requestId = ++requestIdRef.current;
+    const snapshotAtRequest = latestStatusRef.current;
     setError(null);
 
     try {
-      const group = await getGroupDetail(groupId);
+      const group = mergeStreamStatus(
+        await getGroupDetail(groupId),
+        snapshotAtRequest,
+        latestStatusRef.current,
+      );
 
       if (requestId === requestIdRef.current) {
         setData(group);
@@ -71,6 +100,7 @@ export default function AdminGroupQueryProvider({
 
     let ignore = false;
     const requestId = ++requestIdRef.current;
+    const snapshotAtRequest = latestStatusRef.current;
 
     async function fetchGroup() {
       setData((prev) => (prev?.groupId === Number(groupId) ? prev : null));
@@ -79,7 +109,11 @@ export default function AdminGroupQueryProvider({
       setError(null);
 
       try {
-        const group = await getGroupDetail(groupId);
+        const group = mergeStreamStatus(
+          await getGroupDetail(groupId),
+          snapshotAtRequest,
+          latestStatusRef.current,
+        );
 
         if (!ignore && requestId === requestIdRef.current) {
           setData(group);
@@ -104,6 +138,7 @@ export default function AdminGroupQueryProvider({
 
     return () => {
       ignore = true;
+      requestIdRef.current += 1;
     };
   }, [groupId, isExtraPage]);
 
@@ -111,6 +146,42 @@ export default function AdminGroupQueryProvider({
   const currentIsLoading = isExtraPage
     ? false
     : dataGroupId !== groupId || isLoading;
+
+  const onStatus = useCallback(
+    (event: GroupStatusEvent) => {
+      if (event.groupId !== Number(groupId)) return;
+      latestStatusRef.current = event;
+      setData((previous) =>
+        previous?.groupId === event.groupId && previous.status !== event.status
+          ? { ...previous, status: event.status }
+          : previous,
+      );
+    },
+    [groupId],
+  );
+
+  const onStreamError = useCallback(
+    (streamError: GroupStatusStreamError) => {
+      requestIdRef.current += 1;
+      setData(null);
+      setIsLoading(false);
+      setError(streamError.message);
+
+      if (streamError.status === 401) {
+        clearAuthTokens();
+        window.sessionStorage.setItem("authToast", streamError.message);
+        router.replace(authRoutes.login());
+      }
+    },
+    [router],
+  );
+
+  useGroupStatusStream(groupId, {
+    enabled: !isExtraPage && currentData !== null,
+    onStatus,
+    onError: onStreamError,
+  });
+
   const value = useMemo<AdminGroupQueryResult>(
     () => ({
       groupId,
@@ -124,12 +195,23 @@ export default function AdminGroupQueryProvider({
   );
 
   if (!currentData && !isExtraPage) {
+    const backHref =
+      pathname === groupRoutes.mvpVote(groupId)
+        ? appRoutes.home()
+        : pathname === groupRoutes.attendanceVote(groupId)
+          ? groupRoutes.mvpVote(groupId)
+          : null;
+
     return (
       <MobileFrame
         className={styles.phone}
         data-testid="admin-group-query-state"
       >
-        <Header title="그룹 정보" onBack={() => router.back()} compact />
+        <Header
+          title="그룹 정보"
+          onBack={() => (backHref ? router.replace(backHref) : router.back())}
+          compact
+        />
 
         <main className={styles.content}>
           {currentIsLoading ? (

@@ -34,7 +34,7 @@ export default function AssignmentResultScreen() {
     params.groupId,
   );
 
-  const [result, setResult] = useState(() =>
+  const [result] = useState(() =>
     getAssignmentResultDraft(params.groupId, round),
   );
 
@@ -67,7 +67,6 @@ export default function AssignmentResultScreen() {
     if (!response) return;
 
     saveAssignmentResultDraft(params.groupId, round, response.teams);
-    setResult(response.teams);
     router.push(
       withSessionContext(
         groupRoutes.adminAssignmentProcessing(params.groupId, round),
@@ -121,6 +120,7 @@ export default function AssignmentResultScreen() {
       <TabNavigation
         items={[
           { id: "participants", label: "참가자" },
+          { id: "statistics", label: "통계" },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="assignment"
@@ -130,6 +130,14 @@ export default function AssignmentResultScreen() {
             router.push(
               withSessionContext(
                 groupRoutes.adminParticipants(params.groupId, round),
+                searchParams,
+              ),
+            );
+          }
+          if (item.id === "statistics") {
+            router.push(
+              withSessionContext(
+                groupRoutes.adminParticipantStatistics(params.groupId, round),
                 searchParams,
               ),
             );

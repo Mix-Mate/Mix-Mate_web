@@ -35,7 +35,6 @@ describe("useMvpVote", () => {
     vi.mocked(useMyTeamQuery).mockReturnValue({
       data: {
         teamNumber: 1,
-        mission: null,
         members: [
           {
             participantId: 1,
@@ -43,6 +42,7 @@ describe("useMvpVote", () => {
             major: "컴공",
             gender: "MALE",
             visibility: "PUBLIC",
+            fixed: false,
           },
           {
             participantId: 2,
@@ -50,11 +50,13 @@ describe("useMvpVote", () => {
             major: "경영",
             gender: "FEMALE",
             visibility: "PUBLIC",
+            fixed: false,
           },
         ],
       },
       isLoading: false,
       error: null,
+      isError: false,
     });
   });
 

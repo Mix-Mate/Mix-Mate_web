@@ -44,7 +44,7 @@ vi.mock("@/features/assignment/hooks/useCreateAssignmentMutation", () => ({
 }));
 
 vi.mock("@/features/assignment/hooks/useParticipantCandidatesQuery", () => ({
-  useParticipantCandidatesQuery: useAdminGroupQueryMock ? useParticipantCandidatesQueryMock : vi.fn(),
+  useParticipantCandidatesQuery: useParticipantCandidatesQueryMock,
 }));
 
 vi.mock("@/features/vote/hooks/useVoteStatusQuery", () => ({

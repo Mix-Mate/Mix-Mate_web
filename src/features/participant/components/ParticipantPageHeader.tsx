@@ -33,7 +33,7 @@ export default function ParticipantPageHeader({
 
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
-    router.push(`/groups/${params.groupId}/blacklist`);
+    router.push(`/groups/${params.groupId}/admin/blacklist`);
   };
 
   return (

@@ -33,47 +33,18 @@ export async function createVoteApiError(
 
 export function isAlreadyVotedError(error: unknown): boolean {
   if (!error) return false;
-
-  if (error instanceof VoteApiError) {
-    if (
-      error.status === 409 ||
-      error.status === 400 ||
-      error.status === 403 ||
-      error.status === 422
-    ) {
-      return true;
-    }
-    if (
-      error.code === "ALREADY_VOTED" ||
-      error.code === "VOTE_ALREADY_SUBMITTED" ||
-      error.code === "VOTE_CLOSED" ||
-      error.code === "ALREADY_COMPLETED"
-    ) {
-      return true;
-    }
-  }
-
   if (typeof error === "object" && error !== null) {
-    const err = error as { status?: unknown; message?: unknown; code?: unknown };
-    if (
-      err.status === 409 ||
-      err.status === 400 ||
-      err.status === 403 ||
-      err.status === 422
-    ) {
-      return true;
+    const { code } = error as { code?: unknown };
+    if (typeof code === "string" && code.length > 0) {
+      return (
+        code === "ALREADY_VOTED" ||
+        code === "VOTE_ALREADY_SUBMITTED" ||
+        code === "ALREADY_COMPLETED"
+      );
     }
   }
-
   const message = error instanceof Error ? error.message : String(error);
-  const normalized = message.toLowerCase();
-  return (
-    normalized.includes("이미") ||
-    normalized.includes("완료") ||
-    normalized.includes("종료") ||
-    normalized.includes("already") ||
-    normalized.includes("voted") ||
-    normalized.includes("closed") ||
-    normalized.includes("duplicate")
+  return /이미.*투표|투표.*이미|already\s+(?:been\s+)?(?:voted|submitted)|duplicate\s+vote/i.test(
+    message,
   );
 }

@@ -1,12 +1,20 @@
-export type GroupStatus =
-  | "RECRUITING"
-  | "BEFORE_FIRST_ROUND"
-  | "FIRST_ROUND"
-  | "VOTING"
-  | "VOTE_CLOSED"
-  | "BEFORE_SECOND_ROUND"
-  | "SECOND_ROUND"
-  | "FINISHED";
+export const GROUP_STATUSES = [
+  "RECRUITING",
+  "BEFORE_FIRST_ROUND",
+  "FIRST_ROUND",
+  "VOTING",
+  "VOTE_CLOSED",
+  "BEFORE_SECOND_ROUND",
+  "SECOND_ROUND",
+  "FINISHED",
+] as const;
+
+export type GroupStatus = (typeof GROUP_STATUSES)[number];
+
+export interface GroupStatusEvent {
+  groupId: number;
+  status: GroupStatus;
+}
 
 export type GroupMemberRole = "HOST" | "PARTICIPANT";
 

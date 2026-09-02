@@ -38,8 +38,8 @@ export async function getMyGroupProfile(
   const data = (await response.json()) as MyProfileResponse;
 
   return {
-    id: "me",
     ...data,
+    id: String(data.participantId ?? data.id ?? "me"),
   };
 }
 

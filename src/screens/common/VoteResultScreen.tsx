@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -8,7 +8,8 @@ import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import VoteResultContent from "@/features/vote/components/result/VoteResultContent";
 import styles from "@/features/vote/components/result/VoteResult.module.css";
 import { useVoteResultQuery } from "@/features/vote/hooks/useVoteResultQuery";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
+import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
+import { appRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteResultScreen() {
@@ -21,6 +22,7 @@ export default function VoteResultScreen() {
     error: groupError,
   } = useAdminGroupQuery(params.groupId);
   const { data, isLoading, error } = useVoteResultQuery(params.groupId);
+  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
   const { data: firstRoundTeam, isLoading: isTeamLoading } = useMyTeamQuery(
     params.groupId,
     "FIRST_ROUND",
@@ -35,7 +37,7 @@ export default function VoteResultScreen() {
   const didJoinSecondRound = data?.secondRoundParticipants.some(
     (participant) => participant.participantId === group?.myParticipantId,
   );
-  const resultHomeHref = isAdmin
+  const footerHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
     : didJoinSecondRound
       ? `${homeHref}?scenario=round2-waiting`
@@ -49,15 +51,29 @@ export default function VoteResultScreen() {
     router.replace(overallResultHref, { scroll: false });
   }, [overallResultHref, router]);
 
-  const currentBackHref = showOverallResult
+  const headerBackHref = showOverallResult
     ? withSessionContext(groupRoutes.voteResult(params.groupId), searchParams)
-    : resultHomeHref;
+    : isAdmin
+      ? appRoutes.home()
+      : footerHomeHref;
+  const headerGoesToMainHome = headerBackHref === appRoutes.home();
+  const requestMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(true);
+  }, []);
+  const closeMainHomeExitPopup = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+  }, []);
+  const confirmMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+    router.replace(appRoutes.home());
+  }, [router]);
 
   return (
     <VoteScreenLayout
       title="투표 결과"
       status="CLOSED"
-      backHref={currentBackHref}
+      backHref={headerGoesToMainHome ? undefined : headerBackHref}
+      onBack={headerGoesToMainHome ? requestMainHomeExit : undefined}
       testId="vote-result-screen"
       showStatusBadge={false}
       flushContent
@@ -68,7 +84,7 @@ export default function VoteResultScreen() {
           introMvpWinner={myTeamMvpWinner}
           showOverallResult={showOverallResult}
           onRevealOverallResult={revealOverallResult}
-          onHome={() => router.replace(resultHomeHref)}
+          onHome={() => router.replace(footerHomeHref)}
           onOpenMvpList={() =>
             router.push(
               withSessionContext(
@@ -102,6 +118,12 @@ export default function VoteResultScreen() {
           </p>
         </section>
       )}
+
+      <MainHomeExitPopup
+        open={mainHomeExitPopupOpen}
+        onClose={closeMainHomeExitPopup}
+        onConfirm={confirmMainHomeExit}
+      />
     </VoteScreenLayout>
   );
 }

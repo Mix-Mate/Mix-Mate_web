@@ -1,16 +1,21 @@
-﻿import { Search } from "lucide-react";
+import { Search } from "lucide-react";
+import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import type { Participant } from "../types/participant.types";
 import ParticipantCard from "./ParticipantCard";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
 interface ParticipantListProps {
   participants: Participant[];
+  round?: AssignmentRound;
   onPrivateSelect?: (participant: Participant) => void;
+  canViewPrivateProfiles?: boolean;
 }
 
 export default function ParticipantList({
   participants,
+  round,
   onPrivateSelect,
+  canViewPrivateProfiles = false,
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
@@ -27,7 +32,9 @@ export default function ParticipantList({
         <ParticipantCard
           key={participant.id}
           participant={participant}
+          round={round}
           onPrivateSelect={onPrivateSelect}
+          canViewPrivateProfiles={canViewPrivateProfiles}
         />
       ))}
     </ul>

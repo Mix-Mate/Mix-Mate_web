@@ -7,7 +7,6 @@ export type AssignmentConditionKey =
   | "GRADE_DISTRIBUTION"
   | "NEWCOMER_DISTRIBUTION"
   | "ADMIN_DISTRIBUTION"
-  | "MEMBER_COUNT_BALANCE"
   | "KEEP_FIXED_MEMBERS";
 
 export type BackendConditionKey =

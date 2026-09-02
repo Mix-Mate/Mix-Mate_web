@@ -35,11 +35,20 @@ describe("group-entry-route", () => {
       );
     });
 
-    it("관리자(HOST)가 VOTING 상태일 때는 관리자 전용 투표 현황 화면(/groups/:id/admin/votes/status)으로 이동한다", () => {
+    it("관리자(HOST)도 VOTING 상태로 재진입하면 MVP 투표 화면(/groups/:id/votes/mvp)으로 이동한다", () => {
       expect(getGroupEntryRoute("10", "HOST", "VOTING")).toBe(
-        "/groups/10/admin/votes/status",
+        "/groups/10/votes/mvp",
       );
     });
+
+    it.each(["HOST", "PARTICIPANT"])(
+      "%s가 종료된 투표 그룹에 재진입하면 결과 화면(/groups/:id/votes/result)으로 이동한다",
+      (role) => {
+        expect(getGroupEntryRoute("10", role, "VOTE_CLOSED")).toBe(
+          "/groups/10/votes/result",
+        );
+      },
+    );
 
     it("관리자(HOST)의 기본 상태는 관리자 홈(/groups/:id/admin)으로 이동한다", () => {
       expect(getGroupEntryRoute("10", "HOST", "FIRST_ROUND")).toBe(

@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus, UserRole } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupMemberRole,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import AttendanceVoteScreen from "./AttendanceVoteScreen";
 
 const {
@@ -10,6 +14,7 @@ const {
   useAdminGroupQueryMock,
   useAttendanceVoteMock,
   useVoteStatusQueryMock,
+  backMock,
 } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   replaceMock: vi.fn(),
@@ -17,16 +22,19 @@ const {
   useAdminGroupQueryMock: vi.fn(),
   useAttendanceVoteMock: vi.fn(),
   useVoteStatusQueryMock: vi.fn(),
+  backMock: vi.fn(),
 }));
+
+let mockSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "7" }),
   useRouter: () => ({
     push: pushMock,
     replace: replaceMock,
-    back: vi.fn(),
+    back: backMock,
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
@@ -43,7 +51,7 @@ vi.mock("@/features/vote/hooks/useAttendanceVote", () => ({
 
 function createGroup(
   status: GroupStatus = "VOTING",
-  myRole: UserRole = "PARTICIPANT",
+  myRole: GroupMemberRole = "PARTICIPANT",
 ): GroupDetail {
   return {
     groupId: 7,
@@ -61,6 +69,7 @@ function createGroup(
 describe("AttendanceVoteScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "PARTICIPANT"),
     });
@@ -90,6 +99,29 @@ describe("AttendanceVoteScreen", () => {
     });
   });
 
+  it.each(["HOST", "PARTICIPANT"] as const)(
+    "%s는 Attendance 직접 진입·새로고침 뒤에도 MVP로 돌아간다",
+    (myRole) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: createGroup("VOTING", myRole),
+      });
+      mockSearchParams = new URLSearchParams(
+        `role=${myRole === "HOST" ? "user" : "admin"}&scenario=round2-waiting`,
+      );
+      const { unmount } = render(<AttendanceVoteScreen />);
+      unmount();
+      render(<AttendanceVoteScreen />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
+        "/groups/7/votes/mvp?scenario=round2-waiting",
+      );
+      expect(pushMock).not.toHaveBeenCalled();
+      expect(backMock).not.toHaveBeenCalled();
+    },
+  );
+
   it("일반 참가자가 2차 참여 여부 제출 성공 시 router.replace로 투표 현황(/votes/status) 화면으로 이동한다", async () => {
     submitMock.mockResolvedValue({ success: true });
     render(<AttendanceVoteScreen />);
@@ -109,7 +141,7 @@ describe("AttendanceVoteScreen", () => {
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("관리자(HOST)가 2차 참여 여부 제출 성공 시 router.replace로 관리자 투표 현황(/admin/votes/status) 화면으로 이동한다", async () => {
+  it("관리자(HOST)가 2차 참여 여부 제출 성공 시 공통 투표 현황 화면으로 이동한다", async () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -126,12 +158,12 @@ describe("AttendanceVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith("PARTICIPATE");
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("일반 참가자가 이미 투표 완료 에러(isAlreadyVoted) 발생 시 router.replace로 결과 화면으로 이동한다", async () => {
+  it("일반 참가자가 이미 제출했어도 전체 투표 중이면 투표 현황으로 이동한다", async () => {
     submitMock.mockResolvedValue({ success: false, isAlreadyVoted: true });
     render(<AttendanceVoteScreen />);
 
@@ -145,12 +177,12 @@ describe("AttendanceVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith("PARTICIPATE");
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
 
-  it("관리자(HOST)가 이미 투표 완료 에러 발생 시 router.replace로 관리자 투표 현황 화면으로 이동한다", async () => {
+  it("관리자(HOST)가 이미 투표 완료 에러 발생 시 공통 투표 현황 화면으로 이동한다", async () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -167,7 +199,7 @@ describe("AttendanceVoteScreen", () => {
 
     expect(submitMock).toHaveBeenCalledWith("PARTICIPATE");
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
     });
     expect(pushMock).not.toHaveBeenCalled();
   });
@@ -182,7 +214,7 @@ describe("AttendanceVoteScreen", () => {
     expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
   });
 
-  it("일반 참가자가 이미 투표를 완료한 경우(hasVoted) router.replace로 결과 화면으로 리디렉션한다", () => {
+  it("이미 제출한 참가자가 재진입해도 전체 투표 중이면 현황 화면으로 이동한다", () => {
     useVoteStatusQueryMock.mockReturnValue({
       data: {
         totalParticipantCount: 4,
@@ -199,10 +231,10 @@ describe("AttendanceVoteScreen", () => {
 
     render(<AttendanceVoteScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/result");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 
-  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) router.replace로 관리자 투표 현황 화면으로 리디렉션한다", () => {
+  it("관리자(HOST)가 이미 투표를 완료한 경우(hasVoted) 공통 투표 현황 화면으로 리디렉션한다", () => {
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "HOST"),
     });
@@ -222,6 +254,6 @@ describe("AttendanceVoteScreen", () => {
 
     render(<AttendanceVoteScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/7/admin/votes/status");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
   });
 });

@@ -13,7 +13,6 @@ export const assignmentSetupSchema = z.object({
       "GRADE_DISTRIBUTION",
       "NEWCOMER_DISTRIBUTION",
       "ADMIN_DISTRIBUTION",
-      "MEMBER_COUNT_BALANCE",
       "KEEP_FIXED_MEMBERS",
     ]),
   ),

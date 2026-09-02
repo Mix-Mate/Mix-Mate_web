@@ -19,6 +19,8 @@ const {
   useVoteStatusQueryMock: vi.fn(),
 }));
 
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "12" }),
   useRouter: () => ({
@@ -26,7 +28,7 @@ vi.mock("next/navigation", () => ({
     replace: replaceMock,
     back: backMock,
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
@@ -88,6 +90,7 @@ const mockGroup: GroupDetail = {
 describe("UserHomeScreen Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     useAdminGroupQueryMock.mockReturnValue({
       data: mockGroup,
       refetch: vi.fn(),
@@ -104,7 +107,7 @@ describe("UserHomeScreen Navigation", () => {
     });
   });
 
-  it("조 편성 확정 후(또는 세션 진행 중) 그룹 홈 화면에서 뒤로가기 클릭 시 router.back() 대신 router.replace('/home')로 이동한다", () => {
+  it("그룹 홈에서 뒤로가기 클릭 시 메인 홈 이동 확인 팝업을 띄운다", () => {
     render(<UserHomeScreen />);
 
     const backButton = screen.getByRole("button", {
@@ -114,9 +117,50 @@ describe("UserHomeScreen Navigation", () => {
 
     fireEvent.click(backButton);
 
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(backMock).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("확인 팝업에서 취소하면 그룹 홈에 머무른다", () => {
+    render(<UserHomeScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(
+      screen.queryByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).not.toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("확인 팝업에서 나가기를 선택하면 메인 홈으로 이동한다", () => {
+    render(<UserHomeScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+
     expect(replaceMock).toHaveBeenCalledTimes(1);
     expect(replaceMock).toHaveBeenCalledWith("/home");
     expect(backMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("관리자가 투표 종료 후 명시적인 post-vote 경로로 들어오면 다음 단계 선택 팝업을 보여준다", () => {
+    mockSearchParams = new URLSearchParams("dialog=post-vote");
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...mockGroup, status: "VOTE_CLOSED" },
+      refetch: vi.fn(),
+    });
+
+    render(<UserHomeScreen />);
+
+    expect(
+      screen.getByRole("dialog", { name: "1차 술자리가 종료되었습니다" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 });

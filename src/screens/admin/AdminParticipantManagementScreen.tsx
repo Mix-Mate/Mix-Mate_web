@@ -101,9 +101,18 @@ export default function AdminParticipantManagementScreen() {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
   };
 
+  const goToStatistics = () => {
+    router.push(
+      withSessionContext(
+        groupRoutes.adminParticipantStatistics(params.groupId, round),
+        searchParams,
+      ),
+    );
+  };
+
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
-    router.push(`/groups/${params.groupId}/blacklist`);
+    router.push(`/groups/${params.groupId}/admin/blacklist`);
   };
 
   const headerRightAction = (
@@ -142,12 +151,10 @@ export default function AdminParticipantManagementScreen() {
 
   return (
     <MobileFrame
-      className={styles.phone}
-      viewportClassName={styles.viewport}
       data-testid="admin-participant-management"
     >
       <Header
-        title={data.groupName}
+        title={group?.groupName ?? data.groupName}
         onBack={() =>
           router.push(
             withSessionContext(
@@ -162,11 +169,13 @@ export default function AdminParticipantManagementScreen() {
       <TabNavigation
         items={[
           { id: "participants", label: "참가자" },
+          { id: "statistics", label: "통계" },
           { id: "assignment", label: "조 편성" },
         ]}
         activeItemId="participants"
         ariaLabel="관리자 메뉴"
         onSelect={(item) => {
+          if (item.id === "statistics") goToStatistics();
           if (item.id === "assignment") goToAssignment();
         }}
       />
@@ -214,7 +223,7 @@ export default function AdminParticipantManagementScreen() {
               className={styles.addButton}
               onClick={() =>
                 router.push(
-                  `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+                  groupRoutes.adminParticipantNew(params.groupId, round),
                 )
               }
             >
@@ -233,7 +242,7 @@ export default function AdminParticipantManagementScreen() {
       </main>
 
       <footer className={styles.footer}>
-        <Button onClick={goToAssignment} className={styles.assignmentButton}>
+        <Button onClick={goToAssignment}>
           조 편성
         </Button>
       </footer>

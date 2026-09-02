@@ -9,6 +9,7 @@ export type GenderAvatarShape = "circle" | "rounded";
 interface GenderAvatarProps {
   gender: GenderAvatarGender;
   name: string;
+  toneKey?: string | number;
   size?: number;
   shape?: GenderAvatarShape;
   className?: string;
@@ -32,13 +33,14 @@ function getAvatarToneIndex(name: string) {
 export default function GenderAvatar({
   gender,
   name,
+  toneKey,
   size = 50,
   shape = "rounded",
   className,
   backgroundColor,
 }: GenderAvatarProps) {
   const iconSrc = genderIconPaths[gender];
-  const toneIndex = getAvatarToneIndex(name);
+  const toneIndex = getAvatarToneIndex(String(toneKey ?? name));
   const avatarColor = backgroundColor ?? avatarColors[toneIndex];
 
   return (

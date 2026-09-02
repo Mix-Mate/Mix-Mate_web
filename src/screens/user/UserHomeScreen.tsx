@@ -24,6 +24,7 @@ import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
+import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -98,6 +99,7 @@ export default function UserHomeScreen() {
     error: leaveGroupError,
   } = useLeaveGroupMutation();
   const finishFlowInFlightRef = useRef(false);
+  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [isRefreshingSecondRound, setIsRefreshingSecondRound] = useState(false);
@@ -128,17 +130,21 @@ export default function UserHomeScreen() {
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
 
+  const requestMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(true);
+  }, []);
+
+  const closeMainHomeExitPopup = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+  }, []);
+
+  const confirmMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+    router.replace("/home");
+  }, [router]);
+
   useEffect(() => {
     if (!group) return;
-
-    if (group.myRole === "HOST" && group.status === "VOTING") {
-      if (!postVoteDialogOpen && searchParams.get("dialog") !== "post-vote") {
-        router.replace(
-          withSessionContext(groupRoutes.adminVoteStatus(params.groupId), searchParams),
-        );
-        return;
-      }
-    }
 
     if (group.status === "FINISHED") {
       router.replace(groupRoutes.completed(params.groupId));
@@ -148,14 +154,7 @@ export default function UserHomeScreen() {
     if (shouldShowAdminPreparation) {
       router.replace(groupRoutes.adminPreparation(params.groupId));
     }
-  }, [
-    group,
-    params.groupId,
-    postVoteDialogOpen,
-    router,
-    searchParams,
-    shouldShowAdminPreparation,
-  ]);
+  }, [group, params.groupId, router, shouldShowAdminPreparation]);
 
   const closeLeaveDialog = useCallback(() => {
     if (!isLeavingGroup) setLeaveDialogOpen(false);
@@ -304,15 +303,17 @@ export default function UserHomeScreen() {
   if (isCheckingSecondRoundAttendance) {
     return (
       <MobileFrame data-testid="second-round-attendance-loading">
-        <Header
-          title={snapshot.groupName}
-          onBack={() => router.replace("/home")}
-        />
+        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryState} role="status">
             참여 여부를 확인하는 중입니다.
           </p>
         </main>
+        <MainHomeExitPopup
+          open={mainHomeExitPopupOpen}
+          onClose={closeMainHomeExitPopup}
+          onConfirm={confirmMainHomeExit}
+        />
       </MobileFrame>
     );
   }
@@ -323,10 +324,7 @@ export default function UserHomeScreen() {
         data-testid="absent-participant-waiting-screen"
         data-status={group.status}
       >
-        <Header
-          title={snapshot.groupName}
-          onBack={() => router.replace("/home")}
-        />
+        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
         <main className={styles.absentWaitingContent}>
           <section className={styles.absentWaitingCard} aria-live="polite">
             <Clock3 aria-hidden="true" size={34} strokeWidth={1.7} />
@@ -338,6 +336,11 @@ export default function UserHomeScreen() {
             </p>
           </section>
         </main>
+        <MainHomeExitPopup
+          open={mainHomeExitPopupOpen}
+          onClose={closeMainHomeExitPopup}
+          onConfirm={confirmMainHomeExit}
+        />
       </MobileFrame>
     );
   }
@@ -345,15 +348,17 @@ export default function UserHomeScreen() {
   if (shouldCheckSecondRoundAttendance && voteStatusError) {
     return (
       <MobileFrame data-testid="second-round-attendance-error">
-        <Header
-          title={snapshot.groupName}
-          onBack={() => router.replace("/home")}
-        />
+        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryError} role="alert">
             {voteStatusError}
           </p>
         </main>
+        <MainHomeExitPopup
+          open={mainHomeExitPopupOpen}
+          onClose={closeMainHomeExitPopup}
+          onConfirm={confirmMainHomeExit}
+        />
       </MobileFrame>
     );
   }
@@ -365,7 +370,7 @@ export default function UserHomeScreen() {
       data-role={snapshot.role}
       data-status={group.status}
     >
-      <Header title={snapshot.groupName} onBack={() => router.replace("/home")} />
+      <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
 
       <UserSessionContent
         groupId={params.groupId}
@@ -386,6 +391,12 @@ export default function UserHomeScreen() {
           {finalRoundError}
         </Toast>
       )}
+
+      <MainHomeExitPopup
+        open={mainHomeExitPopupOpen}
+        onClose={closeMainHomeExitPopup}
+        onConfirm={confirmMainHomeExit}
+      />
 
       <UM01LeaveGroupDialog
         open={leaveDialogOpen}

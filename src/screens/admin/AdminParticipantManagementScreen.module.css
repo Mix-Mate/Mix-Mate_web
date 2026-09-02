@@ -1,29 +1,10 @@
-.viewport {
-  height: auto;
-  min-height: var(--mobile-frame-height);
-  overflow: visible;
-}
-
-.phone {
-  display: flex;
-  min-height: var(--mobile-frame-height);
-  height: auto;
-  flex-direction: column;
-  overflow: visible;
-  border: 1px solid #e4e4e7;
-  border-radius: 26px;
-  background: #fbfbfd;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
-}
-
-.phone > header {
-  flex: 0 0 72px;
-}
-
 .content {
   display: flex;
-  flex: 0 0 auto;
+  min-height: 0;
+  flex: 1 1 auto;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: #fbfbfd;
 }
 
@@ -224,24 +205,12 @@
 }
 
 .footer {
-  position: sticky;
   z-index: 10;
-  bottom: 0;
   flex: 0 0 auto;
   margin-top: auto;
   padding: 14px 18px 20px;
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
-}
-
-.assignmentButton.assignmentButton {
-  width: 100%;
-  height: 52px;
-  border-radius: 16px;
-  background: #256ad3;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
 }
 
 .menuWrapper {
@@ -314,15 +283,4 @@
   left: 20px;
   right: 20px;
   z-index: 50;
-}
-
-@media (max-width: 389px) {
-  .viewport,
-  .phone {
-    width: 100vw;
-  }
-
-  .phone {
-    border-radius: 0;
-  }
 }

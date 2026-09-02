@@ -237,8 +237,14 @@ describe("Blacklist Feature & API Integration", () => {
       } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: { groupName: "테스트 소모임", participants: [mockParticipantProfile], teams: [] },
-      } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+        data: {
+          groupName: "테스트 소모임",
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
 
       vi.spyOn(
         participantProfileQuery,
@@ -314,8 +320,14 @@ describe("Blacklist Feature & API Integration", () => {
       } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: { groupName: "테스트 소모임", participants: [mockParticipantProfile], teams: [] },
-      } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+        data: {
+          groupName: "테스트 소모임",
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
 
       vi.spyOn(
         participantProfileQuery,
@@ -376,8 +388,14 @@ describe("Blacklist Feature & API Integration", () => {
       } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: { groupName: "테스트 소모임", participants: [mockParticipantProfile], teams: [] },
-      } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+        data: {
+          groupName: "테스트 소모임",
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
 
       vi.spyOn(
         participantProfileQuery,

@@ -3,6 +3,10 @@ type PlayActivity = "games" | "small-talk" | "balance";
 
 const groupBase = (groupId: string) => `/groups/${groupId}`;
 
+export const appRoutes = {
+  home: () => "/home",
+};
+
 export const authRoutes = {
   login: () => "/login",
   signup: () => "/signup",
@@ -20,7 +24,8 @@ export const groupRoutes = {
   adminHome: (groupId: string) => `${groupBase(groupId)}/admin`,
   userHome: (groupId: string) => `${groupBase(groupId)}`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
-  participants: (groupId: string) => `${groupBase(groupId)}/participants`,
+  participants: (groupId: string, round?: AssignmentRound) =>
+    `${groupBase(groupId)}/participants${round ? `?round=${round}` : ""}`,
   blacklist: (groupId: string) => `${groupBase(groupId)}/blacklist`,
   profile: (groupId: string) => `${groupBase(groupId)}/profile`,
   profileEdit: (groupId: string) => `${groupBase(groupId)}/profile/edit`,
@@ -42,11 +47,21 @@ export const groupRoutes = {
     `${groupBase(groupId)}/admin/recruitment`,
   adminParticipants: (groupId: string, round?: AssignmentRound) =>
     `${groupBase(groupId)}/admin/participants${round ? `?round=${round}` : ""}`,
+  adminParticipantNew: (
+    groupId: string,
+    round: AssignmentRound,
+    returnTo?: "participant-list",
+  ) =>
+    `${groupBase(groupId)}/admin/participants/new?round=${round}${
+      returnTo ? `&returnTo=${returnTo}` : ""
+    }`,
+  adminParticipantStatistics: (groupId: string, round?: AssignmentRound) =>
+    `${groupBase(groupId)}/admin/participants/statistics${
+      round ? `?round=${round}` : ""
+    }`,
   adminPreparation: (groupId: string) =>
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
-  adminVoteStatus: (groupId: string) =>
-    `${groupBase(groupId)}/admin/votes/status`,
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
   adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>
     `${groupBase(groupId)}/admin/assignments/${round}/setup`,

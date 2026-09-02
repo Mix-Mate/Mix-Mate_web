@@ -10,9 +10,11 @@ import VoteProgressCard from "@/features/vote/components/status/VoteProgressCard
 import styles from "@/features/vote/components/status/VoteStatus.module.css";
 import VoteStatusList from "@/features/vote/components/status/VoteStatusList";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
+import { useVoteNavigation } from "@/features/vote/hooks/useVoteNavigation";
 import type { SecondRoundVoteStatusFilter } from "@/features/vote/types/secondRoundVoteStatus.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
+import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
+import { appRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteStatusScreen() {
@@ -24,8 +26,10 @@ export default function VoteStatusScreen() {
   const canForceEndVote = isAdmin && group?.status === "VOTING";
   const { data, isLoading, isRefreshing, error, isComplete } =
     useVoteStatusQuery(params.groupId);
+  const { back: navigateToMainHome } = useVoteNavigation(appRoutes.home());
   const [selectedFilter, setSelectedFilter] =
     useState<SecondRoundVoteStatusFilter>("PENDING");
+  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
   const pendingCount = data
     ? Math.max(0, data.totalParticipantCount - data.votedCount)
     : 0;
@@ -63,16 +67,6 @@ export default function VoteStatusScreen() {
   useEffect(() => {
     if (!group) return;
 
-    if (group.myRole === "HOST") {
-      router.replace(
-        withSessionContext(
-          groupRoutes.adminVoteStatus(params.groupId),
-          searchParams,
-        ),
-      );
-      return;
-    }
-
     const isVoteFinished =
       group.status === "VOTE_CLOSED" ||
       group.status === "BEFORE_SECOND_ROUND" ||
@@ -93,14 +87,24 @@ export default function VoteStatusScreen() {
     );
   }, [params.groupId, router, searchParams]);
 
-  if (isAdmin) {
-    return null;
-  }
+  const requestMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(true);
+  }, []);
+
+  const closeMainHomeExitPopup = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+  }, []);
+
+  const confirmMainHomeExit = useCallback(() => {
+    setMainHomeExitPopupOpen(false);
+    navigateToMainHome();
+  }, [navigateToMainHome]);
 
   return (
     <VoteScreenLayout
       title="투표 현황"
       status={isComplete ? "CLOSED" : "OPEN"}
+      onBack={requestMainHomeExit}
       testId="vote-status-screen"
     >
       <section
@@ -167,6 +171,12 @@ export default function VoteStatusScreen() {
           </>
         )}
       </section>
+
+      <MainHomeExitPopup
+        open={mainHomeExitPopupOpen}
+        onClose={closeMainHomeExitPopup}
+        onConfirm={confirmMainHomeExit}
+      />
     </VoteScreenLayout>
   );
 }

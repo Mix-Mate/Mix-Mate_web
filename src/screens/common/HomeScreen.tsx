@@ -11,10 +11,9 @@ import {
   GroupApiError,
   type MyGroupItem,
 } from "@/features/group/api/group.api";
-import {
-  getGroupEntryRoute,
-  isGroupHost,
-} from "@/features/group/lib/group-entry-route";
+import { isGroupHost } from "@/features/group/lib/group-entry-route";
+import { resolveGroupEntryRoute } from "@/features/group/lib/resolve-group-entry-route";
+import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import {
   clearAuthTokens,
@@ -25,12 +24,7 @@ import styles from "./HomeScreen.module.css";
 
 export type GroupRole = "HOST" | "PARTICIPANT";
 
-export type GroupStatus =
-  | "RECRUITING"
-  | "FIRST_ROUND"
-  | "VOTING"
-  | "SECOND_ROUND"
-  | "FINISHED";
+export type GroupStatus = ApiGroupStatus;
 
 export type HomeTab = "ACTIVE" | "COMPLETED";
 
@@ -53,16 +47,23 @@ export interface HomeScreenGroupItem {
 const DEFAULT_ACTIVE_GROUPS: HomeScreenGroupItem[] = [];
 const DEFAULT_COMPLETED_GROUPS: HomeScreenGroupItem[] = [];
 
-const STATUS_CONFIG: Record<
-  GroupStatus,
-  { label: string; className: string }
-> = {
-  RECRUITING: { label: "모집 중", className: styles.statusRecruiting },
-  FIRST_ROUND: { label: "1차 진행 중", className: styles.statusInProgress },
-  VOTING: { label: "투표 진행 중", className: styles.statusVoting },
-  SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
-  FINISHED: { label: "종료됨", className: styles.statusCompleted },
-};
+const STATUS_CONFIG: Record<GroupStatus, { label: string; className: string }> =
+  {
+    RECRUITING: { label: "모집 중", className: styles.statusRecruiting },
+    BEFORE_FIRST_ROUND: {
+      label: "1차 준비 중",
+      className: styles.statusInProgress,
+    },
+    FIRST_ROUND: { label: "1차 진행 중", className: styles.statusInProgress },
+    VOTING: { label: "투표 진행 중", className: styles.statusVoting },
+    VOTE_CLOSED: { label: "투표 종료", className: styles.statusVoting },
+    BEFORE_SECOND_ROUND: {
+      label: "2차 준비 중",
+      className: styles.statusInProgress,
+    },
+    SECOND_ROUND: { label: "2차 진행 중", className: styles.statusInProgress },
+    FINISHED: { label: "종료됨", className: styles.statusCompleted },
+  };
 
 function parseDateTimestamp(dateStr?: string, timeStr?: string): number {
   if (!dateStr) return 0;
@@ -145,12 +146,23 @@ export function sortCompletedGroups(
 function mapStatus(status: string): GroupStatus {
   const upper = (status || "").toUpperCase();
   if (upper === "RECRUITING" || upper === "모집 중") return "RECRUITING";
-  if (upper === "PROGRESS" || upper === "FIRST_ROUND" || upper === "1차 진행 중")
+  if (upper === "BEFORE_FIRST_ROUND" || upper === "1차 준비 중")
+    return "BEFORE_FIRST_ROUND";
+  if (
+    upper === "PROGRESS" ||
+    upper === "FIRST_ROUND" ||
+    upper === "1차 진행 중"
+  )
     return "FIRST_ROUND";
   if (upper === "VOTING" || upper === "투표 진행 중") return "VOTING";
-  if (upper === "SECOND_ROUND" || upper === "2차 진행 중") return "SECOND_ROUND";
+  if (upper === "VOTE_CLOSED" || upper === "투표 종료") return "VOTE_CLOSED";
+  if (upper === "BEFORE_SECOND_ROUND" || upper === "2차 준비 중")
+    return "BEFORE_SECOND_ROUND";
+  if (upper === "SECOND_ROUND" || upper === "2차 진행 중")
+    return "SECOND_ROUND";
   if (upper === "FINISHED" || upper === "종료됨") return "FINISHED";
-  return "RECRUITING";
+  // 알 수 없는 활성 상태를 모집 중으로 간주하면 모집 화면이 잘못 노출된다.
+  return "FIRST_ROUND";
 }
 
 function mapRole(role: string): GroupRole {
@@ -356,7 +368,9 @@ export default function HomeScreen({
     if (group.status === "FINISHED") {
       return;
     }
-    router.push(getGroupEntryRoute(group.id, group.role, group.status));
+    router.push(
+      await resolveGroupEntryRoute(group.id, group.role, group.status),
+    );
   };
 
   return (
@@ -431,7 +445,11 @@ export default function HomeScreen({
         {/* 3. 모임 목록 2단 상단 탭 전환 UI */}
         <section className={styles.tabSection} aria-label="모임 목록">
           {/* 50% 균등 너비 2단 가로 탭 바 */}
-          <div className={styles.tabBar} role="tablist" aria-label="모임 구분 탭">
+          <div
+            className={styles.tabBar}
+            role="tablist"
+            aria-label="모임 구분 탭"
+          >
             <button
               type="button"
               role="tab"
@@ -463,9 +481,13 @@ export default function HomeScreen({
 
           {/* 탭 콘텐츠 리스트 영역 */}
           <div
-            id={activeTab === "ACTIVE" ? "tabpanel-active" : "tabpanel-completed"}
+            id={
+              activeTab === "ACTIVE" ? "tabpanel-active" : "tabpanel-completed"
+            }
             role="tabpanel"
-            aria-labelledby={activeTab === "ACTIVE" ? "tab-active" : "tab-completed"}
+            aria-labelledby={
+              activeTab === "ACTIVE" ? "tab-active" : "tab-completed"
+            }
             className={styles.tabContent}
           >
             {activeTab === "ACTIVE" ? (
@@ -505,8 +527,8 @@ export default function HomeScreen({
                             <span
                               className={`${styles.roleTag} ${
                                 group.role === "HOST"
-                                  ? styles.roleTagAdmin
-                                  : styles.roleTagUser
+                                   ? styles.roleTagAdmin
+                                   : styles.roleTagUser
                               }`}
                             >
                               {group.role === "HOST" ? "관리자" : "사용자"}
@@ -534,12 +556,11 @@ export default function HomeScreen({
             ) : completedGroups.length > 0 ? (
               <div className={styles.completedList}>
                 {completedGroups.map((group) => (
-                  <article
-                    key={group.id}
-                    className={styles.completedCard}
-                  >
+                  <article key={group.id} className={styles.completedCard}>
                     <div className={styles.completedCardLeft}>
-                      <h4 className={styles.completedGroupName}>{group.name}</h4>
+                      <h4 className={styles.completedGroupName}>
+                        {group.name}
+                      </h4>
                       <p className={styles.completedMetaText}>
                         종료됨 · {group.memberCount}명
                       </p>

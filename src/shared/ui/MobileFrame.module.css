@@ -10,9 +10,21 @@
 
 .phone {
   position: relative;
+  display: flex;
   width: var(--mobile-frame-width);
   height: var(--mobile-frame-height);
+  flex-direction: column;
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+.phone,
+.phone * {
+  scrollbar-width: none;
+}
+
+.phone::-webkit-scrollbar,
+.phone *::-webkit-scrollbar {
+  display: none;
 }

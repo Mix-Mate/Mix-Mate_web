@@ -9,6 +9,7 @@ import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMut
 import { useInviteCodeRemainingTime } from "@/features/group/hooks/useInviteCodeRemainingTime";
 import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-expiration";
+import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -84,6 +85,8 @@ export default function AdminRecruitmentScreen() {
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
   const isRecruiting = group?.status === "RECRUITING";
+  const canCloseRecruitment =
+    canEditGroup && group.memberCount >= FIRST_ROUND_MIN_PARTICIPANTS;
   const editInitialValues = useMemo<UpdateGroupInput>(
     () => ({
       name: group?.groupName ?? "",
@@ -168,6 +171,8 @@ export default function AdminRecruitmentScreen() {
   }, [params.groupId, router, searchParams]);
 
   const confirmCloseRecruitment = useCallback(async () => {
+    if (!canCloseRecruitment) return;
+
     const closed = await closeRecruiting(params.groupId);
     if (!closed) return;
 
@@ -188,6 +193,7 @@ export default function AdminRecruitmentScreen() {
       showToast("최신 그룹 정보를 불러오지 못했습니다.");
     }
   }, [
+    canCloseRecruitment,
     closeRecruiting,
     params.groupId,
     refetch,
@@ -233,7 +239,7 @@ export default function AdminRecruitmentScreen() {
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
-  if (!group) return null;
+  if (!group || group.status !== "RECRUITING") return null;
 
   return (
     <MobileFrame
@@ -297,9 +303,9 @@ export default function AdminRecruitmentScreen() {
             <Clock3 size={25} strokeWidth={1.8} />
           </span>
           <h2>그룹을 모집하고 있습니다.</h2>
-          <p>
-            모집이 마감 이후 확정된 참가자 목록을 확인하고
-            <br />조 편성을 시작할 수 있습니다.
+          <p className={styles.minimumParticipantText}>
+            참가자가{" "}
+            <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상 모이면 1차 술자리를 시작할 수 있어요.
           </p>
         </section>
 
@@ -326,7 +332,7 @@ export default function AdminRecruitmentScreen() {
 
         <Button
           className={styles.closeRecruitmentButton}
-          disabled={group.status !== "RECRUITING"}
+          disabled={!canCloseRecruitment}
           onClick={() => setCloseDialogOpen(true)}
         >
           모집 마감하기
@@ -336,7 +342,7 @@ export default function AdminRecruitmentScreen() {
       {toast && <Toast className={styles.toast}>{toast}</Toast>}
 
       <CloseRecruitmentDialog
-        open={closeDialogOpen}
+        open={closeDialogOpen && canCloseRecruitment}
         isClosing={isClosingRecruitment}
         error={closeRecruitmentError}
         onClose={() => {

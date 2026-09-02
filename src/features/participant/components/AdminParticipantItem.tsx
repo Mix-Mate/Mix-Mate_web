@@ -25,6 +25,7 @@ export default function AdminParticipantItem({
         <GenderAvatar
           gender={participant.gender}
           name={participant.name}
+          toneKey={participant.id}
           size={42}
         />
 

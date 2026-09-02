@@ -2,6 +2,7 @@
   display: flex;
   width: 100%;
   height: 56px;
+  flex: 0 0 56px;
   align-items: stretch;
   border-bottom: 1px solid #e4e4e7;
   background: #fff;
@@ -9,9 +10,11 @@
 
 .tab {
   position: relative;
+  display: grid;
   min-width: 0;
   cursor: pointer;
   flex: 1;
+  place-items: center;
   padding: 0;
   background: transparent;
   color: #a1a1aa;

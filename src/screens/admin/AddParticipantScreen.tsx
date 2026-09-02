@@ -86,6 +86,8 @@ export default function AddParticipantScreen() {
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
   const round = toAssignmentRound(searchParams.get("round") ?? "1");
+  const returnToParticipantList =
+    searchParams.get("returnTo") === "participant-list";
   const { mutate, isPending } = useAddParticipantMutation();
   const { message: toast, showToast } = useToast();
   const [form, setForm] = useState<AddParticipantForm>({
@@ -109,8 +111,12 @@ export default function AddParticipantScreen() {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
   };
 
-  const goToManagement = () => {
-    router.push(groupRoutes.adminParticipants(params.groupId, round));
+  const goToParticipantList = () => {
+    router.push(
+      returnToParticipantList
+        ? groupRoutes.participants(params.groupId, round)
+        : groupRoutes.adminParticipants(params.groupId, round),
+    );
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -146,7 +152,7 @@ export default function AddParticipantScreen() {
 
     showToast("참가자를 추가했습니다.");
 
-    window.setTimeout(goToManagement, 350);
+    window.setTimeout(goToParticipantList, 350);
   };
 
   return (
@@ -155,7 +161,7 @@ export default function AddParticipantScreen() {
       viewportClassName={styles.viewport}
       data-testid="add-participant-screen"
     >
-      <Header title="참가자 추가" onBack={goToManagement} smallTitle />
+      <Header title="참가자 추가" onBack={goToParticipantList} smallTitle />
 
       <form className={styles.content} onSubmit={handleSubmit}>
         <InfoBanner className={styles.notice}>

@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus, UserRole } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupMemberRole,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import type { VoteResultResponse } from "@/features/vote/types/voteResult.types";
 import VoteResultScreen from "./VoteResultScreen";
 
@@ -52,7 +56,7 @@ vi.mock("@/features/vote/components/result/VoteResultContent", () => ({
   }) => (
     <div>
       <span>투표 결과 컨텐츠</span>
-      <button onClick={onHome}>홈으로</button>
+      <button onClick={onHome}>홈으로 돌아가기</button>
       <button onClick={onRevealOverallResult}>전체 결과 보기</button>
     </div>
   ),
@@ -60,7 +64,7 @@ vi.mock("@/features/vote/components/result/VoteResultContent", () => ({
 
 function createGroup(
   status: GroupStatus = "VOTING",
-  myRole: UserRole = "HOST",
+  myRole: GroupMemberRole = "HOST",
 ): GroupDetail {
   return {
     groupId: 10,
@@ -81,14 +85,19 @@ const mockVoteResult: VoteResultResponse = {
       teamNumber: 1,
       participantId: 2,
       displayName: "우승자",
-      major: "컴공",
-      voteCount: 3,
+      grade: "FIRST",
+      mbti: "ENFP",
     },
   ],
   secondRoundParticipants: [
-    { participantId: 1, displayName: "나", major: "컴공" },
+    {
+      participantId: 1,
+      displayName: "나",
+      major: "컴공",
+      gender: "MALE",
+      visibility: "PUBLIC",
+    },
   ],
-  nonParticipants: [],
 };
 
 describe("VoteResultScreen", () => {
@@ -112,29 +121,43 @@ describe("VoteResultScreen", () => {
     });
   });
 
-  it("관리자(HOST)가 결과 화면에서 뒤로가기를 누르면 ?dialog=post-vote 경로로 이동한다", () => {
+  it("관리자(HOST)가 결과 화면에서 뒤로가기를 누르면 확인 후 메인 홈으로 이동한다", () => {
     render(<VoteResultScreen />);
 
-    const backButton = screen.getByRole("button", { name: "이전 화면으로 이동" });
+    const backButton = screen.getByRole("button", {
+      name: "이전 화면으로 이동",
+    });
     fireEvent.click(backButton);
 
-    expect(pushMock).toHaveBeenCalledWith("/groups/10?dialog=post-vote");
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+
+    expect(replaceMock).toHaveBeenCalledWith("/home");
+    expect(pushMock).not.toHaveBeenCalledWith("/groups/10?dialog=post-vote");
   });
 
   it("관리자(HOST)가 하단 홈 버튼을 누르면 replace로 ?dialog=post-vote 경로로 이동한다", () => {
     render(<VoteResultScreen />);
 
-    const homeButton = screen.getByRole("button", { name: "홈으로" });
+    const homeButton = screen.getByRole("button", { name: "홈으로 돌아가기" });
     fireEvent.click(homeButton);
 
     expect(replaceMock).toHaveBeenCalledWith("/groups/10?dialog=post-vote");
+    expect(pushMock).not.toHaveBeenCalledWith("/home");
   });
 
   it("전체 결과 보기(?view=overall) 상태에서 뒤로가기를 누르면 기본 투표 결과 화면으로 이동한다", () => {
     mockSearchParams = new URLSearchParams("view=overall");
     render(<VoteResultScreen />);
 
-    const backButton = screen.getByRole("button", { name: "이전 화면으로 이동" });
+    const backButton = screen.getByRole("button", {
+      name: "이전 화면으로 이동",
+    });
     fireEvent.click(backButton);
 
     expect(pushMock).toHaveBeenCalledWith("/groups/10/votes/result");
@@ -149,9 +172,35 @@ describe("VoteResultScreen", () => {
 
     render(<VoteResultScreen />);
 
-    const backButton = screen.getByRole("button", { name: "이전 화면으로 이동" });
+    const backButton = screen.getByRole("button", {
+      name: "이전 화면으로 이동",
+    });
     fireEvent.click(backButton);
 
     expect(pushMock).toHaveBeenCalledWith("/groups/10?scenario=round2-waiting");
+  });
+
+  it("2차에 불참하는 일반 참가자는 결과 화면에서 뒤로가기 시 확인 후 메인 홈으로 이동한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "PARTICIPANT"),
+      isLoading: false,
+      error: null,
+    });
+    useVoteResultQueryMock.mockReturnValue({
+      data: { ...mockVoteResult, secondRoundParticipants: [] },
+      isLoading: false,
+      error: null,
+    });
+
+    render(<VoteResultScreen />);
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+
+    expect(replaceMock).toHaveBeenCalledWith("/home");
   });
 });

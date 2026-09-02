@@ -2,10 +2,13 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
+import useToast from "@/shared/hooks/useToast";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./MyProfileScreen.module.css";
 
 const gradeLabelMap = {
@@ -30,6 +33,7 @@ export default function MyProfileScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const { data: profile } = useMyGroupProfileQuery(params.groupId);
+  const { message: toastMessage, showToast } = useToast();
 
   if (!profile) {
     return (
@@ -41,6 +45,21 @@ export default function MyProfileScreen() {
       </MobileFrame>
     );
   }
+
+  const instagramText = profile.instaId
+    ? formatInstagramDisplay(profile.instaId)
+    : "등록된 인스타 ID가 없습니다.";
+
+  const copyInstagramId = async () => {
+    if (!profile.instaId) return;
+
+    try {
+      await navigator.clipboard.writeText(instagramText);
+      showToast("인스타 ID가 복사되었습니다.");
+    } catch {
+      showToast(instagramText);
+    }
+  };
 
   return (
     <MobileFrame
@@ -58,6 +77,7 @@ export default function MyProfileScreen() {
           <GenderAvatar
             gender={profile.gender === "MALE" ? "male" : "female"}
             name={profile.displayName}
+            toneKey={profile.id}
             size={72}
           />
 
@@ -108,9 +128,18 @@ export default function MyProfileScreen() {
 
           <div>
             <span>인스타 ID</span>
-            <strong className={profile.instaId ? styles.instagram : ""}>
-              {profile.instaId ?? "등록된 인스타 ID가 없습니다."}
-            </strong>
+            {profile.instaId ? (
+              <button
+                type="button"
+                className={styles.instagramButton}
+                onClick={copyInstagramId}
+                aria-label={`인스타 ID ${instagramText} 복사`}
+              >
+                {instagramText}
+              </button>
+            ) : (
+              <strong>{instagramText}</strong>
+            )}
           </div>
 
           <div>
@@ -126,6 +155,8 @@ export default function MyProfileScreen() {
           <p>{profile.bio ?? "자기소개가 없습니다."}</p>
         </section>
       </main>
+
+      {toastMessage && <Toast className={styles.toast}>{toastMessage}</Toast>}
     </MobileFrame>
   );
 }

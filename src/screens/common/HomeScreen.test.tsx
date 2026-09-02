@@ -206,9 +206,12 @@ describe("HomeScreen", () => {
   describe("3. 그룹 진입 라우팅", () => {
     it.each([
       ["RECRUITING", "HOST", "/groups/31/admin/recruitment"],
+      ["BEFORE_FIRST_ROUND", "HOST", "/groups/31/admin"],
       ["FIRST_ROUND", "HOST", "/groups/31/admin"],
+      ["BEFORE_SECOND_ROUND", "HOST", "/groups/31/admin"],
       ["SECOND_ROUND", "HOST", "/groups/31/admin"],
-      ["VOTING", "HOST", "/groups/31/admin/votes/status"],
+      ["VOTE_CLOSED", "HOST", "/groups/31/votes/result"],
+      ["VOTING", "HOST", "/groups/31/votes/mvp"],
       ["RECRUITING", "PARTICIPANT", "/groups/31"],
       ["VOTING", "PARTICIPANT", "/groups/31/votes/mvp"],
     ])(
