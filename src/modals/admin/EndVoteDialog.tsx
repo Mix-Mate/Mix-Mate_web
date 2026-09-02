@@ -92,7 +92,10 @@ export default function EndVoteDialog({
         <h2 id="end-vote-title">미투표자가 있습니다</h2>
         <p id="end-vote-description">
           종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
-          <br />※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
+          <br />
+          <span className={styles.descriptionNote}>
+            ※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
+          </span>
         </p>
       </div>
 

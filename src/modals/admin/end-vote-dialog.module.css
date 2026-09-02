@@ -56,6 +56,13 @@
   line-height: 23px;
 }
 
+.descriptionNote {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 .message p strong {
   color: #ef4444;
   font-weight: 600;
