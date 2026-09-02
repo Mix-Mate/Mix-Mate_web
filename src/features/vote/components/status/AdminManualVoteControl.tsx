@@ -67,25 +67,21 @@ export default function AdminManualVoteControl({
         {member.choice === "PARTICIPATE" && (
           <CircleCheck
             className={styles.attendanceIcon}
-            size={18}
+            size={16}
             strokeWidth={2}
           />
         )}
         {member.choice === "NOT_PARTICIPATE" && (
-          <CircleX className={styles.absenceIcon} size={18} strokeWidth={2} />
+          <CircleX className={styles.absenceIcon} size={16} strokeWidth={2} />
         )}
-        {member.choice === null && (
-          <>
-            <span>수동 투표</span>
-            <span
-              className={`${styles.voteDropdownArrow} ${
-                isOpen ? styles.voteDropdownArrowOpen : ""
-              }`}
-            >
-              ▾
-            </span>
-          </>
-        )}
+        {member.choice === null && <span>수동 투표</span>}
+        <span
+          className={`${styles.voteDropdownArrow} ${
+            isOpen ? styles.voteDropdownArrowOpen : ""
+          }`}
+        >
+          ▾
+        </span>
       </button>
 
       {isOpen && (

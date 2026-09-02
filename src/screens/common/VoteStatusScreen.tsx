@@ -139,7 +139,7 @@ export default function VoteStatusScreen() {
               members={listContent.members}
               emptyMessage={listContent.emptyMessage}
               groupId={params.groupId}
-              canManageManualVote={isAdmin}
+              canManageManualVote={isAdmin && selectedFilter === "PENDING"}
               onVoteChange={() => {
                 void refetch();
               }}
