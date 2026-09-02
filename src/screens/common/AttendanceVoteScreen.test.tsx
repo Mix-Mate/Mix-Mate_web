@@ -102,6 +102,10 @@ describe("AttendanceVoteScreen", () => {
   it("2차 참여 희망자가 8명 이상이면 진행된다는 안내 배너를 보여준다", () => {
     render(<AttendanceVoteScreen />);
 
+    const notices = screen.getAllByRole("note");
+
+    expect(notices[0]).toHaveAccessibleName("투표 완료 안내");
+    expect(notices[1]).toHaveAccessibleName("2차 술자리 진행 기준");
     expect(
       screen.getByRole("note", { name: "2차 술자리 진행 기준" }),
     ).toHaveTextContent(
