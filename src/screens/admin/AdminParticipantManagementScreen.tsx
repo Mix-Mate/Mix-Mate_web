@@ -223,7 +223,7 @@ export default function AdminParticipantManagementScreen() {
               className={styles.addButton}
               onClick={() =>
                 router.push(
-                  `/groups/${params.groupId}/admin/participants/new?round=${round}`,
+                  groupRoutes.adminParticipantNew(params.groupId, round),
                 )
               }
             >

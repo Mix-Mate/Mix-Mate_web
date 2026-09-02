@@ -180,6 +180,20 @@
   margin-bottom: 20px;
 }
 
+.filterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.filterRow .filters {
+  min-width: 0;
+  flex: 1;
+  margin-bottom: 0;
+}
+
 .filters button {
   height: 38px;
   cursor: pointer;
@@ -197,6 +211,22 @@
   border-color: #3b82c4;
   background: #eff6ff;
   color: #3b82c4;
+}
+
+.addParticipantButton {
+  height: 38px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  border: 1px solid #1f66cc;
+  border-radius: 999px;
+  padding: 0 15px;
+  background: #256ad3;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgb(37 106 211 / 20%);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
 }
 
 .listBox {
