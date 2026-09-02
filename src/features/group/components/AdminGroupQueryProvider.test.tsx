@@ -333,6 +333,7 @@ describe("공통 그룹 SSE 동기화", () => {
   it("같은 탭에서 로그아웃하면 즉시 구독을 정리한다", async () => {
     render(<App />);
     await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalled());
     act(() => clearAuthTokens());
     expect(subscriptions[0].stop).toHaveBeenCalledOnce();
     expect(router.replace).toHaveBeenCalledWith("/login");
@@ -341,6 +342,7 @@ describe("공통 그룹 SSE 동기화", () => {
   it("다른 탭의 로그아웃도 감지한다", async () => {
     render(<App />);
     await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalled());
     act(() => {
       localStorage.removeItem("accessToken");
       window.dispatchEvent(
@@ -354,6 +356,7 @@ describe("공통 그룹 SSE 동기화", () => {
   it("401 수신 시 인증을 정리하고 로그인 화면으로 이동한다", async () => {
     render(<App />);
     await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalled());
     act(() =>
       subscriptions[0].options.onError(new GroupStatusStreamError(401)),
     );
@@ -388,12 +391,16 @@ describe("공통 그룹 SSE 동기화", () => {
       </StrictMode>,
     );
     await screen.findByTestId("group-state");
-    expect(
-      subscriptions.filter((entry) => entry.stop.mock.calls.length === 0),
-    ).toHaveLength(1);
+    await waitFor(() => {
+      expect(
+        subscriptions.filter((entry) => entry.stop.mock.calls.length === 0),
+      ).toHaveLength(1);
+    });
     unmount();
-    expect(
-      subscriptions.every((entry) => entry.stop.mock.calls.length === 1),
-    ).toBe(true);
+    await waitFor(() => {
+      expect(
+        subscriptions.every((entry) => entry.stop.mock.calls.length === 1),
+      ).toBe(true);
+    });
   });
 });
