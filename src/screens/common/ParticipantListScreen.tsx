@@ -135,7 +135,9 @@ function DefaultParticipantListScreen() {
         <ParticipantHelpBox />
         <ParticipantSearch value={keyword} onChange={setKeyword} />
         <ParticipantStats count={data.participants.length} />
-        <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
+        {!isRecruiting && (
+          <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
+        )}
         <div className={styles.filterRow}>
           <ParticipantFilter value={filter} onChange={setFilter} />
           {canAddParticipant && (

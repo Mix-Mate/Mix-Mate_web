@@ -90,6 +90,14 @@ describe("ParticipantListScreen manual participant addition", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("모집 중에는 전체/조별 보기 필터를 보여주지 않는다", () => {
+    render(<ParticipantListScreen />);
+
+    expect(
+      screen.queryByLabelText("참가자 보기 방식"),
+    ).not.toBeInTheDocument();
+  });
+
   it("모집 참가자 목록에서 연 추가 화면은 같은 목록으로 돌아간다", () => {
     searchParamsGetMock.mockImplementation((key: string) => {
       if (key === "round") return "1";
