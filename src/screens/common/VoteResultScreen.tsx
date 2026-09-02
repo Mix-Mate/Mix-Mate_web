@@ -12,6 +12,8 @@ import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
 import { appRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
 
+type MainHomeExitReason = "header" | "second-round-absent";
+
 export default function VoteResultScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -22,7 +24,8 @@ export default function VoteResultScreen() {
     error: groupError,
   } = useAdminGroupQuery(params.groupId);
   const { data, isLoading, error } = useVoteResultQuery(params.groupId);
-  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
+  const [mainHomeExitReason, setMainHomeExitReason] =
+    useState<MainHomeExitReason | null>(null);
   const { data: firstRoundTeam, isLoading: isTeamLoading } = useMyTeamQuery(
     params.groupId,
     "FIRST_ROUND",
@@ -58,15 +61,25 @@ export default function VoteResultScreen() {
       : footerHomeHref;
   const headerGoesToMainHome = headerBackHref === appRoutes.home();
   const requestMainHomeExit = useCallback(() => {
-    setMainHomeExitPopupOpen(true);
+    setMainHomeExitReason("header");
   }, []);
   const closeMainHomeExitPopup = useCallback(() => {
-    setMainHomeExitPopupOpen(false);
+    setMainHomeExitReason(null);
   }, []);
   const confirmMainHomeExit = useCallback(() => {
-    setMainHomeExitPopupOpen(false);
+    setMainHomeExitReason(null);
     router.replace(appRoutes.home());
   }, [router]);
+  const handleFooterHome = useCallback(() => {
+    if (footerHomeHref === appRoutes.home()) {
+      setMainHomeExitReason("second-round-absent");
+      return;
+    }
+
+    router.replace(footerHomeHref);
+  }, [footerHomeHref, router]);
+  const isSecondRoundAbsentExit =
+    mainHomeExitReason === "second-round-absent";
 
   return (
     <VoteScreenLayout
@@ -84,7 +97,7 @@ export default function VoteResultScreen() {
           introMvpWinner={myTeamMvpWinner}
           showOverallResult={showOverallResult}
           onRevealOverallResult={revealOverallResult}
-          onHome={() => router.replace(footerHomeHref)}
+          onHome={handleFooterHome}
           onOpenMvpList={() =>
             router.push(
               withSessionContext(
@@ -120,9 +133,12 @@ export default function VoteResultScreen() {
       )}
 
       <MainHomeExitPopup
-        open={mainHomeExitPopupOpen}
+        open={mainHomeExitReason !== null}
         onClose={closeMainHomeExitPopup}
         onConfirm={confirmMainHomeExit}
+        variant={
+          isSecondRoundAbsentExit ? "first-round-complete" : "default"
+        }
       />
     </VoteScreenLayout>
   );
