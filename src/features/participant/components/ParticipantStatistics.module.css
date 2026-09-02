@@ -320,18 +320,18 @@
 .tableToggle {
   display: flex;
   width: 100%;
-  height: 44px;
+  height: 48px;
   cursor: pointer;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
+  padding: 0 16px;
   border: 0;
   background: #ffffff;
   color: #18181b;
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 18px;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 21px;
 }
 
 .tableToggle svg {
@@ -344,32 +344,108 @@
 }
 
 .table {
-  width: 100%;
+  width: calc(100% - 28px);
+  table-layout: fixed;
+  margin: 0 14px 16px;
   border-collapse: collapse;
-  border-top: 1px solid #eef0f3;
+}
+
+.categoryColumn {
+  width: 24%;
+}
+
+.labelColumn {
+  width: 43%;
+}
+
+.countColumn {
+  width: 17%;
+}
+
+.percentColumn {
+  width: 16%;
 }
 
 .table th,
 .table td {
-  padding: 9px 10px;
+  height: 40px;
+  padding: 0 2px;
   border-bottom: 1px solid #f0f2f5;
-  color: #4b5563;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 14px;
+  font-size: 13px;
+  line-height: 18px;
   text-align: left;
+  vertical-align: middle;
 }
 
 .table th {
-  color: #8b93a1;
+  color: #7c8594;
   font-weight: 800;
 }
 
-.table td:nth-child(3),
-.table td:nth-child(4),
 .table th:nth-child(3),
-.table th:nth-child(4) {
+.countCell,
+.table th:nth-child(4),
+.percentCell {
   text-align: right;
+}
+
+.table th:nth-child(3),
+.countCell {
+  padding-right: 8px;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.categoryCell {
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.labelCell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #4b5563;
+  font-weight: 700;
+}
+
+.labelCell span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablePrimaryDot,
+.tableSecondaryDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 2px;
+}
+
+.tablePrimaryDot {
+  background: #256ad3;
+}
+
+.tableSecondaryDot {
+  background: #b9def9;
+}
+
+.countCell {
+  color: #18181b;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.percentCell {
+  color: #5f6875;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 @keyframes drawDonut {

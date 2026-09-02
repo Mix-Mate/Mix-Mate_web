@@ -27,7 +27,6 @@ export default function AdminParticipantStatisticsScreen() {
   const isRoundResolved = Boolean(roundParam || group);
   const { data } = useAdminParticipantListQuery(params.groupId, round, {
     enabled: isRoundResolved,
-    polling: group?.status === "RECRUITING",
   });
 
   const goToParticipants = () => {

@@ -8,44 +8,11 @@
   background: #fbfbfd;
 }
 
-.statsGrid {
-  display: grid;
-  flex: 0 0 auto;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 18px 24px 12px;
-}
-
-.statsGrid article {
-  display: flex;
-  height: 76px;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  border-radius: 14px;
-  background: #f0f0f2;
-}
-
-.statsGrid strong {
-  color: #18181b;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 30px;
-}
-
-.statsGrid span {
-  margin-top: 4px;
-  color: #52525b;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-}
-
 .searchBar.searchBar {
   height: 46px;
   flex: 0 0 46px;
   gap: 10px;
-  margin: 0 18px;
+  margin: 18px 18px 0;
   padding: 0 17px;
   border-width: 1.5px;
   border-color: #dedee3;

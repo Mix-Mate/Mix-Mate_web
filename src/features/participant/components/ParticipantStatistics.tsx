@@ -446,6 +446,12 @@ export default function ParticipantStatistics({
 
         {tableOpen && (
           <table className={styles.table}>
+            <colgroup>
+              <col className={styles.categoryColumn} />
+              <col className={styles.labelColumn} />
+              <col className={styles.countColumn} />
+              <col className={styles.percentColumn} />
+            </colgroup>
             <thead>
               <tr>
                 <th>항목</th>
@@ -456,14 +462,26 @@ export default function ParticipantStatistics({
             </thead>
             <tbody>
               {statistics.distributions.flatMap((distribution) =>
-                distribution.segments.map((segment) => (
+                distribution.segments.map((segment, index) => (
                   <tr key={`${distribution.title}-${segment.label}`}>
-                    <td>{distribution.title}</td>
-                    <td>{segment.label}</td>
-                    <td>
+                    <td className={styles.categoryCell}>
+                      {index === 0 ? distribution.title : ""}
+                    </td>
+                    <td className={styles.labelCell}>
+                      <span
+                        className={
+                          index === 0
+                            ? styles.tablePrimaryDot
+                            : styles.tableSecondaryDot
+                        }
+                        aria-hidden="true"
+                      />
+                      <span>{segment.label}</span>
+                    </td>
+                    <td className={styles.countCell}>
                       <CountUp value={segment.count} suffix="명" />
                     </td>
-                    <td>
+                    <td className={styles.percentCell}>
                       <CountUp value={segment.percent} suffix="%" />
                     </td>
                   </tr>

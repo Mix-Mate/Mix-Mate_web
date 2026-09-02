@@ -55,7 +55,6 @@ function DefaultParticipantListScreen() {
         : 1;
   const { data } = useParticipantListQuery(params.groupId, {
     round,
-    polling: group?.myRole === "HOST" && group.status === "RECRUITING",
   });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
   const canViewPrivateProfiles = group?.myRole === "HOST";

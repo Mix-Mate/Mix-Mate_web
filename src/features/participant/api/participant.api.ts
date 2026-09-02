@@ -41,13 +41,17 @@ function toGender(
   return gender === "FEMALE" ? "female" : "male";
 }
 
+function toRole(position?: ParticipantSummaryResponse["position"]) {
+  return position === "STAFF" ? "staff" : "general";
+}
+
 function toParticipant(summary: ParticipantSummaryResponse): Participant {
   return {
     id: String(summary.participantId),
     name: summary.displayName,
     department: summary.major,
     visibility: toVisibility(summary.visibility),
-    role: "general",
+    role: toRole(summary.position),
     gender: toGender(summary.gender),
   };
 }
@@ -104,31 +108,6 @@ async function request(path: string, init?: RequestInit) {
   });
 }
 
-async function getParticipantWithProfile(
-  groupId: string,
-  summary: ParticipantSummaryResponse,
-  signal?: AbortSignal,
-): Promise<Participant> {
-  const participantId = String(summary.participantId);
-
-  try {
-    const response = await request(
-      `/api/v1/groups/${groupId}/participants/${participantId}`,
-      { signal },
-    );
-
-    if (!response.ok) {
-      return toParticipant(summary);
-    }
-
-    const profile = (await response.json()) as ParticipantProfileResponse;
-    return toParticipantProfile(profile, participantId, toVisibility(summary.visibility));
-  } catch (error) {
-    if (isAbortError(error)) throw error;
-    return toParticipant(summary);
-  }
-}
-
 async function getParticipantTeams(
   groupId: string,
   round: AssignmentRound,
@@ -180,11 +159,7 @@ export async function getParticipants(
   }
 
   const data = (await participantsResponse.json()) as ParticipantListResponse;
-  const participants = await Promise.all(
-    data.participantList.map((summary) =>
-      getParticipantWithProfile(groupId, summary, signal),
-    ),
-  );
+  const participants = data.participantList.map(toParticipant);
   const participantsById = new Map(
     participants.map((participant) => [participant.id, participant]),
   );
