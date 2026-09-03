@@ -16,6 +16,7 @@ interface UserSessionContentProps {
   onNavigate: (href: string) => void;
   onRequestLeave: () => void;
   onRequestEndRound: () => void;
+  voteAction?: { label: string; onClick: () => void };
 }
 
 export default function UserSessionContent({
@@ -28,6 +29,7 @@ export default function UserSessionContent({
   onNavigate,
   onRequestLeave,
   onRequestEndRound,
+  voteAction,
 }: UserSessionContentProps) {
   const isAssigned = teamNumber !== null;
   const isAdmin = snapshot.role === "ADMIN";
@@ -56,6 +58,10 @@ export default function UserSessionContent({
             : undefined
         }
       />
+
+      {voteAction && (
+        <Button onClick={voteAction.onClick}>{voteAction.label}</Button>
+      )}
 
       {isTeamLoading ? (
         <section className={styles.waitingCard} aria-live="polite">

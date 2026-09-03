@@ -25,6 +25,8 @@ import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
+import AdminPreparationScreen from "@/screens/admin/AdminPreparationScreen";
+import AdminRecruitmentScreen from "@/screens/admin/AdminRecruitmentScreen";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
@@ -132,13 +134,8 @@ export default function UserHomeScreen() {
 
     if (group.status === "FINISHED") {
       router.replace(groupRoutes.completed(params.groupId));
-      return;
     }
-
-    if (shouldShowAdminPreparation) {
-      router.replace(groupRoutes.adminPreparation(params.groupId));
-    }
-  }, [group, params.groupId, router, shouldShowAdminPreparation]);
+  }, [group, params.groupId, router]);
 
   const closeLeaveDialog = useCallback(() => {
     if (!isLeavingGroup) setLeaveDialogOpen(false);
@@ -275,13 +272,16 @@ export default function UserHomeScreen() {
     router,
   ]);
 
-  if (
-    !group ||
-    !snapshot ||
-    group.status === "FINISHED" ||
-    shouldShowAdminPreparation
-  ) {
+  if (!group || !snapshot || group.status === "FINISHED") {
     return null;
+  }
+
+  if (isAdmin && group.status === "RECRUITING") {
+    return <AdminRecruitmentScreen />;
+  }
+
+  if (shouldShowAdminPreparation) {
+    return <AdminPreparationScreen />;
   }
 
   if (isCheckingSecondRoundAttendance) {
@@ -353,6 +353,25 @@ export default function UserHomeScreen() {
         }
         onRequestLeave={() => setLeaveDialogOpen(true)}
         onRequestEndRound={() => setEndRoundDialogOpen(true)}
+        voteAction={
+          group.status === "VOTING" || group.status === "VOTE_CLOSED"
+            ? {
+                label:
+                  group.status === "VOTING"
+                    ? "투표 화면으로 이동"
+                    : "투표 결과 보기",
+                onClick: () =>
+                  router.push(
+                    withSessionContext(
+                      group.status === "VOTING"
+                        ? groupRoutes.mvpVote(params.groupId)
+                        : groupRoutes.voteResult(params.groupId),
+                      searchParams,
+                    ),
+                  ),
+              }
+            : undefined
+        }
       />
 
       {finalRoundError && (

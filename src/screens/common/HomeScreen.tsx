@@ -12,7 +12,6 @@ import {
   type MyGroupItem,
 } from "@/features/group/api/group.api";
 import { isGroupHost } from "@/features/group/lib/group-entry-route";
-import { resolveGroupEntryRoute } from "@/features/group/lib/resolve-group-entry-route";
 import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import {
@@ -233,9 +232,9 @@ export default function HomeScreen({
   const [activeGroups, setActiveGroups] = useState<HomeScreenGroupItem[]>(() =>
     sortActiveGroups(initialActiveGroups),
   );
-  const [completedGroups, setCompletedGroups] = useState<
-    HomeScreenGroupItem[]
-  >(() => sortCompletedGroups(initialCompletedGroups));
+  const [completedGroups, setCompletedGroups] = useState<HomeScreenGroupItem[]>(
+    () => sortCompletedGroups(initialCompletedGroups),
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   // Modal states
@@ -368,9 +367,7 @@ export default function HomeScreen({
     if (group.status === "FINISHED") {
       return;
     }
-    router.push(
-      await resolveGroupEntryRoute(group.id, group.role, group.status),
-    );
+    router.push(groupRoutes.home(group.id));
   };
 
   return (
@@ -527,8 +524,8 @@ export default function HomeScreen({
                             <span
                               className={`${styles.roleTag} ${
                                 group.role === "HOST"
-                                   ? styles.roleTagAdmin
-                                   : styles.roleTagUser
+                                  ? styles.roleTagAdmin
+                                  : styles.roleTagUser
                               }`}
                             >
                               {group.role === "HOST" ? "관리자" : "사용자"}

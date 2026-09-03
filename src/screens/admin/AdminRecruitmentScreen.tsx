@@ -143,7 +143,7 @@ export default function AdminRecruitmentScreen() {
       group.status === "VOTE_CLOSED"
     ) {
       router.replace(
-        withSessionContext(groupRoutes.adminProgress(params.groupId), searchParams),
+        withSessionContext(groupRoutes.home(params.groupId), searchParams),
       );
       return;
     }

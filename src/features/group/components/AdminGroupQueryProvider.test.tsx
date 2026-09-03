@@ -23,7 +23,7 @@ import GroupStatusNavigationBoundary from "./GroupStatusNavigationBoundary";
 
 const { route, router, getGroupDetail, subscribe, getMyTeam } = vi.hoisted(
   () => ({
-    route: { groupId: "6", pathname: "/groups/6/home" },
+    route: { groupId: "6", pathname: "/groups/6" },
     router: { replace: vi.fn(), push: vi.fn(), back: vi.fn() },
     getGroupDetail: vi.fn(),
     subscribe: vi.fn(),
@@ -133,7 +133,7 @@ describe("공통 그룹 SSE 동기화", () => {
     vi.clearAllMocks();
     subscriptions = [];
     route.groupId = "6";
-    route.pathname = "/groups/6/home";
+    route.pathname = "/groups/6";
     setAuthTokens({ accessToken: "test-token" });
     getGroupDetail.mockImplementation(async (id: string) =>
       group("RECRUITING", Number(id)),
@@ -205,7 +205,7 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).not.toHaveBeenCalled();
   });
 
-  it.each(["/groups/6/home", "/groups/6/admin"])(
+  it.each(["/groups/6", "/groups/6/admin"])(
     "관리자도 %s에서 투표 시작 이벤트를 받으면 MVP 투표로 한 번만 이동한다",
     async (pathname) => {
       route.pathname = pathname;
@@ -215,7 +215,7 @@ describe("공통 그룹 SSE 동기화", () => {
       });
       render(
         <App
-          home={pathname.endsWith("/home")}
+          home={pathname === "/groups/6"}
           adminHome={pathname.endsWith("/admin")}
         />,
       );
@@ -227,6 +227,30 @@ describe("공통 그룹 SSE 동기화", () => {
       );
       expect(subscribe).toHaveBeenCalledOnce();
       expect(subscriptions[0].stop).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    ["/groups/6", "/groups/6/admin"].flatMap((pathname) =>
+      (["FIRST_ROUND", "SECOND_ROUND", "VOTING", "VOTE_CLOSED"] as const).map(
+        (status) => ({ pathname, status }),
+      ),
+    ),
+  )(
+    "$status 상태로 $pathname에 진입하면 진행 현황 대신 그룹 홈을 보여준다",
+    async ({ pathname, status }) => {
+      route.pathname = pathname;
+      getGroupDetail.mockResolvedValue({ ...group(status), myRole: "HOST" });
+      render(
+        <App
+          home={pathname === "/groups/6"}
+          adminHome={pathname.endsWith("/admin")}
+        />,
+      );
+
+      await screen.findByTestId("user-home");
+      expect(screen.queryByTestId("admin-progress")).not.toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
     },
   );
 
