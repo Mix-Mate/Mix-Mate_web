@@ -1,9 +1,12 @@
 .content {
   display: flex;
-  height: calc(var(--mobile-frame-height) - 128px);
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   align-items: center;
   justify-content: center;
   padding: 13px 16px;
+  box-sizing: border-box;
 }
 
 .indicator {

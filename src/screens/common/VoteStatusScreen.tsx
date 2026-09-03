@@ -155,16 +155,20 @@ export default function VoteStatusScreen() {
               </p>
             )}
 
-            {!isComplete && !error && (
+            {!error && (
               <p className={styles.waitingNotice}>
                 <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-                {canForceEndVote
-                  ? "미투표자가 있습니다. 관리자가 수동으로 투표를 종료할 수 있습니다."
-                  : "미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다."}
+                {isComplete
+                  ? canForceEndVote
+                    ? "모든 참가자가 투표를 완료했습니다. '전체 투표 종료하기'를 눌러 마감해주세요."
+                    : "모든 참가자가 투표를 완료했습니다. 관리자가 투표를 종료하면 결과를 확인할 수 있습니다."
+                  : canForceEndVote
+                    ? "미투표자가 있습니다. 관리자가 수동으로 투표를 종료할 수 있습니다."
+                    : "미투표자가 있습니다. 투표가 완료되면 결과를 확인할 수 있습니다."}
               </p>
             )}
 
-            {canForceEndVote && !isComplete && (
+            {canForceEndVote && (
               <AdminVoteEndButton onEnd={showAdminVoteEnd} />
             )}
 
@@ -172,10 +176,7 @@ export default function VoteStatusScreen() {
               {isRefreshing ? "투표 현황을 갱신하고 있습니다." : ""}
             </span>
 
-            <VoteCompletionWatcher
-              isComplete={isComplete}
-              onComplete={showVoteResult}
-            />
+            <VoteCompletionWatcher isComplete={isComplete} />
           </>
         )}
       </section>

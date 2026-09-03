@@ -3,14 +3,16 @@
 }
 
 .content {
-  width: 390px;
-  height: 772px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   padding: 16px;
   background: #fbfbfd;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .flushContent {
-  height: 772px;
   padding: 0;
   background: #fcfcff;
 }

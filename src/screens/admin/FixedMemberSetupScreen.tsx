@@ -221,7 +221,10 @@ export default function FixedMemberSetupScreen() {
       <div className={styles.content}>
         <h2 className={styles.heading}>고정 멤버 설정</h2>
 
-        <InfoBanner>이전 회차의 조와 조원 목록을 확인할 수 있습니다.</InfoBanner>
+        <InfoBanner>
+          미지정 멤버를 &apos;조 지정&apos; 탭을 통하여 원하는 조에 고정할 수
+          있습니다.
+        </InfoBanner>
 
         <div className={styles.sectionHeadingRow}>
           <h3 className={styles.sectionHeading}>고정된 멤버</h3>
