@@ -1,9 +1,9 @@
 .mvpScreen,
 .attendanceScreen {
   display: flex;
-  width: 358px;
-  height: 740px;
+  width: 100%;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .introCard {
@@ -79,6 +79,7 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  gap: 16px;
   margin-top: 12px;
 }
 
@@ -166,7 +167,6 @@
   min-height: 40px;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
   padding: 0 14px;
   border: 1px solid #9dceff;
   border-radius: 12px;
@@ -183,7 +183,6 @@
 }
 
 .formError {
-  margin-top: 10px;
   padding: 9px 12px;
   border-radius: 10px;
   font-size: 11px;
@@ -202,10 +201,12 @@
 
 .attendanceForm {
   display: flex;
-  width: 358px;
-  height: 740px;
+  width: 100%;
+  min-height: 100%;
   flex-direction: column;
+  gap: 16px;
   padding-top: 72px;
+  box-sizing: border-box;
 }
 
 .attendanceThresholdNotice {

@@ -1,9 +1,10 @@
 .resultScreen {
   display: flex;
-  width: 390px;
+  width: 100%;
   height: 100%;
   flex-direction: column;
   background: #fcfcff;
+  box-sizing: border-box;
 }
 
 .resultBody {
@@ -30,7 +31,7 @@
 }
 
 .overallResultCard {
-  width: 350px;
+  width: 100%;
   height: 449px;
   flex-basis: 449px;
   padding: 24px 20px 28px;
@@ -529,9 +530,10 @@ button.resultPill {
 
 .participantListButton {
   display: grid;
-  width: 342px;
+  width: 100%;
   height: 72px;
   flex: 0 0 72px;
+  box-sizing: border-box;
   grid-template-columns: 20px minmax(0, 1fr) 20px;
   align-items: center;
   gap: 16px;
@@ -595,10 +597,11 @@ button.resultPill:focus-visible,
 
 .resultQueryScreen {
   display: grid;
-  width: 390px;
+  width: 100%;
   height: 100%;
   padding: 16px;
   background: #fcfcff;
+  box-sizing: border-box;
 }
 
 .resultQueryState {

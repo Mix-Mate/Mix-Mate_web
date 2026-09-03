@@ -1,5 +1,6 @@
 .teamPanel {
-  width: 358px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .panelHeader {

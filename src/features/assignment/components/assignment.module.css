@@ -1,7 +1,10 @@
 .form {
   display: flex;
-  height: calc(var(--mobile-frame-height) - 128px);
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .scrollArea {
@@ -244,7 +247,7 @@
 
 .footer {
   flex: 0 0 auto;
-  padding: 13px 16px 16px;
+  padding: 24px 16px;
   border-top: 1px solid #f0f0f2;
   background: #fff;
 }
