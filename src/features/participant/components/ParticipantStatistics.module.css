@@ -351,25 +351,25 @@
 }
 
 .categoryColumn {
-  width: 24%;
+  width: 78px;
 }
 
 .labelColumn {
-  width: 43%;
+  width: auto;
 }
 
 .countColumn {
-  width: 17%;
+  width: 56px;
 }
 
 .percentColumn {
-  width: 16%;
+  width: 56px;
 }
 
 .table th,
 .table td {
   height: 40px;
-  padding: 0 2px;
+  padding: 0;
   border-bottom: 1px solid #f0f2f5;
   font-size: 13px;
   line-height: 18px;
@@ -382,16 +382,21 @@
   font-weight: 800;
 }
 
+.table th:nth-child(1),
+.categoryCell {
+  padding-left: 2px;
+}
+
+.table th:nth-child(2),
+.labelCell {
+  padding-left: 6px;
+}
+
 .table th:nth-child(3),
 .countCell,
 .table th:nth-child(4),
 .percentCell {
-  text-align: right;
-}
-
-.table th:nth-child(3),
-.countCell {
-  padding-right: 8px;
+  text-align: left;
 }
 
 .table tbody tr:last-child td {
@@ -407,7 +412,7 @@
 .labelCell {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   color: #4b5563;
   font-weight: 700;
 }
@@ -440,12 +445,16 @@
   color: #18181b;
   font-size: 14px;
   font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .percentCell {
   color: #5f6875;
   font-size: 14px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 @keyframes drawDonut {
