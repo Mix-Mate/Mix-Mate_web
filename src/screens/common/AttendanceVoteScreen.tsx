@@ -76,6 +76,7 @@ export default function AttendanceVoteScreen() {
       status={context.status}
       onBack={back}
       testId="attendance-vote-screen"
+      flushContent
     >
       <section className={styles.attendanceScreen}>
         <AttendanceVoteForm
