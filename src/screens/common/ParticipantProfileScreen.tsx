@@ -9,6 +9,8 @@ import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAd
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
 import type { ParticipantProfile } from "@/features/participant/types/participant.types";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -27,6 +29,34 @@ interface ParticipantProfileScreenProps {
   participantId: string;
 }
 
+const gradeLabelMap = {
+  FIRST: "1학년",
+  SECOND: "2학년",
+  THIRD: "3학년",
+  FOURTH: "4학년",
+  OTHER: "기타",
+} as const;
+
+function toProfileFromMyGroupProfile(
+  profile: MyGroupProfile,
+  participantId: string,
+): ParticipantProfile {
+  return {
+    id: participantId,
+    name: profile.displayName,
+    department: profile.major,
+    visibility: profile.visibility === "PUBLIC" ? "public" : "private",
+    role: profile.position === "STAFF" ? "staff" : "general",
+    gender: profile.gender === "FEMALE" ? "female" : "male",
+    grade: gradeLabelMap[profile.grade],
+    mbti: profile.mbti,
+    age: profile.age ?? undefined,
+    instagramId: profile.instaId ?? undefined,
+    bio: profile.bio ?? undefined,
+    isNew: profile.isNew,
+  };
+}
+
 export default function ParticipantProfileScreen({
   groupId,
   participantId,
@@ -34,6 +64,7 @@ export default function ParticipantProfileScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(groupId);
+  const { data: myProfile } = useMyGroupProfileQuery(groupId);
   const { mutate: blockParticipant, isPending: isBlocking } =
     useBlockParticipantMutation();
 
@@ -49,7 +80,6 @@ export default function ParticipantProfileScreen({
   const { data: profileDetail } = useParticipantProfileQuery(
     groupId,
     participantId,
-    { enabled: !isAdminView },
   );
   const { data: adminParticipantGroup } = useAdminParticipantListQuery(
     groupId,
@@ -58,6 +88,12 @@ export default function ParticipantProfileScreen({
   const { data: participantGroup } = useParticipantListQuery(groupId, {
     round: resolvedRound,
   });
+  const resolvedMyParticipantId =
+    myProfile?.id && myProfile.id !== "me"
+      ? myProfile.id
+      : group?.myParticipantId
+        ? String(group.myParticipantId)
+        : null;
 
   const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
     const adminParticipant = adminParticipantGroup.participants.find(
@@ -78,12 +114,12 @@ export default function ParticipantProfileScreen({
 
     return {
       ...participant,
-      grade: "",
-      mbti: "",
-      isNew: false,
-      age: undefined,
-      instagramId: undefined,
-      bio: undefined,
+      grade: participant.grade ?? "",
+      mbti: participant.mbti ?? "",
+      isNew: participant.isNew ?? false,
+      age: participant.age,
+      instagramId: participant.instagramId,
+      bio: participant.bio,
     };
   }, [
     adminParticipantGroup.participants,
@@ -91,13 +127,37 @@ export default function ParticipantProfileScreen({
     participantId,
   ]);
 
-  const profile = profileDetail ?? fallbackProfile;
+  const profile = useMemo(() => {
+    const baseProfile = profileDetail ?? fallbackProfile;
+    const isSelfProfile =
+      myProfile &&
+      ((resolvedMyParticipantId &&
+        String(resolvedMyParticipantId) === String(participantId)) ||
+        (!resolvedMyParticipantId &&
+          baseProfile?.name === myProfile.displayName &&
+          baseProfile.department === myProfile.major));
+
+    if (isSelfProfile) {
+      return toProfileFromMyGroupProfile(
+        myProfile,
+        resolvedMyParticipantId ?? participantId,
+      );
+    }
+
+    return baseProfile;
+  }, [
+    fallbackProfile,
+    myProfile,
+    participantId,
+    profileDetail,
+    resolvedMyParticipantId,
+  ]);
 
   if (!group || !profile) return null;
 
   const isSelf = Boolean(
-    group.myParticipantId &&
-      String(group.myParticipantId) === String(participantId),
+    resolvedMyParticipantId &&
+      String(resolvedMyParticipantId) === String(participantId),
   );
 
   const canManageParticipant =

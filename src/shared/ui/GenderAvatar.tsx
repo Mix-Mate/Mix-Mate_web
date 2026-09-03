@@ -1,4 +1,3 @@
-import Image from "next/image";
 import clsx from "clsx";
 import type { Gender } from "@/shared/types/gender.types";
 import styles from "./GenderAvatar.module.css";
@@ -16,12 +15,7 @@ interface GenderAvatarProps {
   backgroundColor?: string;
 }
 
-const genderIconPaths: Record<GenderAvatarGender, string> = {
-  male: "/icons/participant-male.svg",
-  female: "/icons/participant-female.svg",
-};
-
-const avatarColors = ["#DBE6FF", "#C2D2F1", "#7C9EF8", "#829AE4", "#7C8DC1"];
+const avatarColors = ["#5B8DEF", "#2F6BFF", "#1F5AF6", "#1642C8", "#0F2E8F"];
 
 function getAvatarToneIndex(name: string) {
   return Array.from(name).reduce(
@@ -31,15 +25,13 @@ function getAvatarToneIndex(name: string) {
 }
 
 export default function GenderAvatar({
-  gender,
   name,
   toneKey,
   size = 50,
-  shape = "rounded",
+  shape = "circle",
   className,
   backgroundColor,
 }: GenderAvatarProps) {
-  const iconSrc = genderIconPaths[gender];
   const toneIndex = getAvatarToneIndex(String(toneKey ?? name));
   const avatarColor = backgroundColor ?? avatarColors[toneIndex];
 
@@ -49,18 +41,39 @@ export default function GenderAvatar({
       style={{
         width: size,
         height: size,
-        backgroundColor: avatarColor,
       }}
       aria-label={name}
       role="img"
     >
-      <Image
-        src={iconSrc}
-        alt=""
+      <svg
+        className={styles.icon}
         width={size}
         height={size}
-        className={clsx(styles.icon, styles[`tone${toneIndex}`])}
-      />
+        viewBox="0 0 62 62"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 26C8 13.2975 18.2975 3 31 3C43.7025 3 54 13.2975 54 26C54 38.7025 43.7025 49 31 49C18.2975 49 8 38.7025 8 26Z"
+          fill={avatarColor}
+          shapeRendering="crispEdges"
+        />
+        <path
+          d="M31 27C33.7614 27 36 24.7614 36 22C36 19.2386 33.7614 17 31 17C28.2386 17 26 19.2386 26 22C26 24.7614 28.2386 27 31 27Z"
+          stroke="white"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M39 35C39 32.8783 38.1571 30.8434 36.6569 29.3431C35.1566 27.8429 33.1217 27 31 27C28.8783 27 26.8434 27.8429 25.3431 29.3431C23.8429 30.8434 23 32.8783 23 35"
+          stroke="white"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </span>
   );
 }

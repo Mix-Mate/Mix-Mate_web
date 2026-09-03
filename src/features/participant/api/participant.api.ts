@@ -53,6 +53,12 @@ function toParticipant(summary: ParticipantSummaryResponse): Participant {
     visibility: toVisibility(summary.visibility),
     role: toRole(summary.position),
     gender: toGender(summary.gender),
+    grade: summary.grade ? gradeLabels[summary.grade] : undefined,
+    isNew: summary.isNew,
+    mbti: summary.mbti,
+    age: summary.age ?? undefined,
+    instagramId: summary.instaId ?? undefined,
+    bio: summary.bio ?? undefined,
   };
 }
 
@@ -90,9 +96,9 @@ export function toParticipantProfile(
     gender: profile.gender === "FEMALE" ? "female" : "male",
     grade: gradeLabels[profile.grade],
     mbti: profile.mbti,
-    age: profile.age,
-    instagramId: profile.instaId,
-    bio: profile.bio,
+    age: profile.age ?? undefined,
+    instagramId: profile.instaId ?? undefined,
+    bio: profile.bio ?? undefined,
     isNew: profile.isNew,
   };
 }

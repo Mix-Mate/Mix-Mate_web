@@ -250,7 +250,7 @@
 
 .participantItem {
   display: flex;
-  min-height: 82px;
+  min-height: 96px;
   align-items: center;
   gap: 16px;
   color: inherit;
@@ -272,19 +272,44 @@
 .participantInfo strong {
   overflow: hidden;
   color: #18181b;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 27px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 28px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.participantInfo span {
+.nameRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.nameRow strong {
+  min-width: 0;
+}
+
+.staffBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #eff6ff;
+  color: #1f66d1;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+}
+
+.participantInfo > span {
   overflow: hidden;
-  color: #71717a;
-  font-size: 14px;
+  color: #8b93a1;
+  font-size: 16px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 22px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -375,7 +400,7 @@
 }
 
 .teamBox .participantItem {
-  min-height: 73px;
+  min-height: 88px;
 }
 
 .screenFrame.screenFrame {

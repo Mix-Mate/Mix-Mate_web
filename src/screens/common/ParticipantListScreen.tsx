@@ -16,8 +16,10 @@ import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import type {
   Participant,
+  ParticipantTeam,
   ParticipantViewMode,
 } from "@/features/participant/types/participant.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -25,6 +27,48 @@ import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./ParticipantListScreen.module.css";
 import VoteResultListScreen from "./VoteResultListScreen";
+
+const gradeLabelMap = {
+  FIRST: "1학년",
+  SECOND: "2학년",
+  THIRD: "3학년",
+  FOURTH: "4학년",
+  OTHER: "기타",
+} as const;
+
+function enrichParticipantWithMyProfile(
+  participant: Participant,
+  myProfile: MyGroupProfile | null,
+  myParticipantId: string | null,
+) {
+  if (!myProfile) {
+    return participant;
+  }
+
+  const isSameParticipant = myParticipantId
+    ? participant.id === myParticipantId
+    : participant.name === myProfile.displayName &&
+      participant.department === myProfile.major;
+
+  if (!isSameParticipant) {
+    return participant;
+  }
+
+  return {
+    ...participant,
+    name: myProfile.displayName,
+    department: myProfile.major,
+    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
+    role: myProfile.position === "STAFF" ? "staff" : "general",
+    gender: myProfile.gender === "FEMALE" ? "female" : "male",
+    grade: gradeLabelMap[myProfile.grade],
+    isNew: myProfile.isNew,
+    mbti: myProfile.mbti,
+    age: myProfile.age ?? undefined,
+    instagramId: myProfile.instaId ?? undefined,
+    bio: myProfile.bio ?? undefined,
+  } satisfies Participant;
+}
 
 export default function ParticipantListScreen() {
   const searchParams = useSearchParams();
@@ -67,6 +111,23 @@ function DefaultParticipantListScreen() {
       : group?.myParticipantId
         ? String(group.myParticipantId)
         : null;
+  const enrichedParticipants = useMemo(
+    () =>
+      data.participants.map((participant) =>
+        enrichParticipantWithMyProfile(participant, myProfile, myParticipantId),
+      ),
+    [data.participants, myParticipantId, myProfile],
+  );
+  const enrichedTeams = useMemo<ParticipantTeam[]>(
+    () =>
+      data.teams.map((team) => ({
+        ...team,
+        members: team.members.map((participant) =>
+          enrichParticipantWithMyProfile(participant, myProfile, myParticipantId),
+        ),
+      })),
+    [data.teams, myParticipantId, myProfile],
+  );
   const backHref =
     group?.myRole === "HOST" && group.status === "RECRUITING"
       ? groupRoutes.adminRecruitment(params.groupId)
@@ -79,7 +140,7 @@ function DefaultParticipantListScreen() {
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    const participants = data.participants.filter((participant) => {
+    const participants = enrichedParticipants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
@@ -100,12 +161,12 @@ function DefaultParticipantListScreen() {
 
       return 0;
     });
-  }, [data.participants, filter, isMyParticipant, keyword]);
+  }, [enrichedParticipants, filter, isMyParticipant, keyword]);
 
   const filteredTeams = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    return data.teams
+    return enrichedTeams
       .map((team) => ({
         ...team,
         members: team.members.filter((participant) => {
@@ -117,7 +178,7 @@ function DefaultParticipantListScreen() {
         }),
       }))
       .filter((team) => team.members.length > 0);
-  }, [data.teams, filter, keyword]);
+  }, [enrichedTeams, filter, keyword]);
 
   return (
     <MobileFrame
