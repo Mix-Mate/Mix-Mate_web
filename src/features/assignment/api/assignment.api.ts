@@ -86,6 +86,30 @@ export async function getTeams(
   return data.teams;
 }
 
+/**
+ * 그룹이 실제로 2차까지 진행됐는지 확인한다.
+ * (group.status는 FINISHED가 되면 몇 차까지 진행됐는지 정보를 잃으므로,
+ * 2차 조 편성 데이터 존재 여부로 역으로 판단한다.)
+ * 관리자는 항상 정확하게 판단 가능하고, 2차 미참여 참가자는 403이 나서
+ * 판단할 수 없으므로 그 경우 null을 반환해 호출부가 기본값을 쓰게 한다.
+ */
+export async function hasSecondRoundTeams(
+  groupId: string,
+): Promise<boolean | null> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/SECOND_ROUND/teams`,
+      { credentials: "include", headers: withAuthHeaders() },
+    );
+
+    if (response.ok) return true;
+    if (response.status === 409) return false;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function confirmTeams(
   groupId: string,
   round: AssignmentRound,

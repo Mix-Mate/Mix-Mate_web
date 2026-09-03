@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { hasSecondRoundTeams } from "@/features/assignment/api/assignment.api";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import Button from "@/shared/ui/Button";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -17,10 +19,27 @@ export default function CompletedScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const { data: group } = useAdminGroupQuery(params.groupId);
+  // group.status가 FINISHED가 되면 몇 차까지 진행됐는지 정보가 사라지므로,
+  // 2차 조 편성 데이터가 실제로 있는지로 역으로 판단한다.
+  // null(조회 전/판단 불가)일 때는 기존 동작대로 2차로 간주한다.
+  const [hasSecondRound, setHasSecondRound] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    hasSecondRoundTeams(params.groupId).then((result) => {
+      if (!ignore) setHasSecondRound(result);
+    });
+
+    return () => {
+      ignore = true;
+    };
+  }, [params.groupId]);
 
   if (!group) return null;
 
   const snapshot = createGroupHomeSnapshot(group);
+  const completedRound = hasSecondRound === false ? 1 : snapshot.round;
 
   return (
     <MobileFrame
@@ -95,7 +114,7 @@ export default function CompletedScreen() {
           <div className={styles.statusText}>
             <p className={styles.statusMeta}>{group.groupName}</p>
             <p className={styles.statusLabel}>
-              {snapshot.round}차 술자리까지 모두 완료
+              {completedRound}차 술자리까지 모두 완료
             </p>
           </div>
         </div>
