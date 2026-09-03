@@ -7,3 +7,13 @@
   --mobile-frame-width: 390px;
   --mobile-frame-height: 844px;
 }
+
+/* 실기기(좁은 뷰포트)에서는 데스크톱 목업 크기(390x844) 대신
+   실제 뷰포트를 꽉 채우도록 한다. 모든 화면이 이 변수를 참조하므로
+   화면별 CSS는 건드리지 않아도 된다. */
+@media (max-width: 480px) {
+  :root {
+    --mobile-frame-width: 100dvw;
+    --mobile-frame-height: 100dvh;
+  }
+}

@@ -8,6 +8,14 @@
   background: var(--color-app-background);
 }
 
+/* 실기기에서는 목업 바깥 여백이 없으므로 회색 배경도 필요 없다.
+   안전영역에 회색이 비치지 않도록 화면 배경색과 맞춘다. */
+@media (max-width: 480px) {
+  .viewport {
+    background: var(--color-surface);
+  }
+}
+
 .phone {
   position: relative;
   display: flex;
@@ -17,6 +25,11 @@
   overflow: hidden;
   background: var(--color-surface);
   color: var(--color-text);
+  /* 노치/다이나믹 아일랜드/홈 인디케이터 영역도 화면 자체 배경색으로 채워지도록
+     안쪽 여백으로 처리한다. 기기마다 값이 다르고 없는 기기는 0이라 기종 분기가 필요 없다. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  box-sizing: border-box;
 }
 
 .phone,
