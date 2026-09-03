@@ -42,7 +42,7 @@ export default function AdminParticipantManagementScreen() {
   const isRoundResolved = Boolean(roundParam || group);
   const { data } = useAdminParticipantListQuery(params.groupId, round, {
     enabled: isRoundResolved,
-    polling: group?.status === "RECRUITING",
+    polling: group?.status === "RECRUITING" && round === 1,
   });
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -59,17 +59,6 @@ export default function AdminParticipantManagementScreen() {
       }
     }
   }, [showToast]);
-
-  const stats = useMemo(
-    () => ({
-      total: data.participants.length,
-      staff: data.participants.filter((participant) => participant.role === "staff")
-        .length,
-      freshman: data.participants.filter((participant) => participant.isNew)
-        .length,
-    }),
-    [data.participants],
-  );
 
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
@@ -181,20 +170,6 @@ export default function AdminParticipantManagementScreen() {
       />
 
       <main className={styles.content}>
-        <section className={styles.statsGrid} aria-label="참가자 통계">
-          <article>
-            <strong>{stats.total}</strong>
-            <span>전체</span>
-          </article>
-          <article>
-            <strong>{stats.staff}</strong>
-            <span>운영진</span>
-          </article>
-          <article>
-            <strong>{stats.freshman}</strong>
-            <span>신입</span>
-          </article>
-        </section>
 
         <SearchBar
           value={keyword}

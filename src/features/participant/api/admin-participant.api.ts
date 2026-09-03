@@ -3,10 +3,8 @@ import type {
   AdminParticipantGroup,
   ParticipantListResponse,
   ParticipantProfileRequest,
-  ParticipantProfileResponse,
   ParticipantSummaryResponse,
 } from "../types/participant.types";
-import { toParticipantProfile } from "./participant.api";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import { getGroupDetail } from "@/features/group/api/group.api";
@@ -158,29 +156,6 @@ async function request(path: string, init?: RequestInit) {
   });
 }
 
-async function getParticipantDetail(
-  groupId: string,
-  summary: ParticipantSummaryResponse,
-  signal?: AbortSignal,
-): Promise<AdminParticipant> {
-  const participantId = String(summary.participantId);
-  const response = await request(
-    `/api/v1/groups/${groupId}/participants/${participantId}`,
-    { signal },
-  );
-
-  if (!response.ok) {
-    return toDefaultAdminParticipant(groupId, summary);
-  }
-
-  const profile = (await response.json()) as ParticipantProfileResponse;
-  return toParticipantProfile(
-    profile,
-    participantId,
-    toVisibility(summary.visibility),
-  );
-}
-
 export async function getAdminParticipants(
   groupId: string,
   round: AssignmentRound,
@@ -201,10 +176,8 @@ export async function getAdminParticipants(
   }
 
   const data = (await response.json()) as ParticipantListResponse;
-  const participants = await Promise.all(
-    data.participantList.map((summary) =>
-      getParticipantDetail(groupId, summary, signal),
-    ),
+  const participants = data.participantList.map((summary) =>
+    toDefaultAdminParticipant(groupId, summary),
   );
 
   return {
