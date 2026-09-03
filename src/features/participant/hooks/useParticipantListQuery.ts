@@ -19,17 +19,26 @@ function isAbortError(error: unknown) {
 
 export function useParticipantListQuery(
   groupId: string,
-  options: { polling?: boolean; round?: AssignmentRound } = {},
+  options: {
+    enabled?: boolean;
+    polling?: boolean;
+    round?: AssignmentRound;
+  } = {},
 ) {
+  const enabled = options.enabled ?? true;
   const polling = options.polling ?? false;
   const round = options.round ?? 1;
   const requestIdRef = useRef(0);
   const [data, setData] = useState(initialParticipantGroup);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [isError, setIsError] = useState(false);
 
   const fetchParticipants = useCallback(
     async (isInitialRequest: boolean, signal?: AbortSignal) => {
+      if (!enabled) {
+        return false;
+      }
+
       const requestId = ++requestIdRef.current;
 
       if (isInitialRequest) {
@@ -62,10 +71,14 @@ export function useParticipantListQuery(
         }
       }
     },
-    [groupId, round],
+    [enabled, groupId, round],
   );
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const requestController = new AbortController();
     const initialRequestTimer = window.setTimeout(() => {
       void fetchParticipants(true, requestController.signal);
@@ -75,10 +88,10 @@ export function useParticipantListQuery(
       window.clearTimeout(initialRequestTimer);
       requestController.abort();
     };
-  }, [fetchParticipants]);
+  }, [enabled, fetchParticipants]);
 
   useEffect(() => {
-    if (!polling) {
+    if (!enabled || !polling) {
       return;
     }
 
@@ -112,11 +125,11 @@ export function useParticipantListQuery(
         window.clearTimeout(pollingTimer);
       }
     };
-  }, [fetchParticipants, polling]);
+  }, [enabled, fetchParticipants, polling]);
 
   return {
     data,
-    isLoading,
-    isError,
+    isLoading: enabled ? isLoading : false,
+    isError: enabled ? isError : false,
   };
 }
