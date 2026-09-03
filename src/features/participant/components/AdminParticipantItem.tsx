@@ -28,19 +28,20 @@ export default function AdminParticipantItem({
           gender={participant.gender}
           name={participant.name}
           toneKey={participant.id}
-          size={42}
+          size={68}
         />
 
         <div className={styles.participantInfo}>
-          <strong>{participant.name}</strong>
+          <div className={styles.nameRow}>
+            <strong>{participant.name}</strong>
+            {participant.role === "staff" && (
+              <span className={styles.staffBadge}>운영진</span>
+            )}
+          </div>
           <span>
             {participant.grade} · {roleLabel}
           </span>
         </div>
-
-        {participant.role === "staff" && (
-          <span className={styles.staffBadge}>운영진</span>
-        )}
       </Link>
     </li>
   );

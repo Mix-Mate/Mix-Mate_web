@@ -32,6 +32,12 @@ export type Participant = {
   visibility: ParticipantVisibility;
   role: ParticipantRole;
   gender: ParticipantGender;
+  grade?: string;
+  isNew?: boolean;
+  mbti?: string;
+  age?: number;
+  instagramId?: string;
+  bio?: string;
 };
 
 export type ParticipantTeam = {
@@ -102,7 +108,7 @@ export type ParticipantProfileResponse = {
   isNew: boolean;
   position: ProfilePosition;
   mbti: ProfileMbti;
-  age?: number;
-  instaId?: string;
-  bio?: string;
+  age?: number | null;
+  instaId?: string | null;
+  bio?: string | null;
 };

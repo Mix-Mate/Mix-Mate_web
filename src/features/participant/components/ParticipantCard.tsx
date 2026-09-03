@@ -26,6 +26,8 @@ export default function ParticipantCard({
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
   const resolvedGroupId = groupId ?? params.groupId ?? "1";
+  const roleLabel = participant.role === "staff" ? "운영진" : "일반";
+  const detailText = [participant.grade, roleLabel].filter(Boolean).join(" · ");
   const canViewProfile =
     participant.visibility === "public" || canViewPrivateProfiles;
   const listMode = searchParams?.get("list");
@@ -46,11 +48,17 @@ export default function ParticipantCard({
         gender={participant.gender}
         name={participant.name}
         toneKey={participant.id}
+        size={62}
       />
 
       <div className={styles.participantInfo}>
-        <strong>{participant.name}</strong>
-        <span>{participant.department}</span>
+        <div className={styles.nameRow}>
+          <strong>{participant.name}</strong>
+          {participant.role === "staff" && (
+            <span className={styles.staffBadge}>운영진</span>
+          )}
+        </div>
+        <span>{detailText}</span>
       </div>
 
       {participant.visibility === "private" && (

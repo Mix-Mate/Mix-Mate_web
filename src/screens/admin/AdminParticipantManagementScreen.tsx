@@ -7,7 +7,12 @@ import AdminParticipantList from "@/features/participant/components/AdminPartici
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
-import type { ParticipantRole } from "@/features/participant/types/participant.types";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import type { MyGroupProfile } from "@/features/profile/types/profile.types";
+import type {
+  AdminParticipant,
+  ParticipantRole,
+} from "@/features/participant/types/participant.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -28,6 +33,48 @@ const filterOptions: { label: string; value: FilterValue }[] = [
   { label: "운영진", value: "staff" },
 ];
 
+const gradeLabelMap = {
+  FIRST: "1학년",
+  SECOND: "2학년",
+  THIRD: "3학년",
+  FOURTH: "4학년",
+  OTHER: "기타",
+} as const;
+
+function enrichAdminParticipantWithMyProfile(
+  participant: AdminParticipant,
+  myProfile: MyGroupProfile | null,
+  myParticipantId: string | null,
+) {
+  if (!myProfile) {
+    return participant;
+  }
+
+  const isSameParticipant = myParticipantId
+    ? participant.id === myParticipantId
+    : participant.name === myProfile.displayName &&
+      participant.department === myProfile.major;
+
+  if (!isSameParticipant) {
+    return participant;
+  }
+
+  return {
+    ...participant,
+    name: myProfile.displayName,
+    department: myProfile.major,
+    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
+    role: myProfile.position === "STAFF" ? "staff" : "general",
+    gender: myProfile.gender === "FEMALE" ? "female" : "male",
+    grade: gradeLabelMap[myProfile.grade],
+    isNew: myProfile.isNew,
+    mbti: myProfile.mbti,
+    age: myProfile.age ?? undefined,
+    instagramId: myProfile.instaId ?? undefined,
+    bio: myProfile.bio ?? undefined,
+  } satisfies AdminParticipant;
+}
+
 export default function AdminParticipantManagementScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
@@ -44,11 +91,29 @@ export default function AdminParticipantManagementScreen() {
     enabled: isRoundResolved,
     polling: group?.status === "RECRUITING" && round === 1,
   });
+  const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [menuOpen, setMenuOpen] = useState(false);
   const { message: toastMessage, showToast } = useToast();
   const canAddParticipant = round === 1;
+  const myParticipantId =
+    myProfile?.id && myProfile.id !== "me"
+      ? myProfile.id
+      : group?.myParticipantId
+        ? String(group.myParticipantId)
+        : null;
+  const enrichedParticipants = useMemo(
+    () =>
+      data.participants.map((participant) =>
+        enrichAdminParticipantWithMyProfile(
+          participant,
+          myProfile,
+          myParticipantId,
+        ),
+      ),
+    [data.participants, myParticipantId, myProfile],
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -63,7 +128,7 @@ export default function AdminParticipantManagementScreen() {
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
-    const participants = data.participants.filter((participant) => {
+    const participants = enrichedParticipants.filter((participant) => {
       const matchesKeyword =
         !trimmedKeyword || participant.name.includes(trimmedKeyword);
       const matchesFilter = filter === "all" || participant.role === filter;
@@ -72,8 +137,8 @@ export default function AdminParticipantManagementScreen() {
     });
 
     return participants.sort((first, second) => {
-      const firstIsMe = first.id === String(group?.myParticipantId);
-      const secondIsMe = second.id === String(group?.myParticipantId);
+      const firstIsMe = first.id === myParticipantId;
+      const secondIsMe = second.id === myParticipantId;
 
       if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
 
@@ -84,7 +149,7 @@ export default function AdminParticipantManagementScreen() {
 
       return 0;
     });
-  }, [data.participants, filter, group?.myParticipantId, keyword]);
+  }, [enrichedParticipants, filter, myParticipantId, keyword]);
 
   const goToAssignment = () => {
     router.push(groupRoutes.adminAssignmentSetup(params.groupId, round));
