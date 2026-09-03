@@ -121,55 +121,73 @@ export default function EndVoteDialog({
       </span>
 
       <div className={styles.message}>
-        <h2 id="end-vote-title">미투표자가 있습니다</h2>
-        <p id="end-vote-description">
-          종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
-          <br />
-          <span className={styles.descriptionNote}>
-            ※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
-          </span>
-        </p>
+        {pendingMembers.length > 0 ? (
+          <>
+            <h2 id="end-vote-title">미투표자가 있습니다</h2>
+            <p id="end-vote-description">
+              종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
+              <br />
+              <span className={styles.descriptionNote}>
+                ※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
+              </span>
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 id="end-vote-title">모든 참가자가 투표를 완료했습니다</h2>
+            <p id="end-vote-description">
+              지금 투표를 종료하고 결과를 확인하시겠어요?
+            </p>
+          </>
+        )}
       </div>
 
-      <div className={styles.divider} aria-hidden="true" />
+      {pendingMembers.length > 0 && (
+        <>
+          <div className={styles.divider} aria-hidden="true" />
 
-      <section
-        className={styles.pendingSection}
-        aria-labelledby="pending-members-title"
-      >
-        <h3 id="pending-members-title">미투표 명단</h3>
-        <ul
-          ref={pendingListRef}
-          className={styles.pendingList}
-          aria-label="미투표자 명단"
-          tabIndex={0}
-          onPointerDown={startPendingListDrag}
-          onPointerMove={movePendingListDrag}
-          onPointerUp={finishPendingListDrag}
-          onPointerCancel={finishPendingListDrag}
-          onLostPointerCapture={() => {
-            pendingListDragRef.current = null;
-          }}
-        >
-          {pendingMembers.map((member) => (
-            <li className={styles.pendingMember} key={member.participantId}>
-              <strong>{member.displayName}</strong>
+          <section
+            className={styles.pendingSection}
+            aria-labelledby="pending-members-title"
+          >
+            <h3 id="pending-members-title">미투표 명단</h3>
+            <ul
+              ref={pendingListRef}
+              className={styles.pendingList}
+              aria-label="미투표자 명단"
+              tabIndex={0}
+              onPointerDown={startPendingListDrag}
+              onPointerMove={movePendingListDrag}
+              onPointerUp={finishPendingListDrag}
+              onPointerCancel={finishPendingListDrag}
+              onLostPointerCapture={() => {
+                pendingListDragRef.current = null;
+              }}
+            >
+              {pendingMembers.map((member) => (
+                <li
+                  className={styles.pendingMember}
+                  key={member.participantId}
+                >
+                  <strong>{member.displayName}</strong>
 
-              {member.manualEntry ? (
-                <AdminManualVoteControl
-                  groupId={groupId}
-                  member={member}
-                  onVoteChange={onVoteChange}
-                  onSubmittingChange={handleSubmittingChange}
-                  onError={setManualVoteError}
-                />
-              ) : (
-                <span className={styles.waitingBadge}>대기 중</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+                  {member.manualEntry ? (
+                    <AdminManualVoteControl
+                      groupId={groupId}
+                      member={member}
+                      onVoteChange={onVoteChange}
+                      onSubmittingChange={handleSubmittingChange}
+                      onError={setManualVoteError}
+                    />
+                  ) : (
+                    <span className={styles.waitingBadge}>대기 중</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
 
       {(error || manualVoteError) && (
         <span className={styles.error} role="alert">

@@ -9,7 +9,8 @@
   position: relative;
   display: flex;
   overflow: hidden;
-  height: min(579px, calc(100dvh - 20px));
+  height: auto;
+  max-height: min(579px, calc(100dvh - 20px));
   flex-direction: column;
   text-align: center;
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
@@ -179,7 +180,7 @@
   flex: 0 0 auto;
   grid-template-columns: 1fr 1fr;
   gap: 11px;
-  margin-top: auto;
+  margin-top: 40px;
 }
 
 .cancelButton,
