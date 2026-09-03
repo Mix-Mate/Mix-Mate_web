@@ -12,6 +12,9 @@ import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-
 import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
+import RecruitmentTransitionScreen, {
+  type RecruitmentTransitionPhase,
+} from "@/features/group/components/RecruitmentTransitionScreen";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
@@ -81,6 +84,8 @@ export default function AdminRecruitmentScreen() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(
     searchParams.get("dialog") === "delete",
   );
+  const [transitionPhase, setTransitionPhase] =
+    useState<RecruitmentTransitionPhase | null>(null);
   const { message: toast, showToast } = useToast();
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
@@ -106,7 +111,7 @@ export default function AdminRecruitmentScreen() {
   }, [showToast]);
 
   useEffect(() => {
-    if (!isRecruiting) {
+    if (!isRecruiting || transitionPhase) {
       return;
     }
 
@@ -117,7 +122,7 @@ export default function AdminRecruitmentScreen() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isRecruiting, refetch]);
+  }, [isRecruiting, refetch, transitionPhase]);
 
   const copyInviteCode = useCallback(async () => {
     if (!group) return;
@@ -131,7 +136,7 @@ export default function AdminRecruitmentScreen() {
   }, [group, showToast]);
 
   useEffect(() => {
-    if (!group) return;
+    if (!group || transitionPhase) return;
 
     if (
       group.status === "BEFORE_FIRST_ROUND" ||
@@ -163,7 +168,7 @@ export default function AdminRecruitmentScreen() {
         withSessionContext(groupRoutes.completed(params.groupId), searchParams),
       );
     }
-  }, [group, params.groupId, router, searchParams]);
+  }, [group, params.groupId, router, searchParams, transitionPhase]);
 
   const goToParticipants = useCallback(() => {
     router.push(
@@ -177,9 +182,14 @@ export default function AdminRecruitmentScreen() {
   const confirmCloseRecruitment = useCallback(async () => {
     if (!canCloseRecruitment) return;
 
+    setTransitionPhase("closing");
     const closed = await closeRecruiting(params.groupId);
-    if (!closed) return;
+    if (!closed) {
+      setTransitionPhase(null);
+      return;
+    }
 
+    setTransitionPhase("preparing");
     const latestGroup = await refetch();
     setCloseDialogOpen(false);
 
@@ -193,6 +203,7 @@ export default function AdminRecruitmentScreen() {
       return;
     }
 
+    setTransitionPhase(null);
     if (!latestGroup) {
       showToast("최신 그룹 정보를 불러오지 못했습니다.");
     }
@@ -243,7 +254,16 @@ export default function AdminRecruitmentScreen() {
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
-  if (!group || group.status !== "RECRUITING") return null;
+  if (!group) return null;
+
+  if (transitionPhase || group.status !== "RECRUITING") {
+    return (
+      <RecruitmentTransitionScreen
+        groupName={group.groupName}
+        phase={transitionPhase ?? "preparing"}
+      />
+    );
+  }
 
   return (
     <MobileFrame

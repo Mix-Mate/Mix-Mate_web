@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GroupDetail } from "@/features/group/types/group.types";
 import AdminRecruitmentScreen from "./AdminRecruitmentScreen";
@@ -6,6 +6,7 @@ import AdminRecruitmentScreen from "./AdminRecruitmentScreen";
 const {
   refetchMock,
   replaceMock,
+  closeRecruitingMock,
   useAdminGroupQueryMock,
   useCloseRecruitingMutationMock,
   useDeleteGroupMutationMock,
@@ -13,6 +14,7 @@ const {
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
   replaceMock: vi.fn(),
+  closeRecruitingMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useCloseRecruitingMutationMock: vi.fn(),
   useDeleteGroupMutationMock: vi.fn(),
@@ -59,7 +61,12 @@ vi.mock("@/shared/hooks/useToast", () => ({
 }));
 
 vi.mock("@/modals/admin/CloseRecruitmentDialog", () => ({
-  default: () => null,
+  default: ({ open, onConfirm }: { open: boolean; onConfirm: () => void }) =>
+    open ? (
+      <button type="button" onClick={onConfirm}>
+        모집 마감 확인
+      </button>
+    ) : null,
 }));
 
 vi.mock("@/modals/admin/DeleteGroupDialog", () => ({
@@ -90,7 +97,7 @@ describe("AdminRecruitmentScreen", () => {
       refetch: refetchMock,
     });
     useCloseRecruitingMutationMock.mockReturnValue({
-      mutate: vi.fn(),
+      mutate: closeRecruitingMock,
       isPending: false,
       error: null,
     });
@@ -154,5 +161,98 @@ describe("AdminRecruitmentScreen", () => {
     render(<AdminRecruitmentScreen />);
 
     expect(screen.getByRole("button", { name: "모집 마감하기" })).toBeEnabled();
+  });
+
+  it("모집 마감을 확인하면 그룹 홈 전환 화면을 보여준다", async () => {
+    let resolveRefetch: ((value: GroupDetail) => void) | undefined;
+    const refetchPromise = new Promise<GroupDetail>((resolve) => {
+      resolveRefetch = resolve;
+    });
+    const closedGroup = {
+      ...group,
+      memberCount: 4,
+      status: "BEFORE_FIRST_ROUND" as const,
+    };
+
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...group, memberCount: 4 },
+      refetch: refetchMock,
+    });
+    closeRecruitingMock.mockResolvedValue(true);
+    refetchMock.mockReturnValue(refetchPromise);
+
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감 확인" }));
+
+    expect(
+      await screen.findByTestId("recruitment-transition"),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId("recruitment-transition")).toHaveAttribute(
+        "data-phase",
+        "preparing",
+      ),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "그룹 홈을 준비하고 있어요",
+    );
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    resolveRefetch?.(closedGroup);
+    await waitFor(() =>
+      expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
+        "/groups/7/admin/preparation",
+      ),
+    );
+  });
+
+  it("모집 마감에 실패하면 전환 화면을 닫고 확인 화면으로 돌아온다", async () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...group, memberCount: 4 },
+      refetch: refetchMock,
+    });
+    closeRecruitingMock.mockResolvedValue(false);
+
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감 확인" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("recruitment-transition"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", { name: "모집 마감 확인" }),
+    ).toBeInTheDocument();
+    expect(refetchMock).not.toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  it("최신 그룹 정보 조회에 실패해도 전환 화면에 갇히지 않는다", async () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...group, memberCount: 4 },
+      refetch: refetchMock,
+    });
+    closeRecruitingMock.mockResolvedValue(true);
+    refetchMock.mockResolvedValue(null);
+
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "모집 마감 확인" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("recruitment-transition"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", { name: "모집 마감하기" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
   });
 });
