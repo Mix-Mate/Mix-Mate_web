@@ -76,6 +76,275 @@
   color: #fff;
 }
 
+.celebrationOverlay {
+  padding: 20px;
+  background: #64748b;
+}
+
+.celebrationPopup {
+  max-width: 360px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 28px;
+  box-shadow:
+    0 28px 70px rgba(24, 24, 27, 0.24),
+    0 8px 24px rgba(24, 24, 27, 0.14);
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.celebrationBanner {
+  position: relative;
+  display: flex;
+  min-height: 238px;
+  padding: 40px 24px 30px;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  background: #256ad3;
+  color: #fff;
+  isolation: isolate;
+}
+
+.partyBadge {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 24px rgba(30, 64, 175, 0.2);
+}
+
+.celebrationLabel {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 8px;
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #eef2ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.celebrationBanner h2 {
+  position: relative;
+  z-index: 2;
+  max-width: 280px;
+  margin: 0;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.42;
+  text-wrap: balance;
+  word-break: keep-all;
+}
+
+.celebrationBody {
+  padding: 26px 22px 22px;
+  background: var(--color-surface, #fcfcff);
+}
+
+.celebrationBody .celebrationMessage {
+  margin: 0;
+  color: #27272a;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.7;
+}
+
+.celebrationBody .celebrationNotice {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border, #e4e4e7);
+  border-radius: 14px;
+  background: #f4f4f5;
+  color: #71717a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.celebrationActions {
+  grid-template-columns: minmax(92px, 0.8fr) minmax(154px, 1.35fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.celebrationCancelButton,
+.celebrationConfirmButton {
+  height: 52px;
+  border-radius: 15px;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.celebrationCancelButton {
+  border: 1px solid var(--color-border, #e4e4e7);
+  background: var(--color-surface, #fcfcff);
+  color: #52525b;
+}
+
+.celebrationConfirmButton {
+  background: #256ad3;
+  box-shadow: 0 8px 18px rgba(37, 106, 211, 0.22);
+  color: #fff;
+}
+
+.celebrationCancelButton:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.celebrationConfirmButton:hover {
+  background: #2567c9;
+  box-shadow: 0 10px 22px rgba(37, 106, 211, 0.3);
+}
+
+.celebrationCancelButton:active,
+.celebrationConfirmButton:active {
+  transform: scale(0.97);
+}
+
+.celebrationCancelButton:focus-visible,
+.celebrationConfirmButton:focus-visible {
+  outline-color: #89bfff;
+}
+
+.confetti {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 15px;
+  border-radius: 2px;
+  animation: confettiFloat 3.4s ease-in-out infinite;
+}
+
+.confetti1 {
+  top: 12%;
+  left: 9%;
+  background: #f472b6;
+  transform: rotate(18deg);
+}
+
+.confetti2 {
+  top: 30%;
+  left: 17%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fde047;
+  animation-delay: -1.2s;
+}
+
+.confetti3 {
+  top: 65%;
+  left: 8%;
+  background: #4ade80;
+  transform: rotate(62deg);
+  animation-delay: -2.4s;
+}
+
+.confetti4 {
+  top: 78%;
+  left: 23%;
+  width: 13px;
+  height: 6px;
+  background: #60a5fa;
+  transform: rotate(-22deg);
+  animation-delay: -0.7s;
+}
+
+.confetti5 {
+  top: 9%;
+  left: 31%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c084fc;
+  animation-delay: -1.8s;
+}
+
+.confetti6 {
+  top: 22%;
+  right: 10%;
+  background: #fde047;
+  transform: rotate(38deg);
+  animation-delay: -2.1s;
+}
+
+.confetti7 {
+  top: 50%;
+  right: 18%;
+  width: 12px;
+  height: 6px;
+  background: #f472b6;
+  transform: rotate(-35deg);
+  animation-delay: -0.4s;
+}
+
+.confetti8 {
+  top: 72%;
+  right: 7%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation-delay: -1.5s;
+}
+
+.confetti9 {
+  top: 8%;
+  right: 31%;
+  background: #60a5fa;
+  transform: rotate(72deg);
+  animation-delay: -2.8s;
+}
+
+.confetti10 {
+  top: 82%;
+  right: 30%;
+  background: #c084fc;
+  transform: rotate(26deg);
+  animation-delay: -1s;
+}
+
+.confetti11 {
+  top: 47%;
+  left: 5%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fde047;
+  animation-delay: -2.6s;
+}
+
+.confetti12 {
+  top: 40%;
+  right: 4%;
+  background: #93c5fd;
+  transform: rotate(50deg);
+  animation-delay: -1.9s;
+}
+
 .cancelButton:focus-visible,
 .confirmButton:focus-visible {
   outline: 2px solid #60a5fa;
@@ -95,9 +364,26 @@
   }
 }
 
+@keyframes confettiFloat {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
-  .popup {
+  .popup,
+  .confettiPiece {
     animation: none;
+  }
+
+  .celebrationCancelButton,
+  .celebrationConfirmButton {
+    transition: none;
   }
 }

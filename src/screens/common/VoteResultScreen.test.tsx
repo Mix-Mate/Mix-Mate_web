@@ -203,4 +203,36 @@ describe("VoteResultScreen", () => {
 
     expect(replaceMock).toHaveBeenCalledWith("/home");
   });
+
+  it("2차에 불참하는 일반 참가자가 하단 홈 버튼을 누르면 안내 후 메인 홈으로 이동한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTE_CLOSED", "PARTICIPANT"),
+      isLoading: false,
+      error: null,
+    });
+    useVoteResultQueryMock.mockReturnValue({
+      data: { ...mockVoteResult, secondRoundParticipants: [] },
+      isLoading: false,
+      error: null,
+    });
+
+    render(<VoteResultScreen />);
+    fireEvent.click(screen.getByRole("button", { name: "홈으로 돌아가기" }));
+
+    expect(
+      screen.getByRole("dialog", {
+        name: "1차 술자리를 완료했습니다!",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("2차 불참자로 메인 홈으로 이동합니다."),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "홈으로 이동하기" }),
+    );
+
+    expect(replaceMock).toHaveBeenCalledWith("/home");
+  });
 });

@@ -205,7 +205,29 @@
   width: 358px;
   height: 740px;
   flex-direction: column;
-  padding-top: 122px;
+  padding-top: 72px;
+}
+
+.attendanceThresholdNotice {
+  --attendance-message-background: #f3f8ff;
+  --attendance-message-border: #bfdbfe;
+
+  min-height: 62px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--attendance-message-border);
+  border-radius: 6px 16px 16px 16px;
+  background: var(--attendance-message-background);
+  box-shadow: 0 8px 22px rgba(65, 139, 209, 0.08);
+}
+
+.attendanceThresholdNotice p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 19px;
+  word-break: keep-all;
 }
 
 .attendanceQuestion {
@@ -292,22 +314,83 @@
 }
 
 .attendanceInfo {
+  --attendance-message-background: #eaf4ff;
+  --attendance-message-border: #c9e2fb;
+
   display: flex;
   min-height: 46px;
   align-items: center;
   gap: 7px;
   margin-top: 14px;
   padding: 0 12px;
-  border-radius: 12px;
-  background: #eaf4ff;
+  border: 1px solid var(--attendance-message-border);
+  border-radius: 6px 16px 16px 16px;
+  background: var(--attendance-message-background);
   color: #617990;
   font-size: 12px;
   line-height: 19px;
+  box-shadow: 0 8px 22px rgba(65, 139, 209, 0.08);
 }
 
 .attendanceInfo svg {
   flex: 0 0 15px;
   color: #418bd1;
+}
+
+.attendanceMessage {
+  position: relative;
+  opacity: 0;
+  transform: translateY(12px) scale(0.94);
+  transform-origin: left bottom;
+  animation: attendanceMessageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+  will-change: opacity, transform;
+}
+
+.attendanceMessage::after {
+  position: absolute;
+  bottom: -5px;
+  left: 17px;
+  width: 10px;
+  height: 10px;
+  border-right: 1px solid var(--attendance-message-border);
+  border-bottom: 1px solid var(--attendance-message-border);
+  background: var(--attendance-message-background);
+  content: "";
+  transform: rotate(45deg);
+}
+
+.attendanceMessageFirst {
+  animation-delay: 0.15s;
+}
+
+.attendanceMessageSecond {
+  animation-delay: 0.55s;
+}
+
+@keyframes attendanceMessageIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attendanceMessage {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .visuallyHidden {

@@ -57,7 +57,7 @@ export default function MvpResultTable({
           <li className={styles.centerMedallion} aria-hidden="true">
             <Image
               className={styles.centerLogo}
-              src="/icons/logo.svg"
+              src="/icons/logo.png"
               alt=""
               width={37}
               height={37}
