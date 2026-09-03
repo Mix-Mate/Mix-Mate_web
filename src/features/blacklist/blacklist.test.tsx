@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import BlacklistScreen from "@/screens/admin/BlacklistScreen";
+import BlockedUserProfileModal from "./components/BlockedUserProfileModal";
 import ParticipantProfileScreen from "@/screens/common/ParticipantProfileScreen";
 import HomeScreen from "@/screens/common/HomeScreen";
 import ParticipantPageHeader from "@/features/participant/components/ParticipantPageHeader";
@@ -121,7 +122,7 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(screen.getByText("홍길동")).toBeInTheDocument();
-        expect(screen.getByText("컴퓨터공학과")).toBeInTheDocument();
+        expect(screen.getByText("gildong@example.com")).toBeInTheDocument();
         expect(
           screen.getByText(/사유: 지속적인 비매너 행위/),
         ).toBeInTheDocument();
@@ -164,7 +165,9 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(screen.getByText("홍길동"));
 
       await waitFor(() => {
-        expect(screen.getByText("gildong@example.com")).toBeInTheDocument();
+        expect(
+          screen.getAllByText("gildong@example.com").length,
+        ).toBeGreaterThanOrEqual(1);
         expect(
           screen.getByText("지속적인 비매너 행위"),
         ).toBeInTheDocument();
@@ -835,6 +838,113 @@ describe("Blacklist Feature & API Integration", () => {
       const stored = blacklistApi.readStoredBlacklist("17");
       expect(stored.find((item) => item.id === "202" || item.userId === 202)).toBeDefined();
       fetchSpy.mockRestore();
+    });
+
+    it("blockParticipantApi 호출 시 이메일이 없는 참가자는 가짜 @example.com을 생성하지 않고 빈 문자열 또는 실제 이메일만 저장한다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      } as Response);
+
+      await blacklistApi.blockParticipantApi(
+        "17",
+        { id: "303", name: "수동참가자" },
+        { reason: "노쇼" },
+      );
+
+      const stored = blacklistApi.readStoredBlacklist("17");
+      const blocked = stored.find((item) => item.id === "303");
+      expect(blocked).toBeDefined();
+      expect(blocked?.email).toBe("");
+      expect(blocked?.email).not.toContain("@example.com");
+      fetchSpy.mockRestore();
+    });
+
+    it("getGroupBlacklist 호출 시 동일한 유저가 여러 번 포함되어도 1개로 중복 제거된다", async () => {
+      const groupDetailSpy = vi.spyOn(groupApi, "getGroupDetail").mockResolvedValue({
+        groupId: 17,
+        groupName: "테스트 모임",
+        status: "RECRUITING",
+        myRole: "HOST",
+        hasPassword: false,
+        memberCount: 5,
+        targetRound: 1,
+        maxCapacity: 20,
+      });
+
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          banList: [
+            {
+              userId: 101,
+              displayName: "홍길동",
+              email: "gildong@real.com",
+              reason: "비매너",
+              bannedAt: "2026-03-01T10:00:00Z",
+            },
+            {
+              userId: 101,
+              displayName: "홍길동",
+              email: "gildong@real.com",
+              reason: "비매너 수정",
+              bannedAt: "2026-03-01T10:00:00Z",
+            },
+          ],
+        }),
+      } as Response);
+
+      const result = await blacklistApi.getGroupBlacklist("17");
+      expect(result.participants.length).toBe(1);
+      expect(result.participants[0].userId).toBe(101);
+      expect(result.participants[0].displayName).toBe("홍길동");
+
+      fetchSpy.mockRestore();
+      groupDetailSpy.mockRestore();
+    });
+  });
+
+  describe("BlockedUserProfileModal - Simplified UI", () => {
+    it("차단 프로필 모달에 이름, 이메일, 차단일시, 차단사유만 노출되고 온보딩 상세 필드는 노출되지 않는다", () => {
+      render(
+        <BlockedUserProfileModal
+          groupId="17"
+          participant={{
+            id: "101",
+            userId: 101,
+            name: "홍길동",
+            displayName: "홍길동",
+            email: "gildong@real.com",
+            reason: "비매너 행위",
+            blockedAt: "2026-03-01T10:00:00Z",
+            bannedAt: "2026-03-01T10:00:00Z",
+            // 과도한 온보딩 정보가 객체에 있더라도 모달에는 노출되지 않아야 함
+            grade: "4학년",
+            mbti: "ENFP",
+            age: 25,
+            instagramId: "gildong_insta",
+            bio: "안녕하세요 자기소개입니다",
+          }}
+          onClose={vi.fn()}
+          onUnblockSuccess={vi.fn()}
+        />,
+      );
+
+      // 필수 최소 정보 노출 확인
+      expect(screen.getByText("홍길동")).toBeInTheDocument();
+      expect(screen.getByText("gildong@real.com")).toBeInTheDocument();
+      expect(screen.getByText("비매너 행위")).toBeInTheDocument();
+      expect(screen.getByText("차단됨")).toBeInTheDocument();
+
+      // 온보딩 과도 정보 비노출 확인
+      expect(screen.queryByText("4학년")).not.toBeInTheDocument();
+      expect(screen.queryByText("ENFP")).not.toBeInTheDocument();
+      expect(screen.queryByText("25세")).not.toBeInTheDocument();
+      expect(screen.queryByText("@gildong_insta")).not.toBeInTheDocument();
+      expect(screen.queryByText("gildong_insta")).not.toBeInTheDocument();
+      expect(screen.queryByText("안녕하세요 자기소개입니다")).not.toBeInTheDocument();
     });
   });
 });
