@@ -82,7 +82,7 @@ const mockAdminParticipants: AdminParticipantGroup = {
 
 describe("Blacklist Feature & API Integration", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
     sessionStorage.clear();
     localStorage.clear();
     localStorage.setItem("accessToken", "mock-token");
@@ -761,6 +761,80 @@ describe("Blacklist Feature & API Integration", () => {
       await waitFor(() => {
         expect(screen.getByText("완료된 모임이 없습니다.")).toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Blacklist API - Non-optimistic Synchronous Update", () => {
+    it("blockParticipantApi 호출 시 서버 에러(409 등) 발생 시 localStorage가 미리 변경되지 않고 에러를 던진다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          message: "1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.",
+        }),
+      } as Response);
+
+      await expect(
+        blacklistApi.blockParticipantApi(
+          "17",
+          mockParticipantProfile,
+          { reason: "비매너" },
+        ),
+      ).rejects.toThrow("1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.");
+
+      // 로컬 스토리지에 유저가 추가되지 않았음을 검증 (낙관적 업데이트 없음)
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202")).toBeUndefined();
+      fetchSpy.mockRestore();
+    });
+
+    it("blockParticipantApi 호출 시 서버 성공(200/204) 시에만 localStorage에 저장된다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      } as Response);
+
+      const result = await blacklistApi.blockParticipantApi(
+        "17",
+        mockParticipantProfile,
+        { reason: "비매너" },
+      );
+
+      expect(result.ok).toBe(true);
+      expect(result.source).toBe("api");
+
+      // 서버 성공 후에만 로컬 스토리지에 저장됨
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202")).toBeDefined();
+      fetchSpy.mockRestore();
+    });
+
+    it("unblockParticipantApi 호출 시 서버 실패 시 localStorage에서 삭제되지 않고 에러를 던진다", async () => {
+      // 미리 차단 목록에 유저를 기록
+      blacklistApi.writeStoredBlacklist("17", [
+        {
+          ...mockParticipantProfile,
+          userId: 202,
+          reason: "테스트",
+          blockedAt: new Date().toISOString(),
+        },
+      ]);
+
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ message: "서버 내부 오류" }),
+      } as Response);
+
+      await expect(
+        blacklistApi.unblockParticipantApi("17", 202),
+      ).rejects.toThrow("서버 내부 오류");
+
+      // 로컬 스토리지에 여전히 유저가 유지됨
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202" || item.userId === 202)).toBeDefined();
+      fetchSpy.mockRestore();
     });
   });
 });
