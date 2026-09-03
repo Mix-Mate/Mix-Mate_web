@@ -13,6 +13,7 @@ import {
   getGroupStatusLabel,
 } from "@/features/group/model/group-status";
 import UserSessionContent from "@/features/session/components/UserSessionContent";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import {
   createGroupHomeSnapshot,
   hasAssignedTeam,
@@ -24,9 +25,7 @@ import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import EndRoundDialog from "@/modals/admin/EndRoundDialog";
 import PostVoteDecisionDialog from "@/modals/admin/PostVoteDecisionDialog";
 import UM01LeaveGroupDialog from "@/modals/user/LeaveGroupDialog";
-import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
 import styles from "./UserHomeScreen.module.css";
@@ -76,11 +75,7 @@ export default function UserHomeScreen() {
     data: myTeam,
     isLoading: isTeamLoading,
     error: teamError,
-  } = useMyTeamQuery(
-    params.groupId,
-    teamRound,
-    shouldLoadMyTeam,
-  );
+  } = useMyTeamQuery(params.groupId, teamRound, shouldLoadMyTeam);
   const {
     mutate: finishFirstRound,
     isPending: isFinishingFirstRound,
@@ -102,7 +97,6 @@ export default function UserHomeScreen() {
     error: leaveGroupError,
   } = useLeaveGroupMutation();
   const finishFlowInFlightRef = useRef(false);
-  const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [endRoundDialogOpen, setEndRoundDialogOpen] = useState(false);
   const [isRefreshingSecondRound, setIsRefreshingSecondRound] = useState(false);
@@ -132,19 +126,6 @@ export default function UserHomeScreen() {
   const canLeaveGroup = snapshot?.permissions.canLeaveGroup ?? false;
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
-
-  const requestMainHomeExit = useCallback(() => {
-    setMainHomeExitPopupOpen(true);
-  }, []);
-
-  const closeMainHomeExitPopup = useCallback(() => {
-    setMainHomeExitPopupOpen(false);
-  }, []);
-
-  const confirmMainHomeExit = useCallback(() => {
-    setMainHomeExitPopupOpen(false);
-    router.replace("/home");
-  }, [router]);
 
   useEffect(() => {
     if (!group) return;
@@ -306,17 +287,12 @@ export default function UserHomeScreen() {
   if (isCheckingSecondRoundAttendance) {
     return (
       <MobileFrame data-testid="second-round-attendance-loading">
-        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
+        <GroupHomeHeader title={snapshot.groupName} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryState} role="status">
             참여 여부를 확인하는 중입니다.
           </p>
         </main>
-        <MainHomeExitPopup
-          open={mainHomeExitPopupOpen}
-          onClose={closeMainHomeExitPopup}
-          onConfirm={confirmMainHomeExit}
-        />
       </MobileFrame>
     );
   }
@@ -327,7 +303,7 @@ export default function UserHomeScreen() {
         data-testid="absent-participant-waiting-screen"
         data-status={group.status}
       >
-        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
+        <GroupHomeHeader title={snapshot.groupName} />
         <main className={styles.absentWaitingContent}>
           <section className={styles.absentWaitingCard} aria-live="polite">
             <Clock3 aria-hidden="true" size={34} strokeWidth={1.7} />
@@ -339,11 +315,6 @@ export default function UserHomeScreen() {
             </p>
           </section>
         </main>
-        <MainHomeExitPopup
-          open={mainHomeExitPopupOpen}
-          onClose={closeMainHomeExitPopup}
-          onConfirm={confirmMainHomeExit}
-        />
       </MobileFrame>
     );
   }
@@ -351,17 +322,12 @@ export default function UserHomeScreen() {
   if (shouldCheckSecondRoundAttendance && voteStatusError) {
     return (
       <MobileFrame data-testid="second-round-attendance-error">
-        <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
+        <GroupHomeHeader title={snapshot.groupName} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryError} role="alert">
             {voteStatusError}
           </p>
         </main>
-        <MainHomeExitPopup
-          open={mainHomeExitPopupOpen}
-          onClose={closeMainHomeExitPopup}
-          onConfirm={confirmMainHomeExit}
-        />
       </MobileFrame>
     );
   }
@@ -373,7 +339,7 @@ export default function UserHomeScreen() {
       data-role={snapshot.role}
       data-status={group.status}
     >
-      <Header title={snapshot.groupName} onBack={requestMainHomeExit} />
+      <GroupHomeHeader title={snapshot.groupName} />
 
       <UserSessionContent
         groupId={params.groupId}
@@ -394,12 +360,6 @@ export default function UserHomeScreen() {
           {finalRoundError}
         </Toast>
       )}
-
-      <MainHomeExitPopup
-        open={mainHomeExitPopupOpen}
-        onClose={closeMainHomeExitPopup}
-        onConfirm={confirmMainHomeExit}
-      />
 
       <UM01LeaveGroupDialog
         open={leaveDialogOpen}

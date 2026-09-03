@@ -12,10 +12,10 @@ import {
 import type { AssignmentSetupInput } from "@/features/assignment/types/assignment.types";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
-import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import TabNavigation from "@/shared/ui/TabNavigation";
 
@@ -25,9 +25,7 @@ export default function AssignmentSetupScreen() {
   const searchParams = useSearchParams();
   const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
-  const [warningMessages, setWarningMessages] = useState<string[] | null>(
-    null,
-  );
+  const [warningMessages, setWarningMessages] = useState<string[] | null>(null);
   const {
     mutate: createAssignment,
     isPending: isAssigning,
@@ -80,10 +78,7 @@ export default function AssignmentSetupScreen() {
 
   return (
     <MobileFrame data-testid="assignment-setup-screen" data-round={round}>
-      <Header
-        title={group.groupName}
-        onBack={() => router.replace("/home")}
-      />
+      <GroupHomeHeader title={group.groupName} />
 
       <TabNavigation
         items={[

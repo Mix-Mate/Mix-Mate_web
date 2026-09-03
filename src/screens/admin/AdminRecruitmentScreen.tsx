@@ -13,13 +13,13 @@ import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
 import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
-import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
@@ -143,20 +143,14 @@ export default function AdminRecruitmentScreen() {
       group.status === "VOTE_CLOSED"
     ) {
       router.replace(
-        withSessionContext(
-          groupRoutes.adminProgress(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.adminProgress(params.groupId), searchParams),
       );
       return;
     }
 
     if (group.status === "FINISHED") {
       router.replace(
-        withSessionContext(
-          groupRoutes.completed(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.completed(params.groupId), searchParams),
       );
     }
   }, [group, params.groupId, router, searchParams]);
@@ -248,9 +242,8 @@ export default function AdminRecruitmentScreen() {
       data-testid="admin-recruitment"
       data-group-id={group.groupId}
     >
-      <Header
+      <GroupHomeHeader
         title={group.groupName}
-        onBack={() => router.replace("/home")}
         compact
         rightAction={
           canEditGroup ? (
@@ -304,8 +297,8 @@ export default function AdminRecruitmentScreen() {
           </span>
           <h2>그룹을 모집하고 있습니다.</h2>
           <p className={styles.minimumParticipantText}>
-            참가자가{" "}
-            <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상 모이면 1차 술자리를 시작할 수 있어요.
+            참가자가 <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상
+            모이면 1차 술자리를 시작할 수 있어요.
           </p>
         </section>
 

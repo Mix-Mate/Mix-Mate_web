@@ -325,8 +325,46 @@ describe("공통 그룹 SSE 동기화", () => {
       fireEvent.click(
         screen.getByRole("button", { name: "이전 화면으로 이동" }),
       );
+      if (target === "/home") {
+        expect(router.replace).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      }
       expect(router.replace).toHaveBeenCalledExactlyOnceWith(target);
       expect(router.back).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    [
+      "/groups/6",
+      "/groups/6/admin",
+      "/groups/6/admin/recruitment",
+      "/groups/6/admin/preparation",
+    ].flatMap((pathname) =>
+      ["loading", "error"].map((state) => ({ pathname, state })),
+    ),
+  )(
+    "$pathname의 $state 화면에서도 확인 후 메인 홈으로 나간다",
+    async ({ pathname, state }) => {
+      route.pathname = pathname;
+      if (state === "error") {
+        getGroupDetail.mockRejectedValue(new Error("그룹 조회 실패"));
+      } else {
+        getGroupDetail.mockReturnValue(new Promise(() => {}));
+      }
+      render(<App />);
+      if (state === "error") await screen.findByRole("alert");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(router.back).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith("/home");
     },
   );
 

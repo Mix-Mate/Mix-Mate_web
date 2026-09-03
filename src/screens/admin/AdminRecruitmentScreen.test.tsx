@@ -1,16 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GroupDetail } from "@/features/group/types/group.types";
 import AdminRecruitmentScreen from "./AdminRecruitmentScreen";
 
 const {
   refetchMock,
+  replaceMock,
   useAdminGroupQueryMock,
   useCloseRecruitingMutationMock,
   useDeleteGroupMutationMock,
   useUpdateGroupMutationMock,
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
+  replaceMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useCloseRecruitingMutationMock: vi.fn(),
   useDeleteGroupMutationMock: vi.fn(),
@@ -21,7 +23,7 @@ vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "7" }),
   useRouter: () => ({
     push: vi.fn(),
-    replace: vi.fn(),
+    replace: replaceMock,
   }),
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -83,7 +85,10 @@ const group: GroupDetail = {
 describe("AdminRecruitmentScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAdminGroupQueryMock.mockReturnValue({ data: group, refetch: refetchMock });
+    useAdminGroupQueryMock.mockReturnValue({
+      data: group,
+      refetch: refetchMock,
+    });
     useCloseRecruitingMutationMock.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
@@ -115,6 +120,23 @@ describe("AdminRecruitmentScreen", () => {
     );
   });
 
+  it("모집 중인 그룹 홈에서 메인 홈으로 나가기 전에 확인 팝업을 보여준다", () => {
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+    expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
+  });
+
   it("모집 인원이 4명 미만이면 모집 마감 버튼을 비활성화한다", () => {
     render(<AdminRecruitmentScreen />);
 
@@ -131,8 +153,6 @@ describe("AdminRecruitmentScreen", () => {
 
     render(<AdminRecruitmentScreen />);
 
-    expect(
-      screen.getByRole("button", { name: "모집 마감하기" }),
-    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "모집 마감하기" })).toBeEnabled();
   });
 });

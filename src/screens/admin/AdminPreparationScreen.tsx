@@ -10,9 +10,9 @@ import {
   getPreparationRound,
 } from "@/features/group/model/group-status";
 import SessionStatusCard from "@/features/session/components/SessionStatusCard";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./AdminPreparationScreen.module.css";
 
@@ -50,20 +50,14 @@ export default function AdminPreparationScreen() {
       group.status === "VOTE_CLOSED"
     ) {
       router.replace(
-        withSessionContext(
-          groupRoutes.adminProgress(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.adminProgress(params.groupId), searchParams),
       );
       return;
     }
 
     if (group.status === "FINISHED") {
       router.replace(
-        withSessionContext(
-          groupRoutes.completed(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.completed(params.groupId), searchParams),
       );
       return;
     }
@@ -85,7 +79,7 @@ export default function AdminPreparationScreen() {
       data-group-id={group.groupId}
       data-round={round}
     >
-      <Header title={group.groupName} onBack={() => router.replace("/home")} compact />
+      <GroupHomeHeader title={group.groupName} compact />
 
       <div className={`${styles.content} ${styles.firstRoundContent}`}>
         <SessionStatusCard
