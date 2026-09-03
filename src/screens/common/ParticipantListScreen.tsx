@@ -199,7 +199,7 @@ function DefaultParticipantListScreen() {
       viewportClassName={styles.pageViewport}
     >
       <ParticipantPageHeader
-        groupName={data.groupName}
+        groupName={group?.groupName}
         participantCount={data.participants.length}
         backHref={backHref}
       />

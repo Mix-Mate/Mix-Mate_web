@@ -4,7 +4,6 @@ import type {
   TeamMemberDetail,
 } from "@/features/assignment/types/assignment.types";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
-import { getGroupDetail } from "@/features/group/api/group.api";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
 import type {
@@ -150,12 +149,10 @@ export async function getParticipants(
   round: AssignmentRound = 1,
   signal?: AbortSignal,
 ): Promise<ParticipantGroup> {
-  const [groupDetail, participantsResponse] = await Promise.all([
-    getGroupDetail(groupId),
-    request(`/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`, {
-      signal,
-    }),
-  ]);
+  const participantsResponse = await request(
+    `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
+    { signal },
+  );
 
   if (!participantsResponse.ok) {
     throw await createRequestError(
@@ -177,7 +174,6 @@ export async function getParticipants(
   );
 
   return {
-    groupName: groupDetail.groupName,
     participants,
     teams,
   };
