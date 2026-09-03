@@ -18,6 +18,7 @@ interface ErrorModalState {
   open: boolean;
   title: string;
   description: string;
+  isBlocked?: boolean;
 }
 
 export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScreenProps) {
@@ -29,6 +30,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     open: false,
     title: "",
     description: "",
+    isBlocked: false,
   });
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -58,75 +60,69 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
   const handleChange = (index: number, value: string) => {
     setErrorMessage("");
 
-    // Take the last character entered, uppercase alphanumeric only
-    const sanitized = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    const char = sanitized.slice(-1);
+    // Handle paste or multi-char input in a single box
+    if (value.length > 1) {
+      const chars = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 6).split("");
+      const newCode = [...code];
+      chars.forEach((c, i) => {
+        if (i < 6) newCode[i] = c;
+      });
+      setCode(newCode);
+      const nextFocus = Math.min(chars.length, 5);
+      inputRefs.current[nextFocus]?.focus();
+      return;
+    }
 
-    const nextCode = [...code];
-    nextCode[index] = char;
-    setCode(nextCode);
+    const char = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const newCode = [...code];
+    newCode[index] = char;
+    setCode(newCode);
 
-    // Auto-focus next input if character entered
+    // Auto-advance to next input if filled
     if (char && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  // Handle Backspace & Arrow navigation
+  // Handle backspace navigation
   const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      if (code[index] === "" && index > 0) {
-        // Move to previous box if current is already empty
-        const nextCode = [...code];
-        nextCode[index - 1] = "";
-        setCode(nextCode);
-        inputRefs.current[index - 1]?.focus();
-      }
-    } else if (e.key === "ArrowLeft" && index > 0) {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index < 5) {
-      inputRefs.current[index + 1]?.focus();
     }
   };
 
-  // Handle Paste event (supports copying full 6-digit code)
+  // Handle paste full code into any box
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
+    const pasteData = e.clipboardData
+      .getData("text")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .slice(0, 6);
+
+    if (!pasteData) return;
+
+    const newCode = [...code];
+    pasteData.split("").forEach((char, index) => {
+      if (index < 6) {
+        newCode[index] = char;
+      }
+    });
+    setCode(newCode);
     setErrorMessage("");
 
-    const pastedData = e.clipboardData
-      .getData("text")
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "");
-
-    if (!pastedData) return;
-
-    const nextCode = [...code];
-    for (let i = 0; i < 6; i++) {
-      nextCode[i] = pastedData[i] || "";
-    }
-    setCode(nextCode);
-
-    // Focus the next empty input or the last input
-    const nextEmptyIndex = nextCode.findIndex((c) => c === "");
-    if (nextEmptyIndex !== -1) {
-      inputRefs.current[nextEmptyIndex]?.focus();
-    } else {
-      inputRefs.current[5]?.focus();
-    }
+    const focusIndex = Math.min(pasteData.length, 5);
+    inputRefs.current[focusIndex]?.focus();
   };
 
-  const isCodeComplete = code.every((char) => char.trim().length === 1);
-
-  // Handle Submit with API integration and status-based error handling
+  // Submit flow
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isCodeComplete || isSubmitting) return;
-
     const fullCode = code.join("");
-    setIsSubmitting(true);
+    if (fullCode.length !== 6 || isSubmitting) return;
+
     setErrorMessage("");
+    setIsSubmitting(true);
 
     try {
       // 1. 실제 참여코드 검증 API 호출
@@ -172,6 +168,24 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         return;
       }
 
+      // 403 Forbidden / 차단 상태
+      if (
+        errorStatus === 403 ||
+        errorCode === "USER_BLOCKED" ||
+        errorCode === "BANNED_USER" ||
+        errorCode === "FORBIDDEN" ||
+        errorObj.message.includes("차단")
+      ) {
+        setErrorModal({
+          open: true,
+          title: "그룹 참여가 제한되었습니다",
+          description:
+            errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          isBlocked: true,
+        });
+        return;
+      }
+
       // 404 Not Found: 인풋 하단에 "유효하지 않은 초대코드입니다." 빨간색 텍스트 렌더링
       if (errorStatus === 404 || errorCode === "INVALID_INVITE_CODE") {
         setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
@@ -187,6 +201,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
           open: true,
           title: "참여코드가 만료되었습니다",
           description: "입력하신 코드를 다시 확인해 주세요.",
+          isBlocked: false,
         });
       } else if (
         errorStatus === 409 &&
@@ -196,6 +211,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
           open: true,
           title: "이미 시작된 그룹입니다",
           description: "입력하신 코드를 다시 확인해 주세요.",
+          isBlocked: false,
         });
       } else {
         // 기타 400 등 에러는 인풋 하단 에러 텍스트로 노출
@@ -212,7 +228,6 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
       viewportClassName={styles.pageViewport}
       data-testid="group-join-screen"
     >
-      {/* 1. 상단 헤더: 뒤로가기(<) 버튼 + '그룹 입장하기' 헤더 타이틀 */}
       <header className={styles.header}>
         <button
           type="button"
@@ -226,10 +241,8 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         <h1 className={styles.headerTitle}>그룹 입장하기</h1>
       </header>
 
-      {/* 2. 메인 컨텐츠 영역 */}
       <main className={styles.main}>
         <form id="join-group-form" onSubmit={handleSubmit} className={styles.form}>
-          {/* 타이틀 영역 */}
           <div className={styles.titleSection}>
             <h2 className={styles.mainTitle}>참여코드를 입력하세요</h2>
             <p className={styles.subTitle}>
@@ -237,7 +250,6 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
             </p>
           </div>
 
-          {/* OTP 스타일 6칸 인풋 박스 */}
           <div
             className={styles.otpContainer}
             role="group"
@@ -274,19 +286,17 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         </form>
       </main>
 
-      {/* 3. 하단 고정: '입장하기' 파란색 버튼 (6자리 모두 채워졌을 때만 활성화) */}
       <footer className={styles.footer}>
         <button
           type="submit"
           form="join-group-form"
           className={styles.submitButton}
-          disabled={!isCodeComplete || isSubmitting}
+          disabled={code.join("").length !== 6 || isSubmitting}
         >
           {isSubmitting ? "확인 중..." : "입장하기"}
         </button>
       </footer>
 
-      {/* 4. 경고 모달: 참여코드 만료 / 이미 시작됨 */}
       <BottomSheetDialog
         open={errorModal.open}
         titleId="error-dialog-title"
@@ -312,9 +322,9 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
           <button
             type="button"
             className={styles.retryButton}
-            onClick={handleRetry}
+            onClick={errorModal.isBlocked ? () => router.replace("/home") : handleRetry}
           >
-            다시 입력하기
+            {errorModal.isBlocked ? "홈으로 이동" : "다시 입력하기"}
           </button>
         </div>
       </BottomSheetDialog>

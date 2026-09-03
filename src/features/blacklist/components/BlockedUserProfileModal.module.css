@@ -216,3 +216,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.unblockError {
+  margin: 0 0 16px;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+}

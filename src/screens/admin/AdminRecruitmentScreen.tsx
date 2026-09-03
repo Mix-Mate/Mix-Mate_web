@@ -96,6 +96,16 @@ export default function AdminRecruitmentScreen() {
   );
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("adminToast");
+      if (stored) {
+        showToast(stored);
+        sessionStorage.removeItem("adminToast");
+      }
+    }
+  }, [showToast]);
+
+  useEffect(() => {
     if (!isRecruiting) {
       return;
     }

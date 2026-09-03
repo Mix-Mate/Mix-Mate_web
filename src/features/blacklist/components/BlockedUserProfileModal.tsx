@@ -39,6 +39,7 @@ export default function BlockedUserProfileModal({
   onUnblockSuccess,
 }: BlockedUserProfileModalProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [unblockError, setUnblockError] = useState("");
   const { mutate: unblockParticipant, isPending } =
     useUnblockParticipantMutation();
 
@@ -54,9 +55,13 @@ export default function BlockedUserProfileModal({
   );
 
   const handleConfirmUnblock = async () => {
+    setUnblockError("");
     const targetUserId = participant.userId || participant.id;
     const result = await unblockParticipant(groupId, targetUserId);
-    if (!result.ok) return;
+    if (!result.ok) {
+      setUnblockError(result.message);
+      return;
+    }
 
     setConfirmOpen(false);
     onClose();
@@ -205,6 +210,12 @@ export default function BlockedUserProfileModal({
             <br />
             차단이 해제되면 참가자가 다시 그룹 활동에 참여할 수 있습니다.
           </p>
+
+          {unblockError && (
+            <p className={styles.unblockError} role="alert">
+              {unblockError}
+            </p>
+          )}
 
           <div className={styles.confirmActions}>
             <Button

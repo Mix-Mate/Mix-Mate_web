@@ -146,7 +146,7 @@ export async function blockParticipantApi(
   groupId: string,
   participant: ParticipantProfile | { id: string; name: string; email?: string },
   input: BlockParticipantRequest,
-): Promise<{ ok: true; source: "api" | "local" }> {
+): Promise<{ ok: true; source: "api" }> {
   const reasonTrimmed = (input.reason || "").trim();
 
   // 프론트엔드 사전 유효성 검사 (최대 30자)
@@ -154,49 +154,22 @@ export async function blockParticipantApi(
     throw new Error("차단 사유는 30자를 넘을 수 없습니다.");
   }
 
-  const numericParticipantId = Number(participant.id) || 0;
-  const newBlocked: BlockedParticipant = {
-    ...(participant as ParticipantProfile),
-    id: String(participant.id),
-    userId: numericParticipantId,
-    name: participant.name,
-    displayName: participant.name,
-    email:
-      (participant as { email?: string }).email ||
-      `${participant.name.toLowerCase().replace(/\s+/g, "")}@example.com`,
-    reason: reasonTrimmed,
-    blockedAt: new Date().toISOString(),
-    bannedAt: new Date().toISOString(),
-  };
-
-  // 로컬 스토리지에 동기화
-  const current = readStoredBlacklist(groupId);
-  const updated = [
-    ...current.filter((item) => String(item.userId || item.id) !== String(participant.id)),
-    newBlocked,
-  ];
-  writeStoredBlacklist(groupId, updated);
-
   const queryParams = reasonTrimmed
     ? `?reason=${encodeURIComponent(reasonTrimmed)}`
     : "";
 
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/groups/${groupId}/participants/${participant.id}${queryParams}`,
-      {
-        method: "DELETE",
-        headers: withAuthHeaders({
-          "Content-Type": "application/json",
-        }),
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/participants/${participant.id}${queryParams}`,
+    {
+      method: "DELETE",
+      headers: withAuthHeaders({
+        "Content-Type": "application/json",
+      }),
+      credentials: "include",
+    },
+  );
 
-    if (response.status === 204 || response.status === 200 || response.ok) {
-      return { ok: true, source: "api" };
-    }
-
+  if (!response.ok && response.status !== 204 && response.status !== 200) {
     let errorData: { message?: string } | null = null;
     try {
       errorData = await response.json();
@@ -215,14 +188,32 @@ export async function blockParticipantApi(
     }
 
     throw new Error(errorData?.message || "참가자 차단에 실패했습니다.");
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("차단") || error instanceof Error && error.message.includes("권한") || error instanceof Error && error.message.includes("삭제")) {
-      throw error;
-    }
-    // Return local success if network or backend route is mock environment
   }
 
-  return { ok: true, source: "local" };
+  // 서버 응답이 성공(200/204)한 경우에만 로컬 캐시에 동기화
+  const numericParticipantId = Number(participant.id) || 0;
+  const newBlocked: BlockedParticipant = {
+    ...(participant as ParticipantProfile),
+    id: String(participant.id),
+    userId: numericParticipantId,
+    name: participant.name,
+    displayName: participant.name,
+    email:
+      (participant as { email?: string }).email ||
+      `${participant.name.toLowerCase().replace(/\s+/g, "")}@example.com`,
+    reason: reasonTrimmed,
+    blockedAt: new Date().toISOString(),
+    bannedAt: new Date().toISOString(),
+  };
+
+  const current = readStoredBlacklist(groupId);
+  const updated = [
+    ...current.filter((item) => String(item.userId || item.id) !== String(participant.id)),
+    newBlocked,
+  ];
+  writeStoredBlacklist(groupId, updated);
+
+  return { ok: true, source: "api" };
 }
 
 /**
@@ -232,30 +223,19 @@ export async function blockParticipantApi(
 export async function unblockParticipantApi(
   groupId: string,
   targetUserId: number | string,
-): Promise<{ ok: true; source: "api" | "local" }> {
+): Promise<{ ok: true; source: "api" }> {
   const targetIdStr = String(targetUserId);
 
-  // 로컬 스토리지에서 삭제
-  const current = readStoredBlacklist(groupId);
-  const updated = current.filter(
-    (item) => String(item.userId || item.id) !== targetIdStr,
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/bans/${targetUserId}`,
+    {
+      method: "DELETE",
+      headers: withAuthHeaders(),
+      credentials: "include",
+    },
   );
-  writeStoredBlacklist(groupId, updated);
 
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/v1/groups/${groupId}/bans/${targetUserId}`,
-      {
-        method: "DELETE",
-        headers: withAuthHeaders(),
-        credentials: "include",
-      },
-    );
-
-    if (response.status === 204 || response.status === 200 || response.ok) {
-      return { ok: true, source: "api" };
-    }
-
+  if (!response.ok && response.status !== 204 && response.status !== 200) {
     let errorData: { message?: string } | null = null;
     try {
       errorData = await response.json();
@@ -264,14 +244,16 @@ export async function unblockParticipantApi(
     }
 
     throw new Error(errorData?.message || "그룹 차단 해제에 실패했습니다.");
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("차단 해제")) {
-      throw error;
-    }
-    // Return local success if network or mock
   }
 
-  return { ok: true, source: "local" };
+  // 서버 응답이 성공(200/204)한 경우에만 로컬 캐시에서 제거
+  const current = readStoredBlacklist(groupId);
+  const updated = current.filter(
+    (item) => String(item.userId || item.id) !== targetIdStr,
+  );
+  writeStoredBlacklist(groupId, updated);
+
+  return { ok: true, source: "api" };
 }
 
 /**

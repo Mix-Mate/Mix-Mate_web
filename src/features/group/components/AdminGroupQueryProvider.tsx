@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getGroupDetail } from "../api/group.api";
+import { getGroupDetail, GroupApiError } from "../api/group.api";
 import {
   AdminGroupQueryContext,
   type AdminGroupQueryResult,
@@ -62,12 +62,33 @@ export default function AdminGroupQueryProvider({
   const [data, setData] = useState<GroupDetail | null>(null);
   const [dataGroupId, setDataGroupId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!isExtraPage);
-  const [error, setError] = useState<string | null>(null);
+  const [errorInfo, setErrorInfo] = useState<{
+    message: string;
+    status?: number;
+    code?: string;
+  } | null>(null);
+
+  const error = errorInfo?.message ?? null;
+
+  const isBlocked = useMemo(() => {
+    if (!errorInfo) return false;
+    if (errorInfo.status === 403) return true;
+    if (
+      errorInfo.code === "USER_BLOCKED" ||
+      errorInfo.code === "BANNED_USER" ||
+      errorInfo.code === "FORBIDDEN" ||
+      errorInfo.code === "BLOCKED"
+    ) {
+      return true;
+    }
+    const msg = errorInfo.message || "";
+    return msg.includes("차단") || msg.includes("참여하고 있지 않습니다");
+  }, [errorInfo]);
 
   const refetch = useCallback(async () => {
     const requestId = ++requestIdRef.current;
     const snapshotAtRequest = latestStatusRef.current;
-    setError(null);
+    setErrorInfo(null);
 
     try {
       const group = mergeStreamStatus(
@@ -84,11 +105,23 @@ export default function AdminGroupQueryProvider({
       return group;
     } catch (fetchError) {
       if (requestId === requestIdRef.current) {
-        setError(
-          fetchError instanceof Error
-            ? fetchError.message
-            : "그룹 정보를 불러오지 못했습니다.",
-        );
+        if (fetchError instanceof GroupApiError) {
+          setErrorInfo({
+            message: fetchError.message,
+            status: fetchError.status,
+            code: fetchError.code,
+          });
+        } else if (fetchError instanceof Error) {
+          setErrorInfo({
+            message: fetchError.message,
+            status: (fetchError as { status?: number }).status,
+            code: (fetchError as { code?: string }).code,
+          });
+        } else {
+          setErrorInfo({
+            message: "그룹 정보를 불러오지 못했습니다.",
+          });
+        }
       }
 
       return null;
@@ -108,7 +141,7 @@ export default function AdminGroupQueryProvider({
       setData((prev) => (prev?.groupId === Number(groupId) ? prev : null));
       setDataGroupId(groupId);
       setIsLoading(true);
-      setError(null);
+      setErrorInfo(null);
 
       try {
         const group = mergeStreamStatus(
@@ -123,11 +156,23 @@ export default function AdminGroupQueryProvider({
         }
       } catch (fetchError) {
         if (!ignore && requestId === requestIdRef.current) {
-          setError(
-            fetchError instanceof Error
-              ? fetchError.message
-              : "그룹 정보를 불러오지 못했습니다.",
-          );
+          if (fetchError instanceof GroupApiError) {
+            setErrorInfo({
+              message: fetchError.message,
+              status: fetchError.status,
+              code: fetchError.code,
+            });
+          } else if (fetchError instanceof Error) {
+            setErrorInfo({
+              message: fetchError.message,
+              status: (fetchError as { status?: number }).status,
+              code: (fetchError as { code?: string }).code,
+            });
+          } else {
+            setErrorInfo({
+              message: "그룹 정보를 불러오지 못했습니다.",
+            });
+          }
         }
       } finally {
         if (!ignore && requestId === requestIdRef.current) {
@@ -167,7 +212,10 @@ export default function AdminGroupQueryProvider({
       requestIdRef.current += 1;
       setData(null);
       setIsLoading(false);
-      setError(streamError.message);
+      setErrorInfo({
+        message: streamError.message,
+        status: streamError.status,
+      });
 
       if (streamError.status === 401) {
         clearAuthTokens();
@@ -228,9 +276,18 @@ export default function AdminGroupQueryProvider({
               <p className={styles.error} role="alert">
                 {error ?? "그룹 정보를 불러오지 못했습니다."}
               </p>
-              <Button className={styles.retryButton} onClick={refetch}>
-                다시 시도
-              </Button>
+              {isBlocked ? (
+                <Button
+                  className={styles.retryButton}
+                  onClick={() => router.replace(appRoutes.home())}
+                >
+                  홈으로 이동
+                </Button>
+              ) : (
+                <Button className={styles.retryButton} onClick={refetch}>
+                  다시 시도
+                </Button>
+              )}
             </>
           )}
         </main>
