@@ -2,17 +2,20 @@
 <img width="100%" alt="Frame 34" src="https://github.com/user-attachments/assets/67491883-0ec6-4086-ac86-89e6e02397f9" />
 
 
-> 모임의 시작부터 마무리까지, MixMate
+ [📎MixMate URL](https://mix-mate-web.vercel.app/
+)
 
-MixMate는 참가자 모집과 자동 조 편성, 술게임·대화 주제 추천, MVP·2차 참여 투표를 하나의 흐름으로 연결하는 모임 운영 서비스입니다. 운영자는 모임의 진행을 관리하고, 참가자는 자신의 조와 다음 활동을 확인하며 자연스럽게 어울릴 수 있습니다.
+> MixMate는 참가자 모집과 자동 조 편성, 술게임·대화 주제 추천, MVP·2차 참여 투표를 하나의 흐름으로 연결하는 모임 운영 서비스입니다.
+운영자는 모임의 진행을 관리하고, 참가자는 자신의 조와 다음 활동을 확인하며 자연스럽게 어울릴 수 있습니다.
 
-<!-- TODO: 공개 서비스 URL 확인 후 추가 -->
 
-## 🎯 About MixMate
+## 🍻 About MixMate
 
-여러 사람이 함께하는 모임에서는 참가자 정보를 모으고, 조를 나누고, 다음 일정의 참여 여부를 확인하는 일이 반복됩니다. 운영자는 명단과 진행 상황을 관리해야 하고, 처음 만난 참가자들은 대화를 시작할 계기가 필요합니다.
+여러 사람이 함께하는 모임에서는 참가자 정보를 모으고, 조를 나누고, 다음 일정의 참여 여부를 확인하는 일이 반복됩니다.  
+운영자는 명단과 진행 상황을 관리해야 하고, 처음 만난 참가자들은 대화를 시작할 계기가 필요합니다. 
 
-MixMate는 참여 코드로 참가자를 모으고, 참가자 특성을 고려할 수 있는 조 편성 조건을 제공합니다. 조 편성 이후에는 같은 조의 멤버 확인과 놀이·대화 주제 탐색, MVP 선정과 2차 참여 조사까지 이어지도록 구성했습니다.
+MixMate는 참여 코드로 참가자를 모으고, 참가자 특성을 고려할 수 있는 조 편성 조건을 제공합니다.  
+조 편성 이후에는 같은 조의 멤버 확인과 술 게임·대화 주제 탐색, MVP 선정과 2차 참여 조사까지 이어지도록 구성했습니다. 
 
 모집, 준비, 진행, 투표, 종료 상태에 맞춰 화면과 운영 기능을 연결해 모임의 다음 단계를 안내합니다.
 
@@ -44,7 +47,7 @@ MixMate는 참여 코드로 참가자를 모으고, 참가자 특성을 고려�
   </tbody>
 </table>
 
-## ✨ Key Features
+## ✨ 주요 기능
 
 ### 그룹 생성과 참여 코드 기반 참가
 
@@ -93,7 +96,7 @@ MixMate는 참여 코드로 참가자를 모으고, 참가자 특성을 고려�
 - 투표 마감 후 2차 진행 여부를 결정합니다.
 - 2차를 진행하면 조 편성을 다시 확정하고, 모임 종료까지 관리합니다.
 
-## 🔄 User Flow
+## 🔄 사용자 플로우
 
 ### HOST Flow
 
@@ -361,5 +364,22 @@ GitHub Actions는 `main`, `dev` 브랜치의 Push와 Pull Request에서 의존�
 | <img src="https://avatars.githubusercontent.com/Koo134o" height="100"/> <br> [고민경](https://github.com/Koo134o) | <img src="https://avatars.githubusercontent.com/moonchanju" height="100"/> <br> [문찬주](https://github.com/moonchanju) | <img src="https://avatars.githubusercontent.com/pdar124" height="100"/> <br> [박다래](https://github.com/pdar124) | <img src="https://avatars.githubusercontent.com/BaekSeungBin" height="100"/> <br> [백승빈](https://github.com/BaekSeungBin) | <img src="https://avatars.githubusercontent.com/KDWorld81" height="100"/> <br> 👑[곽동욱](https://github.com/KDWorld81)👑 | <img src="https://avatars.githubusercontent.com/meoooogus" height="100"/> <br> [김대현](https://github.com/meoooogus) |
 
 ---
-
-<!-- TODO: 팀원별 상세 담당 기능 확인 후 추가 -->
+- **FE 1 고민경**
+  - 로그인·회원가입 등 인증 기능
+  - 메인 홈, 그룹 생성
+  - 입장 추가 정보 입력
+- **FE 2 백승빈**
+    - 참가자 목록 및 관리
+    - 참가자 등록·상세 조회
+    - 프로필 조회 및 수정
+    - 정보 공개 범위 처리
+- **FE 3 문찬주**
+    - 조 편성 설정 배치 조건 및 고정 멤버 설정
+    - 자동 배치·재셔플
+    - 조 편성 결과 확정
+    - 반응형 css
+- **FE 4 박다래**
+    - 사용자 홈
+    - 나몇조 및 조원 확인
+    - 술게임·스몰토크·밸런스 게임
+    - MVP·2차 참여 투표 및 결과·현황
