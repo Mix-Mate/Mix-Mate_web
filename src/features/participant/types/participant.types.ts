@@ -46,7 +46,6 @@ export type ParticipantTeam = {
 };
 
 export type ParticipantGroup = {
-  groupName: string;
   participants: Participant[];
   teams: ParticipantTeam[];
 };

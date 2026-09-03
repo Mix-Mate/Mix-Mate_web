@@ -6,7 +6,6 @@ import type { AssignmentRound } from "@/features/assignment/types/assignment.typ
 import type { ParticipantGroup } from "../types/participant.types";
 
 const initialParticipantGroup: ParticipantGroup = {
-  groupName: "",
   participants: [],
   teams: [],
 };
