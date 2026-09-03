@@ -1,14 +1,19 @@
 .sheet {
-  --bottom-sheet-padding: 24px 20px 20px;
-  --bottom-sheet-border-radius: 28px 28px 0 0;
-  max-height: 90vh;
+  --bottom-sheet-padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 0px));
+  --bottom-sheet-border-radius: 24px 24px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 12px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  max-height: 85%;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
   width: 100%;
 }
 
@@ -16,62 +21,47 @@
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   text-align: center;
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .profileHeader h2 {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: #18181b;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
-}
-
-.profileHeader p {
-  margin: 0;
-  color: #71717a;
-  font-size: 13px;
 }
 
 .badges {
   display: flex;
   gap: 6px;
-  margin-top: 4px;
-}
-
-.badge {
-  border: 1.5px solid #2f80d1;
-  border-radius: 999px;
-  padding: 3px 10px;
-  color: #2f80d1;
-  font-size: 12px;
-  font-weight: 700;
+  margin-top: 2px;
 }
 
 .blockedBadge {
-  border: 1.5px solid #ef4444;
+  border: 1px solid #ef4444;
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 2px 8px;
   background: #fff1f2;
   color: #ef4444;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .infoCard {
   border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 4px 18px;
+  border-radius: 14px;
+  padding: 0 14px;
   background: #ffffff;
 }
 
 .infoCard div {
   display: flex;
-  min-height: 42px;
+  min-height: 38px;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   border-bottom: 1px solid #f3f4f6;
 }
 
@@ -82,20 +72,16 @@
 .infoCard span {
   flex: 0 0 auto;
   color: #a1a1aa;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .infoCard strong {
   color: #18181b;
-  font-size: 13.5px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   text-align: right;
   word-break: break-all;
-}
-
-.instagram {
-  color: #2f80d1 !important;
 }
 
 .emailText {
@@ -104,8 +90,8 @@
 }
 
 .reasonCard {
-  border-radius: 16px;
-  padding: 14px 18px;
+  border-radius: 14px;
+  padding: 10px 14px;
   background: #fef2f2;
   border: 1px solid #fee2e2;
 }
@@ -113,40 +99,17 @@
 .reasonCard span {
   display: block;
   color: #ef4444;
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .reasonCard p {
   margin: 0;
   color: #991b1b;
-  font-size: 13.5px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 500;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.bioCard {
-  border-radius: 16px;
-  padding: 14px 18px;
-  background: #f3f4f6;
-}
-
-.bioCard span {
-  display: block;
-  color: #a1a1aa;
-  font-size: 12.5px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.bioCard p {
-  margin: 0;
-  color: #374151;
-  font-size: 13.5px;
-  line-height: 20px;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -154,29 +117,36 @@
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 4px;
   width: 100%;
 }
 
 .unblockButton.unblockButton {
-  height: 52px;
+  height: 44px;
   background: #256ad3;
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .closeButton.closeButton {
-  height: 48px;
-  border-radius: 14px;
-  font-size: 14px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 13.5px;
 }
 
 .confirmDialogSheet {
-  --bottom-sheet-padding: 28px 24px 20px;
+  --bottom-sheet-padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 0px));
   --bottom-sheet-border-radius: 24px 24px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 12px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  max-height: 85%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .confirmContent {
@@ -188,8 +158,8 @@
 
 .warningIcon {
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   border-radius: 50%;
   background: #eff6ff;
@@ -197,29 +167,35 @@
 }
 
 .confirmContent h2 {
-  margin: 16px 0 8px;
+  margin: 12px 0 6px;
   color: #18181b;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .confirmContent p {
-  margin: 0 0 20px;
+  margin: 0 0 16px;
   color: #52525b;
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 12.5px;
+  line-height: 18px;
 }
 
 .confirmActions {
   display: grid;
   width: 100%;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
+}
+
+.confirmActions button {
+  height: 44px;
+  border-radius: 12px;
+  font-size: 14px;
 }
 
 .unblockError {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   color: #ef4444;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
 }
