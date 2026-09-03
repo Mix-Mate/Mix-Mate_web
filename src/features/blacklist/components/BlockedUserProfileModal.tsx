@@ -78,7 +78,7 @@ export default function BlockedUserProfileModal({
             <GenderAvatar
               gender={participant.gender || "male"}
               name={displayName}
-              size={68}
+              size={52}
             />
             <h2 id="blocked-profile-title">{displayName}</h2>
 
