@@ -79,7 +79,10 @@ export default function MyTeamScreen() {
       {activeTab === "team" ? (
         <div className={styles.content}>
           <section
-            className={styles.assignmentOrb}
+            key={`${round}-${team?.teamNumber ?? "pending"}`}
+            className={`${styles.assignmentOrb} ${
+              !isLoading && !error && team ? styles.assignmentRevealed : ""
+            }`.trim()}
             aria-label={
               isLoading
                 ? "내 조 정보를 불러오는 중입니다."
@@ -90,7 +93,7 @@ export default function MyTeamScreen() {
                     : "내 조 정보가 없습니다."
             }
           >
-            <span>내 조</span>
+            <span>나 몇 조?</span>
             <strong>
               {isLoading ? "…" : team ? `${team.teamNumber}조` : "—"}
             </strong>
