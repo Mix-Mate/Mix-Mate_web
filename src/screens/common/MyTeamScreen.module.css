@@ -26,6 +26,10 @@
 }
 
 .assignmentOrb {
+  --reveal-easing: cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  isolation: isolate;
   display: flex;
   width: 328px;
   height: 328px;
@@ -49,6 +53,32 @@
     0 9px 18px rgba(173, 198, 255, 0.2);
 }
 
+.assignmentRevealed {
+  animation: orbReveal 0.55s var(--reveal-easing) both;
+}
+
+.assignmentRevealed::before,
+.assignmentRevealed::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  content: "";
+}
+
+.assignmentRevealed::before {
+  box-shadow: 0 0 36px 12px rgba(100, 171, 255, 0.18);
+  opacity: 0;
+  animation: orbGlow 0.8s var(--reveal-easing) both;
+}
+
+.assignmentRevealed::after {
+  border: 1px solid rgba(135, 190, 245, 0.4);
+  opacity: 0;
+  animation: orbRing 0.7s var(--reveal-easing) both;
+}
+
 .assignmentOrb span,
 .assignmentOrb strong {
   margin: 0;
@@ -70,6 +100,90 @@
   font-weight: 700;
   letter-spacing: -5px;
   line-height: 1;
+}
+
+.assignmentRevealed span {
+  animation: orbLabelReveal 0.35s var(--reveal-easing) 0.35s both;
+}
+
+.assignmentRevealed strong {
+  animation: orbNumberReveal 0.45s var(--reveal-easing) 0.48s both;
+}
+
+@keyframes orbReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes orbGlow {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes orbRing {
+  from {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes orbLabelReveal {
+  from {
+    opacity: 0;
+    transform: translate(-2px, -4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-2px, -12px);
+  }
+}
+
+@keyframes orbNumberReveal {
+  from {
+    opacity: 0;
+    transform: translate(-2px, 0) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-2px, -12px) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assignmentRevealed,
+  .assignmentRevealed::before,
+  .assignmentRevealed::after,
+  .assignmentRevealed span,
+  .assignmentRevealed strong {
+    animation: none;
+  }
 }
 
 .statusText {
