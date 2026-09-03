@@ -229,11 +229,15 @@ export default function EndVoteScreen() {
 
       <EndVoteDialog
         open={endVoteDialogOpen}
+        groupId={params.groupId}
         pendingMembers={pendingMembers}
         isEnding={isFinishingVote}
         error={endVoteError}
         onClose={closeEndVoteDialog}
         onConfirm={confirmEndVote}
+        onVoteChange={() => {
+          void refetchVoteStatus();
+        }}
       />
     </MobileFrame>
   );

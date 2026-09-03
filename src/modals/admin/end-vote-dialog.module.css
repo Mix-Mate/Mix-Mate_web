@@ -3,11 +3,12 @@
 }
 
 .bottomSheet {
-  --bottom-sheet-padding: 0 26px 26px;
+  --bottom-sheet-padding: 0 26px calc(26px + var(--safe-area-bottom));
   --bottom-sheet-border-radius: 36px 36px 0 0;
 
   position: relative;
   display: flex;
+  overflow: hidden;
   height: min(579px, calc(100dvh - 20px));
   flex-direction: column;
   text-align: center;
@@ -56,6 +57,13 @@
   line-height: 23px;
 }
 
+.descriptionNote {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 .message p strong {
   color: #ef4444;
   font-weight: 600;
@@ -70,11 +78,16 @@
 }
 
 .pendingSection {
+  display: flex;
   min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin-bottom: 20px;
   text-align: left;
 }
 
 .pendingSection h3 {
+  flex: 0 0 auto;
   margin: 20px 0 12px;
   color: #a1a1aa;
   font-size: 12px;
@@ -85,7 +98,9 @@
 
 .pendingList {
   display: flex;
+  min-height: 0;
   max-height: 214px;
+  flex: 1 1 auto;
   margin: 0;
   padding: 0;
   overflow-y: auto;
@@ -136,16 +151,15 @@
   white-space: nowrap;
 }
 
-.absenceBadge {
+.waitingBadge {
   display: inline-grid;
   min-width: 67px;
   height: 28px;
   margin-left: auto;
   place-items: center;
-  border: 1px solid #fecdd3;
   border-radius: 999px;
-  background: #fff1f2;
-  color: #ef4444;
+  background: #f1f2f4;
+  color: #848c95;
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
@@ -162,6 +176,7 @@
 
 .actions {
   display: grid;
+  flex: 0 0 auto;
   grid-template-columns: 1fr 1fr;
   gap: 11px;
   margin-top: auto;

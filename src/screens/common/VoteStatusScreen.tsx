@@ -24,12 +24,13 @@ export default function VoteStatusScreen() {
   const { data: group } = useAdminGroupQuery(params.groupId);
   const isAdmin = group?.myRole === "HOST";
   const canForceEndVote = isAdmin && group?.status === "VOTING";
-  const { data, isLoading, isRefreshing, error, isComplete } =
+  const { data, isLoading, isRefreshing, error, isComplete, refetch } =
     useVoteStatusQuery(params.groupId);
   const { back: navigateToMainHome } = useVoteNavigation(appRoutes.home());
   const [selectedFilter, setSelectedFilter] =
     useState<SecondRoundVoteStatusFilter>("PENDING");
   const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
+  const [manualVoteError, setManualVoteError] = useState<string | null>(null);
   const pendingCount = data
     ? Math.max(0, data.totalParticipantCount - data.votedCount)
     : 0;
@@ -52,7 +53,8 @@ export default function VoteStatusScreen() {
         PENDING: {
           title: "미투표 멤버",
           members: data.participants.filter(
-            (participant) => participant.choice === null,
+            (participant) =>
+              participant.manualEntry || participant.choice === null,
           ),
           emptyMessage: "모든 참가자가 투표를 완료했습니다.",
         },
@@ -138,12 +140,18 @@ export default function VoteStatusScreen() {
               title={listContent.title}
               members={listContent.members}
               emptyMessage={listContent.emptyMessage}
+              groupId={params.groupId}
+              canManageManualVote={isAdmin && selectedFilter === "PENDING"}
+              onVoteChange={() => {
+                void refetch();
+              }}
+              onManualVoteError={setManualVoteError}
             />
 
-            {error && (
+            {(error || manualVoteError) && (
               <p className={styles.waitingNotice} role="alert">
                 <AlertTriangle aria-hidden="true" size={17} strokeWidth={2} />
-                {error}
+                {error ?? manualVoteError}
               </p>
             )}
 

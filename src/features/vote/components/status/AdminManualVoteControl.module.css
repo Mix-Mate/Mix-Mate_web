@@ -1,0 +1,102 @@
+.attendanceIcon {
+  flex: 0 0 auto;
+  color: #3789dc;
+}
+
+.absenceIcon {
+  flex: 0 0 auto;
+  color: #e05252;
+}
+
+.voteDropdown {
+  position: relative;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.voteDropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: #52525b;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.voteDropdownTriggerActive {
+  color: #3b82c4;
+}
+
+.voteDropdownTrigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.voteDropdownArrow {
+  font-size: 10px;
+  color: #a1a1aa;
+  transition: transform 0.2s ease;
+}
+
+.voteDropdownArrowOpen {
+  transform: rotate(180deg);
+}
+
+/* 메뉴/백드롭은 body로 포털되므로 목록의 overflow에 잘리지 않는다 */
+.voteDropdownBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: default;
+}
+
+.voteDropdownMenu {
+  position: fixed;
+  z-index: 201;
+  display: flex;
+  width: 128px;
+  flex-direction: column;
+  gap: 4px;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.1);
+  padding: 6px;
+}
+
+.voteDropdownItem {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0 8px;
+  background: transparent;
+  color: #52525b;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.voteDropdownItemActive {
+  background: #f4f4f5;
+  color: #18181b;
+}
+
+.voteDropdownCheck {
+  margin-left: auto;
+  color: #3b82c4;
+}
+

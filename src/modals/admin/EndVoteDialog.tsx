@@ -1,7 +1,13 @@
 "use client";
 
 import { TriangleAlert } from "lucide-react";
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import AdminManualVoteControl from "@/features/vote/components/status/AdminManualVoteControl";
 import type { SecondRoundVoteParticipant } from "@/features/vote/types/secondRoundVoteStatus.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
@@ -9,11 +15,13 @@ import styles from "./end-vote-dialog.module.css";
 
 interface EndVoteDialogProps {
   open: boolean;
+  groupId: string;
   pendingMembers: SecondRoundVoteParticipant[];
   isEnding?: boolean;
   error?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+  onVoteChange: () => void;
 }
 
 interface PendingListDragState {
@@ -24,19 +32,48 @@ interface PendingListDragState {
 
 export default function EndVoteDialog({
   open,
+  groupId,
   pendingMembers,
   isEnding = false,
   error,
   onClose,
   onConfirm,
+  onVoteChange,
 }: EndVoteDialogProps) {
   const pendingListRef = useRef<HTMLUListElement>(null);
   const pendingListDragRef = useRef<PendingListDragState | null>(null);
+  // 대신 투표 요청이 서버에 닿기 전에 투표가 종료되면 그 지정이 유실되므로,
+  // 제출 중인 행이 하나라도 있으면 종료 버튼을 잠근다.
+  const [submittingIds, setSubmittingIds] = useState<number[]>([]);
+  const [manualVoteError, setManualVoteError] = useState<string | null>(null);
+
+  const handleSubmittingChange = useCallback(
+    (participantId: number, isSubmitting: boolean) => {
+      setSubmittingIds((current) =>
+        isSubmitting
+          ? current.includes(participantId)
+            ? current
+            : [...current, participantId]
+          : current.filter((id) => id !== participantId),
+      );
+    },
+    [],
+  );
+
+  const isSubmittingManualVote = submittingIds.length > 0;
 
   const startPendingListDrag = (
     event: ReactPointerEvent<HTMLUListElement>,
   ) => {
     if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+    // 버튼 위에서 시작한 드래그까지 포인터를 가로채면 클릭이 버튼에 닿지 않는다.
+    if (
+      event.target instanceof Element &&
+      event.target.closest("button, a, input, select, textarea")
+    ) {
+      return;
+    }
 
     pendingListDragRef.current = {
       pointerId: event.pointerId,
@@ -87,6 +124,10 @@ export default function EndVoteDialog({
         <h2 id="end-vote-title">미투표자가 있습니다</h2>
         <p id="end-vote-description">
           종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
+          <br />
+          <span className={styles.descriptionNote}>
+            ※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
+          </span>
         </p>
       </div>
 
@@ -96,7 +137,7 @@ export default function EndVoteDialog({
         className={styles.pendingSection}
         aria-labelledby="pending-members-title"
       >
-        <h3 id="pending-members-title">미투표자 {pendingMembers.length}명</h3>
+        <h3 id="pending-members-title">미투표 명단</h3>
         <ul
           ref={pendingListRef}
           className={styles.pendingList}
@@ -113,15 +154,26 @@ export default function EndVoteDialog({
           {pendingMembers.map((member) => (
             <li className={styles.pendingMember} key={member.participantId}>
               <strong>{member.displayName}</strong>
-              <span className={styles.absenceBadge}>불참 처리</span>
+
+              {member.manualEntry ? (
+                <AdminManualVoteControl
+                  groupId={groupId}
+                  member={member}
+                  onVoteChange={onVoteChange}
+                  onSubmittingChange={handleSubmittingChange}
+                  onError={setManualVoteError}
+                />
+              ) : (
+                <span className={styles.waitingBadge}>대기 중</span>
+              )}
             </li>
           ))}
         </ul>
       </section>
 
-      {error && (
+      {(error || manualVoteError) && (
         <span className={styles.error} role="alert">
-          {error}
+          {error ?? manualVoteError}
         </span>
       )}
 
@@ -138,7 +190,7 @@ export default function EndVoteDialog({
           variant="danger"
           className={styles.endButton}
           onClick={onConfirm}
-          disabled={isEnding}
+          disabled={isEnding || isSubmittingManualVote}
         >
           {isEnding ? "종료 중..." : "지금 종료하기"}
         </Button>
