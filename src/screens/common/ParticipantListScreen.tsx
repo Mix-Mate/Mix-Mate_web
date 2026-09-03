@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantFilter from "@/features/participant/components/ParticipantFilter";
 import type { ParticipantFilterValue } from "@/features/participant/components/ParticipantFilter";
@@ -22,7 +22,9 @@ import type {
 } from "@/features/participant/types/participant.types";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
+import useToast from "@/shared/hooks/useToast";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import Toast from "@/shared/ui/Toast";
 import styles from "./ParticipantListScreen.module.css";
 import VoteResultListScreen from "./VoteResultListScreen";
 
@@ -46,6 +48,7 @@ function DefaultParticipantListScreen() {
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
+  const { message: toastMessage, showToast } = useToast();
   const { data: group } = useAdminGroupQuery(params.groupId);
   const roundParam = searchParams.get("round");
   const round =
@@ -58,6 +61,16 @@ function DefaultParticipantListScreen() {
     round,
   });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("adminToast");
+      if (stored) {
+        showToast(stored);
+        sessionStorage.removeItem("adminToast");
+      }
+    }
+  }, [showToast]);
   const isRecruiting = group?.status === "RECRUITING";
   const canViewPrivateProfiles = group?.myRole === "HOST";
   const canAddParticipant = group?.myRole === "HOST" && isRecruiting;
@@ -181,6 +194,12 @@ function DefaultParticipantListScreen() {
         participant={privateParticipant}
         onClose={() => setPrivateParticipant(null)}
       />
+
+      {toastMessage && (
+        <Toast className={styles.toast} role="status">
+          {toastMessage}
+        </Toast>
+      )}
     </MobileFrame>
   );
 }

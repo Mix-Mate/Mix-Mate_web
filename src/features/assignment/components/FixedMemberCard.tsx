@@ -43,7 +43,9 @@ export default function FixedMemberCard({
   return (
     <div className={styles.fixedRow}>
       <Link
-        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin`}
+        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin&from=${encodeURIComponent(
+          `/groups/${groupId}/admin/assignment/fixed?round=${round}`,
+        )}`}
         className={styles.fixedRowLink}
       >
         {content}
