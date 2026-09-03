@@ -22,21 +22,6 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => ({
   getMyGroupsApi: vi.fn(),
 }));
 
-vi.mock("@/features/group/lib/resolve-group-entry-route", () => ({
-  resolveGroupEntryRoute: vi.fn(
-    async (groupId: string, role: string | null | undefined, status?: string) => {
-      const normalizedStatus = status?.trim().toUpperCase();
-      if (normalizedStatus === "VOTE_CLOSED") return `/groups/${groupId}/votes/result`;
-      if (normalizedStatus === "VOTING") return `/groups/${groupId}/votes/mvp`;
-      if (role?.trim().toUpperCase() === "HOST") {
-        if (normalizedStatus === "RECRUITING") return `/groups/${groupId}/admin/recruitment`;
-        return `/groups/${groupId}/admin`;
-      }
-      return `/groups/${groupId}`;
-    },
-  ),
-}));
-
 vi.mock("@/features/blacklist/api/blacklist.api", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/features/blacklist/api/blacklist.api")
@@ -220,17 +205,22 @@ describe("HomeScreen", () => {
 
   describe("3. 그룹 진입 라우팅", () => {
     it.each([
-      ["RECRUITING", "HOST", "/groups/31/admin/recruitment"],
-      ["BEFORE_FIRST_ROUND", "HOST", "/groups/31/admin"],
-      ["FIRST_ROUND", "HOST", "/groups/31/admin"],
-      ["BEFORE_SECOND_ROUND", "HOST", "/groups/31/admin"],
-      ["SECOND_ROUND", "HOST", "/groups/31/admin"],
-      ["VOTE_CLOSED", "HOST", "/groups/31/votes/result"],
-      ["VOTING", "HOST", "/groups/31/votes/mvp"],
+      ["RECRUITING", "HOST", "/groups/31"],
+      ["BEFORE_FIRST_ROUND", "HOST", "/groups/31"],
+      ["FIRST_ROUND", "HOST", "/groups/31"],
+      ["BEFORE_SECOND_ROUND", "HOST", "/groups/31"],
+      ["SECOND_ROUND", "HOST", "/groups/31"],
+      ["VOTE_CLOSED", "HOST", "/groups/31"],
+      ["VOTING", "HOST", "/groups/31"],
       ["RECRUITING", "PARTICIPANT", "/groups/31"],
-      ["VOTING", "PARTICIPANT", "/groups/31/votes/mvp"],
+      ["BEFORE_FIRST_ROUND", "PARTICIPANT", "/groups/31"],
+      ["FIRST_ROUND", "PARTICIPANT", "/groups/31"],
+      ["BEFORE_SECOND_ROUND", "PARTICIPANT", "/groups/31"],
+      ["SECOND_ROUND", "PARTICIPANT", "/groups/31"],
+      ["VOTE_CLOSED", "PARTICIPANT", "/groups/31"],
+      ["VOTING", "PARTICIPANT", "/groups/31"],
     ])(
-      "%s 상태 및 %s 역할의 그룹을 올바른 화면으로 연결한다",
+      "%s 상태 및 %s 역할에서도 메인 홈에서 선택하면 그룹 홈으로 연결한다",
       async (status, role, expectedRoute) => {
         getMyGroupsApiMock.mockImplementation(async (params) => ({
           groups:
@@ -262,15 +252,16 @@ describe("HomeScreen", () => {
     );
 
     it("차단된 참가자가 그룹 클릭 시 차단 팝업이 노출되고 페이지 이동하지 않는다", async () => {
-      const { checkUserBlockedInGroup } = await import(
-        "@/features/blacklist/api/blacklist.api"
-      );
+      const { checkUserBlockedInGroup } =
+        await import("@/features/blacklist/api/blacklist.api");
       vi.mocked(checkUserBlockedInGroup).mockResolvedValueOnce({
         id: "1",
         userId: 1,
         name: "테스터",
         displayName: "테스터",
+        email: "tester@example.com",
         reason: "부적절한 언행으로 차단되었습니다.",
+        bannedAt: "2026-09-01T12:00:00Z",
         blockedAt: "2026-09-01T12:00:00Z",
       });
 

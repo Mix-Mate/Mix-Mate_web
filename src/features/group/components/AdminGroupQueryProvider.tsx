@@ -17,6 +17,8 @@ import {
 import type { GroupDetail, GroupStatusEvent } from "../types/group.types";
 import type { GroupStatusStreamError } from "../api/groupStatusStream.api";
 import { useGroupStatusStream } from "../hooks/useGroupStatusStream";
+import { isGroupHomeRoute } from "../lib/group-entry-route";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import { clearAuthTokens } from "@/shared/api/authToken";
 import {
   appRoutes,
@@ -207,11 +209,16 @@ export default function AdminGroupQueryProvider({
         className={styles.phone}
         data-testid="admin-group-query-state"
       >
-        <Header
-          title="그룹 정보"
-          onBack={() => (backHref ? router.replace(backHref) : router.back())}
-          compact
-        />
+        {isGroupHomeRoute(pathname, groupId) ||
+        backHref === appRoutes.home() ? (
+          <GroupHomeHeader title="그룹 정보" compact />
+        ) : (
+          <Header
+            title="그룹 정보"
+            onBack={() => (backHref ? router.replace(backHref) : router.back())}
+            compact
+          />
+        )}
 
         <main className={styles.content}>
           {currentIsLoading ? (

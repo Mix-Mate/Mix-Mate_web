@@ -23,7 +23,7 @@ import GroupStatusNavigationBoundary from "./GroupStatusNavigationBoundary";
 
 const { route, router, getGroupDetail, subscribe, getMyTeam } = vi.hoisted(
   () => ({
-    route: { groupId: "6", pathname: "/groups/6/home" },
+    route: { groupId: "6", pathname: "/groups/6" },
     router: { replace: vi.fn(), push: vi.fn(), back: vi.fn() },
     getGroupDetail: vi.fn(),
     subscribe: vi.fn(),
@@ -133,7 +133,7 @@ describe("공통 그룹 SSE 동기화", () => {
     vi.clearAllMocks();
     subscriptions = [];
     route.groupId = "6";
-    route.pathname = "/groups/6/home";
+    route.pathname = "/groups/6";
     setAuthTokens({ accessToken: "test-token" });
     getGroupDetail.mockImplementation(async (id: string) =>
       group("RECRUITING", Number(id)),
@@ -205,7 +205,7 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).not.toHaveBeenCalled();
   });
 
-  it.each(["/groups/6/home", "/groups/6/admin"])(
+  it.each(["/groups/6", "/groups/6/admin"])(
     "관리자도 %s에서 투표 시작 이벤트를 받으면 MVP 투표로 한 번만 이동한다",
     async (pathname) => {
       route.pathname = pathname;
@@ -215,7 +215,7 @@ describe("공통 그룹 SSE 동기화", () => {
       });
       render(
         <App
-          home={pathname.endsWith("/home")}
+          home={pathname === "/groups/6"}
           adminHome={pathname.endsWith("/admin")}
         />,
       );
@@ -227,6 +227,30 @@ describe("공통 그룹 SSE 동기화", () => {
       );
       expect(subscribe).toHaveBeenCalledOnce();
       expect(subscriptions[0].stop).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    ["/groups/6", "/groups/6/admin"].flatMap((pathname) =>
+      (["FIRST_ROUND", "SECOND_ROUND", "VOTING", "VOTE_CLOSED"] as const).map(
+        (status) => ({ pathname, status }),
+      ),
+    ),
+  )(
+    "$status 상태로 $pathname에 진입하면 진행 현황 대신 그룹 홈을 보여준다",
+    async ({ pathname, status }) => {
+      route.pathname = pathname;
+      getGroupDetail.mockResolvedValue({ ...group(status), myRole: "HOST" });
+      render(
+        <App
+          home={pathname === "/groups/6"}
+          adminHome={pathname.endsWith("/admin")}
+        />,
+      );
+
+      await screen.findByTestId("user-home");
+      expect(screen.queryByTestId("admin-progress")).not.toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
     },
   );
 
@@ -325,8 +349,46 @@ describe("공통 그룹 SSE 동기화", () => {
       fireEvent.click(
         screen.getByRole("button", { name: "이전 화면으로 이동" }),
       );
+      if (target === "/home") {
+        expect(router.replace).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      }
       expect(router.replace).toHaveBeenCalledExactlyOnceWith(target);
       expect(router.back).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    [
+      "/groups/6",
+      "/groups/6/admin",
+      "/groups/6/admin/recruitment",
+      "/groups/6/admin/preparation",
+    ].flatMap((pathname) =>
+      ["loading", "error"].map((state) => ({ pathname, state })),
+    ),
+  )(
+    "$pathname의 $state 화면에서도 확인 후 메인 홈으로 나간다",
+    async ({ pathname, state }) => {
+      route.pathname = pathname;
+      if (state === "error") {
+        getGroupDetail.mockRejectedValue(new Error("그룹 조회 실패"));
+      } else {
+        getGroupDetail.mockReturnValue(new Promise(() => {}));
+      }
+      render(<App />);
+      if (state === "error") await screen.findByRole("alert");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(router.back).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith("/home");
     },
   );
 
