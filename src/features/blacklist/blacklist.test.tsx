@@ -265,7 +265,6 @@ describe("Blacklist Feature & API Integration", () => {
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
           data: {
-            groupName: "테스트 소모임",
             participants: [],
             teams: [],
           },
@@ -332,7 +331,6 @@ describe("Blacklist Feature & API Integration", () => {
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
           data: {
-            groupName: "테스트 소모임",
             participants: [],
             teams: [],
           },
@@ -386,7 +384,6 @@ describe("Blacklist Feature & API Integration", () => {
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
           data: {
-            groupName: "테스트 소모임",
             participants: [],
             teams: [],
           },
@@ -422,7 +419,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -511,7 +507,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -576,7 +571,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -637,7 +631,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -692,7 +685,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -760,7 +752,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
