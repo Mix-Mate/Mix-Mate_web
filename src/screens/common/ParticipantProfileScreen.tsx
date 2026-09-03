@@ -64,7 +64,6 @@ export default function ParticipantProfileScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(groupId);
-  const { data: myProfile } = useMyGroupProfileQuery(groupId);
   const { mutate: blockParticipant, isPending: isBlocking } =
     useBlockParticipantMutation();
 
@@ -76,37 +75,53 @@ export default function ParticipantProfileScreen({
   const roundParam = searchParams.get("round");
   const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
   const resolvedRound = adminRound ?? 1;
-  const isAdminView = searchParams.get("role") === "admin" || group?.myRole === "HOST";
-  const { data: profileDetail } = useParticipantProfileQuery(
+  const isAdminView =
+    searchParams.get("role") === "admin" || group?.myRole === "HOST";
+  const myParticipantId = group?.myParticipantId
+    ? String(group.myParticipantId)
+    : null;
+  const isSelfProfile =
+    myParticipantId !== null && myParticipantId === participantId;
+  const { data: myProfile, isError: isMyProfileError } =
+    useMyGroupProfileQuery(groupId, {
+      enabled: isSelfProfile,
+    });
+  const shouldFetchProfileDetail =
+    Boolean(group) && (!isSelfProfile || isMyProfileError);
+  const {
+    data: profileDetail,
+    isError: isProfileDetailError,
+  } = useParticipantProfileQuery(
     groupId,
     participantId,
+    { enabled: shouldFetchProfileDetail },
   );
+  const shouldFetchListFallback =
+    Boolean(group) &&
+    (!isSelfProfile || isMyProfileError) &&
+    isProfileDetailError;
+  const shouldFetchAdminFallback =
+    shouldFetchListFallback && isAdminView;
+  const shouldFetchParticipantFallback =
+    shouldFetchListFallback && !isAdminView;
   const { data: adminParticipantGroup } = useAdminParticipantListQuery(
     groupId,
     resolvedRound,
+    { enabled: shouldFetchAdminFallback },
   );
   const { data: participantGroup } = useParticipantListQuery(groupId, {
     round: resolvedRound,
+    enabled: shouldFetchParticipantFallback,
   });
-  const resolvedMyParticipantId =
-    myProfile?.id && myProfile.id !== "me"
-      ? myProfile.id
-      : group?.myParticipantId
-        ? String(group.myParticipantId)
-        : null;
 
   const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
-    const adminParticipant = adminParticipantGroup.participants.find(
-      (participant) => participant.id === participantId,
-    );
-
-    if (adminParticipant) {
-      return adminParticipant;
-    }
-
-    const participant = participantGroup.participants.find(
-      (item) => item.id === participantId,
-    );
+    const participant = isAdminView
+      ? adminParticipantGroup.participants.find(
+          (item) => item.id === participantId,
+        )
+      : participantGroup.participants.find(
+          (item) => item.id === participantId,
+        );
 
     if (!participant) {
       return null;
@@ -123,42 +138,32 @@ export default function ParticipantProfileScreen({
     };
   }, [
     adminParticipantGroup.participants,
+    isAdminView,
     participantGroup.participants,
     participantId,
   ]);
 
   const profile = useMemo(() => {
-    const baseProfile = profileDetail ?? fallbackProfile;
-    const isSelfProfile =
-      myProfile &&
-      ((resolvedMyParticipantId &&
-        String(resolvedMyParticipantId) === String(participantId)) ||
-        (!resolvedMyParticipantId &&
-          baseProfile?.name === myProfile.displayName &&
-          baseProfile.department === myProfile.major));
-
-    if (isSelfProfile) {
+    if (isSelfProfile && myProfile) {
       return toProfileFromMyGroupProfile(
         myProfile,
-        resolvedMyParticipantId ?? participantId,
+        myParticipantId ?? participantId,
       );
     }
 
-    return baseProfile;
+    return profileDetail ?? fallbackProfile;
   }, [
     fallbackProfile,
+    isSelfProfile,
+    myParticipantId,
     myProfile,
     participantId,
     profileDetail,
-    resolvedMyParticipantId,
   ]);
 
   if (!group || !profile) return null;
 
-  const isSelf = Boolean(
-    resolvedMyParticipantId &&
-      String(resolvedMyParticipantId) === String(participantId),
-  );
+  const isSelf = isSelfProfile;
 
   const canManageParticipant =
     group.status === "RECRUITING" ||

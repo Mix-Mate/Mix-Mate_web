@@ -11,6 +11,7 @@ import * as adminGroupQuery from "@/features/group/hooks/useAdminGroupQuery";
 import * as adminParticipantQuery from "@/features/participant/hooks/useAdminParticipantListQuery";
 import * as participantListQuery from "@/features/participant/hooks/useParticipantListQuery";
 import * as participantProfileQuery from "@/features/participant/hooks/useParticipantProfileQuery";
+import * as myGroupProfileQuery from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type { BlockedParticipant } from "./types/blacklist.types";
 import type { AdminParticipantGroup, ParticipantProfile } from "@/features/participant/types/participant.types";
 
@@ -233,6 +234,178 @@ describe("Blacklist Feature & API Integration", () => {
       mockSearchParams = new Map<string, string>([["role", "admin"]]);
       mockPush.mockClear();
       mockBack.mockClear();
+    });
+
+    it("상세 프로필 조회가 성공하면 목록 fallback 요청을 시작하지 않는다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: mockAdminGroup,
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      const myProfileSpy = vi
+        .spyOn(myGroupProfileQuery, "useMyGroupProfileQuery")
+        .mockReturnValue({
+          data: null,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      const profileDetailSpy = vi
+        .spyOn(participantProfileQuery, "useParticipantProfileQuery")
+        .mockReturnValue({
+          data: mockParticipantProfile,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: { groupName: "테스트 소모임", participants: [] },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            groupName: "테스트 소모임",
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: false });
+      expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        enabled: true,
+      });
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        round: 1,
+        enabled: false,
+      });
+    });
+
+    it("본인 프로필은 내 프로필 API만 조회한다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: { ...mockAdminGroup, myParticipantId: 202 },
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      const myProfileSpy = vi
+        .spyOn(myGroupProfileQuery, "useMyGroupProfileQuery")
+        .mockReturnValue({
+          data: {
+            id: "202",
+            displayName: "이순신",
+            position: "MEMBER",
+            major: "경영학과",
+            isNew: false,
+            grade: "SECOND",
+            gender: "MALE",
+            mbti: "ISTJ",
+            age: 22,
+            instaId: "sunshin",
+            bio: "안녕하세요",
+            visibility: "PUBLIC",
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      const profileDetailSpy = vi
+        .spyOn(participantProfileQuery, "useParticipantProfileQuery")
+        .mockReturnValue({
+          data: null,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: { groupName: "테스트 소모임", participants: [] },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            groupName: "테스트 소모임",
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: true });
+      expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        enabled: false,
+      });
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        round: 1,
+        enabled: false,
+      });
+      expect(screen.getByText("이순신")).toBeInTheDocument();
+    });
+
+    it("상세 프로필 조회가 실패한 관리자 화면에서는 관리자 목록만 fallback으로 조회한다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: mockAdminGroup,
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      vi.spyOn(myGroupProfileQuery, "useMyGroupProfileQuery").mockReturnValue({
+        data: null,
+        isLoading: false,
+        isError: false,
+      } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+        isLoading: false,
+        isError: true,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: mockAdminParticipants,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            groupName: "테스트 소모임",
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: true,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        round: 1,
+        enabled: false,
+      });
+      expect(screen.getByText("이순신")).toBeInTheDocument();
     });
 
     it("관리자 뷰에서 차단 버튼 클릭 시 차단 사유 입력 모달이 열리고 30자 이내 입력 시 차단이 정상 수행된다", async () => {

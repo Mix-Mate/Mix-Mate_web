@@ -4,13 +4,27 @@ import { useEffect, useState } from "react";
 import { getMyGroupProfile } from "../api/profile.api";
 import type { MyGroupProfile } from "../types/profile.types";
 
-export function useMyGroupProfileQuery(groupId: string) {
+interface UseMyGroupProfileQueryOptions {
+  enabled?: boolean;
+}
+
+export function useMyGroupProfileQuery(
+  groupId: string,
+  options: UseMyGroupProfileQueryOptions = {},
+) {
+  const enabled = options.enabled ?? true;
   const [data, setData] = useState<MyGroupProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     let ignore = false;
+
+    if (!enabled) {
+      return () => {
+        ignore = true;
+      };
+    }
 
     async function fetchProfile() {
       setIsLoading(true);
@@ -33,11 +47,11 @@ export function useMyGroupProfileQuery(groupId: string) {
     return () => {
       ignore = true;
     };
-  }, [groupId]);
+  }, [enabled, groupId]);
 
   return {
-    data,
-    isLoading,
-    isError,
+    data: enabled ? data : null,
+    isLoading: enabled ? isLoading : false,
+    isError: enabled ? isError : false,
   };
 }
