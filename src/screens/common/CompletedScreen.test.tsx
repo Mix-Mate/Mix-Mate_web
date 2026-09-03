@@ -1,11 +1,18 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GroupDetail } from "@/features/group/types/group.types";
 import CompletedScreen from "./CompletedScreen";
 
-const { replaceMock, useAdminGroupQueryMock } = vi.hoisted(() => ({
-  replaceMock: vi.fn(),
-  useAdminGroupQueryMock: vi.fn(),
+const { hasSecondRoundTeamsMock, replaceMock, useAdminGroupQueryMock } =
+  vi.hoisted(() => ({
+    hasSecondRoundTeamsMock: vi.fn(),
+    replaceMock: vi.fn(),
+    useAdminGroupQueryMock: vi.fn(),
+  }));
+
+vi.mock("@/features/assignment/api/assignment.api", () => ({
+  hasSecondRoundTeams: hasSecondRoundTeamsMock,
 }));
 
 vi.mock("next/image", () => ({
@@ -55,6 +62,7 @@ function createGroup(): GroupDetail {
 describe("CompletedScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    hasSecondRoundTeamsMock.mockResolvedValue(true);
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup(),
     });
@@ -78,5 +86,17 @@ describe("CompletedScreen", () => {
     fireEvent.click(returnHomeButton);
 
     expect(replaceMock).toHaveBeenCalledWith("/");
+  });
+
+  it("개발 모드의 Strict Mode에서도 teams API를 한 번만 요청한다", async () => {
+    render(
+      <StrictMode>
+        <CompletedScreen />
+      </StrictMode>,
+    );
+
+    await waitFor(() => {
+      expect(hasSecondRoundTeamsMock).toHaveBeenCalledOnce();
+    });
   });
 });

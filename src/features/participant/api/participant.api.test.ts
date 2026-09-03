@@ -63,4 +63,28 @@ describe("getParticipants", () => {
       teams: [],
     });
   });
+
+  it("팀 목록이 필요하지 않으면 participants API만 요청한다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        participantList: [
+          {
+            participantId: 1,
+            displayName: "다래",
+            major: "컴퓨터공학",
+            gender: "FEMALE",
+            visibility: "PUBLIC",
+          },
+        ],
+      }),
+    );
+
+    const result = await getParticipants("6", 1, { includeTeams: false });
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(
+      /\/api\/v1\/groups\/6\/participants\?round=/,
+    );
+    expect(result.teams).toEqual([]);
+  });
 });

@@ -90,6 +90,7 @@ function DefaultParticipantListScreen() {
   const [keyword, setKeyword] = useState("");
   const [filter, setFilter] = useState<ParticipantFilterValue>("all");
   const [viewMode, setViewMode] = useState<ParticipantViewMode>("all");
+  const [shouldLoadTeams, setShouldLoadTeams] = useState(false);
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
   const { message: toastMessage, showToast } = useToast();
@@ -102,6 +103,7 @@ function DefaultParticipantListScreen() {
         ? getCurrentGroupRound(group.status)
         : 1;
   const { data } = useParticipantListQuery(params.groupId, {
+    includeTeams: shouldLoadTeams,
     round,
   });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
@@ -209,7 +211,13 @@ function DefaultParticipantListScreen() {
         <ParticipantSearch value={keyword} onChange={setKeyword} />
         <ParticipantStats count={data.participants.length} />
         {!isRecruiting && (
-          <ParticipantViewToggle value={viewMode} onChange={setViewMode} />
+          <ParticipantViewToggle
+            value={viewMode}
+            onChange={(nextViewMode) => {
+              setViewMode(nextViewMode);
+              if (nextViewMode === "team") setShouldLoadTeams(true);
+            }}
+          />
         )}
         <div className={styles.filterRow}>
           <ParticipantFilter value={filter} onChange={setFilter} />

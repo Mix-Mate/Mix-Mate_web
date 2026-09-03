@@ -18,6 +18,7 @@ async function getErrorMessage(response: Response): Promise<string> {
 export async function getMyTeam(
   groupId: number | string,
   round: TeamRound,
+  signal?: AbortSignal,
 ): Promise<MyTeamResponse> {
   const response = await fetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${round}/teams/my-team`,
@@ -25,6 +26,7 @@ export async function getMyTeam(
       method: "GET",
       credentials: "include",
       headers: withAuthHeaders({ Accept: "application/json" }),
+      signal,
     },
   );
 
