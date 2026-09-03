@@ -261,6 +261,7 @@
   border: 1.6px solid #e4e4e7;
   border-radius: 20px;
   background: #fff;
+  color: var(--color-text);
   text-align: left;
   transition:
     border-color 150ms ease,
