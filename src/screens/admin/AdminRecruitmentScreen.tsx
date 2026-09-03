@@ -2,7 +2,7 @@
 
 import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
@@ -29,6 +29,7 @@ import Toast from "@/shared/ui/Toast";
 import styles from "./AdminRecruitmentScreen.module.css";
 
 const RECRUITMENT_POLLING_INTERVAL_MS = 3000;
+const MIN_RECRUITMENT_TRANSITION_MS = 3000;
 
 interface InviteCodeExpirationNoticeProps {
   createdAt: string;
@@ -86,6 +87,7 @@ export default function AdminRecruitmentScreen() {
   );
   const [transitionPhase, setTransitionPhase] =
     useState<RecruitmentTransitionPhase | null>(null);
+  const cancelTransitionRef = useRef<(() => void) | null>(null);
   const { message: toast, showToast } = useToast();
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
@@ -99,6 +101,13 @@ export default function AdminRecruitmentScreen() {
     }),
     [group?.description, group?.groupName],
   );
+
+  useEffect(() => {
+    return () => {
+      cancelTransitionRef.current?.();
+      cancelTransitionRef.current = null;
+    };
+  }, [params.groupId]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -180,17 +189,39 @@ export default function AdminRecruitmentScreen() {
   }, [params.groupId, router, searchParams]);
 
   const confirmCloseRecruitment = useCallback(async () => {
-    if (!canCloseRecruitment) return;
+    if (!canCloseRecruitment || cancelTransitionRef.current) return;
 
     setTransitionPhase("closing");
+    let cancelled = false;
+    // 실제 요청과 동시에 시작해, 전체 표시 시간이 max(실제 로딩, 3초)가 되게 한다.
+    const minimumDisplay = new Promise<void>((resolve) => {
+      const timeoutId = window.setTimeout(
+        resolve,
+        MIN_RECRUITMENT_TRANSITION_MS,
+      );
+      cancelTransitionRef.current = () => {
+        cancelled = true;
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+    });
+
     const closed = await closeRecruiting(params.groupId);
+    if (cancelled) return;
+
     if (!closed) {
+      await minimumDisplay;
+      if (cancelled) return;
+      cancelTransitionRef.current = null;
       setTransitionPhase(null);
       return;
     }
 
     setTransitionPhase("preparing");
-    const latestGroup = await refetch();
+    const [latestGroup] = await Promise.all([refetch(), minimumDisplay]);
+    if (cancelled) return;
+
+    cancelTransitionRef.current = null;
     setCloseDialogOpen(false);
 
     if (latestGroup?.status === "BEFORE_FIRST_ROUND") {
@@ -258,10 +289,7 @@ export default function AdminRecruitmentScreen() {
 
   if (transitionPhase || group.status !== "RECRUITING") {
     return (
-      <RecruitmentTransitionScreen
-        groupName={group.groupName}
-        phase={transitionPhase ?? "preparing"}
-      />
+      <RecruitmentTransitionScreen phase={transitionPhase ?? "preparing"} />
     );
   }
 
