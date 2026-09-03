@@ -26,13 +26,21 @@ export default function CompletedScreen() {
 
   useEffect(() => {
     let ignore = false;
+    const requestController = new AbortController();
 
-    hasSecondRoundTeams(params.groupId).then((result) => {
-      if (!ignore) setHasSecondRound(result);
-    });
+    // 개발 모드의 최초 effect 재실행으로 같은 teams 요청이 중복되지 않게 한다.
+    const requestTimer = window.setTimeout(() => {
+      hasSecondRoundTeams(params.groupId, requestController.signal).then(
+        (result) => {
+          if (!ignore) setHasSecondRound(result);
+        },
+      );
+    }, 0);
 
     return () => {
       ignore = true;
+      window.clearTimeout(requestTimer);
+      requestController.abort();
     };
   }, [params.groupId]);
 

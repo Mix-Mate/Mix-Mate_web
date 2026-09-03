@@ -95,11 +95,12 @@ export async function getTeams(
  */
 export async function hasSecondRoundTeams(
   groupId: string,
+  signal?: AbortSignal,
 ): Promise<boolean | null> {
   try {
     const response = await fetch(
       `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/SECOND_ROUND/teams`,
-      { credentials: "include", headers: withAuthHeaders() },
+      { credentials: "include", headers: withAuthHeaders(), signal },
     );
 
     if (response.ok) return true;

@@ -147,8 +147,12 @@ async function getParticipantTeams(
 export async function getParticipants(
   groupId: string,
   round: AssignmentRound = 1,
-  signal?: AbortSignal,
+  options: {
+    signal?: AbortSignal;
+    includeTeams?: boolean;
+  } = {},
 ): Promise<ParticipantGroup> {
+  const { signal, includeTeams = true } = options;
   const participantsResponse = await request(
     `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
     { signal },
@@ -166,12 +170,9 @@ export async function getParticipants(
   const participantsById = new Map(
     participants.map((participant) => [participant.id, participant]),
   );
-  const teams = await getParticipantTeams(
-    groupId,
-    round,
-    participantsById,
-    signal,
-  );
+  const teams = includeTeams
+    ? await getParticipantTeams(groupId, round, participantsById, signal)
+    : [];
 
   return {
     participants,

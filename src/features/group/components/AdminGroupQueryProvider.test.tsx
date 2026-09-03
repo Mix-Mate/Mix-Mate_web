@@ -175,7 +175,11 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(
       await screen.findByRole("button", { name: /배정 결과 확인하기/ }),
     ).toBeVisible();
-    expect(getMyTeam).toHaveBeenCalledWith("6", "FIRST_ROUND");
+    expect(getMyTeam).toHaveBeenCalledWith(
+      "6",
+      "FIRST_ROUND",
+      expect.any(AbortSignal),
+    );
     await emit("BEFORE_SECOND_ROUND");
     expect(screen.getByTestId("user-home")).toHaveAttribute(
       "data-status",
@@ -183,7 +187,11 @@ describe("공통 그룹 SSE 동기화", () => {
     );
     expect(screen.getByText("아직 자리 배치 전입니다")).toBeVisible();
     await emit("SECOND_ROUND");
-    expect(getMyTeam).toHaveBeenLastCalledWith("6", "SECOND_ROUND");
+    expect(getMyTeam).toHaveBeenLastCalledWith(
+      "6",
+      "SECOND_ROUND",
+      expect.any(AbortSignal),
+    );
     await emit("FINISHED");
     expect(router.replace).toHaveBeenCalledWith("/groups/6/completed");
     expect(subscribe).toHaveBeenCalledOnce();

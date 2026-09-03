@@ -20,11 +20,13 @@ export function useParticipantListQuery(
   groupId: string,
   options: {
     enabled?: boolean;
+    includeTeams?: boolean;
     polling?: boolean;
     round?: AssignmentRound;
   } = {},
 ) {
   const enabled = options.enabled ?? true;
+  const includeTeams = options.includeTeams ?? false;
   const polling = options.polling ?? false;
   const round = options.round ?? 1;
   const requestIdRef = useRef(0);
@@ -46,7 +48,10 @@ export function useParticipantListQuery(
       setIsError(false);
 
       try {
-        const participants = await getParticipants(groupId, round, signal);
+        const participants = await getParticipants(groupId, round, {
+          signal,
+          includeTeams,
+        });
 
         if (requestId === requestIdRef.current) {
           setData(participants);
@@ -70,7 +75,7 @@ export function useParticipantListQuery(
         }
       }
     },
-    [enabled, groupId, round],
+    [enabled, groupId, includeTeams, round],
   );
 
   useEffect(() => {

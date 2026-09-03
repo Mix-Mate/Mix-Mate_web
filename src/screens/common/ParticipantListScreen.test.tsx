@@ -103,6 +103,26 @@ describe("ParticipantListScreen manual participant addition", () => {
     expect(screen.getByText("MixMate 모임 · 0명")).toBeInTheDocument();
   });
 
+  it("조별 보기를 선택하기 전에는 팀 목록 조회를 활성화하지 않는다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: { ...recruitingHost, status: "SECOND_ROUND" },
+    });
+
+    render(<ParticipantListScreen />);
+
+    expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
+      includeTeams: false,
+      round: 2,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "조별" }));
+
+    expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
+      includeTeams: true,
+      round: 2,
+    });
+  });
+
   it("모집 참가자 목록에서 연 추가 화면은 같은 목록으로 돌아간다", () => {
     searchParamsGetMock.mockImplementation((key: string) => {
       if (key === "round") return "1";
