@@ -5,8 +5,6 @@ import { Ban, LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useBlockParticipantMutation } from "@/features/blacklist/hooks/useBlockParticipantMutation";
-import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
-import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
 import type { ParticipantProfile } from "@/features/participant/types/participant.types";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
@@ -80,10 +78,7 @@ export default function ParticipantProfileScreen({
     });
   const shouldFetchProfileDetail =
     Boolean(group) && (!isSelfProfile || isMyProfileError);
-  const {
-    data: profileDetail,
-    isError: isProfileDetailError,
-  } = useParticipantProfileQuery(
+  const { data: profileDetail } = useParticipantProfileQuery(
     groupId,
     participantId,
     {
@@ -91,53 +86,6 @@ export default function ParticipantProfileScreen({
       enabled: shouldFetchProfileDetail,
     },
   );
-  const shouldFetchListFallback =
-    Boolean(group) &&
-    (!isSelfProfile || isMyProfileError) &&
-    isProfileDetailError;
-  const shouldFetchAdminFallback =
-    shouldFetchListFallback && isAdminView;
-  const shouldFetchParticipantFallback =
-    shouldFetchListFallback && !isAdminView;
-  const { data: adminParticipantGroup } = useAdminParticipantListQuery(
-    groupId,
-    resolvedRound,
-    { enabled: shouldFetchAdminFallback },
-  );
-  const { data: participantGroup } = useParticipantListQuery(groupId, {
-    detailRole: isAdminView ? "admin" : undefined,
-    round: resolvedRound,
-    enabled: shouldFetchParticipantFallback,
-  });
-
-  const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
-    const participant = isAdminView
-      ? adminParticipantGroup.participants.find(
-          (item) => item.id === participantId,
-        )
-      : participantGroup.participants.find(
-          (item) => item.id === participantId,
-        );
-
-    if (!participant) {
-      return null;
-    }
-
-    return {
-      ...participant,
-      grade: participant.grade ?? "",
-      mbti: participant.mbti ?? "",
-      isNew: participant.isNew ?? false,
-      age: participant.age,
-      instagramId: participant.instagramId,
-      bio: participant.bio,
-    };
-  }, [
-    adminParticipantGroup.participants,
-    isAdminView,
-    participantGroup.participants,
-    participantId,
-  ]);
 
   const profile = useMemo(() => {
     if (isSelfProfile && myProfile) {
@@ -147,9 +95,8 @@ export default function ParticipantProfileScreen({
       );
     }
 
-    return profileDetail ?? fallbackProfile;
+    return profileDetail;
   }, [
-    fallbackProfile,
     isSelfProfile,
     myParticipantId,
     myProfile,
