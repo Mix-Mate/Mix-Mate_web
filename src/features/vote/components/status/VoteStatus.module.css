@@ -256,11 +256,17 @@
   color: #dc8100;
 }
 
+/* 색 지정은 Button의 variant 클래스(.danger 등)와 특정도가 같아서, 단일 클래스로
+   쓰면 CSS 번들 순서에 따라 어느 쪽이 이길지가 뒤집힌다. 클래스를 두 번 겹쳐
+   특정도를 올려 이 값이 항상 이기게 한다. */
+.adminEndButton.adminEndButton {
+  --button-background: #f74545;
+  --button-active: #df3838;
+}
+
 .adminEndButton {
   margin-top: auto;
   border-radius: 16px;
-  --button-background: #f74545;
-  --button-active: #df3838;
   font-size: 18px;
   font-weight: 600;
   line-height: 27px;

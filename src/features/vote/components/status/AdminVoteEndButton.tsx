@@ -12,6 +12,7 @@ export default function AdminVoteEndButton({
 }: AdminVoteEndButtonProps) {
   return (
     <Button
+      variant="danger"
       className={styles.adminEndButton}
       disabled={disabled}
       onClick={onEnd}
