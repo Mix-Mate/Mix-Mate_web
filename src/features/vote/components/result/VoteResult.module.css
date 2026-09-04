@@ -15,7 +15,10 @@
   flex-direction: column;
   align-items: center;
   gap: 13px;
-  overflow: hidden;
+  /* 결과 카드와 '2차 참가자 목록' 버튼이 둘 다 줄어들지 않는 크기라, 화면이
+     작으면 합계가 이 영역보다 커진다. hidden이면 넘친 버튼이 잘려서 스크롤로도
+     도달할 수 없으므로 여기서 스크롤되게 한다. */
+  overflow-y: auto;
   padding: 16px;
 }
 
