@@ -68,8 +68,7 @@ export default function ParticipantProfileScreen({
   const roundParam = searchParams.get("round");
   const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
   const resolvedRound = adminRound ?? 1;
-  const isAdminView =
-    searchParams.get("role") === "admin" || group?.myRole === "HOST";
+  const isAdminView = group?.myRole === "HOST";
   const myParticipantId = group?.myParticipantId
     ? String(group.myParticipantId)
     : null;

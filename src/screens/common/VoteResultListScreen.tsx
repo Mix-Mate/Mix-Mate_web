@@ -60,10 +60,14 @@ function toParticipant(
 }
 
 function MvpWinnerList({
+  canViewPrivateProfiles,
   groupId,
+  searchParams,
   winners,
 }: {
+  canViewPrivateProfiles: boolean;
   groupId: string;
+  searchParams: { get: (key: string) => string | null };
   winners: MvpWinner[];
 }) {
   if (winners.length === 0) {
@@ -77,30 +81,43 @@ function MvpWinnerList({
 
   return (
     <ul className={participantStyles.participantList}>
-      {winners.map((winner) => (
-        <li key={winner.participantId}>
-          <Link
-            href={`/groups/${groupId}/participants/${winner.participantId}`}
-            className={participantStyles.participantItem}
-          >
-            <span className={styles.mvpAvatar} aria-hidden="true">
-              <Image
-                src="/images/vote/mvp-trophy.png"
-                alt=""
-                width={32}
-                height={22}
-              />
-            </span>
-            <div className={participantStyles.participantInfo}>
-              <strong>{winner.displayName}</strong>
-              <span>
-                {winner.teamNumber}조 · {gradeLabelByGrade[winner.grade]} ·{" "}
-                {winner.mbti}
+      {winners.map((winner) => {
+        const profileSearchParams = new URLSearchParams({ list: "mvp" });
+
+        if (canViewPrivateProfiles) {
+          profileSearchParams.set("role", "admin");
+        }
+
+        const profileHref = withSessionContext(
+          `/groups/${groupId}/participants/${winner.participantId}?${profileSearchParams}`,
+          searchParams,
+        );
+
+        return (
+          <li key={winner.participantId}>
+            <Link
+              href={profileHref}
+              className={participantStyles.participantItem}
+            >
+              <span className={styles.mvpAvatar} aria-hidden="true">
+                <Image
+                  src="/images/vote/mvp-trophy.png"
+                  alt=""
+                  width={32}
+                  height={22}
+                />
               </span>
-            </div>
-          </Link>
-        </li>
-      ))}
+              <div className={participantStyles.participantInfo}>
+                <strong>{winner.displayName}</strong>
+                <span>
+                  {winner.teamNumber}조 · {gradeLabelByGrade[winner.grade]} ·{" "}
+                  {winner.mbti}
+                </span>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -193,7 +210,12 @@ export default function VoteResultListScreen({
         <section className={participantStyles.listBox}>
           {data ? (
             isMvpList ? (
-              <MvpWinnerList groupId={params.groupId} winners={mvpWinners} />
+              <MvpWinnerList
+                canViewPrivateProfiles={canViewPrivateProfiles}
+                groupId={params.groupId}
+                searchParams={searchParams}
+                winners={mvpWinners}
+              />
             ) : (
               <ParticipantList
                 participants={secondRoundParticipants}
