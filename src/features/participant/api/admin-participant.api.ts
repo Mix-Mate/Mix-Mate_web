@@ -10,19 +10,18 @@ import type { AssignmentRound } from "@/features/assignment/types/assignment.typ
 import { getGroupDetail } from "@/features/group/api/group.api";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
-
-const adminParticipantDraftStoragePrefix = "mixmate:admin-participant-drafts:";
-
-const gradeLabels: Record<ParticipantProfileRequest["grade"], string> = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
-};
+import {
+  getProfileGradeLabel,
+  normalizeProfileMbti,
+} from "@/shared/lib/profile-labels";
+import {
+  findAdminParticipantDraft,
+  rememberAdminParticipantDraft,
+} from "../model/admin-participant-draft-storage";
+import { hydrateParticipantsWithProfiles } from "./participant.api";
 
 function toVisibility(visibility: ParticipantSummaryResponse["visibility"]) {
-  return visibility === "PUBLIC" ? "public" : "private";
+  return visibility === "PRIVATE" ? "private" : "public";
 }
 
 function toGender(gender: ParticipantSummaryResponse["gender"]) {
@@ -33,78 +32,6 @@ function toRole(position?: ParticipantProfileRequest["position"]) {
   return position === "STAFF" ? "staff" : "general";
 }
 
-type AdminParticipantDraft = ParticipantProfileRequest & {
-  savedAt: number;
-};
-
-function getAdminParticipantDraftStorageKey(groupId: string) {
-  return `${adminParticipantDraftStoragePrefix}${groupId}`;
-}
-
-function readAdminParticipantDrafts(groupId: string): AdminParticipantDraft[] {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const storedValue = window.localStorage.getItem(
-      getAdminParticipantDraftStorageKey(groupId),
-    );
-
-    if (!storedValue) return [];
-
-    const parsedValue = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsedValue)) return [];
-
-    return parsedValue as AdminParticipantDraft[];
-  } catch {
-    return [];
-  }
-}
-
-function writeAdminParticipantDrafts(
-  groupId: string,
-  drafts: AdminParticipantDraft[],
-) {
-  if (typeof window === "undefined") return;
-
-  window.localStorage.setItem(
-    getAdminParticipantDraftStorageKey(groupId),
-    JSON.stringify(drafts.slice(-50)),
-  );
-}
-
-function rememberAdminParticipantDraft(
-  groupId: string,
-  input: ParticipantProfileRequest,
-) {
-  const drafts = readAdminParticipantDrafts(groupId);
-  const nextDrafts = drafts.filter(
-    (draft) =>
-      !(
-        draft.displayName === input.displayName &&
-        draft.major === input.major &&
-        draft.gender === input.gender
-      ),
-  );
-
-  nextDrafts.push({ ...input, savedAt: Date.now() });
-  writeAdminParticipantDrafts(groupId, nextDrafts);
-}
-
-function findAdminParticipantDraft(
-  groupId: string,
-  summary: ParticipantSummaryResponse,
-) {
-  return readAdminParticipantDrafts(groupId)
-    .filter(
-      (draft) =>
-        draft.displayName === summary.displayName &&
-        draft.major === summary.major &&
-        draft.gender === summary.gender &&
-        draft.visibility === summary.visibility,
-    )
-    .sort((first, second) => second.savedAt - first.savedAt)[0];
-}
 
 function toDefaultAdminParticipant(
   groupId: string,
@@ -114,7 +41,7 @@ function toDefaultAdminParticipant(
   const grade = summary.grade ?? draft?.grade;
   const position = summary.position ?? draft?.position;
   const isNew = summary.isNew ?? draft?.isNew ?? false;
-  const mbti = summary.mbti ?? draft?.mbti ?? "";
+  const mbti = normalizeProfileMbti(summary.mbti ?? draft?.mbti) ?? "";
   const age = summary.age ?? draft?.age ?? undefined;
   const instagramId = summary.instaId ?? draft?.instaId ?? undefined;
   const bio = summary.bio ?? draft?.bio ?? undefined;
@@ -126,7 +53,7 @@ function toDefaultAdminParticipant(
     visibility: toVisibility(summary.visibility),
     role: toRole(position),
     gender: toGender(summary.gender),
-    grade: grade ? gradeLabels[grade] : "",
+    grade: getProfileGradeLabel(grade) ?? "",
     isNew,
     mbti,
     age: age ?? undefined,
@@ -161,9 +88,13 @@ export async function getAdminParticipants(
   round: AssignmentRound,
   signal?: AbortSignal,
 ): Promise<AdminParticipantGroup> {
+  const searchParams = new URLSearchParams({
+    round: toBackendRound(round),
+    role: "admin",
+  });
   const [groupDetail, response] = await Promise.all([
     getGroupDetail(groupId),
-    request(`/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`, {
+    request(`/api/v1/groups/${groupId}/participants?${searchParams}`, {
       signal,
     }),
   ]);
@@ -176,8 +107,14 @@ export async function getAdminParticipants(
   }
 
   const data = (await response.json()) as ParticipantListResponse;
-  const participants = data.participantList.map((summary) =>
-    toDefaultAdminParticipant(groupId, summary),
+  const participants = await hydrateParticipantsWithProfiles(
+    groupId,
+    data.participantList.map((summary) =>
+      toDefaultAdminParticipant(groupId, summary),
+    ),
+    data.participantList,
+    signal,
+    { detailRole: "admin", hydrateAll: true },
   );
 
   return {

@@ -15,8 +15,11 @@ import ParticipantViewToggle from "@/features/participant/components/Participant
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
+import {
+  enrichParticipantWithMyProfile,
+  resolveMyParticipantId,
+} from "@/features/participant/model/enrich-participant-with-my-profile";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
-import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import type {
   Participant,
   ParticipantTeam,
@@ -27,48 +30,6 @@ import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import styles from "./ParticipantListScreen.module.css";
 import VoteResultListScreen from "./VoteResultListScreen";
-
-const gradeLabelMap = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
-} as const;
-
-function enrichParticipantWithMyProfile(
-  participant: Participant,
-  myProfile: MyGroupProfile | null,
-  myParticipantId: string | null,
-) {
-  if (!myProfile) {
-    return participant;
-  }
-
-  const isSameParticipant = myParticipantId
-    ? participant.id === myParticipantId
-    : participant.name === myProfile.displayName &&
-      participant.department === myProfile.major;
-
-  if (!isSameParticipant) {
-    return participant;
-  }
-
-  return {
-    ...participant,
-    name: myProfile.displayName,
-    department: myProfile.major,
-    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
-    role: myProfile.position === "STAFF" ? "staff" : "general",
-    gender: myProfile.gender === "FEMALE" ? "female" : "male",
-    grade: gradeLabelMap[myProfile.grade],
-    isNew: myProfile.isNew,
-    mbti: myProfile.mbti,
-    age: myProfile.age ?? undefined,
-    instagramId: myProfile.instaId ?? undefined,
-    bio: myProfile.bio ?? undefined,
-  } satisfies Participant;
-}
 
 export default function ParticipantListScreen() {
   const searchParams = useSearchParams();
@@ -98,19 +59,18 @@ function DefaultParticipantListScreen() {
       : group
         ? getCurrentGroupRound(group.status)
         : 1;
-  const { data } = useParticipantListQuery(params.groupId, {
-    round,
-  });
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
   const isRecruiting = group?.status === "RECRUITING";
   const canViewPrivateProfiles = group?.myRole === "HOST";
+  const { data } = useParticipantListQuery(params.groupId, {
+    detailRole: canViewPrivateProfiles ? "admin" : undefined,
+    round,
+  });
   const canAddParticipant = group?.myRole === "HOST" && isRecruiting;
-  const myParticipantId =
-    myProfile?.id && myProfile.id !== "me"
-      ? myProfile.id
-      : group?.myParticipantId
-        ? String(group.myParticipantId)
-        : null;
+  const myParticipantId = resolveMyParticipantId(
+    myProfile,
+    group?.myParticipantId,
+  );
   const enrichedParticipants = useMemo(
     () =>
       data.participants.map((participant) =>
@@ -137,6 +97,24 @@ function DefaultParticipantListScreen() {
     return Boolean(myParticipantId && participant.id === myParticipantId);
   }, [myParticipantId]);
 
+  const sortParticipantsByPriority = useCallback(
+    (participants: Participant[]) =>
+      [...participants].sort((first, second) => {
+        const firstIsMe = isMyParticipant(first);
+        const secondIsMe = isMyParticipant(second);
+
+        if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
+
+        const firstIsStaff = first.role === "staff";
+        const secondIsStaff = second.role === "staff";
+
+        if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
+
+        return 0;
+      }),
+    [isMyParticipant],
+  );
+
   const filteredParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
 
@@ -148,20 +126,8 @@ function DefaultParticipantListScreen() {
       return matchesKeyword && matchesFilter;
     });
 
-    return participants.sort((first, second) => {
-      const firstIsMe = isMyParticipant(first);
-      const secondIsMe = isMyParticipant(second);
-
-      if (firstIsMe !== secondIsMe) return firstIsMe ? -1 : 1;
-
-      const firstIsStaff = first.role === "staff";
-      const secondIsStaff = second.role === "staff";
-
-      if (firstIsStaff !== secondIsStaff) return firstIsStaff ? -1 : 1;
-
-      return 0;
-    });
-  }, [enrichedParticipants, filter, isMyParticipant, keyword]);
+    return sortParticipantsByPriority(participants);
+  }, [enrichedParticipants, filter, keyword, sortParticipantsByPriority]);
 
   const filteredTeams = useMemo(() => {
     const trimmedKeyword = keyword.trim();
@@ -169,16 +135,18 @@ function DefaultParticipantListScreen() {
     return enrichedTeams
       .map((team) => ({
         ...team,
-        members: team.members.filter((participant) => {
-          const matchesKeyword =
-            !trimmedKeyword || participant.name.includes(trimmedKeyword);
-          const matchesFilter = filter === "all" || participant.role === filter;
+        members: sortParticipantsByPriority(
+          team.members.filter((participant) => {
+            const matchesKeyword =
+              !trimmedKeyword || participant.name.includes(trimmedKeyword);
+            const matchesFilter = filter === "all" || participant.role === filter;
 
-          return matchesKeyword && matchesFilter;
-        }),
+            return matchesKeyword && matchesFilter;
+          }),
+        ),
       }))
       .filter((team) => team.members.length > 0);
-  }, [enrichedTeams, filter, keyword]);
+  }, [enrichedTeams, filter, keyword, sortParticipantsByPriority]);
 
   return (
     <MobileFrame
@@ -224,6 +192,7 @@ function DefaultParticipantListScreen() {
             <ParticipantList
               participants={filteredParticipants}
               round={round}
+              currentParticipantId={myParticipantId}
               onPrivateSelect={setPrivateParticipant}
               canViewPrivateProfiles={canViewPrivateProfiles}
             />
@@ -231,6 +200,7 @@ function DefaultParticipantListScreen() {
             <ParticipantTeamList
               teams={filteredTeams}
               round={round}
+              currentParticipantId={myParticipantId}
               onPrivateSelect={setPrivateParticipant}
               canViewPrivateProfiles={canViewPrivateProfiles}
             />

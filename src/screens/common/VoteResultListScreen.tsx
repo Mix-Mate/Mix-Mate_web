@@ -5,11 +5,15 @@ import { Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import ParticipantList from "@/features/participant/components/ParticipantList";
 import ParticipantSearch from "@/features/participant/components/ParticipantSearch";
 import ParticipantStats from "@/features/participant/components/ParticipantStats";
 import PrivateParticipantDialog from "@/features/participant/components/PrivateParticipantDialog";
+import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
+import { resolveMyParticipantId } from "@/features/participant/model/enrich-participant-with-my-profile";
 import type { Participant } from "@/features/participant/types/participant.types";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { useVoteResultQuery } from "@/features/vote/hooks/useVoteResultQuery";
 import type {
@@ -38,7 +42,12 @@ const gradeLabelByGrade: Record<MvpWinner["grade"], string> = {
 
 function toParticipant(
   participant: SecondRoundParticipant,
+  detailedParticipant?: Participant,
 ): Participant {
+  if (detailedParticipant) {
+    return detailedParticipant;
+  }
+
   return {
     id: String(participant.participantId),
     name: participant.displayName,
@@ -105,8 +114,21 @@ export default function VoteResultListScreen({
   const [keyword, setKeyword] = useState("");
   const [privateParticipant, setPrivateParticipant] =
     useState<Participant | null>(null);
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
   const { data, isLoading, error } = useVoteResultQuery(params.groupId);
-
+  const canViewPrivateProfiles = group?.myRole === "HOST";
+  const { data: secondRoundParticipantGroup } = useParticipantListQuery(
+    params.groupId,
+    {
+      detailRole: canViewPrivateProfiles ? "admin" : undefined,
+      round: 2,
+    },
+  );
+  const myParticipantId = resolveMyParticipantId(
+    myProfile,
+    group?.myParticipantId,
+  );
   const mvpWinners = useMemo(() => {
     const trimmedKeyword = keyword.trim();
     return (data?.mvpWinners ?? []).filter(
@@ -117,13 +139,29 @@ export default function VoteResultListScreen({
 
   const secondRoundParticipants = useMemo(() => {
     const trimmedKeyword = keyword.trim();
+    const participantById = new Map(
+      secondRoundParticipantGroup.participants.map((participant) => [
+        participant.id,
+        participant,
+      ]),
+    );
+
     return (data?.secondRoundParticipants ?? [])
-      .map(toParticipant)
+      .map((participant) =>
+        toParticipant(
+          participant,
+          participantById.get(String(participant.participantId)),
+        ),
+      )
       .filter(
         (participant) =>
           !trimmedKeyword || participant.name.includes(trimmedKeyword),
       );
-  }, [data?.secondRoundParticipants, keyword]);
+  }, [
+    data?.secondRoundParticipants,
+    keyword,
+    secondRoundParticipantGroup.participants,
+  ]);
 
   const isMvpList = mode === "mvp";
   const totalCount = isMvpList
@@ -159,7 +197,10 @@ export default function VoteResultListScreen({
             ) : (
               <ParticipantList
                 participants={secondRoundParticipants}
+                round={2}
+                currentParticipantId={myParticipantId}
                 onPrivateSelect={setPrivateParticipant}
+                canViewPrivateProfiles={canViewPrivateProfiles}
               />
             )
           ) : (

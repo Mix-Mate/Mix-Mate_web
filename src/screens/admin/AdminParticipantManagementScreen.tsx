@@ -7,12 +7,12 @@ import AdminParticipantList from "@/features/participant/components/AdminPartici
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
+import {
+  enrichParticipantWithMyProfile,
+  resolveMyParticipantId,
+} from "@/features/participant/model/enrich-participant-with-my-profile";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
-import type { MyGroupProfile } from "@/features/profile/types/profile.types";
-import type {
-  AdminParticipant,
-  ParticipantRole,
-} from "@/features/participant/types/participant.types";
+import type { ParticipantRole } from "@/features/participant/types/participant.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -32,48 +32,6 @@ const filterOptions: { label: string; value: FilterValue }[] = [
   { label: "일반", value: "general" },
   { label: "운영진", value: "staff" },
 ];
-
-const gradeLabelMap = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
-} as const;
-
-function enrichAdminParticipantWithMyProfile(
-  participant: AdminParticipant,
-  myProfile: MyGroupProfile | null,
-  myParticipantId: string | null,
-) {
-  if (!myProfile) {
-    return participant;
-  }
-
-  const isSameParticipant = myParticipantId
-    ? participant.id === myParticipantId
-    : participant.name === myProfile.displayName &&
-      participant.department === myProfile.major;
-
-  if (!isSameParticipant) {
-    return participant;
-  }
-
-  return {
-    ...participant,
-    name: myProfile.displayName,
-    department: myProfile.major,
-    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
-    role: myProfile.position === "STAFF" ? "staff" : "general",
-    gender: myProfile.gender === "FEMALE" ? "female" : "male",
-    grade: gradeLabelMap[myProfile.grade],
-    isNew: myProfile.isNew,
-    mbti: myProfile.mbti,
-    age: myProfile.age ?? undefined,
-    instagramId: myProfile.instaId ?? undefined,
-    bio: myProfile.bio ?? undefined,
-  } satisfies AdminParticipant;
-}
 
 export default function AdminParticipantManagementScreen() {
   const router = useRouter();
@@ -97,20 +55,14 @@ export default function AdminParticipantManagementScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { message: toastMessage, showToast } = useToast();
   const canAddParticipant = round === 1;
-  const myParticipantId =
-    myProfile?.id && myProfile.id !== "me"
-      ? myProfile.id
-      : group?.myParticipantId
-        ? String(group.myParticipantId)
-        : null;
+  const myParticipantId = resolveMyParticipantId(
+    myProfile,
+    group?.myParticipantId,
+  );
   const enrichedParticipants = useMemo(
     () =>
       data.participants.map((participant) =>
-        enrichAdminParticipantWithMyProfile(
-          participant,
-          myProfile,
-          myParticipantId,
-        ),
+        enrichParticipantWithMyProfile(participant, myProfile, myParticipantId),
       ),
     [data.participants, myParticipantId, myProfile],
   );

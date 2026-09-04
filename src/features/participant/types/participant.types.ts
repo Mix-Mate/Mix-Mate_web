@@ -86,7 +86,7 @@ export type ParticipantSummaryResponse = {
   displayName: string;
   major: string;
   gender: ProfileGender;
-  visibility: ProfileVisibility;
+  visibility?: ProfileVisibility;
   grade?: ProfileGrade;
   isNew?: boolean;
   position?: ProfilePosition;
@@ -108,6 +108,7 @@ export type ParticipantProfileResponse = {
   isNew: boolean;
   position: ProfilePosition;
   mbti: ProfileMbti;
+  visibility?: ProfileVisibility;
   age?: number | null;
   instaId?: string | null;
   bio?: string | null;

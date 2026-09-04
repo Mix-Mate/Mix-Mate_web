@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { ChevronDown } from "lucide-react";
+import { normalizeProfileMbti } from "@/shared/lib/profile-labels";
 import type { AdminParticipant } from "../types/participant.types";
 import styles from "./ParticipantStatistics.module.css";
 
@@ -107,12 +108,13 @@ function countBy<T extends string>(
   );
 }
 
-function getTopDepartmentStats(participants: AdminParticipant[]) {
+const DEPARTMENT_PREVIEW_COUNT = 7;
+
+function getDepartmentStats(participants: AdminParticipant[]) {
   const counts = countBy(participants, (participant) => participant.department);
 
   return Object.entries(counts)
     .sort((first, second) => second[1] - first[1])
-    .slice(0, 7)
     .map(([label, count]) => ({
       label,
       count,
@@ -237,6 +239,7 @@ export default function ParticipantStatistics({
   participants,
 }: ParticipantStatisticsProps) {
   const [tableOpen, setTableOpen] = useState(false);
+  const [departmentOpen, setDepartmentOpen] = useState(false);
 
   const statistics = useMemo(() => {
     const total = participants.length;
@@ -244,8 +247,10 @@ export default function ParticipantStatistics({
       participant.gender === "male" ? "male" : "female",
     );
     const mbtiCounts = countBy(participants, (participant) => {
-      if (!participant.mbti) return undefined;
-      return participant.mbti.startsWith("I") ? "introvert" : "extrovert";
+      const mbti = normalizeProfileMbti(participant.mbti);
+
+      if (!mbti) return undefined;
+      return mbti.startsWith("I") ? "introvert" : "extrovert";
     });
     const roleCounts = countBy(participants, (participant) => participant.role);
     const newCounts = countBy(participants, (participant) =>
@@ -349,10 +354,15 @@ export default function ParticipantStatistics({
       mbtiPercent: getPercent(mbtiCounts.introvert ?? 0, total),
       rolePercent: getPercent(roleCounts.general ?? 0, total),
       newPercent: getPercent(newCounts.new ?? 0, total),
-      departments: getTopDepartmentStats(participants),
+      departments: getDepartmentStats(participants),
       distributions,
     };
   }, [participants]);
+  const visibleDepartments = departmentOpen
+    ? statistics.departments
+    : statistics.departments.slice(0, DEPARTMENT_PREVIEW_COUNT);
+  const hasHiddenDepartments =
+    statistics.departments.length > DEPARTMENT_PREVIEW_COUNT;
 
   return (
     <div className={styles.statistics}>
@@ -414,7 +424,7 @@ export default function ParticipantStatistics({
         </header>
 
         <div className={styles.departmentList}>
-          {statistics.departments.map((department) => (
+          {visibleDepartments.map((department) => (
             <div className={styles.departmentItem} key={department.label}>
               <span>{department.label}</span>
               <div className={styles.departmentTrack}>
@@ -425,6 +435,16 @@ export default function ParticipantStatistics({
               </strong>
             </div>
           ))}
+          {hasHiddenDepartments && (
+            <button
+              type="button"
+              className={styles.departmentMoreButton}
+              aria-expanded={departmentOpen}
+              onClick={() => setDepartmentOpen((open) => !open)}
+            >
+              {departmentOpen ? "접기" : "..."}
+            </button>
+          )}
         </div>
       </section>
 

@@ -10,6 +10,7 @@ import styles from "@/screens/common/ParticipantListScreen.module.css";
 interface ParticipantTeamListProps {
   teams: ParticipantTeam[];
   round?: AssignmentRound;
+  currentParticipantId?: string | null;
   onPrivateSelect?: (participant: Participant) => void;
   canViewPrivateProfiles?: boolean;
 }
@@ -17,6 +18,7 @@ interface ParticipantTeamListProps {
 export default function ParticipantTeamList({
   teams,
   round,
+  currentParticipantId,
   onPrivateSelect,
   canViewPrivateProfiles = false,
 }: ParticipantTeamListProps) {
@@ -45,6 +47,7 @@ export default function ParticipantTeamList({
                 key={participant.id}
                 participant={participant}
                 round={round}
+                currentParticipantId={currentParticipantId}
                 onPrivateSelect={onPrivateSelect}
                 canViewPrivateProfiles={canViewPrivateProfiles}
               />

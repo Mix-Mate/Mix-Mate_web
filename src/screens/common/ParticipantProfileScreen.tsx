@@ -13,6 +13,7 @@ import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfi
 import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
+import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -29,14 +30,6 @@ interface ParticipantProfileScreenProps {
   participantId: string;
 }
 
-const gradeLabelMap = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
-} as const;
-
 function toProfileFromMyGroupProfile(
   profile: MyGroupProfile,
   participantId: string,
@@ -48,7 +41,7 @@ function toProfileFromMyGroupProfile(
     visibility: profile.visibility === "PUBLIC" ? "public" : "private",
     role: profile.position === "STAFF" ? "staff" : "general",
     gender: profile.gender === "FEMALE" ? "female" : "male",
-    grade: gradeLabelMap[profile.grade],
+    grade: getProfileGradeLabel(profile.grade) ?? "",
     mbti: profile.mbti,
     age: profile.age ?? undefined,
     instagramId: profile.instaId ?? undefined,
@@ -80,12 +73,14 @@ export default function ParticipantProfileScreen({
   const { data: profileDetail } = useParticipantProfileQuery(
     groupId,
     participantId,
+    { detailRole: isAdminView ? "admin" : undefined },
   );
   const { data: adminParticipantGroup } = useAdminParticipantListQuery(
     groupId,
     resolvedRound,
   );
   const { data: participantGroup } = useParticipantListQuery(groupId, {
+    detailRole: isAdminView ? "admin" : undefined,
     round: resolvedRound,
   });
   const resolvedMyParticipantId =

@@ -19,8 +19,13 @@ function isAbortError(error: unknown) {
 
 export function useParticipantListQuery(
   groupId: string,
-  options: { polling?: boolean; round?: AssignmentRound } = {},
+  options: {
+    detailRole?: "admin";
+    polling?: boolean;
+    round?: AssignmentRound;
+  } = {},
 ) {
+  const detailRole = options.detailRole;
   const polling = options.polling ?? false;
   const round = options.round ?? 1;
   const requestIdRef = useRef(0);
@@ -38,7 +43,9 @@ export function useParticipantListQuery(
       setIsError(false);
 
       try {
-        const participants = await getParticipants(groupId, round, signal);
+        const participants = await getParticipants(groupId, round, signal, {
+          detailRole,
+        });
 
         if (requestId === requestIdRef.current) {
           setData(participants);
@@ -62,7 +69,7 @@ export function useParticipantListQuery(
         }
       }
     },
-    [groupId, round],
+    [detailRole, groupId, round],
   );
 
   useEffect(() => {

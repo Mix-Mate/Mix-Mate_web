@@ -313,6 +313,24 @@
   line-height: 14px;
 }
 
+.departmentMoreButton {
+  width: 100%;
+  height: 30px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  background: #f6f7f9;
+  color: #5f6875;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 18px;
+}
+
+.departmentMoreButton:active {
+  background: #eef1f6;
+}
+
 .tableCard {
   overflow: hidden;
 }
