@@ -287,8 +287,14 @@ describe("Blacklist Feature & API Integration", () => {
         detailRole: "admin",
         enabled: true,
       });
-      expect(adminFallbackSpy).not.toHaveBeenCalled();
-      expect(participantFallbackSpy).not.toHaveBeenCalled();
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
     });
 
     it("본인 프로필은 내 프로필 API만 조회한다", () => {
@@ -349,12 +355,18 @@ describe("Blacklist Feature & API Integration", () => {
         detailRole: "admin",
         enabled: false,
       });
-      expect(adminFallbackSpy).not.toHaveBeenCalled();
-      expect(participantFallbackSpy).not.toHaveBeenCalled();
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
       expect(screen.getByText("이순신")).toBeInTheDocument();
     });
 
-    it("상세 프로필 조회가 실패해도 전체 참가자 목록 fallback을 조회하지 않는다", () => {
+    it("상세 프로필 조회가 실패한 관리자 화면에서는 관리자 목록만 fallback으로 조회한다", () => {
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: mockAdminGroup,
       } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
@@ -393,9 +405,15 @@ describe("Blacklist Feature & API Integration", () => {
         <ParticipantProfileScreen groupId="17" participantId="202" />,
       );
 
-      expect(adminFallbackSpy).not.toHaveBeenCalled();
-      expect(participantFallbackSpy).not.toHaveBeenCalled();
-      expect(screen.queryByText("이순신")).not.toBeInTheDocument();
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: true,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
+      expect(screen.getByText("이순신")).toBeInTheDocument();
     });
 
     it("관리자 뷰에서 차단 버튼 클릭 시 차단 사유 입력 모달이 열리고 30자 이내 입력 시 차단이 정상 수행된다", async () => {
