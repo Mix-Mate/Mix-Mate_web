@@ -1,10 +1,16 @@
 "use client";
 
+import { useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantStatistics from "@/features/participant/components/ParticipantStatistics";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAdminParticipantListQuery } from "@/features/participant/hooks/useAdminParticipantListQuery";
+import {
+  enrichParticipantWithMyProfile,
+  resolveMyParticipantId,
+} from "@/features/participant/model/enrich-participant-with-my-profile";
+import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -28,6 +34,18 @@ export default function AdminParticipantStatisticsScreen() {
   const { data } = useAdminParticipantListQuery(params.groupId, round, {
     enabled: isRoundResolved,
   });
+  const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+  const myParticipantId = resolveMyParticipantId(
+    myProfile,
+    group?.myParticipantId,
+  );
+  const participants = useMemo(
+    () =>
+      data.participants.map((participant) =>
+        enrichParticipantWithMyProfile(participant, myProfile, myParticipantId),
+      ),
+    [data.participants, myParticipantId, myProfile],
+  );
 
   const goToParticipants = () => {
     router.push(
@@ -78,7 +96,7 @@ export default function AdminParticipantStatisticsScreen() {
       />
 
       <main className={styles.content}>
-        <ParticipantStatistics participants={data.participants} />
+        <ParticipantStatistics participants={participants} />
       </main>
     </MobileFrame>
   );

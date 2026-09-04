@@ -6,6 +6,14 @@ import type {
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
+import {
+  getProfileGradeLabel,
+  normalizeProfileMbti,
+} from "@/shared/lib/profile-labels";
+import {
+  findAdminParticipantDraft,
+  type AdminParticipantDraft,
+} from "../model/admin-participant-draft-storage";
 import type {
   Participant,
   ParticipantGroup,
@@ -16,12 +24,18 @@ import type {
   ParticipantTeam,
 } from "../types/participant.types";
 
-const gradeLabels: Record<ParticipantProfileResponse["grade"], string> = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
+type ParticipantProfileResponsePayload =
+  | ParticipantProfileResponse
+  | {
+      data?: ParticipantProfileResponse;
+      participant?: ParticipantProfileResponse;
+      participantProfile?: ParticipantProfileResponse;
+      profile?: ParticipantProfileResponse;
+    };
+
+type HydrateParticipantsOptions = {
+  detailRole?: "admin";
+  hydrateAll?: boolean;
 };
 
 function isAbortError(error: unknown) {
@@ -29,9 +43,9 @@ function isAbortError(error: unknown) {
 }
 
 function toVisibility(
-  visibility: ParticipantSummaryResponse["visibility"],
+  visibility?: ParticipantSummaryResponse["visibility"] | null,
 ): Participant["visibility"] {
-  return visibility === "PUBLIC" ? "public" : "private";
+  return visibility === "PRIVATE" ? "private" : "public";
 }
 
 function toGender(
@@ -44,20 +58,31 @@ function toRole(position?: ParticipantSummaryResponse["position"]) {
   return position === "STAFF" ? "staff" : "general";
 }
 
-function toParticipant(summary: ParticipantSummaryResponse): Participant {
+function toParticipant(
+  summary: ParticipantSummaryResponse,
+  draft?: AdminParticipantDraft,
+): Participant {
+  const grade = summary.grade ?? draft?.grade;
+  const position = summary.position ?? draft?.position;
+  const isNew = summary.isNew ?? draft?.isNew;
+  const mbti = normalizeProfileMbti(summary.mbti ?? draft?.mbti);
+  const age = summary.age ?? draft?.age ?? undefined;
+  const instagramId = summary.instaId ?? draft?.instaId ?? undefined;
+  const bio = summary.bio ?? draft?.bio ?? undefined;
+
   return {
     id: String(summary.participantId),
     name: summary.displayName,
-    department: summary.major,
+    department: summary.major || draft?.major || "",
     visibility: toVisibility(summary.visibility),
-    role: toRole(summary.position),
+    role: toRole(position),
     gender: toGender(summary.gender),
-    grade: summary.grade ? gradeLabels[summary.grade] : undefined,
-    isNew: summary.isNew,
-    mbti: summary.mbti,
-    age: summary.age ?? undefined,
-    instagramId: summary.instaId ?? undefined,
-    bio: summary.bio ?? undefined,
+    grade: getProfileGradeLabel(grade),
+    isNew,
+    mbti,
+    age,
+    instagramId,
+    bio,
   };
 }
 
@@ -84,17 +109,19 @@ async function createRequestError(response: Response, fallbackMessage: string) {
 export function toParticipantProfile(
   profile: ParticipantProfileResponse,
   participantId: string,
-  visibility: Participant["visibility"] = "public",
+  fallbackVisibility: Participant["visibility"] = "public",
 ): ParticipantProfile {
   return {
     id: participantId,
     name: profile.displayName,
     department: profile.major,
-    visibility,
+    visibility: profile.visibility
+      ? toVisibility(profile.visibility)
+      : fallbackVisibility,
     role: profile.position === "STAFF" ? "staff" : "general",
     gender: profile.gender === "FEMALE" ? "female" : "male",
-    grade: gradeLabels[profile.grade],
-    mbti: profile.mbti,
+    grade: getProfileGradeLabel(profile.grade) ?? "",
+    mbti: normalizeProfileMbti(profile.mbti) ?? "",
     age: profile.age ?? undefined,
     instagramId: profile.instaId ?? undefined,
     bio: profile.bio ?? undefined,
@@ -110,6 +137,123 @@ async function request(path: string, init?: RequestInit) {
       Accept: "application/json",
       ...init?.headers,
     }),
+  });
+}
+
+function getParticipantProfilePath(
+  groupId: string,
+  participantId: string,
+  detailRole?: HydrateParticipantsOptions["detailRole"],
+) {
+  const searchParams = detailRole ? `?role=${detailRole}` : "";
+  return `/api/v1/groups/${groupId}/participants/${participantId}${searchParams}`;
+}
+
+function unwrapParticipantProfileResponse(
+  payload: ParticipantProfileResponsePayload,
+): ParticipantProfileResponse {
+  if ("data" in payload && payload.data) return payload.data;
+  if ("profile" in payload && payload.profile) return payload.profile;
+  if ("participantProfile" in payload && payload.participantProfile) {
+    return payload.participantProfile;
+  }
+  if ("participant" in payload && payload.participant) return payload.participant;
+
+  return payload as ParticipantProfileResponse;
+}
+
+function shouldHydrateParticipant(summary: ParticipantSummaryResponse) {
+  return (
+    !summary.grade ||
+    !summary.position ||
+    summary.isNew === undefined ||
+    !normalizeProfileMbti(summary.mbti)
+  );
+}
+
+function mergeHydratedParticipant<TParticipant extends Participant>(
+  participant: TParticipant,
+  profile: ParticipantProfile,
+): TParticipant {
+  return {
+    ...participant,
+    ...profile,
+    name: profile.name || participant.name,
+    department: profile.department || participant.department,
+    role:
+      profile.role === "staff" || participant.role === "staff"
+        ? "staff"
+        : "general",
+    grade: profile.grade || participant.grade,
+    mbti: profile.mbti || participant.mbti,
+    age: profile.age ?? participant.age,
+    instagramId: profile.instagramId ?? participant.instagramId,
+    bio: profile.bio ?? participant.bio,
+    isNew: profile.isNew ?? participant.isNew,
+  };
+}
+
+export async function hydrateParticipantsWithProfiles<
+  TParticipant extends Participant,
+>(
+  groupId: string,
+  participants: TParticipant[],
+  summaries: ParticipantSummaryResponse[],
+  signal?: AbortSignal,
+  options: HydrateParticipantsOptions = {},
+): Promise<TParticipant[]> {
+  const summaryById = new Map(
+    summaries.map((summary) => [String(summary.participantId), summary]),
+  );
+  const targets = participants.filter((participant) => {
+    if (options.hydrateAll) {
+      return true;
+    }
+
+    const summary = summaryById.get(participant.id);
+    return summary ? shouldHydrateParticipant(summary) : false;
+  });
+
+  if (targets.length === 0) {
+    return participants;
+  }
+
+  const hydratedProfiles = await Promise.all(
+    targets.map(async (participant) => {
+      try {
+        const response = await request(
+          getParticipantProfilePath(
+            groupId,
+            participant.id,
+            options.detailRole,
+          ),
+          { signal },
+        );
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = unwrapParticipantProfileResponse(
+          (await response.json()) as ParticipantProfileResponsePayload,
+        );
+        return toParticipantProfile(data, participant.id, participant.visibility);
+      } catch (error) {
+        if (isAbortError(error)) throw error;
+        return null;
+      }
+    }),
+  );
+  const profileById = new Map(
+    hydratedProfiles
+      .filter((profile): profile is ParticipantProfile => profile !== null)
+      .map((profile) => [profile.id, profile]),
+  );
+
+  return participants.map((participant) => {
+    const profile = profileById.get(participant.id);
+
+    return profile ? mergeHydratedParticipant(participant, profile) : participant;
   });
 }
 
@@ -148,13 +292,22 @@ export async function getParticipants(
   groupId: string,
   round: AssignmentRound = 1,
   options: {
+    detailRole?: "admin";
     signal?: AbortSignal;
     includeTeams?: boolean;
   } = {},
 ): Promise<ParticipantGroup> {
-  const { signal, includeTeams = true } = options;
+  const { detailRole, signal, includeTeams = true } = options;
+  const searchParams = new URLSearchParams({
+    round: toBackendRound(round),
+  });
+
+  if (detailRole) {
+    searchParams.set("role", detailRole);
+  }
+
   const participantsResponse = await request(
-    `/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
+    `/api/v1/groups/${groupId}/participants?${searchParams}`,
     { signal },
   );
 
@@ -166,7 +319,22 @@ export async function getParticipants(
   }
 
   const data = (await participantsResponse.json()) as ParticipantListResponse;
-  const participants = data.participantList.map(toParticipant);
+  const canUseAdminDrafts = detailRole === "admin";
+  const mappedParticipants = data.participantList.map((summary) =>
+    toParticipant(
+      summary,
+      canUseAdminDrafts ? findAdminParticipantDraft(groupId, summary) : undefined,
+    ),
+  );
+  const participants = detailRole
+    ? await hydrateParticipantsWithProfiles(
+        groupId,
+        mappedParticipants,
+        data.participantList,
+        signal,
+        { detailRole },
+      )
+    : mappedParticipants;
   const participantsById = new Map(
     participants.map((participant) => [participant.id, participant]),
   );
@@ -184,10 +352,13 @@ export async function getParticipantProfile(
   groupId: string,
   participantId: string,
   signal?: AbortSignal,
+  options: { detailRole?: "admin" } = {},
 ) {
   const response = await request(
-    `/api/v1/groups/${groupId}/participants/${participantId}`,
-    { signal },
+    getParticipantProfilePath(groupId, participantId, options.detailRole),
+    {
+      signal,
+    },
   );
 
   if (!response.ok) {
@@ -197,6 +368,8 @@ export async function getParticipantProfile(
     );
   }
 
-  const data = (await response.json()) as ParticipantProfileResponse;
+  const data = unwrapParticipantProfileResponse(
+    (await response.json()) as ParticipantProfileResponsePayload,
+  );
   return toParticipantProfile(data, participantId);
 }

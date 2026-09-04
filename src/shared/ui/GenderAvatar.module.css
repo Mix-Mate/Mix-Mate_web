@@ -4,6 +4,7 @@
   overflow: visible;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 5px 6px rgb(18 42 120 / 45%);
 }
 
 .circle {
@@ -15,7 +16,6 @@
 }
 
 .icon {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 8px 12px rgb(15 46 143 / 22%));
+  width: var(--avatar-icon-size);
+  height: var(--avatar-icon-size);
 }

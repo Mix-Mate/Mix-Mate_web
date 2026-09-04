@@ -13,6 +13,7 @@ import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfi
 import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
+import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
@@ -29,14 +30,6 @@ interface ParticipantProfileScreenProps {
   participantId: string;
 }
 
-const gradeLabelMap = {
-  FIRST: "1학년",
-  SECOND: "2학년",
-  THIRD: "3학년",
-  FOURTH: "4학년",
-  OTHER: "기타",
-} as const;
-
 function toProfileFromMyGroupProfile(
   profile: MyGroupProfile,
   participantId: string,
@@ -48,7 +41,7 @@ function toProfileFromMyGroupProfile(
     visibility: profile.visibility === "PUBLIC" ? "public" : "private",
     role: profile.position === "STAFF" ? "staff" : "general",
     gender: profile.gender === "FEMALE" ? "female" : "male",
-    grade: gradeLabelMap[profile.grade],
+    grade: getProfileGradeLabel(profile.grade) ?? "",
     mbti: profile.mbti,
     age: profile.age ?? undefined,
     instagramId: profile.instaId ?? undefined,
@@ -75,8 +68,7 @@ export default function ParticipantProfileScreen({
   const roundParam = searchParams.get("round");
   const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
   const resolvedRound = adminRound ?? 1;
-  const isAdminView =
-    searchParams.get("role") === "admin" || group?.myRole === "HOST";
+  const isAdminView = group?.myRole === "HOST";
   const myParticipantId = group?.myParticipantId
     ? String(group.myParticipantId)
     : null;
@@ -94,7 +86,10 @@ export default function ParticipantProfileScreen({
   } = useParticipantProfileQuery(
     groupId,
     participantId,
-    { enabled: shouldFetchProfileDetail },
+    {
+      detailRole: isAdminView ? "admin" : undefined,
+      enabled: shouldFetchProfileDetail,
+    },
   );
   const shouldFetchListFallback =
     Boolean(group) &&
@@ -110,6 +105,7 @@ export default function ParticipantProfileScreen({
     { enabled: shouldFetchAdminFallback },
   );
   const { data: participantGroup } = useParticipantListQuery(groupId, {
+    detailRole: isAdminView ? "admin" : undefined,
     round: resolvedRound,
     enabled: shouldFetchParticipantFallback,
   });

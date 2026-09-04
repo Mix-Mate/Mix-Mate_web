@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import TeamHistoryPanel from "@/features/history/components/TeamHistoryPanel";
 import { usePreviousTeamQuery } from "@/features/history/hooks/usePreviousTeamQuery";
 import type { TeamMember } from "@/features/team/types/team.types";
@@ -13,14 +14,24 @@ export default function TeamHistoryScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const { data: group } = useAdminGroupQuery(params.groupId);
   const { data: team, isLoading, error } = usePreviousTeamQuery(params.groupId);
+  const canViewPrivateProfiles = group?.myRole === "HOST";
 
   const handleMemberSelect = (member: TeamMember) => {
-    if (member.visibility === "PRIVATE") return;
+    if (member.visibility === "PRIVATE" && !canViewPrivateProfiles) return;
+
+    const profileSearchParams = new URLSearchParams({
+      round: "1",
+    });
+
+    if (canViewPrivateProfiles) {
+      profileSearchParams.set("role", "admin");
+    }
 
     router.push(
       withSessionContext(
-        `/groups/${params.groupId}/participants/${member.participantId}`,
+        `/groups/${params.groupId}/participants/${member.participantId}?${profileSearchParams}`,
         searchParams,
       ),
     );

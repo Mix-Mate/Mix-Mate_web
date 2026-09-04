@@ -15,6 +15,9 @@ export default function AdminParticipantItem({
   round,
 }: AdminParticipantItemProps) {
   const roleLabel = participant.role === "staff" ? "운영진" : "일반";
+  const detailText =
+    [participant.grade, roleLabel].filter(Boolean).join(" · ") ||
+    participant.department;
 
   return (
     <li>
@@ -28,7 +31,7 @@ export default function AdminParticipantItem({
           gender={participant.gender}
           name={participant.name}
           toneKey={participant.id}
-          size={68}
+          size={46}
         />
 
         <div className={styles.participantInfo}>
@@ -38,9 +41,7 @@ export default function AdminParticipantItem({
               <span className={styles.staffBadge}>운영진</span>
             )}
           </div>
-          <span>
-            {participant.grade} · {roleLabel}
-          </span>
+          <span>{detailText}</span>
         </div>
       </Link>
     </li>

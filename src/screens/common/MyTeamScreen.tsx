@@ -13,6 +13,7 @@ import MyTeamPanel from "@/features/team/components/MyTeamPanel";
 import TeamSectionTabs from "@/features/team/components/TeamSectionTabs";
 import { useMyTeamQuery } from "@/features/team/hooks/useMyTeamQuery";
 import type { TeamMember, TeamRound } from "@/features/team/types/team.types";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
@@ -41,15 +42,28 @@ export default function MyTeamScreen() {
     group !== null && hasAssignedTeam(group.status),
   );
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
+  const canViewPrivateProfiles = group?.myRole === "HOST";
+  const participantRound = round === "SECOND_ROUND" ? 2 : 1;
 
   const handleMemberSelect = (member: TeamMember) => {
-    if (member.visibility === "PRIVATE") {
+    if (member.visibility === "PRIVATE" && !canViewPrivateProfiles) {
       setPrivateMember(member);
       return;
     }
 
+    const profileSearchParams = new URLSearchParams({
+      round: String(participantRound),
+    });
+
+    if (canViewPrivateProfiles) {
+      profileSearchParams.set("role", "admin");
+    }
+
     router.push(
-      `/groups/${params.groupId}/participants/${member.participantId}`,
+      withSessionContext(
+        `/groups/${params.groupId}/participants/${member.participantId}?${profileSearchParams}`,
+        searchParams,
+      ),
     );
   };
 

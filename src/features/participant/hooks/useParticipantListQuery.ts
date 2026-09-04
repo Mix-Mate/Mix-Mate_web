@@ -19,12 +19,14 @@ function isAbortError(error: unknown) {
 export function useParticipantListQuery(
   groupId: string,
   options: {
+    detailRole?: "admin";
     enabled?: boolean;
     includeTeams?: boolean;
     polling?: boolean;
     round?: AssignmentRound;
   } = {},
 ) {
+  const detailRole = options.detailRole;
   const enabled = options.enabled ?? true;
   const includeTeams = options.includeTeams ?? false;
   const polling = options.polling ?? false;
@@ -49,6 +51,7 @@ export function useParticipantListQuery(
 
       try {
         const participants = await getParticipants(groupId, round, {
+          detailRole,
           signal,
           includeTeams,
         });
@@ -75,7 +78,7 @@ export function useParticipantListQuery(
         }
       }
     },
-    [enabled, groupId, includeTeams, round],
+    [detailRole, enabled, groupId, includeTeams, round],
   );
 
   useEffect(() => {

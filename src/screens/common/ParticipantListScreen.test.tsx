@@ -111,6 +111,7 @@ describe("ParticipantListScreen manual participant addition", () => {
     render(<ParticipantListScreen />);
 
     expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
+      detailRole: "admin",
       includeTeams: false,
       round: 2,
     });
@@ -118,6 +119,7 @@ describe("ParticipantListScreen manual participant addition", () => {
     fireEvent.click(screen.getByRole("button", { name: "조별" }));
 
     expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
+      detailRole: "admin",
       includeTeams: true,
       round: 2,
     });

@@ -278,14 +278,16 @@ describe("Blacklist Feature & API Integration", () => {
 
       expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: false });
       expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        detailRole: "admin",
         enabled: true,
       });
       expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
         enabled: false,
       });
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
-        round: 1,
+        detailRole: "admin",
         enabled: false,
+        round: 1,
       });
     });
 
@@ -344,14 +346,16 @@ describe("Blacklist Feature & API Integration", () => {
 
       expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: true });
       expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        detailRole: "admin",
         enabled: false,
       });
       expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
         enabled: false,
       });
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
-        round: 1,
+        detailRole: "admin",
         enabled: false,
+        round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();
     });
@@ -399,8 +403,9 @@ describe("Blacklist Feature & API Integration", () => {
         enabled: true,
       });
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
-        round: 1,
+        detailRole: "admin",
         enabled: false,
+        round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();
     });
