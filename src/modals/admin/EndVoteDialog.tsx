@@ -128,7 +128,7 @@ export default function EndVoteDialog({
               종료하면 미투표자는 <strong>자동 불참 처리</strong>됩니다
               <br />
               <span className={styles.descriptionNote}>
-                ※ 계정이 없는 참가자는 참가 여부를 대신 지정할 수 있어요.
+                ※ 아래 명단에서 참가 여부를 대신 지정할 수 있어요.
               </span>
             </p>
           </>
@@ -171,17 +171,15 @@ export default function EndVoteDialog({
                 >
                   <strong>{member.displayName}</strong>
 
-                  {member.manualEntry ? (
-                    <AdminManualVoteControl
-                      groupId={groupId}
-                      member={member}
-                      onVoteChange={onVoteChange}
-                      onSubmittingChange={handleSubmittingChange}
-                      onError={setManualVoteError}
-                    />
-                  ) : (
-                    <span className={styles.waitingBadge}>대기 중</span>
-                  )}
+                  {/* 종료 직전이라 본인 투표를 더 기다릴 수 없으므로, 계정 유무와
+                      관계없이 미투표자는 관리자가 대신 지정할 수 있게 한다. */}
+                  <AdminManualVoteControl
+                    groupId={groupId}
+                    member={member}
+                    onVoteChange={onVoteChange}
+                    onSubmittingChange={handleSubmittingChange}
+                    onError={setManualVoteError}
+                  />
                 </li>
               ))}
             </ul>
