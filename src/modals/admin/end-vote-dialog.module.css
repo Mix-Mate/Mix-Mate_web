@@ -5,12 +5,16 @@
 .bottomSheet {
   --bottom-sheet-padding: 0 26px calc(26px + var(--safe-area-bottom));
   --bottom-sheet-border-radius: 36px 36px 0 0;
+  --pending-row-height: 64px;
+  --pending-row-gap: 11px;
 
   position: relative;
   display: flex;
   overflow: hidden;
   height: auto;
-  max-height: min(579px, calc(100dvh - 20px));
+  /* 미투표 명단이 2.5줄까지 보일 만큼은 확보한다. 더 낮으면 명단이 눌려서
+     "더 있다"는 신호(반쯤 잘린 줄)가 사라진다. */
+  max-height: min(640px, calc(100dvh - 20px));
   flex-direction: column;
   text-align: center;
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
@@ -98,16 +102,21 @@
 }
 
 .pendingList {
+  /* 마지막 줄이 반쯤 잘려 보이게 해서, 아래로 더 있다는 걸 스크롤 전에 알린다.
+     (줄 높이 2.5개 + 그 사이 간격 2개) */
+  max-height: calc(
+    var(--pending-row-height) * 2.5 + var(--pending-row-gap) * 2
+  );
+
   display: flex;
   min-height: 0;
-  max-height: 214px;
   flex: 1 1 auto;
   margin: 0;
   padding: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   flex-direction: column;
-  gap: 11px;
+  gap: var(--pending-row-gap);
   list-style: none;
   cursor: grab;
   scrollbar-color: #d4d4d8 transparent;
@@ -131,8 +140,8 @@
 
 .pendingMember {
   display: flex;
-  height: 64px;
-  flex: 0 0 64px;
+  height: var(--pending-row-height);
+  flex: 0 0 var(--pending-row-height);
   align-items: center;
   padding: 0 12px 0 16px;
   border: 1px solid #f4f4f5;
@@ -149,21 +158,6 @@
   font-weight: 600;
   line-height: 24px;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.waitingBadge {
-  display: inline-grid;
-  min-width: 67px;
-  height: 28px;
-  margin-left: auto;
-  place-items: center;
-  border-radius: 999px;
-  background: #f1f2f4;
-  color: #848c95;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
   white-space: nowrap;
 }
 
