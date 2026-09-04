@@ -42,6 +42,8 @@
 </table>
 
 ## 주요 기능
+<img width="100%" alt="README • Key Features 1" src="https://github.com/user-attachments/assets/f205b0aa-9c90-4af9-b816-c4e79621e22b" />
+
 
 ## 서비스 이용 흐름
 
