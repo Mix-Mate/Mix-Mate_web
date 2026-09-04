@@ -46,9 +46,9 @@
 .reasonInputWrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  margin: 12px 0 20px;
+  margin: 6px 0 12px;
   text-align: left;
 }
 
@@ -60,26 +60,28 @@
 }
 
 .reasonLabel {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #374151;
 }
 
 .charCounter {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #9ca3af;
 }
 
 .reasonTextarea {
   width: 100%;
-  min-height: 84px;
-  padding: 12px 14px;
-  font-size: 14px;
+  min-height: 64px;
+  max-height: 72px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 18px;
   color: #18181b;
   background-color: #f9fafb;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 10px;
   outline: none;
   resize: none;
   font-family: inherit;
@@ -92,7 +94,7 @@
 }
 
 .reasonError {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #ef4444;
   padding-left: 2px;
@@ -251,8 +253,15 @@
 }
 
 .deleteSheet {
-  --bottom-sheet-padding: 32px 24px 16px;
+  --bottom-sheet-padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
   --bottom-sheet-border-radius: 24px 24px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 10px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  max-height: 85%;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .deleteDialogContent {
@@ -264,8 +273,8 @@
 
 .warningIcon {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border-radius: 50%;
   background: #fff1f2;
@@ -273,32 +282,32 @@
 }
 
 .deleteDialogContent h2 {
-  margin: 18px 0 8px;
+  margin: 8px 0 4px;
   color: #18181b;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 800;
-  line-height: 24px;
+  line-height: 20px;
 }
 
 .deleteDialogContent p {
-  margin: 0 0 22px;
+  margin: 0 0 8px;
   color: #52525b;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 16px;
 }
 
 .deleteActions {
   display: grid;
   width: 100%;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dialogButton.dialogButton {
-  height: 48px;
+  height: 42px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 
 .toast {

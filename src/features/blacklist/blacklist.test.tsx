@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import BlacklistScreen from "@/screens/admin/BlacklistScreen";
+import BlockedUserProfileModal from "./components/BlockedUserProfileModal";
 import ParticipantProfileScreen from "@/screens/common/ParticipantProfileScreen";
 import HomeScreen from "@/screens/common/HomeScreen";
 import ParticipantPageHeader from "@/features/participant/components/ParticipantPageHeader";
@@ -10,11 +11,13 @@ import * as adminGroupQuery from "@/features/group/hooks/useAdminGroupQuery";
 import * as adminParticipantQuery from "@/features/participant/hooks/useAdminParticipantListQuery";
 import * as participantListQuery from "@/features/participant/hooks/useParticipantListQuery";
 import * as participantProfileQuery from "@/features/participant/hooks/useParticipantProfileQuery";
+import * as myGroupProfileQuery from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type { BlockedParticipant } from "./types/blacklist.types";
 import type { AdminParticipantGroup, ParticipantProfile } from "@/features/participant/types/participant.types";
 
 const mockPush = vi.fn();
 const mockBack = vi.fn();
+let mockSearchParams = new Map<string, string>([["role", "admin"]]);
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -24,7 +27,8 @@ vi.mock("next/navigation", () => ({
   }),
   useParams: () => ({ groupId: "17" }),
   useSearchParams: () => ({
-    get: (key: string) => (key === "role" ? "admin" : null),
+    get: (key: string) => mockSearchParams.get(key) ?? null,
+    has: (key: string) => mockSearchParams.has(key),
   }),
 }));
 
@@ -80,7 +84,7 @@ const mockAdminParticipants: AdminParticipantGroup = {
 
 describe("Blacklist Feature & API Integration", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
     sessionStorage.clear();
     localStorage.clear();
     localStorage.setItem("accessToken", "mock-token");
@@ -119,7 +123,7 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(screen.getByText("홍길동")).toBeInTheDocument();
-        expect(screen.getByText("컴퓨터공학과")).toBeInTheDocument();
+        expect(screen.getByText("gildong@example.com")).toBeInTheDocument();
         expect(
           screen.getByText(/사유: 지속적인 비매너 행위/),
         ).toBeInTheDocument();
@@ -162,7 +166,9 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(screen.getByText("홍길동"));
 
       await waitFor(() => {
-        expect(screen.getByText("gildong@example.com")).toBeInTheDocument();
+        expect(
+          screen.getAllByText("gildong@example.com").length,
+        ).toBeGreaterThanOrEqual(1);
         expect(
           screen.getByText("지속적인 비매너 행위"),
         ).toBeInTheDocument();
@@ -224,6 +230,186 @@ describe("Blacklist Feature & API Integration", () => {
   });
 
   describe("ParticipantProfileScreen - Block Action & Validation", () => {
+    beforeEach(() => {
+      mockSearchParams = new Map<string, string>([["role", "admin"]]);
+      mockPush.mockClear();
+      mockBack.mockClear();
+    });
+
+    it("상세 프로필 조회가 성공하면 목록 fallback 요청을 시작하지 않는다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: mockAdminGroup,
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      const myProfileSpy = vi
+        .spyOn(myGroupProfileQuery, "useMyGroupProfileQuery")
+        .mockReturnValue({
+          data: null,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      const profileDetailSpy = vi
+        .spyOn(participantProfileQuery, "useParticipantProfileQuery")
+        .mockReturnValue({
+          data: mockParticipantProfile,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: { groupName: "테스트 소모임", participants: [] },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: false });
+      expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        detailRole: "admin",
+        enabled: true,
+      });
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
+    });
+
+    it("본인 프로필은 내 프로필 API만 조회한다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: { ...mockAdminGroup, myParticipantId: 202 },
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      const myProfileSpy = vi
+        .spyOn(myGroupProfileQuery, "useMyGroupProfileQuery")
+        .mockReturnValue({
+          data: {
+            id: "202",
+            displayName: "이순신",
+            position: "MEMBER",
+            major: "경영학과",
+            isNew: false,
+            grade: "SECOND",
+            gender: "MALE",
+            mbti: "ISTJ",
+            age: 22,
+            instaId: "sunshin",
+            bio: "안녕하세요",
+            visibility: "PUBLIC",
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      const profileDetailSpy = vi
+        .spyOn(participantProfileQuery, "useParticipantProfileQuery")
+        .mockReturnValue({
+          data: null,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: { groupName: "테스트 소모임", participants: [] },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: true });
+      expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
+        detailRole: "admin",
+        enabled: false,
+      });
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: false,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
+      expect(screen.getByText("이순신")).toBeInTheDocument();
+    });
+
+    it("상세 프로필 조회가 실패한 관리자 화면에서는 관리자 목록만 fallback으로 조회한다", () => {
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: mockAdminGroup,
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      vi.spyOn(myGroupProfileQuery, "useMyGroupProfileQuery").mockReturnValue({
+        data: null,
+        isLoading: false,
+        isError: false,
+      } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+        isLoading: false,
+        isError: true,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      const adminFallbackSpy = vi
+        .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
+        .mockReturnValue({
+          data: mockAdminParticipants,
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      const participantFallbackSpy = vi
+        .spyOn(participantListQuery, "useParticipantListQuery")
+        .mockReturnValue({
+          data: {
+            participants: [],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
+        } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
+        enabled: true,
+      });
+      expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
+        detailRole: "admin",
+        enabled: false,
+        round: 1,
+      });
+      expect(screen.getByText("이순신")).toBeInTheDocument();
+    });
+
     it("관리자 뷰에서 차단 버튼 클릭 시 차단 사유 입력 모달이 열리고 30자 이내 입력 시 차단이 정상 수행된다", async () => {
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: mockAdminGroup,
@@ -238,7 +424,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -307,6 +492,190 @@ describe("Blacklist Feature & API Integration", () => {
       });
     });
 
+    it("2차 준비중(round=2)에서 참가자 차단 시 1차 기본 탭이 아닌 2차 준비중 참가자 목록(?round=2)으로 이동한다", async () => {
+      mockSearchParams.set("round", "2");
+      mockSearchParams.set("role", "admin");
+
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: {
+          ...mockAdminGroup,
+          status: "BEFORE_SECOND_ROUND",
+        },
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+
+      vi.spyOn(
+        adminParticipantQuery,
+        "useAdminParticipantListQuery",
+      ).mockReturnValue({
+        data: mockAdminParticipants,
+      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
+        data: {
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+
+      vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
+        ok: true,
+        source: "api",
+      });
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("이순신")).toBeInTheDocument();
+      });
+
+      const blockBtn = screen.getByLabelText("참가자 그룹 차단");
+      expect(blockBtn).toBeInTheDocument();
+      fireEvent.click(blockBtn);
+
+      const textarea = screen.getByPlaceholderText(/차단 사유를 입력해주세요/);
+      fireEvent.change(textarea, { target: { value: "2차 불참" } });
+
+      const submitBlockBtn = screen.getByRole("button", { name: "차단하기" });
+      fireEvent.click(submitBlockBtn);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith(
+          expect.stringContaining("/groups/17/admin/participants?round=2"),
+        );
+      });
+    });
+
+    it("from 파라미터가 있는 경우 차단 완료 후 해당 from 경로로 정확히 복귀한다", async () => {
+      mockSearchParams.set("role", "admin");
+      mockSearchParams.set("from", "/groups/17/admin/assignment/fixed?round=2");
+
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: {
+          ...mockAdminGroup,
+          status: "BEFORE_SECOND_ROUND",
+        },
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+
+      vi.spyOn(
+        adminParticipantQuery,
+        "useAdminParticipantListQuery",
+      ).mockReturnValue({
+        data: mockAdminParticipants,
+      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
+        data: {
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+
+      vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
+        ok: true,
+        source: "api",
+      });
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("이순신")).toBeInTheDocument();
+      });
+
+      const blockBtn = screen.getByLabelText("참가자 그룹 차단");
+      fireEvent.click(blockBtn);
+
+      const submitBlockBtn = screen.getByRole("button", { name: "차단하기" });
+      fireEvent.click(submitBlockBtn);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith(
+          "/groups/17/admin/assignment/fixed?round=2",
+        );
+      });
+    });
+
+    it("투표 결과/2차 참가자 목록(list=second-round)에서 차단 시 2차 참가자 목록으로 복귀한다", async () => {
+      mockSearchParams.set("role", "admin");
+      mockSearchParams.set("list", "second-round");
+
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: {
+          ...mockAdminGroup,
+          status: "BEFORE_SECOND_ROUND",
+        },
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+
+      vi.spyOn(
+        adminParticipantQuery,
+        "useAdminParticipantListQuery",
+      ).mockReturnValue({
+        data: mockAdminParticipants,
+      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
+        data: {
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+
+      vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
+        ok: true,
+        source: "api",
+      });
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("이순신")).toBeInTheDocument();
+      });
+
+      const blockBtn = screen.getByLabelText("참가자 그룹 차단");
+      fireEvent.click(blockBtn);
+
+      const submitBlockBtn = screen.getByRole("button", { name: "차단하기" });
+      fireEvent.click(submitBlockBtn);
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith(
+          "/groups/17/participants?list=second-round",
+        );
+      });
+    });
+
     it("서버에서 에러 반환 시 에러 메시지가 모달 내에 표시된다 (예: 409 조 편성 전만 가능)", async () => {
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: mockAdminGroup,
@@ -321,7 +690,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -389,7 +757,6 @@ describe("Blacklist Feature & API Integration", () => {
 
       vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
         data: {
-          groupName: "테스트 소모임",
           participants: [mockParticipantProfile],
           teams: [],
         },
@@ -566,6 +933,187 @@ describe("Blacklist Feature & API Integration", () => {
       await waitFor(() => {
         expect(screen.getByText("완료된 모임이 없습니다.")).toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Blacklist API - Non-optimistic Synchronous Update", () => {
+    it("blockParticipantApi 호출 시 서버 에러(409 등) 발생 시 localStorage가 미리 변경되지 않고 에러를 던진다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          message: "1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.",
+        }),
+      } as Response);
+
+      await expect(
+        blacklistApi.blockParticipantApi(
+          "17",
+          mockParticipantProfile,
+          { reason: "비매너" },
+        ),
+      ).rejects.toThrow("1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.");
+
+      // 로컬 스토리지에 유저가 추가되지 않았음을 검증 (낙관적 업데이트 없음)
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202")).toBeUndefined();
+      fetchSpy.mockRestore();
+    });
+
+    it("blockParticipantApi 호출 시 서버 성공(200/204) 시에만 localStorage에 저장된다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      } as Response);
+
+      const result = await blacklistApi.blockParticipantApi(
+        "17",
+        mockParticipantProfile,
+        { reason: "비매너" },
+      );
+
+      expect(result.ok).toBe(true);
+      expect(result.source).toBe("api");
+
+      // 서버 성공 후에만 로컬 스토리지에 저장됨
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202")).toBeDefined();
+      fetchSpy.mockRestore();
+    });
+
+    it("unblockParticipantApi 호출 시 서버 실패 시 localStorage에서 삭제되지 않고 에러를 던진다", async () => {
+      // 미리 차단 목록에 유저를 기록
+      blacklistApi.writeStoredBlacklist("17", [
+        {
+          ...mockParticipantProfile,
+          userId: 202,
+          reason: "테스트",
+          blockedAt: new Date().toISOString(),
+        },
+      ]);
+
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ message: "서버 내부 오류" }),
+      } as Response);
+
+      await expect(
+        blacklistApi.unblockParticipantApi("17", 202),
+      ).rejects.toThrow("서버 내부 오류");
+
+      // 로컬 스토리지에 여전히 유저가 유지됨
+      const stored = blacklistApi.readStoredBlacklist("17");
+      expect(stored.find((item) => item.id === "202" || item.userId === 202)).toBeDefined();
+      fetchSpy.mockRestore();
+    });
+
+    it("blockParticipantApi 호출 시 이메일이 없는 참가자는 가짜 @example.com을 생성하지 않고 빈 문자열 또는 실제 이메일만 저장한다", async () => {
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      } as Response);
+
+      await blacklistApi.blockParticipantApi(
+        "17",
+        { id: "303", name: "수동참가자" },
+        { reason: "노쇼" },
+      );
+
+      const stored = blacklistApi.readStoredBlacklist("17");
+      const blocked = stored.find((item) => item.id === "303");
+      expect(blocked).toBeDefined();
+      expect(blocked?.email).toBe("");
+      expect(blocked?.email).not.toContain("@example.com");
+      fetchSpy.mockRestore();
+    });
+
+    it("getGroupBlacklist 호출 시 동일한 유저가 여러 번 포함되어도 1개로 중복 제거된다", async () => {
+      const groupDetailSpy = vi.spyOn(groupApi, "getGroupDetail").mockResolvedValue({
+        groupId: 17,
+        groupName: "테스트 모임",
+        status: "RECRUITING",
+        myRole: "HOST",
+        hasPassword: false,
+        memberCount: 5,
+        targetRound: 1,
+        maxCapacity: 20,
+      });
+
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          banList: [
+            {
+              userId: 101,
+              displayName: "홍길동",
+              email: "gildong@real.com",
+              reason: "비매너",
+              bannedAt: "2026-03-01T10:00:00Z",
+            },
+            {
+              userId: 101,
+              displayName: "홍길동",
+              email: "gildong@real.com",
+              reason: "비매너 수정",
+              bannedAt: "2026-03-01T10:00:00Z",
+            },
+          ],
+        }),
+      } as Response);
+
+      const result = await blacklistApi.getGroupBlacklist("17");
+      expect(result.participants.length).toBe(1);
+      expect(result.participants[0].userId).toBe(101);
+      expect(result.participants[0].displayName).toBe("홍길동");
+
+      fetchSpy.mockRestore();
+      groupDetailSpy.mockRestore();
+    });
+  });
+
+  describe("BlockedUserProfileModal - Simplified UI", () => {
+    it("차단 프로필 모달에 이름, 이메일, 차단일시, 차단사유만 노출되고 온보딩 상세 필드는 노출되지 않는다", () => {
+      render(
+        <BlockedUserProfileModal
+          groupId="17"
+          participant={{
+            id: "101",
+            userId: 101,
+            name: "홍길동",
+            displayName: "홍길동",
+            email: "gildong@real.com",
+            reason: "비매너 행위",
+            blockedAt: "2026-03-01T10:00:00Z",
+            bannedAt: "2026-03-01T10:00:00Z",
+            // 과도한 온보딩 정보가 객체에 있더라도 모달에는 노출되지 않아야 함
+            grade: "4학년",
+            mbti: "ENFP",
+            age: 25,
+            instagramId: "gildong_insta",
+            bio: "안녕하세요 자기소개입니다",
+          }}
+          onClose={vi.fn()}
+          onUnblockSuccess={vi.fn()}
+        />,
+      );
+
+      // 필수 최소 정보 노출 확인
+      expect(screen.getByText("홍길동")).toBeInTheDocument();
+      expect(screen.getByText("gildong@real.com")).toBeInTheDocument();
+      expect(screen.getByText("비매너 행위")).toBeInTheDocument();
+      expect(screen.getByText("차단됨")).toBeInTheDocument();
+
+      // 온보딩 과도 정보 비노출 확인
+      expect(screen.queryByText("4학년")).not.toBeInTheDocument();
+      expect(screen.queryByText("ENFP")).not.toBeInTheDocument();
+      expect(screen.queryByText("25세")).not.toBeInTheDocument();
+      expect(screen.queryByText("@gildong_insta")).not.toBeInTheDocument();
+      expect(screen.queryByText("gildong_insta")).not.toBeInTheDocument();
+      expect(screen.queryByText("안녕하세요 자기소개입니다")).not.toBeInTheDocument();
     });
   });
 });

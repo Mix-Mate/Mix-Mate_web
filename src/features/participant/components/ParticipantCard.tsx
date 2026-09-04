@@ -2,7 +2,7 @@
 
 import { Lock } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import type { Participant } from "../types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
@@ -26,6 +26,7 @@ export default function ParticipantCard({
   canViewPrivateProfiles = false,
 }: ParticipantCardProps) {
   const params = useParams<{ groupId: string }>();
+  const searchParams = useSearchParams();
   const resolvedGroupId = groupId ?? params.groupId ?? "1";
   const roleLabel = participant.role === "staff" ? "운영진" : "일반";
   const isPrivateProfile = participant.visibility === "private";
@@ -46,9 +47,13 @@ export default function ParticipantCard({
   const detailText = isMaskedPrivateProfile
     ? privateDetailText
     : publicDetailText;
+  const listMode = searchParams?.get("list");
+  const returnTo = searchParams?.get("returnTo");
   const profileSearchParams = [
     round ? `round=${round}` : null,
     canViewPrivateProfiles ? "role=admin" : null,
+    listMode ? `list=${listMode}` : null,
+    returnTo ? `returnTo=${returnTo}` : null,
   ].filter(Boolean);
   const profileHref = `/groups/${resolvedGroupId}/participants/${participant.id}${
     profileSearchParams.length > 0 ? `?${profileSearchParams.join("&")}` : ""

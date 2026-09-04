@@ -39,24 +39,26 @@ export default function BlockedUserProfileModal({
   onUnblockSuccess,
 }: BlockedUserProfileModalProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [unblockError, setUnblockError] = useState("");
   const { mutate: unblockParticipant, isPending } =
     useUnblockParticipantMutation();
 
   if (!participant) return null;
 
   const displayName = participant.displayName || participant.name || "사용자";
-  const instagramText =
-    participant.instagramId ?? "등록된 인스타 ID가 없습니다.";
   const emailText = participant.email || "등록된 이메일이 없습니다.";
-  const bioText = participant.bio;
   const formattedDate = formatBanDate(
     participant.bannedAt || participant.blockedAt,
   );
 
   const handleConfirmUnblock = async () => {
+    setUnblockError("");
     const targetUserId = participant.userId || participant.id;
     const result = await unblockParticipant(groupId, targetUserId);
-    if (!result.ok) return;
+    if (!result.ok) {
+      setUnblockError(result.message);
+      return;
+    }
 
     setConfirmOpen(false);
     onClose();
@@ -76,95 +78,35 @@ export default function BlockedUserProfileModal({
             <GenderAvatar
               gender={participant.gender || "male"}
               name={displayName}
-              size={68}
+              size={52}
             />
             <h2 id="blocked-profile-title">{displayName}</h2>
-            {participant.department && <p>{participant.department}</p>}
 
             <div className={styles.badges}>
               <span className={styles.blockedBadge}>차단됨</span>
-              {participant.role === "staff" && (
-                <span className={styles.badge}>운영진</span>
-              )}
             </div>
           </section>
 
-          {/* 메타 정보 카드 (이메일 및 차단일시 포함) */}
+          {/* 메타 정보 카드 (이메일 및 차단일시) */}
           <section className={styles.infoCard}>
-            {participant.grade && (
-              <div>
-                <span>학년</span>
-                <strong>{participant.grade}</strong>
-              </div>
-            )}
-
-            {participant.gender && (
-              <div>
-                <span>성별</span>
-                <strong>
-                  {participant.gender === "female" ? "여성" : "남성"}
-                </strong>
-              </div>
-            )}
-
-            {participant.department && (
-              <div>
-                <span>소속</span>
-                <strong>{participant.department}</strong>
-              </div>
-            )}
-
-            {participant.mbti && (
-              <div>
-                <span>MBTI</span>
-                <strong>{participant.mbti}</strong>
-              </div>
-            )}
-
-            {Boolean(participant.age) && (
-              <div>
-                <span>나이</span>
-                <strong>{participant.age}세</strong>
-              </div>
-            )}
-
-            {participant.instagramId && (
-              <div>
-                <span>인스타 ID</span>
-                <strong className={styles.instagram}>{instagramText}</strong>
-              </div>
-            )}
-
-            {/* 사용자 이메일 (메타 정보 블록 가장 하단) */}
             <div>
-              <span>사용자 이메일</span>
+              <span>이메일</span>
               <strong className={participant.email ? styles.emailText : ""}>
                 {emailText}
               </strong>
             </div>
 
-            {/* 차단 일시 */}
-            {formattedDate && (
-              <div>
-                <span>차단 일시</span>
-                <strong>{formattedDate}</strong>
-              </div>
-            )}
+            <div>
+              <span>차단 일시</span>
+              <strong>{formattedDate || "-"}</strong>
+            </div>
           </section>
 
-          {/* 차단 사유 독립 카드 */}
+          {/* 차단 사유 카드 */}
           <section className={styles.reasonCard}>
             <span>차단 사유</span>
             <p>{participant.reason || "등록된 차단 사유가 없습니다."}</p>
           </section>
-
-          {/* 자기소개 (있는 경우) */}
-          {bioText && (
-            <section className={styles.bioCard}>
-              <span>자기소개</span>
-              <p>{bioText}</p>
-            </section>
-          )}
 
           {/* 액션 버튼 */}
           <div className={styles.actions}>
@@ -205,6 +147,12 @@ export default function BlockedUserProfileModal({
             <br />
             차단이 해제되면 참가자가 다시 그룹 활동에 참여할 수 있습니다.
           </p>
+
+          {unblockError && (
+            <p className={styles.unblockError} role="alert">
+              {unblockError}
+            </p>
+          )}
 
           <div className={styles.confirmActions}>
             <Button

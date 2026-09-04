@@ -4,7 +4,7 @@ import type { GroupDetail } from "../types/group.types";
 import { useGroupStatusNavigation } from "./useGroupStatusNavigation";
 
 const { location, router, query } = vi.hoisted(() => ({
-  location: { pathname: "/groups/6/home" },
+  location: { pathname: "/groups/6" },
   router: { replace: vi.fn() },
   query: { data: null as GroupDetail | null },
 }));
@@ -20,7 +20,7 @@ vi.mock("./useAdminGroupQuery", () => ({
 describe("useGroupStatusNavigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    location.pathname = "/groups/6/home";
+    location.pathname = "/groups/6";
     query.data = {
       groupId: 6,
       groupName: "모임",
@@ -32,6 +32,30 @@ describe("useGroupStatusNavigation", () => {
       myRole: "PARTICIPANT",
       myParticipantId: 3,
     };
+  });
+
+  it.each([
+    "/groups/6",
+    "/groups/6/admin",
+    "/groups/6/admin/recruitment",
+    "/groups/6/admin/preparation",
+  ])("투표 중인 그룹의 홈 %s에 진입해도 자동 이동하지 않는다", (pathname) => {
+    location.pathname = pathname;
+    query.data = null;
+    const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
+    query.data = { groupId: 6, status: "VOTING" } as GroupDetail;
+    rerender();
+    query.data = { ...query.data };
+    rerender();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it("투표 화면에서 그룹 홈으로 돌아와도 자동 이동하지 않는다", () => {
+    location.pathname = "/groups/6/votes/status";
+    const { rerender } = renderHook(() => useGroupStatusNavigation("6"));
+    location.pathname = "/groups/6";
+    rerender();
+    expect(router.replace).not.toHaveBeenCalled();
   });
 
   it.each(["PARTICIPANT", "HOST"] as const)(

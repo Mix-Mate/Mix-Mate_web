@@ -57,7 +57,6 @@ export default function ParticipantProfileScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: group } = useAdminGroupQuery(groupId);
-  const { data: myProfile } = useMyGroupProfileQuery(groupId);
   const { mutate: blockParticipant, isPending: isBlocking } =
     useBlockParticipantMutation();
 
@@ -69,39 +68,57 @@ export default function ParticipantProfileScreen({
   const roundParam = searchParams.get("round");
   const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
   const resolvedRound = adminRound ?? 1;
-  const isAdminView = searchParams.get("role") === "admin" || group?.myRole === "HOST";
-  const { data: profileDetail } = useParticipantProfileQuery(
+  const isAdminView =
+    searchParams.get("role") === "admin" || group?.myRole === "HOST";
+  const myParticipantId = group?.myParticipantId
+    ? String(group.myParticipantId)
+    : null;
+  const isSelfProfile =
+    myParticipantId !== null && myParticipantId === participantId;
+  const { data: myProfile, isError: isMyProfileError } =
+    useMyGroupProfileQuery(groupId, {
+      enabled: isSelfProfile,
+    });
+  const shouldFetchProfileDetail =
+    Boolean(group) && (!isSelfProfile || isMyProfileError);
+  const {
+    data: profileDetail,
+    isError: isProfileDetailError,
+  } = useParticipantProfileQuery(
     groupId,
     participantId,
-    { detailRole: isAdminView ? "admin" : undefined },
+    {
+      detailRole: isAdminView ? "admin" : undefined,
+      enabled: shouldFetchProfileDetail,
+    },
   );
+  const shouldFetchListFallback =
+    Boolean(group) &&
+    (!isSelfProfile || isMyProfileError) &&
+    isProfileDetailError;
+  const shouldFetchAdminFallback =
+    shouldFetchListFallback && isAdminView;
+  const shouldFetchParticipantFallback =
+    shouldFetchListFallback && !isAdminView;
   const { data: adminParticipantGroup } = useAdminParticipantListQuery(
     groupId,
     resolvedRound,
+    { enabled: shouldFetchAdminFallback },
   );
   const { data: participantGroup } = useParticipantListQuery(groupId, {
     detailRole: isAdminView ? "admin" : undefined,
     round: resolvedRound,
+    enabled: shouldFetchParticipantFallback,
   });
-  const resolvedMyParticipantId =
-    myProfile?.id && myProfile.id !== "me"
-      ? myProfile.id
-      : group?.myParticipantId
-        ? String(group.myParticipantId)
-        : null;
 
   const fallbackProfile = useMemo<ParticipantProfile | null>(() => {
-    const adminParticipant = adminParticipantGroup.participants.find(
-      (participant) => participant.id === participantId,
-    );
-
-    if (adminParticipant) {
-      return adminParticipant;
-    }
-
-    const participant = participantGroup.participants.find(
-      (item) => item.id === participantId,
-    );
+    const participant = isAdminView
+      ? adminParticipantGroup.participants.find(
+          (item) => item.id === participantId,
+        )
+      : participantGroup.participants.find(
+          (item) => item.id === participantId,
+        );
 
     if (!participant) {
       return null;
@@ -118,46 +135,37 @@ export default function ParticipantProfileScreen({
     };
   }, [
     adminParticipantGroup.participants,
+    isAdminView,
     participantGroup.participants,
     participantId,
   ]);
 
   const profile = useMemo(() => {
-    const baseProfile = profileDetail ?? fallbackProfile;
-    const isSelfProfile =
-      myProfile &&
-      ((resolvedMyParticipantId &&
-        String(resolvedMyParticipantId) === String(participantId)) ||
-        (!resolvedMyParticipantId &&
-          baseProfile?.name === myProfile.displayName &&
-          baseProfile.department === myProfile.major));
-
-    if (isSelfProfile) {
+    if (isSelfProfile && myProfile) {
       return toProfileFromMyGroupProfile(
         myProfile,
-        resolvedMyParticipantId ?? participantId,
+        myParticipantId ?? participantId,
       );
     }
 
-    return baseProfile;
+    return profileDetail ?? fallbackProfile;
   }, [
     fallbackProfile,
+    isSelfProfile,
+    myParticipantId,
     myProfile,
     participantId,
     profileDetail,
-    resolvedMyParticipantId,
   ]);
 
   if (!group || !profile) return null;
 
-  const isSelf = Boolean(
-    resolvedMyParticipantId &&
-      String(resolvedMyParticipantId) === String(participantId),
-  );
+  const isSelf = isSelfProfile;
 
   const canManageParticipant =
     group.status === "RECRUITING" ||
-    (group.status === "BEFORE_FIRST_ROUND" && resolvedRound === 1);
+    group.status === "BEFORE_FIRST_ROUND" ||
+    group.status === "BEFORE_SECOND_ROUND";
   const canBlockParticipant =
     isAdminView && !isSelf && canManageParticipant;
   const shouldBlockPrivateProfile =
@@ -176,6 +184,43 @@ export default function ParticipantProfileScreen({
     } catch {
       showToast(instagramText);
     }
+  };
+
+  const resolveReturnUrl = () => {
+    // 1. 명시적 from 경로가 있는 경우 (예: 필터/탭 상태 포함된 이전 URL)
+    const fromParam = searchParams.get("from");
+    if (fromParam) {
+      return fromParam;
+    }
+
+    // 2. returnTo 파라미터가 있는 경우
+    const returnToParam = searchParams.get("returnTo");
+    if (returnToParam === "participant-list") {
+      return groupRoutes.participants(groupId, resolvedRound);
+    }
+    if (returnToParam === "recruitment") {
+      return groupRoutes.adminRecruitment(groupId);
+    }
+    if (returnToParam === "fixed") {
+      return `/groups/${groupId}/admin/assignment/fixed?round=${resolvedRound}`;
+    }
+
+    // 3. 투표 결과/최종 참가자 list 파라미터가 있는 경우
+    const listParam = searchParams.get("list");
+    if (listParam === "mvp") {
+      return groupRoutes.voteResultMvpList(groupId);
+    }
+    if (listParam === "second-round") {
+      return groupRoutes.voteResultSecondRoundParticipants(groupId);
+    }
+
+    // 4. 관리자 뷰인 경우 (해당 round 1차 또는 2차 준비중 참가자 목록 유지)
+    if (isAdminView) {
+      return groupRoutes.adminParticipants(groupId, resolvedRound);
+    }
+
+    // 5. 기본 fallback: 해당 round 참가자 목록
+    return groupRoutes.participants(groupId, resolvedRound);
   };
 
   const handleBlock = async () => {
@@ -202,7 +247,7 @@ export default function ParticipantProfileScreen({
     }
     router.push(
       withSessionContext(
-        groupRoutes.adminParticipants(groupId, resolvedRound),
+        resolveReturnUrl(),
         searchParams,
       ),
     );

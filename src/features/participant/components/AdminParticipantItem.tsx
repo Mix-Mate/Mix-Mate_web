@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import type { AdminParticipant } from "../types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/admin/AdminParticipantManagementScreen.module.css";
@@ -22,7 +22,9 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&role=admin`}
+        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&role=admin&from=${encodeURIComponent(
+          `/groups/${groupId}/admin/participants?round=${round}`,
+        )}`}
         className={styles.participantItem}
       >
         <GenderAvatar

@@ -2,7 +2,7 @@
 
 import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
@@ -12,20 +12,24 @@ import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-
 import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
+import RecruitmentTransitionScreen, {
+  type RecruitmentTransitionPhase,
+} from "@/features/group/components/RecruitmentTransitionScreen";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
 import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
-import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
 import styles from "./AdminRecruitmentScreen.module.css";
 
 const RECRUITMENT_POLLING_INTERVAL_MS = 3000;
+const MIN_RECRUITMENT_TRANSITION_MS = 3000;
 
 interface InviteCodeExpirationNoticeProps {
   createdAt: string;
@@ -81,6 +85,9 @@ export default function AdminRecruitmentScreen() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(
     searchParams.get("dialog") === "delete",
   );
+  const [transitionPhase, setTransitionPhase] =
+    useState<RecruitmentTransitionPhase | null>(null);
+  const cancelTransitionRef = useRef<(() => void) | null>(null);
   const { message: toast, showToast } = useToast();
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
@@ -96,7 +103,24 @@ export default function AdminRecruitmentScreen() {
   );
 
   useEffect(() => {
-    if (!isRecruiting) {
+    return () => {
+      cancelTransitionRef.current?.();
+      cancelTransitionRef.current = null;
+    };
+  }, [params.groupId]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("adminToast");
+      if (stored) {
+        showToast(stored);
+        sessionStorage.removeItem("adminToast");
+      }
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (!isRecruiting || transitionPhase) {
       return;
     }
 
@@ -107,7 +131,7 @@ export default function AdminRecruitmentScreen() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isRecruiting, refetch]);
+  }, [isRecruiting, refetch, transitionPhase]);
 
   const copyInviteCode = useCallback(async () => {
     if (!group) return;
@@ -121,7 +145,7 @@ export default function AdminRecruitmentScreen() {
   }, [group, showToast]);
 
   useEffect(() => {
-    if (!group) return;
+    if (!group || transitionPhase) return;
 
     if (
       group.status === "BEFORE_FIRST_ROUND" ||
@@ -143,23 +167,17 @@ export default function AdminRecruitmentScreen() {
       group.status === "VOTE_CLOSED"
     ) {
       router.replace(
-        withSessionContext(
-          groupRoutes.adminProgress(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.home(params.groupId), searchParams),
       );
       return;
     }
 
     if (group.status === "FINISHED") {
       router.replace(
-        withSessionContext(
-          groupRoutes.completed(params.groupId),
-          searchParams,
-        ),
+        withSessionContext(groupRoutes.completed(params.groupId), searchParams),
       );
     }
-  }, [group, params.groupId, router, searchParams]);
+  }, [group, params.groupId, router, searchParams, transitionPhase]);
 
   const goToParticipants = useCallback(() => {
     router.push(
@@ -171,12 +189,39 @@ export default function AdminRecruitmentScreen() {
   }, [params.groupId, router, searchParams]);
 
   const confirmCloseRecruitment = useCallback(async () => {
-    if (!canCloseRecruitment) return;
+    if (!canCloseRecruitment || cancelTransitionRef.current) return;
+
+    setTransitionPhase("closing");
+    let cancelled = false;
+    // 실제 요청과 동시에 시작해, 전체 표시 시간이 max(실제 로딩, 3초)가 되게 한다.
+    const minimumDisplay = new Promise<void>((resolve) => {
+      const timeoutId = window.setTimeout(
+        resolve,
+        MIN_RECRUITMENT_TRANSITION_MS,
+      );
+      cancelTransitionRef.current = () => {
+        cancelled = true;
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+    });
 
     const closed = await closeRecruiting(params.groupId);
-    if (!closed) return;
+    if (cancelled) return;
 
-    const latestGroup = await refetch();
+    if (!closed) {
+      await minimumDisplay;
+      if (cancelled) return;
+      cancelTransitionRef.current = null;
+      setTransitionPhase(null);
+      return;
+    }
+
+    setTransitionPhase("preparing");
+    const [latestGroup] = await Promise.all([refetch(), minimumDisplay]);
+    if (cancelled) return;
+
+    cancelTransitionRef.current = null;
     setCloseDialogOpen(false);
 
     if (latestGroup?.status === "BEFORE_FIRST_ROUND") {
@@ -189,6 +234,7 @@ export default function AdminRecruitmentScreen() {
       return;
     }
 
+    setTransitionPhase(null);
     if (!latestGroup) {
       showToast("최신 그룹 정보를 불러오지 못했습니다.");
     }
@@ -239,7 +285,13 @@ export default function AdminRecruitmentScreen() {
     //TODO 그룹홈 라우팅
   }, [canEditGroup, deleteGroup, params.groupId, router]);
 
-  if (!group || group.status !== "RECRUITING") return null;
+  if (!group) return null;
+
+  if (transitionPhase || group.status !== "RECRUITING") {
+    return (
+      <RecruitmentTransitionScreen phase={transitionPhase ?? "preparing"} />
+    );
+  }
 
   return (
     <MobileFrame
@@ -248,9 +300,8 @@ export default function AdminRecruitmentScreen() {
       data-testid="admin-recruitment"
       data-group-id={group.groupId}
     >
-      <Header
+      <GroupHomeHeader
         title={group.groupName}
-        onBack={() => router.replace("/home")}
         compact
         rightAction={
           canEditGroup ? (
@@ -304,8 +355,8 @@ export default function AdminRecruitmentScreen() {
           </span>
           <h2>그룹을 모집하고 있습니다.</h2>
           <p className={styles.minimumParticipantText}>
-            참가자가{" "}
-            <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상 모이면 1차 술자리를 시작할 수 있어요.
+            참가자가 <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상
+            모이면 1차 술자리를 시작할 수 있어요.
           </p>
         </section>
 

@@ -29,10 +29,10 @@ export default function BlockedUserList({
         const displayName =
           participant.displayName || participant.name || "사용자";
         const subInfo =
-          participant.department || participant.email || "";
+          participant.email || participant.department || "";
 
         return (
-          <li key={participant.userId || participant.id}>
+          <li key={participant.userId || participant.id || displayName}>
             <button
               type="button"
               className={styles.participantItem}

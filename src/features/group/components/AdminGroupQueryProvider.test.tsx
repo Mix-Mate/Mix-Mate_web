@@ -23,7 +23,7 @@ import GroupStatusNavigationBoundary from "./GroupStatusNavigationBoundary";
 
 const { route, router, getGroupDetail, subscribe, getMyTeam } = vi.hoisted(
   () => ({
-    route: { groupId: "6", pathname: "/groups/6/home" },
+    route: { groupId: "6", pathname: "/groups/6" },
     router: { replace: vi.fn(), push: vi.fn(), back: vi.fn() },
     getGroupDetail: vi.fn(),
     subscribe: vi.fn(),
@@ -133,7 +133,7 @@ describe("공통 그룹 SSE 동기화", () => {
     vi.clearAllMocks();
     subscriptions = [];
     route.groupId = "6";
-    route.pathname = "/groups/6/home";
+    route.pathname = "/groups/6";
     setAuthTokens({ accessToken: "test-token" });
     getGroupDetail.mockImplementation(async (id: string) =>
       group("RECRUITING", Number(id)),
@@ -175,7 +175,11 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(
       await screen.findByRole("button", { name: /배정 결과 확인하기/ }),
     ).toBeVisible();
-    expect(getMyTeam).toHaveBeenCalledWith("6", "FIRST_ROUND");
+    expect(getMyTeam).toHaveBeenCalledWith(
+      "6",
+      "FIRST_ROUND",
+      expect.any(AbortSignal),
+    );
     await emit("BEFORE_SECOND_ROUND");
     expect(screen.getByTestId("user-home")).toHaveAttribute(
       "data-status",
@@ -183,7 +187,11 @@ describe("공통 그룹 SSE 동기화", () => {
     );
     expect(screen.getByText("아직 자리 배치 전입니다")).toBeVisible();
     await emit("SECOND_ROUND");
-    expect(getMyTeam).toHaveBeenLastCalledWith("6", "SECOND_ROUND");
+    expect(getMyTeam).toHaveBeenLastCalledWith(
+      "6",
+      "SECOND_ROUND",
+      expect.any(AbortSignal),
+    );
     await emit("FINISHED");
     expect(router.replace).toHaveBeenCalledWith("/groups/6/completed");
     expect(subscribe).toHaveBeenCalledOnce();
@@ -205,7 +213,7 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).not.toHaveBeenCalled();
   });
 
-  it.each(["/groups/6/home", "/groups/6/admin"])(
+  it.each(["/groups/6", "/groups/6/admin"])(
     "관리자도 %s에서 투표 시작 이벤트를 받으면 MVP 투표로 한 번만 이동한다",
     async (pathname) => {
       route.pathname = pathname;
@@ -215,7 +223,7 @@ describe("공통 그룹 SSE 동기화", () => {
       });
       render(
         <App
-          home={pathname.endsWith("/home")}
+          home={pathname === "/groups/6"}
           adminHome={pathname.endsWith("/admin")}
         />,
       );
@@ -227,6 +235,30 @@ describe("공통 그룹 SSE 동기화", () => {
       );
       expect(subscribe).toHaveBeenCalledOnce();
       expect(subscriptions[0].stop).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    ["/groups/6", "/groups/6/admin"].flatMap((pathname) =>
+      (["FIRST_ROUND", "SECOND_ROUND", "VOTING", "VOTE_CLOSED"] as const).map(
+        (status) => ({ pathname, status }),
+      ),
+    ),
+  )(
+    "$status 상태로 $pathname에 진입하면 진행 현황 대신 그룹 홈을 보여준다",
+    async ({ pathname, status }) => {
+      route.pathname = pathname;
+      getGroupDetail.mockResolvedValue({ ...group(status), myRole: "HOST" });
+      render(
+        <App
+          home={pathname === "/groups/6"}
+          adminHome={pathname.endsWith("/admin")}
+        />,
+      );
+
+      await screen.findByTestId("user-home");
+      expect(screen.queryByTestId("admin-progress")).not.toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
     },
   );
 
@@ -325,8 +357,46 @@ describe("공통 그룹 SSE 동기화", () => {
       fireEvent.click(
         screen.getByRole("button", { name: "이전 화면으로 이동" }),
       );
+      if (target === "/home") {
+        expect(router.replace).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      }
       expect(router.replace).toHaveBeenCalledExactlyOnceWith(target);
       expect(router.back).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    [
+      "/groups/6",
+      "/groups/6/admin",
+      "/groups/6/admin/recruitment",
+      "/groups/6/admin/preparation",
+    ].flatMap((pathname) =>
+      ["loading", "error"].map((state) => ({ pathname, state })),
+    ),
+  )(
+    "$pathname의 $state 화면에서도 확인 후 메인 홈으로 나간다",
+    async ({ pathname, state }) => {
+      route.pathname = pathname;
+      if (state === "error") {
+        getGroupDetail.mockRejectedValue(new Error("그룹 조회 실패"));
+      } else {
+        getGroupDetail.mockReturnValue(new Promise(() => {}));
+      }
+      render(<App />);
+      if (state === "error") await screen.findByRole("alert");
+
+      fireEvent.click(
+        screen.getByRole("button", { name: "이전 화면으로 이동" }),
+      );
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(router.replace).not.toHaveBeenCalled();
+      expect(router.back).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith("/home");
     },
   );
 
@@ -365,24 +435,43 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).toHaveBeenCalledOnce();
   });
 
-  it.each([403, 404])(
-    "%s 수신 시 그룹 화면을 닫고 사용자가 재시도할 때만 구독한다",
-    async (status) => {
-      render(<App />);
-      await screen.findByTestId("group-state");
-      await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
-      act(() =>
-        subscriptions[0].options.onError(new GroupStatusStreamError(status)),
-      );
-      expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        new GroupStatusStreamError(status).message,
-      );
-      expect(subscribe).toHaveBeenCalledOnce();
-      fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-      await waitFor(() => expect(subscribe).toHaveBeenCalledTimes(2));
-    },
-  );
+  it("404 수신 시 그룹 화면을 닫고 사용자가 다시 시도할 때만 재구독한다", async () => {
+    render(<App />);
+    await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
+    act(() =>
+      subscriptions[0].options.onError(new GroupStatusStreamError(404)),
+    );
+    expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      new GroupStatusStreamError(404).message,
+    );
+    expect(
+      screen.getByRole("button", { name: "다시 시도" }),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(subscribe).toHaveBeenCalledTimes(2));
+  });
+
+  it("403/차단 수신 시 다시 시도 버튼을 숨기고 홈으로 이동 단일 액션을 제공한다", async () => {
+    render(<App />);
+    await screen.findByTestId("group-state");
+    await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
+    act(() =>
+      subscriptions[0].options.onError(new GroupStatusStreamError(403)),
+    );
+    expect(screen.queryByTestId("group-state")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      new GroupStatusStreamError(403).message,
+    );
+    expect(
+      screen.queryByRole("button", { name: "다시 시도" }),
+    ).not.toBeInTheDocument();
+    const homeBtn = screen.getByRole("button", { name: "홈으로 이동" });
+    expect(homeBtn).toBeInTheDocument();
+    fireEvent.click(homeBtn);
+    expect(router.replace).toHaveBeenCalledWith("/home");
+  });
 
   it("StrictMode에서도 동시에 남아 있는 구독은 하나다", async () => {
     const { unmount } = render(

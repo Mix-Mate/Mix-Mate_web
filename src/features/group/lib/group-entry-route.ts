@@ -4,6 +4,15 @@ export function isGroupHost(role: string | null | undefined): boolean {
   return role?.trim().toUpperCase() === "HOST";
 }
 
+export function isGroupHomeRoute(pathname: string, groupId: string): boolean {
+  return [
+    groupRoutes.home(groupId),
+    groupRoutes.adminHome(groupId),
+    groupRoutes.adminRecruitment(groupId),
+    groupRoutes.adminPreparation(groupId),
+  ].includes(pathname);
+}
+
 export function getGroupEntryRoute(
   groupId: string,
   role: string | null | undefined,

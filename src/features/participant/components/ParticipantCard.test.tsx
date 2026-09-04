@@ -4,6 +4,7 @@ import ParticipantCard from "./ParticipantCard";
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "6" }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("ParticipantCard", () => {

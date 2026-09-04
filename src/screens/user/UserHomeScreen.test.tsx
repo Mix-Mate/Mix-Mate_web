@@ -107,23 +107,64 @@ describe("UserHomeScreen Navigation", () => {
     });
   });
 
-  it("그룹 홈에서 뒤로가기 클릭 시 메인 홈 이동 확인 팝업을 띄운다", () => {
-    render(<UserHomeScreen />);
+  it.each(
+    (["HOST", "PARTICIPANT"] as const).flatMap((myRole) =>
+      (
+        [
+          "RECRUITING",
+          "BEFORE_FIRST_ROUND",
+          "FIRST_ROUND",
+          "VOTING",
+          "VOTE_CLOSED",
+          "BEFORE_SECOND_ROUND",
+          "SECOND_ROUND",
+        ] as const
+      ).map((status) => ({ myRole, status })),
+    ),
+  )(
+    "$myRole / $status 그룹 홈은 자동 이동 없이 열리고 나가기 팝업을 띄운다",
+    ({ myRole, status }) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: { ...mockGroup, myRole, status },
+        refetch: vi.fn(),
+      });
+      render(<UserHomeScreen />);
 
-    const backButton = screen.getByRole("button", {
-      name: "이전 화면으로 이동",
-    });
-    expect(backButton).toBeInTheDocument();
+      expect(screen.queryByTestId("admin-progress")).not.toBeInTheDocument();
 
-    fireEvent.click(backButton);
+      const backButton = screen.getByRole("button", {
+        name: "이전 화면으로 이동",
+      });
+      expect(backButton).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
-    ).toBeInTheDocument();
-    expect(replaceMock).not.toHaveBeenCalled();
-    expect(backMock).not.toHaveBeenCalled();
-    expect(pushMock).not.toHaveBeenCalled();
-  });
+      fireEvent.click(backButton);
+
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
+      expect(backMock).not.toHaveBeenCalled();
+      expect(pushMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ["VOTING", "투표 화면으로 이동", "/groups/12/votes/mvp"],
+    ["VOTE_CLOSED", "투표 결과 보기", "/groups/12/votes/result"],
+  ] as const)(
+    "%s 그룹 홈에서 투표 화면은 버튼을 선택해서 연다",
+    (status, label, route) => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: { ...mockGroup, status },
+        refetch: vi.fn(),
+      });
+      render(<UserHomeScreen />);
+
+      expect(replaceMock).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: label }));
+      expect(pushMock).toHaveBeenCalledExactlyOnceWith(route);
+    },
+  );
 
   it("확인 팝업에서 취소하면 그룹 홈에 머무른다", () => {
     render(<UserHomeScreen />);
@@ -196,9 +237,7 @@ describe("UserHomeScreen Navigation", () => {
       "round2-waiting",
     );
     expect(screen.getByText("투표 종료")).toBeVisible();
-    expect(
-      screen.getByText("다음 진행을 기다리고 있습니다"),
-    ).toBeVisible();
+    expect(screen.getByText("다음 진행을 기다리고 있습니다")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: /배정 결과 확인하기/ }),
     ).not.toBeInTheDocument();

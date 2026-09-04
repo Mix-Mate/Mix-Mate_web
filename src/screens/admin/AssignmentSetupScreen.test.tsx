@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import AssignmentSetupScreen from "./AssignmentSetupScreen";
 
 const {
@@ -87,7 +90,7 @@ describe("AssignmentSetupScreen Navigation", () => {
     });
   });
 
-  it("뒤로가기 버튼 클릭 시 router.back()을 호출하지 않고 router.replace('/home')로 홈 화면으로 이동한다", () => {
+  it("뒤로가기 버튼 클릭 후 나가기를 확인해야 메인 홈으로 이동한다", () => {
     render(<AssignmentSetupScreen />);
 
     const backButton = screen.getByRole("button", {
@@ -97,6 +100,11 @@ describe("AssignmentSetupScreen Navigation", () => {
 
     fireEvent.click(backButton);
 
+    expect(
+      screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+    ).toBeInTheDocument();
+    expect(replaceMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "나가기" }));
     expect(replaceMock).toHaveBeenCalledTimes(1);
     expect(replaceMock).toHaveBeenCalledWith("/home");
     expect(backMock).not.toHaveBeenCalled();

@@ -4,7 +4,6 @@ import type {
   TeamMemberDetail,
 } from "@/features/assignment/types/assignment.types";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
-import { getGroupDetail } from "@/features/group/api/group.api";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
 import {
@@ -292,23 +291,25 @@ async function getParticipantTeams(
 export async function getParticipants(
   groupId: string,
   round: AssignmentRound = 1,
-  signal?: AbortSignal,
-  options: { detailRole?: "admin" } = {},
+  options: {
+    detailRole?: "admin";
+    signal?: AbortSignal;
+    includeTeams?: boolean;
+  } = {},
 ): Promise<ParticipantGroup> {
+  const { detailRole, signal, includeTeams = true } = options;
   const searchParams = new URLSearchParams({
     round: toBackendRound(round),
   });
 
-  if (options.detailRole) {
-    searchParams.set("role", options.detailRole);
+  if (detailRole) {
+    searchParams.set("role", detailRole);
   }
 
-  const [groupDetail, participantsResponse] = await Promise.all([
-    getGroupDetail(groupId),
-    request(`/api/v1/groups/${groupId}/participants?${searchParams}`, {
-      signal,
-    }),
-  ]);
+  const participantsResponse = await request(
+    `/api/v1/groups/${groupId}/participants?${searchParams}`,
+    { signal },
+  );
 
   if (!participantsResponse.ok) {
     throw await createRequestError(
@@ -318,33 +319,30 @@ export async function getParticipants(
   }
 
   const data = (await participantsResponse.json()) as ParticipantListResponse;
-  const canUseAdminDrafts = options.detailRole === "admin";
-  const participants = await hydrateParticipantsWithProfiles(
-    groupId,
-    data.participantList.map((summary) =>
-      toParticipant(
-        summary,
-        canUseAdminDrafts
-          ? findAdminParticipantDraft(groupId, summary)
-          : undefined,
-      ),
+  const canUseAdminDrafts = detailRole === "admin";
+  const mappedParticipants = data.participantList.map((summary) =>
+    toParticipant(
+      summary,
+      canUseAdminDrafts ? findAdminParticipantDraft(groupId, summary) : undefined,
     ),
-    data.participantList,
-    signal,
-    { detailRole: options.detailRole },
   );
+  const participants = detailRole
+    ? await hydrateParticipantsWithProfiles(
+        groupId,
+        mappedParticipants,
+        data.participantList,
+        signal,
+        { detailRole },
+      )
+    : mappedParticipants;
   const participantsById = new Map(
     participants.map((participant) => [participant.id, participant]),
   );
-  const teams = await getParticipantTeams(
-    groupId,
-    round,
-    participantsById,
-    signal,
-  );
+  const teams = includeTeams
+    ? await getParticipantTeams(groupId, round, participantsById, signal)
+    : [];
 
   return {
-    groupName: groupDetail.groupName,
     participants,
     teams,
   };

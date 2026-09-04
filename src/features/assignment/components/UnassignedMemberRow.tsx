@@ -41,7 +41,9 @@ export default function UnassignedMemberRow({
   return (
     <li className={styles.unassignedRow}>
       <Link
-        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin`}
+        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin&from=${encodeURIComponent(
+          `/groups/${groupId}/admin/assignment/fixed?round=${round}`,
+        )}`}
         className={styles.unassignedRowLink}
       >
         {content}

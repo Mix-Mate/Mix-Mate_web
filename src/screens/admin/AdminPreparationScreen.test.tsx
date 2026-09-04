@@ -1,19 +1,19 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupDetail, GroupStatus } from "@/features/group/types/group.types";
+import type {
+  GroupDetail,
+  GroupStatus,
+} from "@/features/group/types/group.types";
 import AdminPreparationScreen from "./AdminPreparationScreen";
 
-const {
-  backMock,
-  pushMock,
-  replaceMock,
-  useAdminGroupQueryMock,
-} = vi.hoisted(() => ({
-  backMock: vi.fn(),
-  pushMock: vi.fn(),
-  replaceMock: vi.fn(),
-  useAdminGroupQueryMock: vi.fn(),
-}));
+const { backMock, pushMock, replaceMock, useAdminGroupQueryMock } = vi.hoisted(
+  () => ({
+    backMock: vi.fn(),
+    pushMock: vi.fn(),
+    replaceMock: vi.fn(),
+    useAdminGroupQueryMock: vi.fn(),
+  }),
+);
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "11" }),
@@ -51,19 +51,33 @@ describe("AdminPreparationScreen Navigation", () => {
     });
   });
 
-  it("뒤로가기 버튼 클릭 시 router.back()을 호출하지 않고 router.replace('/home')로 홈 화면으로 이동한다", () => {
-    render(<AdminPreparationScreen />);
+  it.each(["BEFORE_FIRST_ROUND", "BEFORE_SECOND_ROUND"] as const)(
+    "%s 홈에서 취소하면 머무르고 나가기를 확인해야 메인 홈으로 이동한다",
+    (status) => {
+      useAdminGroupQueryMock.mockReturnValue({ data: createGroup(status) });
+      render(<AdminPreparationScreen />);
 
-    const backButton = screen.getByRole("button", {
-      name: "이전 화면으로 이동",
-    });
-    expect(backButton).toBeInTheDocument();
+      const backButton = screen.getByRole("button", {
+        name: "이전 화면으로 이동",
+      });
+      expect(backButton).toBeInTheDocument();
 
-    fireEvent.click(backButton);
+      fireEvent.click(backButton);
 
-    expect(replaceMock).toHaveBeenCalledTimes(1);
-    expect(replaceMock).toHaveBeenCalledWith("/home");
-    expect(backMock).not.toHaveBeenCalled();
-    expect(pushMock).not.toHaveBeenCalled();
-  });
+      expect(
+        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "취소" }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
+
+      fireEvent.click(backButton);
+      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
+      expect(replaceMock).toHaveBeenCalledTimes(1);
+      expect(replaceMock).toHaveBeenCalledWith("/home");
+      expect(backMock).not.toHaveBeenCalled();
+      expect(pushMock).not.toHaveBeenCalled();
+    },
+  );
 });
