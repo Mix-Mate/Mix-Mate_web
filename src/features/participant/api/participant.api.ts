@@ -293,11 +293,17 @@ export async function getParticipants(
   round: AssignmentRound = 1,
   options: {
     detailRole?: "admin";
+    hydrateProfiles?: boolean;
     signal?: AbortSignal;
     includeTeams?: boolean;
   } = {},
 ): Promise<ParticipantGroup> {
-  const { detailRole, signal, includeTeams = true } = options;
+  const {
+    detailRole,
+    hydrateProfiles = true,
+    signal,
+    includeTeams = true,
+  } = options;
   const searchParams = new URLSearchParams({
     round: toBackendRound(round),
   });
@@ -326,7 +332,7 @@ export async function getParticipants(
       canUseAdminDrafts ? findAdminParticipantDraft(groupId, summary) : undefined,
     ),
   );
-  const participants = detailRole
+  const participants = detailRole && hydrateProfiles
     ? await hydrateParticipantsWithProfiles(
         groupId,
         mappedParticipants,

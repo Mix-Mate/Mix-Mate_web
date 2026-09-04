@@ -21,6 +21,7 @@ export function useParticipantListQuery(
   options: {
     detailRole?: "admin";
     enabled?: boolean;
+    hydrateProfiles?: boolean;
     includeTeams?: boolean;
     polling?: boolean;
     round?: AssignmentRound;
@@ -28,6 +29,7 @@ export function useParticipantListQuery(
 ) {
   const detailRole = options.detailRole;
   const enabled = options.enabled ?? true;
+  const hydrateProfiles = options.hydrateProfiles ?? true;
   const includeTeams = options.includeTeams ?? false;
   const polling = options.polling ?? false;
   const round = options.round ?? 1;
@@ -52,6 +54,7 @@ export function useParticipantListQuery(
       try {
         const participants = await getParticipants(groupId, round, {
           detailRole,
+          hydrateProfiles,
           signal,
           includeTeams,
         });
@@ -78,7 +81,7 @@ export function useParticipantListQuery(
         }
       }
     },
-    [detailRole, enabled, groupId, includeTeams, round],
+    [detailRole, enabled, groupId, hydrateProfiles, includeTeams, round],
   );
 
   useEffect(() => {

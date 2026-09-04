@@ -139,6 +139,7 @@ export default function VoteResultListScreen({
     params.groupId,
     {
       detailRole: canViewPrivateProfiles ? "admin" : undefined,
+      hydrateProfiles: false,
       round: 2,
     },
   );

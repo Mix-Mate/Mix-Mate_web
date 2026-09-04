@@ -293,6 +293,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
     });
@@ -361,6 +362,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -411,6 +413,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();

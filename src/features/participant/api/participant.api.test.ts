@@ -87,4 +87,41 @@ describe("getParticipants", () => {
     );
     expect(result.teams).toEqual([]);
   });
+
+  it("상세 보강을 끄면 관리자 목록에서도 개별 프로필 API를 요청하지 않는다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        participantList: [
+          {
+            participantId: 133,
+            displayName: "수동 참가자",
+            major: "컴퓨터공학",
+            gender: "MALE",
+            visibility: "PRIVATE",
+          },
+        ],
+      }),
+    );
+
+    const result = await getParticipants("6", 1, {
+      detailRole: "admin",
+      hydrateProfiles: false,
+      includeTeams: false,
+    });
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(
+      /\/api\/v1\/groups\/6\/participants\?/,
+    );
+    expect(
+      fetchMock.mock.calls.some(([url]) =>
+        String(url).includes("/participants/133"),
+      ),
+    ).toBe(false);
+    expect(result.participants[0]).toMatchObject({
+      id: "133",
+      name: "수동 참가자",
+      visibility: "private",
+    });
+  });
 });
