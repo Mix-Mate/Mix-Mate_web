@@ -16,7 +16,10 @@ import * as participantListQuery from "@/features/participant/hooks/useParticipa
 import * as participantProfileQuery from "@/features/participant/hooks/useParticipantProfileQuery";
 import * as myGroupProfileQuery from "@/features/profile/hooks/useMyGroupProfileQuery";
 import type { BlockedParticipant } from "./types/blacklist.types";
-import type { AdminParticipantGroup, ParticipantProfile } from "@/features/participant/types/participant.types";
+import type {
+  AdminParticipantGroup,
+  ParticipantProfile,
+} from "@/features/participant/types/participant.types";
 
 const mockPush = vi.fn();
 const mockBack = vi.fn();
@@ -135,9 +138,8 @@ describe("Blacklist Feature & API Integration", () => {
       });
 
       // 검색창 동작 테스트
-      const searchInput = screen.getByPlaceholderText(
-        "이름, 소속, 차단 사유 검색",
-      );
+      const searchInput =
+        screen.getByPlaceholderText("이름, 소속, 차단 사유 검색");
       fireEvent.change(searchInput, { target: { value: "없는사람" } });
 
       await waitFor(() => {
@@ -174,9 +176,7 @@ describe("Blacklist Feature & API Integration", () => {
         expect(
           screen.getAllByText("gildong@example.com").length,
         ).toBeGreaterThanOrEqual(1);
-        expect(
-          screen.getByText("지속적인 비매너 행위"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("지속적인 비매너 행위")).toBeInTheDocument();
         expect(
           screen.getByRole("button", { name: "그룹 차단 해제" }),
         ).toBeInTheDocument();
@@ -210,7 +210,10 @@ describe("Blacklist Feature & API Integration", () => {
       } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
 
       render(
-        <ParticipantPageHeader groupName="테스트 소모임" participantCount={5} />,
+        <ParticipantPageHeader
+          groupName="테스트 소모임"
+          participantCount={5}
+        />,
       );
 
       expect(screen.getByLabelText("관리자 메뉴 열기")).toBeInTheDocument();
@@ -225,7 +228,10 @@ describe("Blacklist Feature & API Integration", () => {
       } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
 
       render(
-        <ParticipantPageHeader groupName="테스트 소모임" participantCount={5} />,
+        <ParticipantPageHeader
+          groupName="테스트 소모임"
+          participantCount={5}
+        />,
       );
 
       expect(
@@ -259,14 +265,18 @@ describe("Blacklist Feature & API Integration", () => {
           data: mockParticipantProfile,
           isLoading: false,
           isError: false,
-        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+        } as ReturnType<
+          typeof participantProfileQuery.useParticipantProfileQuery
+        >);
       const adminFallbackSpy = vi
         .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
         .mockReturnValue({
           data: { groupName: "테스트 소모임", participants: [] },
           isLoading: false,
           isError: false,
-        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+        } as ReturnType<
+          typeof adminParticipantQuery.useAdminParticipantListQuery
+        >);
       const participantFallbackSpy = vi
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
@@ -278,9 +288,7 @@ describe("Blacklist Feature & API Integration", () => {
           isError: false,
         } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: false });
       expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
@@ -328,14 +336,18 @@ describe("Blacklist Feature & API Integration", () => {
           data: null,
           isLoading: false,
           isError: false,
-        } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+        } as ReturnType<
+          typeof participantProfileQuery.useParticipantProfileQuery
+        >);
       const adminFallbackSpy = vi
         .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
         .mockReturnValue({
           data: { groupName: "테스트 소모임", participants: [] },
           isLoading: false,
           isError: false,
-        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+        } as ReturnType<
+          typeof adminParticipantQuery.useAdminParticipantListQuery
+        >);
       const participantFallbackSpy = vi
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
@@ -347,9 +359,7 @@ describe("Blacklist Feature & API Integration", () => {
           isError: false,
         } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       expect(myProfileSpy).toHaveBeenCalledWith("17", { enabled: true });
       expect(profileDetailSpy).toHaveBeenCalledWith("17", "202", {
@@ -384,14 +394,18 @@ describe("Blacklist Feature & API Integration", () => {
         data: null,
         isLoading: false,
         isError: true,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
       const adminFallbackSpy = vi
         .spyOn(adminParticipantQuery, "useAdminParticipantListQuery")
         .mockReturnValue({
           data: mockAdminParticipants,
           isLoading: false,
           isError: false,
-        } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+        } as ReturnType<
+          typeof adminParticipantQuery.useAdminParticipantListQuery
+        >);
       const participantFallbackSpy = vi
         .spyOn(participantListQuery, "useParticipantListQuery")
         .mockReturnValue({
@@ -403,9 +417,7 @@ describe("Blacklist Feature & API Integration", () => {
           isError: false,
         } as ReturnType<typeof participantListQuery.useParticipantListQuery>);
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       expect(adminFallbackSpy).toHaveBeenCalledWith("17", 1, {
         enabled: true,
@@ -429,32 +441,36 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: mockParticipantProfile,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
         ok: true,
         source: "api",
       });
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -475,9 +491,7 @@ describe("Blacklist Feature & API Integration", () => {
       const submitBlockBtn = screen.getByRole("button", { name: "차단하기" });
 
       // 사유 입력 후 차단 완료
-      const textarea = screen.getByPlaceholderText(
-        /차단 사유를 입력해주세요/,
-      );
+      const textarea = screen.getByPlaceholderText(/차단 사유를 입력해주세요/);
       fireEvent.change(textarea, {
         target: { value: "지속적인 불참 및 운영 방해" },
       });
@@ -501,7 +515,7 @@ describe("Blacklist Feature & API Integration", () => {
       });
     });
 
-    it("2차 준비중(round=2)에서 참가자 차단 시 1차 기본 탭이 아닌 2차 준비중 참가자 목록(?round=2)으로 이동한다", async () => {
+    it("2차 준비중에서 참가자 차단 시 참가자 목록으로 이동한다", async () => {
       mockSearchParams.set("round", "2");
       mockSearchParams.set("role", "admin");
 
@@ -517,32 +531,36 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: mockParticipantProfile,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
         ok: true,
         source: "api",
       });
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -560,14 +578,14 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringContaining("/groups/17/admin/participants?round=2"),
+          expect.stringContaining("/groups/17/admin/participants"),
         );
       });
     });
 
     it("from 파라미터가 있는 경우 차단 완료 후 해당 from 경로로 정확히 복귀한다", async () => {
       mockSearchParams.set("role", "admin");
-      mockSearchParams.set("from", "/groups/17/admin/assignment/fixed?round=2");
+      mockSearchParams.set("from", "/groups/17/admin/assignment/fixed");
 
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: {
@@ -581,32 +599,36 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: mockParticipantProfile,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
         ok: true,
         source: "api",
       });
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -620,7 +642,7 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          "/groups/17/admin/assignment/fixed?round=2",
+          "/groups/17/admin/assignment/fixed",
         );
       });
     });
@@ -638,32 +660,36 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: null,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
         ok: true,
         source: "api",
       });
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -676,9 +702,7 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitBlockBtn);
 
       await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith(
-          "/groups/17/team?tab=staff",
-        );
+        expect(mockReplace).toHaveBeenCalledWith("/groups/17/team?tab=staff");
       });
     });
 
@@ -698,32 +722,36 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: mockParticipantProfile,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
         ok: true,
         source: "api",
       });
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -752,31 +780,35 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: mockParticipantProfile,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockRejectedValue(
         new Error("1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다."),
       );
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -837,34 +869,40 @@ describe("Blacklist Feature & API Integration", () => {
         "useAdminParticipantListQuery",
       ).mockReturnValue({
         data: mockAdminParticipants,
-      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+      } as ReturnType<
+        typeof adminParticipantQuery.useAdminParticipantListQuery
+      >);
 
-      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
-        data: {
-          participants: [mockParticipantProfile],
-          teams: [],
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue(
+        {
+          data: {
+            participants: [mockParticipantProfile],
+            teams: [],
+          },
+          isLoading: false,
+          isError: false,
         },
-        isLoading: false,
-        isError: false,
-      });
+      );
 
       vi.spyOn(
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
         data: null,
-      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+      } as ReturnType<
+        typeof participantProfileQuery.useParticipantProfileQuery
+      >);
 
-      render(
-        <ParticipantProfileScreen groupId="17" participantId="202" />,
-      );
+      render(<ParticipantProfileScreen groupId="17" participantId="202" />);
 
       await waitFor(() => {
         expect(screen.getByText("이순신")).toBeInTheDocument();
       });
 
       // 본인 프로필이므로 차단 버튼이 화면에 없어야 함
-      expect(screen.queryByLabelText("참가자 그룹 차단")).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText("참가자 그룹 차단"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -929,13 +967,13 @@ describe("Blacklist Feature & API Integration", () => {
       });
 
       // 목록에서 삭제하기 버튼 클릭 시 모달 닫히고 목록에서 삭제됨
-      const deleteButton = screen.getByRole("button", { name: "목록에서 삭제하기" });
+      const deleteButton = screen.getByRole("button", {
+        name: "목록에서 삭제하기",
+      });
       fireEvent.click(deleteButton);
 
       await waitFor(() => {
-        expect(
-          screen.queryByText("금요 러닝 크루"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("금요 러닝 크루")).not.toBeInTheDocument();
       });
     });
 
@@ -993,7 +1031,9 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(screen.getByText("지난 주말 뒤풀이")).toBeInTheDocument();
-        expect(screen.queryByText("활성 프로젝트 모임")).not.toBeInTheDocument();
+        expect(
+          screen.queryByText("활성 프로젝트 모임"),
+        ).not.toBeInTheDocument();
       });
 
       // 3. 완료된 모임 클릭 시 이동하지 않고 단순 조회만 가능
@@ -1008,7 +1048,9 @@ describe("Blacklist Feature & API Integration", () => {
 
       // 진행 중인 모임 Empty State
       await waitFor(() => {
-        expect(screen.getByText("진행 중인 모임이 없습니다.")).toBeInTheDocument();
+        expect(
+          screen.getByText("진행 중인 모임이 없습니다."),
+        ).toBeInTheDocument();
       });
 
       // 완료된 모임 탭 전환 후 Empty State
@@ -1032,12 +1074,12 @@ describe("Blacklist Feature & API Integration", () => {
       } as Response);
 
       await expect(
-        blacklistApi.blockParticipantApi(
-          "17",
-          mockParticipantProfile,
-          { reason: "비매너" },
-        ),
-      ).rejects.toThrow("1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.");
+        blacklistApi.blockParticipantApi("17", mockParticipantProfile, {
+          reason: "비매너",
+        }),
+      ).rejects.toThrow(
+        "1차 진행 이전(조 편성 전)에만 참가자를 삭제할 수 있습니다.",
+      );
 
       // 로컬 스토리지에 유저가 추가되지 않았음을 검증 (낙관적 업데이트 없음)
       const stored = blacklistApi.readStoredBlacklist("17");
@@ -1090,7 +1132,9 @@ describe("Blacklist Feature & API Integration", () => {
 
       // 로컬 스토리지에 여전히 유저가 유지됨
       const stored = blacklistApi.readStoredBlacklist("17");
-      expect(stored.find((item) => item.id === "202" || item.userId === 202)).toBeDefined();
+      expect(
+        stored.find((item) => item.id === "202" || item.userId === 202),
+      ).toBeDefined();
       fetchSpy.mockRestore();
     });
 
@@ -1116,16 +1160,18 @@ describe("Blacklist Feature & API Integration", () => {
     });
 
     it("getGroupBlacklist 호출 시 동일한 유저가 여러 번 포함되어도 1개로 중복 제거된다", async () => {
-      const groupDetailSpy = vi.spyOn(groupApi, "getGroupDetail").mockResolvedValue({
-        groupId: 17,
-        groupName: "테스트 모임",
-        status: "RECRUITING",
-        myRole: "HOST",
-        hasPassword: false,
-        memberCount: 5,
-        targetRound: 1,
-        maxCapacity: 20,
-      });
+      const groupDetailSpy = vi
+        .spyOn(groupApi, "getGroupDetail")
+        .mockResolvedValue({
+          groupId: 17,
+          groupName: "테스트 모임",
+          status: "RECRUITING",
+          myRole: "HOST",
+          hasPassword: false,
+          memberCount: 5,
+          targetRound: 1,
+          maxCapacity: 20,
+        });
 
       const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
         ok: true,
@@ -1198,7 +1244,9 @@ describe("Blacklist Feature & API Integration", () => {
       expect(screen.queryByText("25세")).not.toBeInTheDocument();
       expect(screen.queryByText("@gildong_insta")).not.toBeInTheDocument();
       expect(screen.queryByText("gildong_insta")).not.toBeInTheDocument();
-      expect(screen.queryByText("안녕하세요 자기소개입니다")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("안녕하세요 자기소개입니다"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1228,7 +1276,9 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
+        expect(
+          screen.getByText("그룹 참여가 제한되었습니다"),
+        ).toBeInTheDocument();
         expect(
           screen.getByText("이 그룹에 참여하고 있지 않거나 차단되었습니다."),
         ).toBeInTheDocument();
@@ -1260,9 +1310,13 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 운영 방해로 인한 퇴장/),
+          screen.getByText(
+            /그룹에서 차단되었습니다\.\s*차단 사유: 운영 방해로 인한 퇴장/,
+          ),
         ).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "홈으로 이동" })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: "홈으로 이동" }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -1298,9 +1352,13 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
         expect(
-          screen.getByText("해당 그룹 관리자에 의해 참여가 차단된 사용자입니다."),
+          screen.getByText("그룹 참여가 제한되었습니다"),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          ),
         ).toBeInTheDocument();
         expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
       });
@@ -1313,7 +1371,9 @@ describe("Blacklist Feature & API Integration", () => {
 
     it("extractErrorReason은 reason, data.reason, banReason, detail 등의 필드에서 실제 사유를 누락 없이 추출한다", () => {
       expect(groupApi.extractErrorReason({ reason: "사유1" })).toBe("사유1");
-      expect(groupApi.extractErrorReason({ data: { reason: "사유2" } })).toBe("사유2");
+      expect(groupApi.extractErrorReason({ data: { reason: "사유2" } })).toBe(
+        "사유2",
+      );
       expect(groupApi.extractErrorReason({ banReason: "사유3" })).toBe("사유3");
       expect(groupApi.extractErrorReason({ detail: "사유4" })).toBe("사유4");
       expect(

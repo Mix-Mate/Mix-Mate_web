@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { AdminParticipant } from "../types/participant.types";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/admin/AdminParticipantManagementScreen.module.css";
 
 interface AdminParticipantItemProps {
   groupId: string;
   participant: AdminParticipant;
-  round: 1 | 2;
 }
 
 export default function AdminParticipantItem({
@@ -21,8 +21,8 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?from=${encodeURIComponent(
-          `/groups/${groupId}/admin/participants`,
+        href={`${groupRoutes.participantDetail(groupId, participant.id)}?from=${encodeURIComponent(
+          groupRoutes.adminParticipants(groupId),
         )}`}
         className={styles.participantItem}
       >

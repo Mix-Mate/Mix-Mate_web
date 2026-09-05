@@ -20,6 +20,7 @@ import {
   resolveMyParticipantId,
 } from "@/features/participant/model/enrich-participant-with-my-profile";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import type {
   Participant,
   ParticipantTeam,
@@ -57,13 +58,23 @@ function DefaultParticipantListScreen() {
   const { message: toastMessage, showToast } = useToast();
   const { data: group } = useAdminGroupQuery(params.groupId);
   const roundParam = searchParams.get("round");
-  const round =
-    roundParam
-      ? toAssignmentRound(roundParam)
-      : group
-        ? getCurrentGroupRound(group.status)
-        : 1;
+  const round = roundParam
+    ? toAssignmentRound(roundParam)
+    : group
+      ? getCurrentGroupRound(group.status)
+      : 1;
   const { data: myProfile } = useMyGroupProfileQuery(params.groupId);
+
+  useEffect(() => {
+    if (roundParam) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.participants(params.groupId),
+          searchParams,
+        ),
+      );
+    }
+  }, [params.groupId, roundParam, router, searchParams]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -98,7 +109,11 @@ function DefaultParticipantListScreen() {
       data.teams.map((team) => ({
         ...team,
         members: team.members.map((participant) =>
-          enrichParticipantWithMyProfile(participant, myProfile, myParticipantId),
+          enrichParticipantWithMyProfile(
+            participant,
+            myProfile,
+            myParticipantId,
+          ),
         ),
       })),
     [data.teams, myParticipantId, myProfile],
@@ -108,9 +123,12 @@ function DefaultParticipantListScreen() {
       ? groupRoutes.adminRecruitment(params.groupId)
       : groupRoutes.home(params.groupId);
 
-  const isMyParticipant = useCallback((participant: Participant) => {
-    return Boolean(myParticipantId && participant.id === myParticipantId);
-  }, [myParticipantId]);
+  const isMyParticipant = useCallback(
+    (participant: Participant) => {
+      return Boolean(myParticipantId && participant.id === myParticipantId);
+    },
+    [myParticipantId],
+  );
 
   const sortParticipantsByPriority = useCallback(
     (participants: Participant[]) =>
@@ -154,7 +172,8 @@ function DefaultParticipantListScreen() {
           team.members.filter((participant) => {
             const matchesKeyword =
               !trimmedKeyword || participant.name.includes(trimmedKeyword);
-            const matchesFilter = filter === "all" || participant.role === filter;
+            const matchesFilter =
+              filter === "all" || participant.role === filter;
 
             return matchesKeyword && matchesFilter;
           }),

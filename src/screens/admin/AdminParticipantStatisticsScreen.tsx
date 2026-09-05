@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import ParticipantStatistics from "@/features/participant/components/ParticipantStatistics";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
@@ -47,6 +47,17 @@ export default function AdminParticipantStatisticsScreen() {
     [data.participants, myParticipantId, myProfile],
   );
 
+  useEffect(() => {
+    if (roundParam) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminParticipantStatistics(params.groupId),
+          searchParams,
+        ),
+      );
+    }
+  }, [params.groupId, roundParam, router, searchParams]);
+
   const goToParticipants = () => {
     router.push(
       withSessionContext(
@@ -66,9 +77,7 @@ export default function AdminParticipantStatisticsScreen() {
   };
 
   return (
-    <MobileFrame
-      data-testid="admin-participant-statistics"
-    >
+    <MobileFrame data-testid="admin-participant-statistics">
       <Header
         title={group?.groupName ?? data.groupName}
         onBack={() =>

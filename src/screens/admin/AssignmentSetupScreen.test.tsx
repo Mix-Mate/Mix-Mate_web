@@ -117,8 +117,6 @@ describe("AssignmentSetupScreen Navigation", () => {
     const participantsTab = screen.getByRole("button", { name: "참가자" });
     fireEvent.click(participantsTab);
 
-    expect(pushMock).toHaveBeenCalledWith(
-      "/groups/6/admin/participants?round=1",
-    );
+    expect(pushMock).toHaveBeenCalledWith("/groups/6/admin/participants");
   });
 });
