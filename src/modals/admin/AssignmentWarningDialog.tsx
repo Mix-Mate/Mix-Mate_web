@@ -74,7 +74,7 @@ export default function AssignmentWarningDialog({
           onClick={onConfirm}
           disabled={isConfirming}
         >
-          {isConfirming ? "확정 중..." : "확정하기"}
+          {isConfirming ? "편성 중..." : "편성하기"}
         </Button>
       </div>
     </BottomSheetDialog>
