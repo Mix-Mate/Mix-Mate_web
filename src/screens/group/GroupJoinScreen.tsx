@@ -48,16 +48,22 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     router.back();
   };
 
+  const resetInputsAndFocus = () => {
+    setCode(["", "", "", "", "", ""]);
+    setErrorMessage("");
+    inputRefs.current[0]?.focus();
+  };
+
   const handleCloseErrorModal = () => {
     setErrorModal((prev) => ({ ...prev, open: false }));
+    if (!errorModal.isBlocked) {
+      resetInputsAndFocus();
+    }
   };
 
   const handleRetry = () => {
     setErrorModal((prev) => ({ ...prev, open: false }));
-    // Clear all 6 input fields and focus the first box
-    setCode(["", "", "", "", "", ""]);
-    setErrorMessage("");
-    inputRefs.current[0]?.focus();
+    resetInputsAndFocus();
   };
 
   // Handle single character input
@@ -131,6 +137,25 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     try {
       // 1. 실제 참여코드 검증 API 호출
       const result = await verifyInviteCodeApi({ inviteCode: fullCode });
+
+      // 응답에 status가 있고 RECRUITING이 아닌 경우 추가 정보 입력 화면으로 넘어가지 않고 즉시 차단
+      const statusUpper = result.status?.trim().toUpperCase();
+      if (statusUpper && statusUpper !== "RECRUITING") {
+        const isRecruitmentClosed =
+          statusUpper === "BEFORE_FIRST_ROUND" ||
+          statusUpper === "RECRUITMENT_CLOSED" ||
+          statusUpper === "CLOSED";
+
+        setErrorModal({
+          open: true,
+          title: isRecruitmentClosed
+            ? "모집이 마감된 모임입니다"
+            : "이미 시작된 그룹입니다",
+          description: "모집이 완료되었거나 이미 시작되어 참여할 수 없습니다.",
+          isBlocked: false,
+        });
+        return;
+      }
 
       if (onSuccess) {
         onSuccess(fullCode);
@@ -245,20 +270,45 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
           description: "입력하신 코드를 다시 확인해 주세요.",
           isBlocked: false,
         });
-      } else if (
-        errorStatus === 409 &&
-        (errorCode === "ALREADY_STARTED" || errorObj.message.includes("시작"))
-      ) {
+        return;
+      }
+
+      // 마감 / 시작 / 정원초과 관련 에러 검사
+      const isClosedOrStarted =
+        errorStatus === 409 ||
+        errorCode === "ALREADY_STARTED" ||
+        errorCode === "RECRUITMENT_CLOSED" ||
+        errorCode === "CLOSED" ||
+        errorCode === "GROUP_FULL" ||
+        errorCode === "MAX_CAPACITY" ||
+        errorObj.message.includes("마감") ||
+        errorObj.message.includes("정원") ||
+        errorObj.message.includes("초과") ||
+        errorObj.message.includes("종료") ||
+        errorObj.message.includes("시작");
+
+      if (isClosedOrStarted) {
+        const isRecruitmentClosed =
+          errorCode === "RECRUITMENT_CLOSED" ||
+          errorCode === "GROUP_FULL" ||
+          errorCode === "MAX_CAPACITY" ||
+          errorObj.message.includes("마감") ||
+          errorObj.message.includes("정원") ||
+          errorObj.message.includes("초과");
+
         setErrorModal({
           open: true,
-          title: "이미 시작된 그룹입니다",
-          description: "입력하신 코드를 다시 확인해 주세요.",
+          title: isRecruitmentClosed
+            ? "모집이 마감된 모임입니다"
+            : "이미 시작된 그룹입니다",
+          description: "모집이 완료되었거나 이미 시작되어 참여할 수 없습니다.",
           isBlocked: false,
         });
-      } else {
-        // 기타 400 등 에러는 인풋 하단 에러 텍스트로 노출
-        setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
+        return;
       }
+
+      // 기타 400 등 에러는 인풋 하단 에러 텍스트로 노출
+      setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
     } finally {
       setIsSubmitting(false);
     }

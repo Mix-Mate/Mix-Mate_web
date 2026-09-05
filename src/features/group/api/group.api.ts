@@ -1,4 +1,8 @@
-import type { GroupDetail, UpdateGroupRequest } from "../types/group.types";
+import type {
+  GroupDetail,
+  GroupStatus,
+  UpdateGroupRequest,
+} from "../types/group.types";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { saveKnownGroupName } from "@/features/blacklist/lib/blockedGroupsStorage";
@@ -534,7 +538,9 @@ export async function joinGroupWithProfileApi(
           ? "토큰이 없거나 만료되었습니다."
           : response.status === 404
             ? "참여코드가 존재하지 않습니다."
-            : "그룹 입장에 실패했습니다.");
+            : response.status === 409
+              ? "이미 마감되었거나 시작된 모임입니다."
+              : "그룹 입장에 실패했습니다.");
 
     const reason = extractErrorReason(errorData);
     const groupName = extractErrorGroupName(errorData);
@@ -585,6 +591,7 @@ export interface VerifyInviteCodeRequest {
 export interface VerifyInviteCodeResponse {
   groupId: number;
   groupName: string;
+  status?: GroupStatus | string;
 }
 
 /**
@@ -624,7 +631,9 @@ export async function verifyInviteCodeApi(
           ? "토큰이 없거나 만료되었습니다."
           : response.status === 404
             ? "유효하지 않은 초대코드입니다."
-            : "참여코드 검증에 실패했습니다.";
+            : response.status === 409
+              ? "이미 마감되었거나 시작된 모임입니다."
+              : "참여코드 검증에 실패했습니다.";
 
     const message = errorData?.message || defaultMessage;
     const reason = extractErrorReason(errorData);

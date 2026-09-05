@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import {
   createGroupApi,
   joinGroupWithProfileApi,
+  verifyInviteCodeApi,
   GroupApiError,
   type GroupProfileDto,
 } from "@/features/group/api/group.api";
@@ -110,11 +111,13 @@ export default function GroupExtraInfoScreen({
     title: string;
     description: string;
     isBlocked: boolean;
+    isClosed?: boolean;
   }>({
     open: false,
     title: "",
     description: "",
     isBlocked: false,
+    isClosed: false,
   });
 
   useEffect(() => {
@@ -133,6 +136,114 @@ export default function GroupExtraInfoScreen({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isMbtiOpen]);
+
+  // 화면 진입 즉시 참여코드 유효성 및 그룹 마감 여부 사전 검사
+  useEffect(() => {
+    const fromParam = searchParams.get("from");
+    const isCreateFlow = fromParam === "create" || groupId === "new";
+    if (isCreateFlow) return;
+
+    const inviteCodeParam =
+      searchParams.get("inviteCode") ||
+      (typeof window !== "undefined" &&
+        window.sessionStorage.getItem("pendingInviteCode")) ||
+      "";
+
+    if (!inviteCodeParam) return;
+
+    let ignore = false;
+
+    async function checkInviteStatus() {
+      try {
+        const res = await verifyInviteCodeApi({ inviteCode: inviteCodeParam });
+        if (ignore) return;
+        const statusUpper = res.status?.trim().toUpperCase();
+        if (statusUpper && statusUpper !== "RECRUITING") {
+          setErrorModal({
+            open: true,
+            title: "모집이 마감되었습니다",
+            description: "참가자 모집이 완료되어 그룹에 참여할 수 없습니다.",
+            isBlocked: false,
+            isClosed: true,
+          });
+        }
+      } catch (err: unknown) {
+        if (ignore) return;
+        const errStatus =
+          err instanceof GroupApiError
+            ? err.status
+            : err && typeof err === "object" && "status" in err
+              ? (err as { status?: number }).status
+              : undefined;
+        const errCode =
+          err instanceof GroupApiError
+            ? err.code
+            : err && typeof err === "object" && "code" in err
+              ? (err as { code?: string }).code
+              : undefined;
+        const errMsg = err instanceof Error ? err.message : "";
+
+        const isClosedOrStarted =
+          errStatus === 409 ||
+          errCode === "ALREADY_STARTED" ||
+          errCode === "RECRUITMENT_CLOSED" ||
+          errCode === "CLOSED" ||
+          errCode === "GROUP_FULL" ||
+          errCode === "MAX_CAPACITY" ||
+          errMsg.includes("마감") ||
+          errMsg.includes("정원") ||
+          errMsg.includes("초과") ||
+          errMsg.includes("종료") ||
+          errMsg.includes("시작");
+
+        if (isClosedOrStarted) {
+          setErrorModal({
+            open: true,
+            title: "모집이 마감되었습니다",
+            description: "참가자 모집이 완료되어 그룹에 참여할 수 없습니다.",
+            isBlocked: false,
+            isClosed: true,
+          });
+          return;
+        }
+
+        const isBlocked =
+          errStatus === 403 ||
+          errCode === "USER_BLOCKED" ||
+          errCode === "BANNED_USER" ||
+          errCode === "FORBIDDEN" ||
+          errCode === "BLOCKED" ||
+          errMsg.includes("차단");
+
+        if (isBlocked) {
+          setErrorModal({
+            open: true,
+            title: "그룹 참여가 제한되었습니다",
+            description: errMsg || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+            isBlocked: true,
+            isClosed: true,
+          });
+          return;
+        }
+
+        if (errStatus === 404 || errCode === "INVALID_INVITE_CODE") {
+          setErrorModal({
+            open: true,
+            title: "유효하지 않은 초대코드입니다",
+            description: "초대코드를 다시 확인해 주세요.",
+            isBlocked: false,
+            isClosed: true,
+          });
+        }
+      }
+    }
+
+    checkInviteStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [groupId, searchParams]);
 
   const handleBack = () => {
     router.back();
@@ -354,12 +465,53 @@ export default function GroupExtraInfoScreen({
         return;
       }
 
+      // 프로필 제출 시점 마감/시작/정원초과 관련 에러 분기
+      const errorStatus =
+        error instanceof GroupApiError
+          ? error.status
+          : error && typeof error === "object" && "status" in error
+            ? (error as { status?: number }).status
+            : undefined;
+      const errorCode =
+        error instanceof GroupApiError
+          ? error.code
+          : error && typeof error === "object" && "code" in error
+            ? (error as { code?: string }).code
+            : undefined;
+      const errorMessage =
+        error instanceof Error ? error.message : "";
+
+      const isClosedOrStarted =
+        errorStatus === 409 ||
+        errorCode === "ALREADY_STARTED" ||
+        errorCode === "RECRUITMENT_CLOSED" ||
+        errorCode === "CLOSED" ||
+        errorCode === "GROUP_FULL" ||
+        errorCode === "MAX_CAPACITY" ||
+        errorMessage.includes("마감") ||
+        errorMessage.includes("정원") ||
+        errorMessage.includes("초과") ||
+        errorMessage.includes("종료") ||
+        errorMessage.includes("시작");
+
+      if (isClosedOrStarted) {
+        setErrorModal({
+          open: true,
+          title: "모집이 마감되었습니다",
+          description: "참가자 모집이 완료되어 그룹에 참여할 수 없습니다.",
+          isBlocked: false,
+          isClosed: true,
+        });
+        return;
+      }
+
       setErrorModal({
         open: true,
         title: "저장 실패",
         description:
           error instanceof Error ? error.message : "저장에 실패했습니다.",
         isBlocked: false,
+        isClosed: false,
       });
     } finally {
       setIsSubmitting(false);
@@ -595,7 +747,7 @@ export default function GroupExtraInfoScreen({
         <Button
           type="submit"
           form="group-extra-form"
-          disabled={!isFormValid || isSubmitting}
+          disabled={!isFormValid || isSubmitting || errorModal.open}
         >
           {isSubmitting ? "저장 중..." : "저장하기"}
         </Button>
@@ -608,7 +760,7 @@ export default function GroupExtraInfoScreen({
         scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
         onClose={() => {
-          if (errorModal.isBlocked) {
+          if (errorModal.isBlocked || errorModal.isClosed) {
             router.replace("/home");
           } else {
             setErrorModal((prev) => ({ ...prev, open: false }));
@@ -633,7 +785,7 @@ export default function GroupExtraInfoScreen({
             type="button"
             className={styles.modalActionButton}
             onClick={() => {
-              if (errorModal.isBlocked) {
+              if (errorModal.isBlocked || errorModal.isClosed) {
                 router.replace("/home");
               } else {
                 setErrorModal((prev) => ({ ...prev, open: false }));
