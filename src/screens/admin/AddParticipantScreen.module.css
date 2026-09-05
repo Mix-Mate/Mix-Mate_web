@@ -1,4 +1,4 @@
-﻿.viewport {
+.viewport {
   height: auto;
   min-height: var(--mobile-frame-height);
   overflow: visible;
@@ -46,11 +46,24 @@
   gap: 7px;
 }
 
-.field span {
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field span,
+.fieldHeader span {
   color: #52525b;
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
+}
+
+.charCount {
+  color: #71717a !important;
+  font-size: 12px;
+  font-weight: 500 !important;
 }
 
 .field input,

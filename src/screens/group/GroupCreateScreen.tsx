@@ -76,6 +76,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
               type="text"
               className={styles.inputField}
               value={groupName}
+              maxLength={30}
               onChange={(e) => setGroupName(e.target.value)}
               required
               autoFocus
@@ -87,14 +88,20 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
             <label htmlFor="group-desc-input" className={styles.inputLabel}>
               설명 (선택)
             </label>
-            <textarea
-              id="group-desc-input"
-              className={styles.textareaField}
-              placeholder="설명 입력"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-            />
+            <div className={styles.textareaWrapper}>
+              <textarea
+                id="group-desc-input"
+                className={styles.textareaField}
+                placeholder="설명 입력"
+                value={description}
+                maxLength={120}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+              />
+              <div className={styles.counterRow}>
+                <span className={styles.charCounter}>{description.length}/120</span>
+              </div>
+            </div>
           </div>
 
           {/* 안내 배너: 파란색 박스 (테두리 없음) */}

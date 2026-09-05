@@ -55,4 +55,35 @@ describe("VoteResultContent", () => {
 
     expect(onOpenSecondRoundParticipantList).toHaveBeenCalledOnce();
   });
+
+  it("MVP 당선자가 있으면 결과 테이블에 이름과 툴팁이 올바르게 렌더링된다", () => {
+    const resultWithMvp: VoteResultResponse = {
+      mvpWinners: [
+        {
+          participantId: 1,
+          displayName: "열글자이름테스트인",
+          teamNumber: 1,
+          grade: "FIRST",
+          mbti: "ENFP",
+        },
+      ],
+      secondRoundParticipants: [],
+    };
+
+    render(
+      <VoteResultContent
+        result={resultWithMvp}
+        introMvpWinner={null}
+        showOverallResult
+        onRevealOverallResult={vi.fn()}
+        onHome={vi.fn()}
+        onOpenMvpList={vi.fn()}
+        onOpenSecondRoundParticipantList={vi.fn()}
+      />,
+    );
+
+    const winnerName = screen.getByText("열글자이름테스트인");
+    expect(winnerName).toBeInTheDocument();
+    expect(winnerName).toHaveAttribute("title", "열글자이름테스트인");
+  });
 });

@@ -49,7 +49,7 @@ export default function MvpIntroAnimation({
             className={styles.mvpWinnerNames}
             aria-label={`우리 조 MVP ${winner.displayName}`}
           >
-            <strong>{winner.displayName}</strong>
+            <strong title={winner.displayName}>{winner.displayName}</strong>
           </span>
         ) : (
           <strong className={styles.emptyMvp}>선정 결과 없음</strong>

@@ -146,8 +146,15 @@ button.resultPill {
 }
 
 .mvpHalo strong {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
   color: #1e3a5f;
-  font-size: 54px;
+  font-size: clamp(28px, 6.5vw, 46px);
   font-weight: 700;
   letter-spacing: -1px;
   line-height: 55px;
@@ -155,9 +162,12 @@ button.resultPill {
 
 .mvpWinnerNames {
   display: flex;
-  max-width: 190px;
+  width: 100%;
+  max-width: 200px;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .emptyMvp {
@@ -517,18 +527,31 @@ button.resultPill {
 }
 
 .rankEntry > strong {
+  display: block;
+  width: 100%;
+  max-width: 86px;
   margin-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
   font-size: 14px;
   font-weight: 700;
-  line-height: 14px;
+  line-height: 18px;
 }
 
 .rankEntry > small {
+  display: block;
+  width: 100%;
+  max-width: 86px;
   margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
   color: #94a3b8;
   font-size: 11px;
   line-height: 16px;
-  white-space: nowrap;
 }
 
 .participantListButton {

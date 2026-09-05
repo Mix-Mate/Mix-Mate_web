@@ -108,7 +108,7 @@ function MvpWinnerList({
                 />
               </span>
               <div className={participantStyles.participantInfo}>
-                <strong>{winner.displayName}</strong>
+                <strong title={winner.displayName}>{winner.displayName}</strong>
                 <span>
                   {winner.teamNumber}조 · {gradeLabelByGrade[winner.grade]} ·{" "}
                   {winner.mbti}
