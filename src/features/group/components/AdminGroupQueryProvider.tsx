@@ -21,7 +21,6 @@ import { isGroupHomeRoute } from "../lib/group-entry-route";
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import {
   recordBlockedGroup,
-  saveKnownGroupName,
   getKnownGroupName,
   isDummyGroupName,
   undismissBlockedGroup,
@@ -104,7 +103,9 @@ export default function AdminGroupQueryProvider({
   const latestStatusRef = useRef<GroupStatusEvent | null>(null);
   const [data, setData] = useState<GroupDetail | null>(null);
   const dataRef = useRef<GroupDetail | null>(null);
-  dataRef.current = data;
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
   const [dataGroupId, setDataGroupId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!isExtraPage);
   const [errorInfo, setErrorInfo] = useState<{

@@ -11,7 +11,6 @@ import {
   getBlacklistedGroupIds,
   isDismissedBlockedGroup,
   dismissBlockedGroup,
-  undismissBlockedGroup,
 } from "./blockedGroupsStorage";
 
 describe("blockedGroupsStorage", () => {

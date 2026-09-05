@@ -15,7 +15,6 @@ import { isGroupHost } from "@/features/group/lib/group-entry-route";
 import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import {
-  readBlockedGroups,
   recordBlockedGroup,
   removeBlockedGroup,
   getKnownGroupName,
@@ -24,7 +23,6 @@ import {
   isDummyGroupName,
   getKnownGroupIds,
   getBlacklistedGroupIds,
-  isDismissedBlockedGroup,
   dismissBlockedGroup,
   undismissBlockedGroup,
   removeKnownGroupName,
