@@ -1,5 +1,5 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import type { SecondRoundVoteChoice } from "../types/secondRoundVote.types";
 import { createVoteApiError } from "./voteApiError";
 
@@ -10,12 +10,11 @@ async function sendAdminVoteRequest(
   choice: SecondRoundVoteChoice,
   fallbackMessage: string,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/votes/second-round/admin`,
     {
       method,
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetParticipantId, choice }),
     },
   );

@@ -1,17 +1,15 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import type { VoteResultResponse } from "../types/voteResult.types";
 import { createVoteApiError } from "./voteApiError";
 
 export async function getVoteResult(
   groupId: string,
 ): Promise<VoteResultResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/votes/result`,
     {
       method: "GET",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 

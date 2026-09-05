@@ -4,8 +4,8 @@ import type {
   TeamMemberDetail,
 } from "@/features/assignment/types/assignment.types";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import {
   getProfileGradeLabel,
   normalizeProfileMbti,
@@ -131,13 +131,12 @@ export function toParticipantProfile(
 }
 
 async function request(path: string, init?: RequestInit) {
-  return fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+  return apiFetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: withAuthHeaders({
+    headers: {
       Accept: "application/json",
       ...init?.headers,
-    }),
+    },
   });
 }
 

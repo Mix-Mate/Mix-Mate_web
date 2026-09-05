@@ -8,8 +8,8 @@ import type {
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import { getGroupDetail } from "@/features/group/api/group.api";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import {
   getProfileGradeLabel,
   normalizeProfileMbti,
@@ -73,14 +73,13 @@ async function createRequestError(response: Response, fallbackMessage: string) {
 }
 
 async function request(path: string, init?: RequestInit) {
-  return fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+  return apiFetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: withAuthHeaders({
+    headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
       ...init?.headers,
-    }),
+    },
   });
 }
 
