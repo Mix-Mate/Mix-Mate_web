@@ -59,6 +59,7 @@ function toDefaultAdminParticipant(
     age: age ?? undefined,
     instagramId: instagramId ?? undefined,
     bio: bio ?? undefined,
+    manualEntry: summary.manualEntry ?? Boolean(draft),
   };
 }
 

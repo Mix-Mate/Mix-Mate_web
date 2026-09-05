@@ -83,6 +83,7 @@ function toParticipant(
     age,
     instagramId,
     bio,
+    manualEntry: summary.manualEntry ?? Boolean(draft),
   };
 }
 
@@ -162,7 +163,34 @@ function unwrapParticipantProfileResponse(
   return payload as ParticipantProfileResponse;
 }
 
-function shouldHydrateParticipant(summary: ParticipantSummaryResponse) {
+function isManualParticipant(
+  summary: ParticipantSummaryResponse,
+  participant: Participant,
+) {
+  return (
+    summary.manualEntry === true ||
+    summary.userId === null ||
+    participant.manualEntry === true
+  );
+}
+
+function shouldHydrateParticipant(
+  summary: ParticipantSummaryResponse,
+  participant: Participant,
+  options: HydrateParticipantsOptions,
+) {
+  if (isManualParticipant(summary, participant)) {
+    return false;
+  }
+
+  if (!options.detailRole && participant.visibility === "private") {
+    return false;
+  }
+
+  if (options.hydrateAll) {
+    return true;
+  }
+
   return (
     !summary.grade ||
     !summary.position ||
@@ -206,12 +234,8 @@ export async function hydrateParticipantsWithProfiles<
     summaries.map((summary) => [String(summary.participantId), summary]),
   );
   const targets = participants.filter((participant) => {
-    if (options.hydrateAll) {
-      return true;
-    }
-
     const summary = summaryById.get(participant.id);
-    return summary ? shouldHydrateParticipant(summary) : false;
+    return summary ? shouldHydrateParticipant(summary, participant, options) : false;
   });
 
   if (targets.length === 0) {
@@ -332,7 +356,7 @@ export async function getParticipants(
       canUseAdminDrafts ? findAdminParticipantDraft(groupId, summary) : undefined,
     ),
   );
-  const participants = detailRole && hydrateProfiles
+  const participants = hydrateProfiles
     ? await hydrateParticipantsWithProfiles(
         groupId,
         mappedParticipants,

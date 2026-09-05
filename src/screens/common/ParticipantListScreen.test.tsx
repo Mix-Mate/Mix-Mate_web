@@ -112,7 +112,6 @@ describe("ParticipantListScreen manual participant addition", () => {
 
     expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
       detailRole: "admin",
-      hydrateProfiles: false,
       includeTeams: false,
       round: 2,
     });
@@ -121,7 +120,6 @@ describe("ParticipantListScreen manual participant addition", () => {
 
     expect(useParticipantListQueryMock).toHaveBeenLastCalledWith("6", {
       detailRole: "admin",
-      hydrateProfiles: false,
       includeTeams: true,
       round: 2,
     });

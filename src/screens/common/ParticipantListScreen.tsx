@@ -78,7 +78,6 @@ function DefaultParticipantListScreen() {
   const canViewPrivateProfiles = group?.myRole === "HOST";
   const { data } = useParticipantListQuery(params.groupId, {
     detailRole: canViewPrivateProfiles ? "admin" : undefined,
-    hydrateProfiles: false,
     includeTeams: shouldLoadTeams,
     round,
   });
