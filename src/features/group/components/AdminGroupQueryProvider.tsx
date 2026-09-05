@@ -19,7 +19,14 @@ import type { GroupStatusStreamError } from "../api/groupStatusStream.api";
 import { useGroupStatusStream } from "../hooks/useGroupStatusStream";
 import { isGroupHomeRoute } from "../lib/group-entry-route";
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
-import { recordBlockedGroup } from "@/features/blacklist/lib/blockedGroupsStorage";
+import {
+  recordBlockedGroup,
+  saveKnownGroupName,
+  getKnownGroupName,
+  isDummyGroupName,
+  undismissBlockedGroup,
+} from "@/features/blacklist/lib/blockedGroupsStorage";
+import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import { clearAuthTokens } from "@/shared/api/authToken";
 import {
   appRoutes,
@@ -50,6 +57,41 @@ function mergeStreamStatus(
   return group;
 }
 
+function getResolvedBlockedGroupName(
+  groupId: string,
+  dataName?: string,
+  errName?: string,
+): string {
+  if (dataName && !isDummyGroupName(dataName)) {
+    return dataName;
+  }
+  if (errName && !isDummyGroupName(errName)) {
+    return errName;
+  }
+  const known = getKnownGroupName(groupId);
+  if (known && !isDummyGroupName(known)) {
+    return known;
+  }
+  if (typeof window !== "undefined") {
+    if (window.location && window.location.search) {
+      try {
+        const sp = new URLSearchParams(window.location.search);
+        const qName = sp.get("groupName") || sp.get("name");
+        if (qName && !isDummyGroupName(qName)) {
+          return qName.trim();
+        }
+      } catch {
+        // ignore
+      }
+    }
+    const pending = window.sessionStorage.getItem("pendingGroupName");
+    if (pending && !isDummyGroupName(pending)) {
+      return pending.trim();
+    }
+  }
+  return "그룹";
+}
+
 export default function AdminGroupQueryProvider({
   children,
 }: AdminGroupQueryProviderProps) {
@@ -61,6 +103,8 @@ export default function AdminGroupQueryProvider({
   const requestIdRef = useRef(0);
   const latestStatusRef = useRef<GroupStatusEvent | null>(null);
   const [data, setData] = useState<GroupDetail | null>(null);
+  const dataRef = useRef<GroupDetail | null>(null);
+  dataRef.current = data;
   const [dataGroupId, setDataGroupId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!isExtraPage);
   const [errorInfo, setErrorInfo] = useState<{
@@ -120,11 +164,17 @@ export default function AdminGroupQueryProvider({
             fetchError.code === "BANNED_USER" ||
             fetchError.code === "FORBIDDEN" ||
             fetchError.code === "BLOCKED" ||
-            fetchError.message.includes("차단")
+            fetchError.message.includes("차단") ||
+            fetchError.message.includes("참여하고 있지 않습니다")
           ) {
+            undismissBlockedGroup(groupId);
             recordBlockedGroup({
               groupId: String(groupId),
-              groupName: data?.groupName || "그룹",
+              groupName: getResolvedBlockedGroupName(
+                groupId,
+                dataRef.current?.groupName,
+                fetchError.groupName,
+              ),
               reason: fetchError.reason,
             });
           }
@@ -132,6 +182,7 @@ export default function AdminGroupQueryProvider({
           const status = (fetchError as { status?: number }).status;
           const code = (fetchError as { code?: string }).code;
           const reason = (fetchError as { reason?: string }).reason;
+          const errGroupName = (fetchError as { groupName?: string }).groupName;
           setErrorInfo({
             message: fetchError.message,
             status,
@@ -144,11 +195,17 @@ export default function AdminGroupQueryProvider({
             code === "BANNED_USER" ||
             code === "FORBIDDEN" ||
             code === "BLOCKED" ||
-            fetchError.message.includes("차단")
+            fetchError.message.includes("차단") ||
+            fetchError.message.includes("참여하고 있지 않습니다")
           ) {
+            undismissBlockedGroup(groupId);
             recordBlockedGroup({
               groupId: String(groupId),
-              groupName: data?.groupName || "그룹",
+              groupName: getResolvedBlockedGroupName(
+                groupId,
+                dataRef.current?.groupName,
+                errGroupName,
+              ),
               reason,
             });
           }
@@ -163,7 +220,7 @@ export default function AdminGroupQueryProvider({
     } finally {
       if (requestId === requestIdRef.current) setIsLoading(false);
     }
-  }, [data?.groupName, groupId]);
+  }, [groupId]);
 
   useEffect(() => {
     if (isExtraPage) return;
@@ -204,11 +261,17 @@ export default function AdminGroupQueryProvider({
               fetchError.code === "BANNED_USER" ||
               fetchError.code === "FORBIDDEN" ||
               fetchError.code === "BLOCKED" ||
-              fetchError.message.includes("차단")
+              fetchError.message.includes("차단") ||
+              fetchError.message.includes("참여하고 있지 않습니다")
             ) {
+              undismissBlockedGroup(groupId);
               recordBlockedGroup({
                 groupId: String(groupId),
-                groupName: data?.groupName || "그룹",
+                groupName: getResolvedBlockedGroupName(
+                  groupId,
+                  dataRef.current?.groupName,
+                  fetchError.groupName,
+                ),
                 reason: fetchError.reason,
               });
             }
@@ -216,6 +279,7 @@ export default function AdminGroupQueryProvider({
             const status = (fetchError as { status?: number }).status;
             const code = (fetchError as { code?: string }).code;
             const reason = (fetchError as { reason?: string }).reason;
+            const errGroupName = (fetchError as { groupName?: string }).groupName;
             setErrorInfo({
               message: fetchError.message,
               status,
@@ -228,11 +292,17 @@ export default function AdminGroupQueryProvider({
               code === "BANNED_USER" ||
               code === "FORBIDDEN" ||
               code === "BLOCKED" ||
-              fetchError.message.includes("차단")
+              fetchError.message.includes("차단") ||
+              fetchError.message.includes("참여하고 있지 않습니다")
             ) {
+              undismissBlockedGroup(groupId);
               recordBlockedGroup({
                 groupId: String(groupId),
-                groupName: data?.groupName || "그룹",
+                groupName: getResolvedBlockedGroupName(
+                  groupId,
+                  dataRef.current?.groupName,
+                  errGroupName,
+                ),
                 reason,
               });
             }
@@ -278,6 +348,7 @@ export default function AdminGroupQueryProvider({
   const onStreamError = useCallback(
     (streamError: GroupStatusStreamError) => {
       requestIdRef.current += 1;
+      const currentGroupName = dataRef.current?.groupName;
       setData(null);
       setIsLoading(false);
       setErrorInfo({
@@ -289,10 +360,121 @@ export default function AdminGroupQueryProvider({
         clearAuthTokens();
         window.sessionStorage.setItem("authToast", streamError.message);
         router.replace(authRoutes.login());
+        return;
+      }
+
+      if (
+        streamError.status === 403 ||
+        streamError.message.includes("차단") ||
+        streamError.message.includes("참여하고 있지 않습니다")
+      ) {
+        undismissBlockedGroup(groupId);
+        const resolvedName = getResolvedBlockedGroupName(
+          groupId,
+          currentGroupName,
+        );
+        recordBlockedGroup({
+          groupId: String(groupId),
+          groupName: resolvedName,
+        });
+
+        void checkUserBlockedInGroup(groupId).then((blocked) => {
+          if (blocked?.reason) {
+            undismissBlockedGroup(groupId);
+            recordBlockedGroup({
+              groupId: String(groupId),
+              groupName: resolvedName,
+              reason: blocked.reason,
+            });
+            setErrorInfo((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    reason: blocked.reason,
+                    code: "USER_BLOCKED",
+                  }
+                : prev,
+            );
+          }
+        });
       }
     },
-    [router],
+    [groupId, router],
   );
+
+  // 멀티탭 환경에서 관리자가 참가자를 차단할 때 실시간 storage 변경 감지
+  useEffect(() => {
+    if (typeof window === "undefined" || !groupId) return;
+
+    const handleStorageChange = async (event: StorageEvent) => {
+      if (
+        event.key === `mixmate:group-blacklist:${groupId}` ||
+        event.key === `mixmate_blacklist_${groupId}` ||
+        event.key === "mixmate_blocked_groups"
+      ) {
+        const blocked = await checkUserBlockedInGroup(groupId);
+        if (blocked) {
+          undismissBlockedGroup(groupId);
+          const resolvedName = getResolvedBlockedGroupName(
+            groupId,
+            dataRef.current?.groupName,
+          );
+          recordBlockedGroup({
+            groupId: String(groupId),
+            groupName: resolvedName,
+            reason: blocked.reason,
+          });
+          setErrorInfo({
+            message: blocked.reason
+              ? `그룹에서 차단되었습니다.\n차단 사유: ${blocked.reason}`
+              : "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
+            status: 403,
+            code: "USER_BLOCKED",
+            reason: blocked.reason,
+          });
+          setData(null);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [groupId]);
+
+  // 차단 상태 감지 시 로컬 스토리지 동기화 보장
+  useEffect(() => {
+    if (isBlocked && groupId) {
+      undismissBlockedGroup(groupId);
+      const resolvedName = getResolvedBlockedGroupName(
+        groupId,
+        dataRef.current?.groupName,
+      );
+      recordBlockedGroup({
+        groupId: String(groupId),
+        groupName: resolvedName,
+        reason: errorInfo?.reason,
+      });
+    }
+  }, [isBlocked, groupId, errorInfo?.reason]);
+
+  const handleGoHome = useCallback(() => {
+    if (groupId) {
+      undismissBlockedGroup(groupId);
+      const resolvedName = getResolvedBlockedGroupName(
+        groupId,
+        dataRef.current?.groupName,
+      );
+      recordBlockedGroup({
+        groupId: String(groupId),
+        groupName: resolvedName,
+        reason: errorInfo?.reason,
+      });
+    }
+    router.replace(appRoutes.home());
+  }, [groupId, errorInfo?.reason, router]);
 
   useGroupStatusStream(groupId, {
     enabled: !isExtraPage && currentData !== null,
@@ -349,7 +531,7 @@ export default function AdminGroupQueryProvider({
               {isBlocked ? (
                 <Button
                   className={styles.retryButton}
-                  onClick={() => router.replace(appRoutes.home())}
+                  onClick={handleGoHome}
                 >
                   홈으로 이동
                 </Button>

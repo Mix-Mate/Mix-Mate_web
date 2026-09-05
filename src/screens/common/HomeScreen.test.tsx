@@ -13,8 +13,10 @@ const { push, replace } = vi.hoisted(() => ({
   replace: vi.fn(),
 }));
 
+const mockRouter = { push, replace };
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push, replace }),
+  useRouter: () => mockRouter,
 }));
 
 vi.mock("@/features/group/api/group.api", async (importOriginal) => ({
@@ -292,8 +294,9 @@ describe("HomeScreen", () => {
         await screen.findByText("그룹 이용 제한 안내"),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 부적절한 언행으로 차단되었습니다\./),
+        screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
       ).toBeInTheDocument();
+      expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
       expect(push).not.toHaveBeenCalled();
     });
 
@@ -326,8 +329,9 @@ describe("HomeScreen", () => {
       // 모달 열림
       expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
       expect(
-        screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 노쇼 3회 누적/),
+        screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
       ).toBeInTheDocument();
+      expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
 
       // '목록에서 삭제하기' 버튼 클릭
       const deleteBtn = screen.getByRole("button", { name: "목록에서 삭제하기" });
@@ -342,7 +346,7 @@ describe("HomeScreen", () => {
       expect(readBlockedGroups()).toHaveLength(0);
     });
 
-    it("사유 없이 차단된 그룹의 경우 '차단 사유:' 라벨 없이 기본 안내 문구만 노출된다", async () => {
+    it("차단된 그룹 클릭 시 모달에 차단 사유 없이 기본 안내 문구만 노출된다", async () => {
       const { recordBlockedGroup } = await import(
         "@/features/blacklist/lib/blockedGroupsStorage"
       );
@@ -366,6 +370,129 @@ describe("HomeScreen", () => {
         screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
       ).toBeInTheDocument();
       expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
+    });
+
+    it("로컬 스토리지에 '차단된 그룹'으로 저장되어 있더라도 캐시 및 완료 모임 정보에서 원래 이름을 찾아 카드에 표시하고 스토리지를 갱신한다", async () => {
+      const { saveKnownGroupName, readBlockedGroups } = await import(
+        "@/features/blacklist/lib/blockedGroupsStorage"
+      );
+
+      // 스토리지에 더미 이름으로 저장된 상태
+      localStorage.setItem(
+        "mixmate_blocked_groups",
+        JSON.stringify([
+          {
+            groupId: "555",
+            groupName: "차단된 그룹",
+            reason: "비매너 행위",
+          },
+        ]),
+      );
+
+      // 캐시에 원래 이름 등록 (이전 세션이나 다른 화면에서 저장된 캐시)
+      saveKnownGroupName("555", "신촌 불금 볼링 클럽");
+
+      getMyGroupsApiMock.mockImplementation(async () => ({
+        groups: [],
+      }));
+
+      render(<HomeScreen userName="테스터" />);
+
+      // '차단된 그룹' 대신 실제 그룹명인 '신촌 불금 볼링 클럽'이 렌더링되어야 함
+      expect(await screen.findByText("신촌 불금 볼링 클럽")).toBeInTheDocument();
+      expect(screen.queryByText("차단된 그룹")).not.toBeInTheDocument();
+
+      // 로컬 스토리지도 더미 텍스트에서 실제 그룹명으로 자가 치유(repair)되었는지 확인
+      await waitFor(() => {
+        const stored = readBlockedGroups();
+        expect(stored.find((g) => g.groupId === "555")?.groupName).toBe("신촌 불금 볼링 클럽");
+      });
+    });
+
+    it("서버 API 응답(완료된 모임 등)에 원래 그룹명이 있는 경우 '차단된 그룹' 더미 데이터를 해당 이름으로 매핑하고 갱신한다", async () => {
+      const { readBlockedGroups } = await import(
+        "@/features/blacklist/lib/blockedGroupsStorage"
+      );
+
+      localStorage.setItem(
+        "mixmate_blocked_groups",
+        JSON.stringify([
+          {
+            groupId: "777",
+            groupName: "차단된 그룹",
+            reason: "강제 퇴장",
+          },
+        ]),
+      );
+
+      // 서버에서 완료 모임으로 777번의 실제 그룹명이 반환되는 상황
+      getMyGroupsApiMock.mockImplementation(async ({ state }: { state?: string }) => {
+        if (state === "finished") {
+          return {
+            groups: [
+              {
+                groupId: 777,
+                groupName: "원래 이름있는 스터디",
+                status: "FINISHED",
+                role: "PARTICIPANT",
+                memberCount: 5,
+              },
+            ],
+          };
+        }
+        return { groups: [] };
+      });
+
+      render(<HomeScreen userName="테스터" />);
+
+      // 활성 탭에 병합된 차단 카드에 원래 이름이 표시됨
+      expect(await screen.findByText("원래 이름있는 스터디")).toBeInTheDocument();
+      expect(screen.queryByText("차단된 그룹")).not.toBeInTheDocument();
+
+      // 로컬 스토리지 데이터도 복원되었는지 확인
+      await waitFor(() => {
+        const stored = readBlockedGroups();
+        expect(stored.find((g) => g.groupId === "777")?.groupName).toBe("원래 이름있는 스터디");
+      });
+    });
+
+    it("서버 응답에서 누락되었더라도 기존에 알고 있던 그룹이 차단된 경우 홈 화면에 실제 그룹명과 '차단됨'으로 표시된다", async () => {
+      const { saveKnownGroupName, readBlockedGroups } = await import(
+        "@/features/blacklist/lib/blockedGroupsStorage"
+      );
+      const { checkUserBlockedInGroup } = await import(
+        "@/features/blacklist/api/blacklist.api"
+      );
+
+      // 사용자가 그룹 홈에 진입한 적이 있어 캐시에 남아 있는 상태
+      saveKnownGroupName("888", "그룹홈 스터디 모임");
+
+      // 차단으로 인해 서버 응답에는 빈 배열
+      getMyGroupsApiMock.mockResolvedValue({ groups: [] });
+
+      // checkUserBlockedInGroup에서 차단 정보 반환
+      vi.mocked(checkUserBlockedInGroup).mockResolvedValue({
+        id: "888",
+        userId: 888,
+        name: "테스터",
+        reason: "그룹 홈에서 관리자에 의해 차단됨",
+        blockedAt: "2026-09-05T12:00:00Z",
+      });
+
+      render(<HomeScreen userName="테스터" />);
+
+      // '진행 중인 모임이 없습니다'가 아닌 차단된 그룹 카드가 렌더링되어야 함
+      expect(await screen.findByText("그룹홈 스터디 모임")).toBeInTheDocument();
+      expect(screen.getByText("차단됨")).toBeInTheDocument();
+      expect(screen.queryByText("진행 중인 모임이 없습니다.")).not.toBeInTheDocument();
+
+      // 로컬 스토리지에도 차단 그룹으로 등록되었는지 확인
+      const blocked = readBlockedGroups();
+      expect(
+        blocked.some(
+          (b) => b.groupId === "888" && b.groupName === "그룹홈 스터디 모임",
+        ),
+      ).toBe(true);
     });
   });
 });
