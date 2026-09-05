@@ -407,6 +407,11 @@
   background: #f5f3ff;
 }
 
+.roleTagBlocked {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
 .groupCardRight,
 .completedCardRight {
   display: flex;
@@ -517,6 +522,7 @@
   color: #71717a;
   margin: 0;
   line-height: 1.5;
+  white-space: pre-line;
 }
 
 .modalForm {

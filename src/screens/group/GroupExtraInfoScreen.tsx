@@ -6,12 +6,15 @@ import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Button from "@/shared/ui/Button";
+import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import { AlertCircle } from "lucide-react";
 import {
   createGroupApi,
   joinGroupWithProfileApi,
   GroupApiError,
   type GroupProfileDto,
 } from "@/features/group/api/group.api";
+import { recordBlockedGroup } from "@/features/blacklist/lib/blockedGroupsStorage";
 import { normalizeMajor } from "@/features/profile/lib/normalize-major";
 import {
   getValidationMessage,
@@ -62,13 +65,13 @@ export interface GroupExtraInfoData {
 }
 
 interface GroupExtraInfoScreenProps {
-  groupId?: string;
+  groupId: string;
   initialData?: Partial<GroupExtraInfoData>;
   onSuccess?: (data: GroupExtraInfoData) => void;
 }
 
 export default function GroupExtraInfoScreen({
-  groupId = "1",
+  groupId,
   initialData,
   onSuccess,
 }: GroupExtraInfoScreenProps) {
@@ -98,6 +101,17 @@ export default function GroupExtraInfoScreen({
   const [isMbtiOpen, setIsMbtiOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    isBlocked: boolean;
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    isBlocked: false,
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -216,7 +230,6 @@ export default function GroupExtraInfoScreen({
           profile: profileDto,
         });
 
-        alert("그룹이 성공적으로 생성되었습니다!");
         router.replace(
           getGroupEntryRoute(String(response.groupId), "HOST", "RECRUITING"),
         );
@@ -230,7 +243,6 @@ export default function GroupExtraInfoScreen({
           profile: profileDto,
         });
 
-        alert("그룹에 성공적으로 참여하였습니다!");
         const targetGroupId = joinRes.groupId
           ? String(joinRes.groupId)
           : groupId;
@@ -245,11 +257,79 @@ export default function GroupExtraInfoScreen({
       }
     } catch (error: unknown) {
       if (error instanceof GroupApiError && error.status === 401) {
-        alert("토큰이 없거나 만료되었습니다. 다시 로그인해 주세요.");
-        router.push("/login");
+        setErrorModal({
+          open: true,
+          title: "인증 오류",
+          description: "토큰이 없거나 만료되었습니다. 다시 로그인해 주세요.",
+          isBlocked: false,
+        });
         return;
       }
-      alert(error instanceof Error ? error.message : "저장에 실패했습니다.");
+
+      const isBlocked =
+        (error instanceof GroupApiError &&
+          (error.status === 403 ||
+            error.code === "USER_BLOCKED" ||
+            error.code === "BANNED_USER" ||
+            error.code === "FORBIDDEN" ||
+            error.code === "BLOCKED")) ||
+        (error instanceof Error && error.message.includes("차단"));
+
+      if (isBlocked) {
+        let reason =
+          error instanceof GroupApiError ? error.reason : undefined;
+        if (!reason && error && typeof error === "object") {
+          const errObj = error as Record<string, unknown>;
+          const errData =
+            typeof errObj.data === "object" && errObj.data !== null
+              ? (errObj.data as Record<string, unknown>)
+              : undefined;
+          const candidate =
+            (errObj.reason as string) ||
+            (errData?.reason as string) ||
+            (errObj.banReason as string) ||
+            (errData?.banReason as string) ||
+            (errObj.blockReason as string) ||
+            (errData?.blockReason as string) ||
+            (errObj.detail as string) ||
+            (errData?.detail as string);
+          if (typeof candidate === "string" && candidate.trim().length > 0) {
+            reason = candidate.trim();
+          }
+        }
+        const description = reason
+          ? `그룹에서 차단되었습니다.\n차단 사유: ${reason}`
+          : (error instanceof Error
+              ? error.message
+              : "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.");
+
+        // Record to mixmate_blocked_groups so it appears on the home screen
+        const pendingGroupName =
+          (typeof window !== "undefined" &&
+            window.sessionStorage.getItem("pendingGroupName")) ||
+          "그룹";
+        recordBlockedGroup({
+          groupId: String(groupId),
+          groupName: pendingGroupName,
+          reason,
+        });
+
+        setErrorModal({
+          open: true,
+          title: "그룹 참여가 제한되었습니다",
+          description,
+          isBlocked: true,
+        });
+        return;
+      }
+
+      setErrorModal({
+        open: true,
+        title: "저장 실패",
+        description:
+          error instanceof Error ? error.message : "저장에 실패했습니다.",
+        isBlocked: false,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -489,6 +569,50 @@ export default function GroupExtraInfoScreen({
           {isSubmitting ? "저장 중..." : "저장하기"}
         </Button>
       </div>
+
+      <BottomSheetDialog
+        open={errorModal.open}
+        titleId="extra-error-dialog-title"
+        descriptionId="extra-error-dialog-desc"
+        scrimClassName={styles.modalScrim}
+        sheetClassName={styles.modalSheet}
+        onClose={() => {
+          if (errorModal.isBlocked) {
+            router.replace("/home");
+          } else {
+            setErrorModal((prev) => ({ ...prev, open: false }));
+          }
+        }}
+      >
+        <div className={styles.modalIcon} aria-hidden="true">
+          <AlertCircle size={32} strokeWidth={2} />
+        </div>
+
+        <div className={styles.modalContent}>
+          <h2 id="extra-error-dialog-title" className={styles.modalTitle}>
+            {errorModal.title}
+          </h2>
+          <p id="extra-error-dialog-desc" className={styles.modalDescription}>
+            {errorModal.description}
+          </p>
+        </div>
+
+        <div className={styles.modalActions}>
+          <button
+            type="button"
+            className={styles.modalActionButton}
+            onClick={() => {
+              if (errorModal.isBlocked) {
+                router.replace("/home");
+              } else {
+                setErrorModal((prev) => ({ ...prev, open: false }));
+              }
+            }}
+          >
+            {errorModal.isBlocked ? "홈으로 이동" : "확인"}
+          </button>
+        </div>
+      </BottomSheetDialog>
     </MobileFrame>
   );
 }

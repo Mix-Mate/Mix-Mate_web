@@ -1,4 +1,4 @@
-import { getGroupDetail } from "@/features/group/api/group.api";
+import { getGroupDetail, GroupApiError } from "@/features/group/api/group.api";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
 import type {
@@ -96,7 +96,20 @@ function mapBanUserItemToBlockedParticipant(
     (item as { name?: string }).name ||
     "사용자";
   const email = (item.email as string) || "";
-  const reason = (item.reason as string) || "";
+  const rawItem = item as Record<string, unknown>;
+  const rawNested = (typeof rawItem.data === "object" && rawItem.data !== null)
+    ? (rawItem.data as Record<string, unknown>)
+    : undefined;
+  const reason =
+    (item.reason as string) ||
+    (rawNested?.reason as string) ||
+    (item.banReason as string) ||
+    (rawNested?.banReason as string) ||
+    (rawItem.blockReason as string) ||
+    (rawNested?.blockReason as string) ||
+    (rawItem.detail as string) ||
+    (rawNested?.detail as string) ||
+    "";
   const bannedAt =
     (item.bannedAt as string) ||
     (item as { blockedAt?: string }).blockedAt ||
@@ -315,22 +328,55 @@ export async function checkUserBlockedInGroup(
       ? window.localStorage.getItem("userId")
       : null);
 
-  // 1. 로컬 저장소 우선 확인
+  // 1. 로컬 저장소 우선 확인 (차단 사유가 있는 경우 우선 반환)
   const localList = readStoredBlacklist(groupId);
   const localFound = localList.find(
     (item) =>
-      (currentName && (item.name?.trim() === currentName.trim() || item.displayName?.trim() === currentName.trim())) ||
+      (currentName &&
+        (item.name?.trim() === currentName.trim() ||
+          item.displayName?.trim() === currentName.trim())) ||
       (currentEmail && item.email && item.email.trim() === currentEmail.trim()) ||
       (currentId && String(item.userId || item.id) === String(currentId)),
   );
+  if (localFound && localFound.reason) return localFound;
+
+  // 2. getGroupDetail 호출하여 서버에서 403 차단 여부 및 사유 직접 확인 (일반 참가자용)
+  try {
+    await getGroupDetail(groupId);
+  } catch (err: unknown) {
+    if (err instanceof GroupApiError) {
+      if (
+        err.status === 403 ||
+        err.code === "USER_BLOCKED" ||
+        err.code === "BANNED_USER" ||
+        err.code === "FORBIDDEN" ||
+        err.code === "BLOCKED" ||
+        err.message.includes("차단")
+      ) {
+        return {
+          id: String(currentId || "0"),
+          userId: Number(currentId) || 0,
+          name: currentName || "사용자",
+          displayName: currentName || "사용자",
+          email: currentEmail || "",
+          reason: err.reason || localFound?.reason || "",
+          blockedAt: new Date().toISOString(),
+          bannedAt: new Date().toISOString(),
+        };
+      }
+    }
+  }
+
   if (localFound) return localFound;
 
-  // 2. 서버 API 확인
+  // 3. 관리자용: getGroupBlacklist API 확인
   try {
     const groupData = await getGroupBlacklist(groupId);
     const serverFound = groupData.participants.find(
       (item) =>
-        (currentName && (item.name?.trim() === currentName.trim() || item.displayName?.trim() === currentName.trim())) ||
+        (currentName &&
+          (item.name?.trim() === currentName.trim() ||
+            item.displayName?.trim() === currentName.trim())) ||
         (currentEmail && item.email && item.email.trim() === currentEmail.trim()) ||
         (currentId && String(item.userId || item.id) === String(currentId)),
     );

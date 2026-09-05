@@ -156,6 +156,10 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         err && typeof err === "object" && "code" in err
           ? (err as { code?: string }).code
           : undefined;
+      const errorReason =
+        err && typeof err === "object" && "reason" in err
+          ? (err as { reason?: string }).reason
+          : undefined;
 
       if (onJoinError) {
         onJoinError(errorCode || errorObj.message);
@@ -174,13 +178,17 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         errorCode === "USER_BLOCKED" ||
         errorCode === "BANNED_USER" ||
         errorCode === "FORBIDDEN" ||
+        errorCode === "BLOCKED" ||
         errorObj.message.includes("차단")
       ) {
+        const description = errorReason
+          ? `그룹에서 차단되었습니다.\n차단 사유: ${errorReason}`
+          : (errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.");
+
         setErrorModal({
           open: true,
           title: "그룹 참여가 제한되었습니다",
-          description:
-            errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          description,
           isBlocked: true,
         });
         return;

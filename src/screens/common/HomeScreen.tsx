@@ -15,6 +15,11 @@ import { isGroupHost } from "@/features/group/lib/group-entry-route";
 import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import {
+  readBlockedGroups,
+  recordBlockedGroup,
+  removeBlockedGroup,
+} from "@/features/blacklist/lib/blockedGroupsStorage";
+import {
   clearAuthTokens,
   getAccessToken,
   isTokenExpired,
@@ -41,6 +46,8 @@ export interface HomeScreenGroupItem {
   updatedAt?: string;
   finishedAt?: string;
   closedAt?: string;
+  isBlocked?: boolean;
+  blockReason?: string;
 }
 
 const DEFAULT_ACTIVE_GROUPS: HomeScreenGroupItem[] = [];
@@ -240,8 +247,9 @@ export default function HomeScreen({
   // Modal states
   const [isBlockedModalOpen, setIsBlockedModalOpen] = useState(false);
   const [blockedModalInfo, setBlockedModalInfo] = useState<{
+    groupId: string;
     groupName: string;
-    reason: string;
+    reason?: string;
     blockedAt?: string;
   } | null>(null);
 
@@ -291,21 +299,63 @@ export default function HomeScreen({
           return;
         }
 
+        const localBlockedList = readBlockedGroups();
+
         if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
           const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
-            (g: MyGroupItem) => ({
-              id: String(g.groupId),
-              name: g.groupName,
-              status: mapStatus(g.status),
-              role: mapRole(g.role),
-              memberCount: g.memberCount || 0,
-              date: g.date || "진행 중",
-              time: g.time,
-              location: g.location,
-              createdAt: g.createdAt,
-              updatedAt: g.updatedAt,
-              finishedAt: g.finishedAt,
-              closedAt: g.closedAt,
+            (g: MyGroupItem) => {
+              const localBlocked = localBlockedList.find(
+                (b) => String(b.groupId) === String(g.groupId),
+              );
+              return {
+                id: String(g.groupId),
+                name: g.groupName,
+                status: mapStatus(g.status),
+                role: mapRole(g.role),
+                memberCount: g.memberCount || 0,
+                date: g.date || "진행 중",
+                time: g.time,
+                location: g.location,
+                createdAt: g.createdAt,
+                updatedAt: g.updatedAt,
+                finishedAt: g.finishedAt,
+                closedAt: g.closedAt,
+                isBlocked: Boolean(localBlocked),
+                blockReason: localBlocked?.reason,
+              };
+            },
+          );
+
+          // 로컬에 저장된 차단 그룹 중 서버 활성 응답에 없는 그룹 병합 (최초 1회 유지)
+          for (const blocked of localBlockedList) {
+            if (!mapped.some((item) => item.id === String(blocked.groupId))) {
+              mapped.push({
+                id: String(blocked.groupId),
+                name: blocked.groupName || "그룹",
+                status: "BEFORE_FIRST_ROUND",
+                role: "PARTICIPANT",
+                memberCount: 0,
+                date: "차단됨",
+                createdAt: blocked.blockedAt,
+                isBlocked: true,
+                blockReason: blocked.reason,
+              });
+            }
+          }
+
+          setActiveGroups(sortActiveGroups(mapped));
+        } else if (localBlockedList.length > 0) {
+          const mapped: HomeScreenGroupItem[] = localBlockedList.map(
+            (blocked) => ({
+              id: String(blocked.groupId),
+              name: blocked.groupName || "그룹",
+              status: "BEFORE_FIRST_ROUND",
+              role: "PARTICIPANT",
+              memberCount: 0,
+              date: "차단됨",
+              createdAt: blocked.blockedAt,
+              isBlocked: true,
+              blockReason: blocked.reason,
             }),
           );
           setActiveGroups(sortActiveGroups(mapped));
@@ -347,6 +397,33 @@ export default function HomeScreen({
   }, [router]);
 
   const handleGroupClick = async (group: HomeScreenGroupItem) => {
+    if (group.isBlocked) {
+      let currentReason = group.blockReason;
+      if (!currentReason && group.role !== "HOST") {
+        const blocked = await checkUserBlockedInGroup(group.id, {
+          name: userName,
+        });
+        if (blocked?.reason) {
+          currentReason = blocked.reason;
+          recordBlockedGroup({
+            groupId: group.id,
+            groupName: group.name,
+            reason: blocked.reason,
+            blockedAt: blocked.blockedAt,
+          });
+        }
+      }
+
+      setBlockedModalInfo({
+        groupId: group.id,
+        groupName: group.name,
+        reason: currentReason,
+        blockedAt: group.createdAt,
+      });
+      setIsBlockedModalOpen(true);
+      return;
+    }
+
     // 관리자가 아닌 경우 차단 여부 먼저 확인
     if (group.role !== "HOST") {
       const blocked = await checkUserBlockedInGroup(group.id, {
@@ -354,9 +431,16 @@ export default function HomeScreen({
       });
 
       if (blocked) {
-        setBlockedModalInfo({
+        recordBlockedGroup({
+          groupId: group.id,
           groupName: group.name,
-          reason: blocked.reason || "관리자에 의해 그룹에서 차단되었습니다.",
+          reason: blocked.reason,
+          blockedAt: blocked.blockedAt,
+        });
+        setBlockedModalInfo({
+          groupId: group.id,
+          groupName: group.name,
+          reason: blocked.reason,
           blockedAt: blocked.blockedAt,
         });
         setIsBlockedModalOpen(true);
@@ -368,6 +452,16 @@ export default function HomeScreen({
       return;
     }
     router.push(groupRoutes.home(group.id));
+  };
+
+  const handleRemoveBlockedGroup = () => {
+    if (!blockedModalInfo) return;
+    removeBlockedGroup(blockedModalInfo.groupId);
+    setActiveGroups((prev) =>
+      prev.filter((item) => item.id !== blockedModalInfo.groupId),
+    );
+    setIsBlockedModalOpen(false);
+    setBlockedModalInfo(null);
   };
 
   return (
@@ -450,43 +544,36 @@ export default function HomeScreen({
             <button
               type="button"
               role="tab"
-              id="tab-active"
               aria-selected={activeTab === "ACTIVE"}
-              aria-controls="tabpanel-active"
               className={`${styles.tabButton} ${
                 activeTab === "ACTIVE" ? styles.tabButtonActive : ""
               }`}
               onClick={() => setActiveTab("ACTIVE")}
             >
               진행 중인 모임
+              {activeTab === "ACTIVE" && (
+                <div className={styles.tabIndicator} aria-hidden="true" />
+              )}
             </button>
 
             <button
               type="button"
               role="tab"
-              id="tab-completed"
               aria-selected={activeTab === "COMPLETED"}
-              aria-controls="tabpanel-completed"
               className={`${styles.tabButton} ${
                 activeTab === "COMPLETED" ? styles.tabButtonActive : ""
               }`}
               onClick={() => setActiveTab("COMPLETED")}
             >
               완료된 모임
+              {activeTab === "COMPLETED" && (
+                <div className={styles.tabIndicator} aria-hidden="true" />
+              )}
             </button>
           </div>
 
-          {/* 탭 콘텐츠 리스트 영역 */}
-          <div
-            id={
-              activeTab === "ACTIVE" ? "tabpanel-active" : "tabpanel-completed"
-            }
-            role="tabpanel"
-            aria-labelledby={
-              activeTab === "ACTIVE" ? "tab-active" : "tab-completed"
-            }
-            className={styles.tabContent}
-          >
+          {/* 4. 탭별 컨텐츠 렌더링 */}
+          <div className={styles.tabContent}>
             {activeTab === "ACTIVE" ? (
               isLoading ? (
                 <div className={styles.skeletonList}>
@@ -517,18 +604,25 @@ export default function HomeScreen({
                           <h4 className={styles.groupName}>{group.name}</h4>
 
                           <p className={styles.groupMetaText}>
-                            {statusInfo.label} · {group.memberCount}명
+                            {group.isBlocked ? "이용 제한" : statusInfo.label} ·{" "}
+                            {group.memberCount}명
                           </p>
 
                           <div className={styles.roleTagWrap}>
                             <span
                               className={`${styles.roleTag} ${
-                                group.role === "HOST"
-                                  ? styles.roleTagAdmin
-                                  : styles.roleTagUser
+                                group.isBlocked
+                                  ? styles.roleTagBlocked
+                                  : group.role === "HOST"
+                                    ? styles.roleTagAdmin
+                                    : styles.roleTagUser
                               }`}
                             >
-                              {group.role === "HOST" ? "관리자" : "사용자"}
+                              {group.isBlocked
+                                ? "차단됨"
+                                : group.role === "HOST"
+                                  ? "관리자"
+                                  : "사용자"}
                             </span>
                           </div>
                         </div>
@@ -574,7 +668,7 @@ export default function HomeScreen({
         </section>
       </main>
 
-      {/* 그룹 차단(추방) 알림 팝업 모달 */}
+      {/* 그룹 이용 제한 안내 모달 */}
       <BottomSheetDialog
         open={isBlockedModalOpen}
         titleId="blocked-alert-modal-title"
@@ -589,32 +683,25 @@ export default function HomeScreen({
 
         <div className={styles.modalContent}>
           <h3 id="blocked-alert-modal-title" className={styles.modalTitle}>
-            그룹에서 차단되었습니다
+            그룹 이용 제한 안내
           </h3>
           <p
             id="blocked-alert-modal-description"
             className={styles.modalDescription}
           >
-            <strong>{blockedModalInfo?.groupName}</strong> 그룹 관리자에 의해
-            <br />
-            그룹 이용이 차단(추방)되었습니다.
+            {blockedModalInfo?.reason
+              ? `관리자에 의해 해당 그룹에서 차단되었습니다.\n차단 사유: ${blockedModalInfo.reason}`
+              : "관리자에 의해 해당 그룹에서 차단되었습니다."}
           </p>
-
-          <div className={styles.blockedReasonBox}>
-            <span className={styles.blockedReasonLabel}>차단 사유</span>
-            <p className={styles.blockedReasonText}>
-              {blockedModalInfo?.reason || "등록된 차단 사유가 없습니다."}
-            </p>
-          </div>
         </div>
 
         <div className={styles.modalSingleAction}>
           <button
             type="button"
-            className={styles.modalSingleActionButton}
-            onClick={() => setIsBlockedModalOpen(false)}
+            className={`${styles.modalSingleActionButton} ${styles.modalDangerButton}`}
+            onClick={handleRemoveBlockedGroup}
           >
-            확인
+            목록에서 삭제하기
           </button>
         </div>
       </BottomSheetDialog>

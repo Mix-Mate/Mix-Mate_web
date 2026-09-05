@@ -19,6 +19,7 @@ import type { GroupStatusStreamError } from "../api/groupStatusStream.api";
 import { useGroupStatusStream } from "../hooks/useGroupStatusStream";
 import { isGroupHomeRoute } from "../lib/group-entry-route";
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
+import { recordBlockedGroup } from "@/features/blacklist/lib/blockedGroupsStorage";
 import { clearAuthTokens } from "@/shared/api/authToken";
 import {
   appRoutes,
@@ -66,6 +67,7 @@ export default function AdminGroupQueryProvider({
     message: string;
     status?: number;
     code?: string;
+    reason?: string;
   } | null>(null);
 
   const error = errorInfo?.message ?? null;
@@ -110,13 +112,46 @@ export default function AdminGroupQueryProvider({
             message: fetchError.message,
             status: fetchError.status,
             code: fetchError.code,
+            reason: fetchError.reason,
           });
+          if (
+            fetchError.status === 403 ||
+            fetchError.code === "USER_BLOCKED" ||
+            fetchError.code === "BANNED_USER" ||
+            fetchError.code === "FORBIDDEN" ||
+            fetchError.code === "BLOCKED" ||
+            fetchError.message.includes("차단")
+          ) {
+            recordBlockedGroup({
+              groupId: String(groupId),
+              groupName: data?.groupName || "그룹",
+              reason: fetchError.reason,
+            });
+          }
         } else if (fetchError instanceof Error) {
+          const status = (fetchError as { status?: number }).status;
+          const code = (fetchError as { code?: string }).code;
+          const reason = (fetchError as { reason?: string }).reason;
           setErrorInfo({
             message: fetchError.message,
-            status: (fetchError as { status?: number }).status,
-            code: (fetchError as { code?: string }).code,
+            status,
+            code,
+            reason,
           });
+          if (
+            status === 403 ||
+            code === "USER_BLOCKED" ||
+            code === "BANNED_USER" ||
+            code === "FORBIDDEN" ||
+            code === "BLOCKED" ||
+            fetchError.message.includes("차단")
+          ) {
+            recordBlockedGroup({
+              groupId: String(groupId),
+              groupName: data?.groupName || "그룹",
+              reason,
+            });
+          }
         } else {
           setErrorInfo({
             message: "그룹 정보를 불러오지 못했습니다.",
@@ -128,7 +163,7 @@ export default function AdminGroupQueryProvider({
     } finally {
       if (requestId === requestIdRef.current) setIsLoading(false);
     }
-  }, [groupId]);
+  }, [data?.groupName, groupId]);
 
   useEffect(() => {
     if (isExtraPage) return;
@@ -161,13 +196,46 @@ export default function AdminGroupQueryProvider({
               message: fetchError.message,
               status: fetchError.status,
               code: fetchError.code,
+              reason: fetchError.reason,
             });
+            if (
+              fetchError.status === 403 ||
+              fetchError.code === "USER_BLOCKED" ||
+              fetchError.code === "BANNED_USER" ||
+              fetchError.code === "FORBIDDEN" ||
+              fetchError.code === "BLOCKED" ||
+              fetchError.message.includes("차단")
+            ) {
+              recordBlockedGroup({
+                groupId: String(groupId),
+                groupName: data?.groupName || "그룹",
+                reason: fetchError.reason,
+              });
+            }
           } else if (fetchError instanceof Error) {
+            const status = (fetchError as { status?: number }).status;
+            const code = (fetchError as { code?: string }).code;
+            const reason = (fetchError as { reason?: string }).reason;
             setErrorInfo({
               message: fetchError.message,
-              status: (fetchError as { status?: number }).status,
-              code: (fetchError as { code?: string }).code,
+              status,
+              code,
+              reason,
             });
+            if (
+              status === 403 ||
+              code === "USER_BLOCKED" ||
+              code === "BANNED_USER" ||
+              code === "FORBIDDEN" ||
+              code === "BLOCKED" ||
+              fetchError.message.includes("차단")
+            ) {
+              recordBlockedGroup({
+                groupId: String(groupId),
+                groupName: data?.groupName || "그룹",
+                reason,
+              });
+            }
           } else {
             setErrorInfo({
               message: "그룹 정보를 불러오지 못했습니다.",
@@ -274,7 +342,9 @@ export default function AdminGroupQueryProvider({
           ) : (
             <>
               <p className={styles.error} role="alert">
-                {error ?? "그룹 정보를 불러오지 못했습니다."}
+                {isBlocked && errorInfo?.reason
+                  ? `그룹에서 차단되었습니다.\n차단 사유: ${errorInfo.reason}`
+                  : (error ?? "그룹 정보를 불러오지 못했습니다.")}
               </p>
               {isBlocked ? (
                 <Button

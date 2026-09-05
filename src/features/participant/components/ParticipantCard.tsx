@@ -49,11 +49,15 @@ export default function ParticipantCard({
     : publicDetailText;
   const listMode = searchParams?.get("list");
   const returnTo = searchParams?.get("returnTo");
+  const fromParam = searchParams?.get("from");
+  const tabParam = searchParams?.get("tab");
   const profileSearchParams = [
     round ? `round=${round}` : null,
     canViewPrivateProfiles ? "role=admin" : null,
     listMode ? `list=${listMode}` : null,
     returnTo ? `returnTo=${returnTo}` : null,
+    tabParam ? `tab=${tabParam}` : null,
+    fromParam ? `from=${encodeURIComponent(fromParam)}` : null,
   ].filter(Boolean);
   const profileHref = `/groups/${resolvedGroupId}/participants/${participant.id}${
     profileSearchParams.length > 0 ? `?${profileSearchParams.join("&")}` : ""

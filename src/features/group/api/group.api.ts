@@ -41,19 +41,111 @@ export class GroupApiError extends Error {
   status?: number;
   code?: string;
   fieldErrors?: Record<string, string>;
+  reason?: string;
 
   constructor(
     message: string,
     status?: number,
     code?: string,
     fieldErrors?: Record<string, string>,
+    reason?: string,
   ) {
     super(message);
     this.name = "GroupApiError";
     this.status = status;
     this.code = code;
     this.fieldErrors = fieldErrors;
+    this.reason = reason;
   }
+}
+
+export function extractErrorReason(errorData: unknown): string | undefined {
+  if (!errorData) return undefined;
+  if (typeof errorData === "string") {
+    const trimmed = errorData.trim();
+    if (!trimmed || isGenericErrorMessage(trimmed)) return undefined;
+    const msgMatch = trimmed.match(/사유\s*[:：]\s*([^\n\r]+)/);
+    if (msgMatch && msgMatch[1] && !isGenericErrorMessage(msgMatch[1].trim())) {
+      return msgMatch[1].trim();
+    }
+    return trimmed;
+  }
+  if (typeof errorData === "object" && errorData !== null) {
+    const dataObj = errorData as Record<string, unknown>;
+    const nestedData =
+      typeof dataObj.data === "object" && dataObj.data !== null
+        ? (dataObj.data as Record<string, unknown>)
+        : undefined;
+    const nestedResult =
+      typeof dataObj.result === "object" && dataObj.result !== null
+        ? (dataObj.result as Record<string, unknown>)
+        : undefined;
+    const nestedError =
+      typeof dataObj.error === "object" && dataObj.error !== null
+        ? (dataObj.error as Record<string, unknown>)
+        : undefined;
+
+    const candidates = [
+      dataObj.reason,
+      nestedData?.reason,
+      nestedResult?.reason,
+      nestedError?.reason,
+      dataObj.banReason,
+      nestedData?.banReason,
+      nestedResult?.banReason,
+      nestedError?.banReason,
+      dataObj.blockReason,
+      nestedData?.blockReason,
+      nestedResult?.blockReason,
+      nestedError?.blockReason,
+      dataObj.detail,
+      nestedData?.detail,
+      nestedResult?.detail,
+      nestedError?.detail,
+      dataObj.cause,
+      nestedData?.cause,
+    ];
+
+    for (const c of candidates) {
+      if (
+        typeof c === "string" &&
+        c.trim().length > 0 &&
+        !isGenericErrorMessage(c.trim())
+      ) {
+        return c.trim();
+      }
+    }
+
+    const messages = [
+      dataObj.message,
+      nestedData?.message,
+      nestedResult?.message,
+      nestedError?.message,
+    ];
+    for (const m of messages) {
+      if (typeof m === "string" && m.trim().length > 0) {
+        const match = m.match(/사유\s*[:：]\s*([^\n\r]+)/);
+        if (match && match[1] && !isGenericErrorMessage(match[1].trim())) {
+          return match[1].trim();
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+function isGenericErrorMessage(str: string): boolean {
+  return (
+    str === "관리자에 의해 해당 그룹에서 차단되었습니다." ||
+    str === "이 그룹에 참여하고 있지 않거나 차단되었습니다." ||
+    str === "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다." ||
+    str === "차단되어 입장할 수 없습니다." ||
+    str === "등록된 차단 사유가 없습니다." ||
+    str === "FORBIDDEN" ||
+    str === "USER_BLOCKED" ||
+    str === "BLOCKED" ||
+    str === "BANNED_USER"
+  );
 }
 
 export async function createGroupApi(
@@ -93,6 +185,7 @@ export async function createGroupApi(
     let errorData: {
       message?: string;
       code?: string;
+      reason?: string;
       errors?: Record<string, string>;
     } | null = null;
     try {
@@ -109,11 +202,14 @@ export async function createGroupApi(
           ? "토큰이 없거나 만료되었습니다."
           : "그룹 생성에 실패했습니다.");
 
+    const reason = extractErrorReason(errorData);
+
     throw new GroupApiError(
       message,
       response.status,
       errorData?.code,
       errorData?.errors,
+      reason,
     );
   }
 
@@ -163,7 +259,7 @@ export async function getMyGroupsApi(
   });
 
   if (!response.ok) {
-    let errorData: { message?: string; code?: string } | null = null;
+    let errorData: { message?: string; code?: string; reason?: string } | null = null;
     try {
       errorData = await response.json();
     } catch {
@@ -178,7 +274,15 @@ export async function getMyGroupsApi(
           ? "토큰이 없거나 만료되었습니다."
           : "그룹 목록을 불러오지 못했습니다.");
 
-    throw new GroupApiError(message, response.status, errorData?.code);
+    const reason = extractErrorReason(errorData);
+
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      undefined,
+      reason,
+    );
   }
 
   return (await response.json()) as GetMyGroupsResponse;
@@ -199,9 +303,9 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
   }
 
   if (!response.ok) {
-    let errorData: { message?: string; code?: string } | null = null;
+    let errorData: { message?: string; code?: string; reason?: string } | null = null;
     try {
-      errorData = (await response.json()) as { message?: string; code?: string };
+      errorData = (await response.json()) as { message?: string; code?: string; reason?: string };
     } catch {
       // Body may not be JSON
     }
@@ -213,10 +317,14 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
           ? "존재하지 않는 그룹입니다."
           : "그룹 정보를 불러오지 못했습니다.");
 
+    const reason = extractErrorReason(errorData);
+
     throw new GroupApiError(
       message,
       response.status,
       errorData?.code,
+      undefined,
+      reason,
     );
   }
 
@@ -374,6 +482,7 @@ export async function joinGroupWithProfileApi(
     let errorData: {
       code?: string;
       message?: string;
+      reason?: string;
       errors?: Record<string, string>;
     } | null = null;
     try {
@@ -392,11 +501,14 @@ export async function joinGroupWithProfileApi(
             ? "참여코드가 존재하지 않습니다."
             : "그룹 입장에 실패했습니다.");
 
+    const reason = extractErrorReason(errorData);
+
     throw new GroupApiError(
       message,
       response.status,
       errorData?.code,
       errorData?.errors,
+      reason,
     );
   }
 
@@ -454,11 +566,12 @@ export async function verifyInviteCodeApi(
   );
 
   if (!response.ok) {
-    let errorData: { code?: string; message?: string } | null = null;
+    let errorData: { code?: string; message?: string; reason?: string } | null = null;
     try {
       errorData = (await response.clone().json()) as {
         code?: string;
         message?: string;
+        reason?: string;
       };
     } catch {
       // Non-JSON response fallback
@@ -474,7 +587,15 @@ export async function verifyInviteCodeApi(
             : "참여코드 검증에 실패했습니다.";
 
     const message = errorData?.message || defaultMessage;
-    throw new GroupApiError(message, response.status, errorData?.code);
+    const reason = extractErrorReason(errorData);
+
+    throw new GroupApiError(
+      message,
+      response.status,
+      errorData?.code,
+      undefined,
+      reason,
+    );
   }
 
   return (await response.json()) as VerifyInviteCodeResponse;
