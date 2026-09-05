@@ -71,12 +71,20 @@ export const groupRoutes = {
     `${groupBase(groupId)}/admin/preparation`,
   adminProgress: (groupId: string) => `${groupBase(groupId)}/admin/progress`,
   adminVoteEnd: (groupId: string) => `${groupBase(groupId)}/admin/votes/end`,
-  adminAssignmentSetup: (groupId: string, round: AssignmentRound) =>
-    `${groupBase(groupId)}/admin/assignments/${round}/setup`,
-  adminAssignmentFixedMembers: (groupId: string, round: AssignmentRound) =>
-    `${groupBase(groupId)}/admin/assignments/${round}/fixed-members`,
-  adminAssignmentProcessing: (groupId: string, round: AssignmentRound) =>
-    `${groupBase(groupId)}/admin/assignments/${round}/processing`,
-  adminAssignmentResult: (groupId: string, round: AssignmentRound) =>
-    `${groupBase(groupId)}/admin/assignments/${round}/result`,
+  adminAssignmentSetup: (groupId: string, round: AssignmentRound) => {
+    void round;
+    return `${groupBase(groupId)}/admin/assignments/setup`;
+  },
+  adminAssignmentFixedMembers: (groupId: string, round: AssignmentRound) => {
+    void round;
+    return `${groupBase(groupId)}/admin/assignments/fixed-members`;
+  },
+  adminAssignmentProcessing: (groupId: string, round: AssignmentRound) => {
+    void round;
+    return `${groupBase(groupId)}/admin/assignments/processing`;
+  },
+  adminAssignmentResult: (groupId: string, round: AssignmentRound) => {
+    void round;
+    return `${groupBase(groupId)}/admin/assignments/result`;
+  },
 };

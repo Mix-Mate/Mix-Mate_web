@@ -11,6 +11,7 @@ const {
   createAssignmentMock,
   pushMock,
   replaceMock,
+  useParamsMock,
   useAdminGroupQueryMock,
   useParticipantCandidatesQueryMock,
   useVoteStatusQueryMock,
@@ -19,13 +20,14 @@ const {
   createAssignmentMock: vi.fn(),
   pushMock: vi.fn(),
   replaceMock: vi.fn(),
+  useParamsMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useParticipantCandidatesQueryMock: vi.fn(),
   useVoteStatusQueryMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
-  useParams: () => ({ groupId: "6", round: "1" }),
+  useParams: useParamsMock,
   useRouter: () => ({
     push: pushMock,
     replace: replaceMock,
@@ -71,6 +73,7 @@ function createGroup(status: GroupStatus = "RECRUITING"): GroupDetail {
 describe("AssignmentSetupScreen Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useParamsMock.mockReturnValue({ groupId: "6" });
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("RECRUITING"),
     });
@@ -118,5 +121,16 @@ describe("AssignmentSetupScreen Navigation", () => {
     fireEvent.click(participantsTab);
 
     expect(pushMock).toHaveBeenCalledWith("/groups/6/admin/participants");
+  });
+
+  it("legacy 회차 URL로 진입하면 clean 조편성 URL로 교체한다", () => {
+    useParamsMock.mockReturnValue({ groupId: "6", round: "2" });
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("BEFORE_SECOND_ROUND"),
+    });
+
+    render(<AssignmentSetupScreen />);
+
+    expect(replaceMock).toHaveBeenCalledWith("/groups/6/admin/assignments/setup");
   });
 });

@@ -1,11 +1,12 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FixedMemberCard from "@/features/assignment/components/FixedMemberCard";
 import UnassignedMemberRow from "@/features/assignment/components/UnassignedMemberRow";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
 import { useParticipantCandidatesQuery } from "@/features/assignment/hooks/useParticipantCandidatesQuery";
+import { resolveAssignmentRound } from "@/features/assignment/model/assignment-round";
 import {
   toBackendConditions,
   toFixedMembersRequest,
@@ -23,7 +24,6 @@ import type { Participant } from "@/features/participant/types/participant.types
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import SelectFixedGroupDialog from "@/modals/admin/SelectFixedGroupDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
@@ -34,11 +34,11 @@ import styles from "@/features/assignment/components/fixed-members.module.css";
 const DEFAULT_GROUP_COUNT = 3;
 
 export default function FixedMemberSetupScreen() {
-  const params = useParams<{ groupId: string; round: string }>();
+  const params = useParams<{ groupId: string; round?: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const round = resolveAssignmentRound(params.round, group?.status);
 
   const setupDraft = getAssignmentSetupDraft(params.groupId, round);
   const groupCount = setupDraft?.groupCount ?? DEFAULT_GROUP_COUNT;
@@ -57,6 +57,17 @@ export default function FixedMemberSetupScreen() {
     isLoading: isLoadingCandidates,
     error: candidatesError,
   } = useParticipantCandidatesQuery(params.groupId, round);
+
+  useEffect(() => {
+    if (!params.round) return;
+
+    router.replace(
+      withSessionContext(
+        groupRoutes.adminAssignmentFixedMembers(params.groupId, round),
+        searchParams,
+      ),
+    );
+  }, [params.groupId, params.round, round, router, searchParams]);
 
   const fixedMembers = useMemo(
     () =>
@@ -78,9 +89,7 @@ export default function FixedMemberSetupScreen() {
     return candidates.filter((candidate) => {
       if (candidate.participantId in fixedTeamByParticipantId) return false;
 
-      return (
-        !trimmedKeyword || candidate.displayName.includes(trimmedKeyword)
-      );
+      return !trimmedKeyword || candidate.displayName.includes(trimmedKeyword);
     });
   }, [candidates, fixedTeamByParticipantId, keyword]);
 
@@ -88,8 +97,7 @@ export default function FixedMemberSetupScreen() {
   // "+1명"을 받을 수 있는 조의 개수(remainder). 어느 조가 그 +1을 가져갈지는
   // 조 번호로 미리 정하지 않고, 고정 멤버를 먼저 채우는 조가 가져간다
   // (SelectFixedGroupDialog에서 실시간으로 판단).
-  const base =
-    groupCount > 0 ? Math.floor(candidates.length / groupCount) : 0;
+  const base = groupCount > 0 ? Math.floor(candidates.length / groupCount) : 0;
   const remainder = groupCount > 0 ? candidates.length % groupCount : 0;
 
   const fixedCountByTeam = useMemo(() => {
@@ -140,9 +148,7 @@ export default function FixedMemberSetupScreen() {
     );
   };
 
-  const [warningMessages, setWarningMessages] = useState<string[] | null>(
-    null,
-  );
+  const [warningMessages, setWarningMessages] = useState<string[] | null>(null);
 
   const {
     mutate: createAssignment,
@@ -301,9 +307,7 @@ export default function FixedMemberSetupScreen() {
         >
           {isAssigning ? "편성 중..." : "편성 실행"}
         </Button>
-        {assignError && (
-          <span className={styles.errorText}>{assignError}</span>
-        )}
+        {assignError && <span className={styles.errorText}>{assignError}</span>}
       </div>
 
       <PrivateParticipantDialog
