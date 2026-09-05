@@ -51,4 +51,29 @@ describe("ParticipantCard", () => {
     expect(screen.getByText("3학년 · 일반")).toBeInTheDocument();
     expect(screen.queryByLabelText("비공개 프로필")).not.toBeInTheDocument();
   });
+
+  it("links the current participant to my profile even when the profile is private", () => {
+    render(
+      <ul>
+        <ParticipantCard
+          currentParticipantId="1"
+          participant={{
+            id: "1",
+            name: "151515",
+            department: "15151",
+            visibility: "private",
+            role: "general",
+            gender: "male",
+            grade: "3학년",
+          }}
+        />
+      </ul>,
+    );
+
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "/groups/6/profile",
+    );
+    expect(screen.queryByLabelText("비공개 프로필")).not.toBeInTheDocument();
+  });
 });

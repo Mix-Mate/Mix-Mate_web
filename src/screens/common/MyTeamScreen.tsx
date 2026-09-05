@@ -43,9 +43,23 @@ export default function MyTeamScreen() {
   );
   const activeTab = searchParams.get("tab") === "members" ? "members" : "team";
   const canViewPrivateProfiles = group?.myRole === "HOST";
+  const myParticipantId = group?.myParticipantId
+    ? String(group.myParticipantId)
+    : null;
   const participantRound = round === "SECOND_ROUND" ? 2 : 1;
 
   const handleMemberSelect = (member: TeamMember) => {
+    const selectedParticipantId = String(member.participantId);
+    const isMyProfile =
+      myParticipantId !== null && myParticipantId === selectedParticipantId;
+
+    if (isMyProfile) {
+      router.push(
+        withSessionContext(groupRoutes.profile(params.groupId), searchParams),
+      );
+      return;
+    }
+
     if (member.visibility === "PRIVATE" && !canViewPrivateProfiles) {
       setPrivateMember(member);
       return;
@@ -63,7 +77,7 @@ export default function MyTeamScreen() {
 
     router.push(
       withSessionContext(
-        `/groups/${params.groupId}/participants/${member.participantId}?${profileSearchParams}`,
+        `/groups/${params.groupId}/participants/${selectedParticipantId}?${profileSearchParams}`,
         searchParams,
       ),
     );
