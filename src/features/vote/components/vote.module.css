@@ -135,6 +135,10 @@
 }
 
 .candidateText strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #26313c;
   font-size: 14px;
   font-weight: 700;
@@ -142,6 +146,10 @@
 }
 
 .candidateText small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #929aa4;
   font-size: 11px;
   line-height: 17px;

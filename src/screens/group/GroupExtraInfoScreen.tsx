@@ -273,9 +273,12 @@ export default function GroupExtraInfoScreen({
 
         {/* 1. 이름 확인 (필수*) */}
         <label className={styles.field}>
-          <span>
-            이름 확인 <strong className={styles.required}>*</strong>
-          </span>
+          <div className={styles.fieldHeader}>
+            <span>
+              이름 확인 <strong className={styles.required}>*</strong>
+            </span>
+            <span className={styles.charCount}>{name.length}/10</span>
+          </div>
           <input
             value={name}
             maxLength={10}

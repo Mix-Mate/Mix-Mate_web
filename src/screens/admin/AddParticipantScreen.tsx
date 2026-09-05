@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, type FormEvent } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -169,11 +169,15 @@ export default function AddParticipantScreen() {
         </InfoBanner>
 
         <label className={styles.field}>
-          <span>이름</span>
+          <div className={styles.fieldHeader}>
+            <span>이름</span>
+            <span className={styles.charCount}>{form.displayName.length}/10</span>
+          </div>
           <input
             value={form.displayName}
             maxLength={10}
             onChange={(event) => updateField("displayName", event.target.value)}
+            placeholder="이름 입력"
           />
         </label>
 

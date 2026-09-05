@@ -32,11 +32,14 @@ export default function EditGroupDialog({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<UpdateGroupInput>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: initialValues,
   });
+
+  const descriptionValue = watch("description") ?? "";
 
   useEffect(() => {
     if (!open) return;
@@ -101,11 +104,18 @@ export default function EditGroupDialog({
             aria-invalid={Boolean(errors.description)}
             {...register("description")}
           />
-          {errors.description && (
-            <small className={styles.fieldError} role="alert">
-              {errors.description.message}
-            </small>
-          )}
+          <div className={styles.fieldFooter}>
+            {errors.description ? (
+              <small className={styles.fieldError} role="alert">
+                {errors.description.message}
+              </small>
+            ) : (
+              <span />
+            )}
+            <span className={styles.charCounter}>
+              {descriptionValue.length}/120
+            </span>
+          </div>
         </div>
 
         {error && (

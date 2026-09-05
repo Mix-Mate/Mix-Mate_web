@@ -130,6 +130,22 @@
   line-height: 18px;
 }
 
+.fieldFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.charCounter {
+  margin-left: auto;
+  color: #71717a;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
 .submitError {
   display: flex;
   align-items: center;

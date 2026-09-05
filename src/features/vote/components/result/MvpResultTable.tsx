@@ -106,7 +106,7 @@ export default function MvpResultTable({
                 />
                 <span className={styles.teamBadge}>{winner.teamNumber}조</span>
               </span>
-              <strong>{winner.displayName}</strong>
+              <strong title={winner.displayName}>{winner.displayName}</strong>
               <small>
                 {gradeLabelByGrade[winner.grade]} · {winner.mbti}
               </small>

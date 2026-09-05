@@ -37,7 +37,7 @@ export default function MvpCandidateItem({
         shape="circle"
       />
       <span className={styles.candidateText}>
-        <strong>{candidate.name}</strong>
+        <strong title={candidate.name}>{candidate.name}</strong>
         <small>{candidate.department}</small>
       </span>
       <span className={styles.radioMark} aria-hidden="true">

@@ -59,6 +59,14 @@
   gap: 7px;
 }
 
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1px;
+}
+
+.fieldHeader > span,
 .field > span {
   color: #18181b;
   font-size: 13.5px;
@@ -67,6 +75,12 @@
   display: flex;
   align-items: center;
   margin-bottom: 1px;
+}
+
+.charCount {
+  color: #71717a;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .required {
