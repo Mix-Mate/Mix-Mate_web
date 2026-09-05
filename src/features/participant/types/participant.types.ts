@@ -38,6 +38,7 @@ export type Participant = {
   age?: number;
   instagramId?: string;
   bio?: string;
+  manualEntry?: boolean;
 };
 
 export type ParticipantTeam = {
@@ -93,6 +94,8 @@ export type ParticipantSummaryResponse = {
   age?: number | null;
   instaId?: string | null;
   bio?: string | null;
+  manualEntry?: boolean;
+  userId?: number | null;
 };
 
 export type ParticipantListResponse = {

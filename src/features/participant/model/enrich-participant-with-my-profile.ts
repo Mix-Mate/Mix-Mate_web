@@ -33,16 +33,28 @@ export function enrichParticipantWithMyProfile<TParticipant extends Participant>
 
   return {
     ...participant,
-    name: myProfile.displayName,
-    department: myProfile.major,
-    visibility: myProfile.visibility === "PUBLIC" ? "public" : "private",
-    role: myProfile.position === "STAFF" ? "staff" : "general",
-    gender: myProfile.gender === "FEMALE" ? "female" : "male",
+    name: myProfile.displayName || participant.name,
+    department: myProfile.major || participant.department,
+    visibility: myProfile.visibility
+      ? myProfile.visibility === "PUBLIC"
+        ? "public"
+        : "private"
+      : participant.visibility,
+    role: myProfile.position
+      ? myProfile.position === "STAFF"
+        ? "staff"
+        : "general"
+      : participant.role,
+    gender: myProfile.gender
+      ? myProfile.gender === "FEMALE"
+        ? "female"
+        : "male"
+      : participant.gender,
     grade: getProfileGradeLabel(myProfile.grade) ?? participant.grade,
-    isNew: myProfile.isNew,
-    mbti: myProfile.mbti,
-    age: myProfile.age ?? undefined,
-    instagramId: myProfile.instaId ?? undefined,
-    bio: myProfile.bio ?? undefined,
+    isNew: myProfile.isNew ?? participant.isNew,
+    mbti: myProfile.mbti ?? participant.mbti,
+    age: myProfile.age ?? participant.age,
+    instagramId: myProfile.instaId ?? participant.instagramId,
+    bio: myProfile.bio ?? participant.bio,
   };
 }

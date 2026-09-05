@@ -293,6 +293,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
     });
@@ -361,6 +362,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -411,6 +413,7 @@ describe("Blacklist Feature & API Integration", () => {
       expect(participantFallbackSpy).toHaveBeenCalledWith("17", {
         detailRole: "admin",
         enabled: false,
+        hydrateProfiles: false,
         round: 1,
       });
       expect(screen.getByText("이순신")).toBeInTheDocument();
@@ -441,7 +444,7 @@ describe("Blacklist Feature & API Integration", () => {
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
-        data: null,
+        data: mockParticipantProfile,
       } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
@@ -529,7 +532,7 @@ describe("Blacklist Feature & API Integration", () => {
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
-        data: null,
+        data: mockParticipantProfile,
       } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
@@ -593,7 +596,7 @@ describe("Blacklist Feature & API Integration", () => {
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
-        data: null,
+        data: mockParticipantProfile,
       } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
@@ -710,7 +713,7 @@ describe("Blacklist Feature & API Integration", () => {
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
-        data: null,
+        data: mockParticipantProfile,
       } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
@@ -764,7 +767,7 @@ describe("Blacklist Feature & API Integration", () => {
         participantProfileQuery,
         "useParticipantProfileQuery",
       ).mockReturnValue({
-        data: null,
+        data: mockParticipantProfile,
       } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
 
       vi.spyOn(blacklistApi, "blockParticipantApi").mockRejectedValue(
@@ -810,6 +813,24 @@ describe("Blacklist Feature & API Integration", () => {
           myParticipantId: 202,
         },
       } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+      vi.spyOn(myGroupProfileQuery, "useMyGroupProfileQuery").mockReturnValue({
+        data: {
+          id: "202",
+          displayName: "이순신",
+          position: "MEMBER",
+          major: "경영학과",
+          isNew: false,
+          grade: "SECOND",
+          gender: "MALE",
+          mbti: "ISTJ",
+          age: 22,
+          instaId: "sunshin",
+          bio: "안녕하세요",
+          visibility: "PUBLIC",
+        },
+        isLoading: false,
+        isError: false,
+      } as ReturnType<typeof myGroupProfileQuery.useMyGroupProfileQuery>);
 
       vi.spyOn(
         adminParticipantQuery,

@@ -5,6 +5,64 @@ import type {
 } from "../types/profile.types";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { withAuthHeaders } from "@/shared/api/authToken";
+import {
+  readMyGroupProfileDraft,
+  rememberMyGroupProfileDraft,
+} from "../model/my-group-profile-draft-storage";
+
+type MyProfileResponsePayload =
+  | MyProfileResponse
+  | {
+      data?: MyProfileResponse;
+      participant?: MyProfileResponse;
+      participantProfile?: MyProfileResponse;
+      profile?: MyProfileResponse;
+    };
+
+function hasOwn(value: object, key: string) {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function unwrapMyProfileResponse(
+  payload: MyProfileResponsePayload,
+): MyProfileResponse {
+  if ("data" in payload && payload.data) return payload.data;
+  if ("profile" in payload && payload.profile) return payload.profile;
+  if ("participantProfile" in payload && payload.participantProfile) {
+    return payload.participantProfile;
+  }
+  if ("participant" in payload && payload.participant) return payload.participant;
+
+  return payload as MyProfileResponse;
+}
+
+function getValue<TKey extends keyof ParticipantProfileRequest>(
+  data: MyProfileResponse,
+  draft: ParticipantProfileRequest | null,
+  key: TKey,
+) {
+  return hasOwn(data, key) ? data[key] : draft?.[key];
+}
+
+function toMyGroupProfile(
+  data: MyProfileResponse,
+  draft: ParticipantProfileRequest | null,
+): MyGroupProfile {
+  return {
+    id: String(data.participantId ?? data.id ?? "me"),
+    displayName: getValue(data, draft, "displayName") ?? data.name ?? "",
+    position: getValue(data, draft, "position") ?? "MEMBER",
+    major: getValue(data, draft, "major") ?? data.department ?? "",
+    isNew: getValue(data, draft, "isNew") ?? false,
+    grade: getValue(data, draft, "grade") ?? "OTHER",
+    gender: getValue(data, draft, "gender") ?? "MALE",
+    mbti: getValue(data, draft, "mbti") ?? "ISTJ",
+    age: getValue(data, draft, "age") ?? null,
+    instaId: getValue(data, draft, "instaId") ?? data.instagramId ?? null,
+    bio: getValue(data, draft, "bio") ?? null,
+    visibility: getValue(data, draft, "visibility") ?? "PUBLIC",
+  };
+}
 
 async function createRequestError(response: Response, fallbackMessage: string) {
   try {
@@ -35,12 +93,11 @@ export async function getMyGroupProfile(
     );
   }
 
-  const data = (await response.json()) as MyProfileResponse;
+  const data = unwrapMyProfileResponse(
+    (await response.json()) as MyProfileResponsePayload,
+  );
 
-  return {
-    ...data,
-    id: String(data.participantId ?? data.id ?? "me"),
-  };
+  return toMyGroupProfile(data, readMyGroupProfileDraft(groupId));
 }
 
 export async function updateParticipantProfile(
@@ -62,4 +119,6 @@ export async function updateParticipantProfile(
   if (!response.ok) {
     throw await createRequestError(response, "프로필 수정에 실패했습니다.");
   }
+
+  rememberMyGroupProfileDraft(groupId, profile);
 }

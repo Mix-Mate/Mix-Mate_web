@@ -107,6 +107,7 @@ export default function ParticipantProfileScreen({
   const { data: participantGroup } = useParticipantListQuery(groupId, {
     detailRole: isAdminView ? "admin" : undefined,
     round: resolvedRound,
+    hydrateProfiles: false,
     enabled: shouldFetchParticipantFallback,
   });
 
