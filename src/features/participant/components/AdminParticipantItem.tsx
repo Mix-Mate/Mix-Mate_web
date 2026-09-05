@@ -12,7 +12,6 @@ interface AdminParticipantItemProps {
 export default function AdminParticipantItem({
   groupId,
   participant,
-  round,
 }: AdminParticipantItemProps) {
   const roleLabel = participant.role === "staff" ? "운영진" : "일반";
   const detailText =
@@ -22,8 +21,8 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&from=${encodeURIComponent(
-          `/groups/${groupId}/admin/participants?round=${round}`,
+        href={`/groups/${groupId}/participants/${participant.id}?from=${encodeURIComponent(
+          `/groups/${groupId}/admin/participants`,
         )}`}
         className={styles.participantItem}
       >

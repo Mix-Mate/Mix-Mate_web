@@ -76,4 +76,27 @@ describe("ParticipantCard", () => {
     );
     expect(screen.queryByLabelText("비공개 프로필")).not.toBeInTheDocument();
   });
+
+  it("does not expose round information in participant profile links", () => {
+    render(
+      <ul>
+        <ParticipantCard
+          round={2}
+          participant={{
+            id: "2",
+            name: "공개참가자",
+            department: "컴퓨터공학과",
+            visibility: "public",
+            role: "general",
+            gender: "female",
+          }}
+        />
+      </ul>,
+    );
+
+    expect(screen.getByRole("link")).toHaveAttribute(
+      "href",
+      "/groups/6/participants/2",
+    );
+  });
 });

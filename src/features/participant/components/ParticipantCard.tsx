@@ -21,7 +21,6 @@ interface ParticipantCardProps {
 export default function ParticipantCard({
   participant,
   groupId,
-  round,
   currentParticipantId,
   onPrivateSelect,
   canViewPrivateProfiles = false,
@@ -53,7 +52,6 @@ export default function ParticipantCard({
   const fromParam = searchParams?.get("from");
   const tabParam = searchParams?.get("tab");
   const profileSearchParams = [
-    round ? `round=${round}` : null,
     listMode ? `list=${listMode}` : null,
     returnTo ? `returnTo=${returnTo}` : null,
     tabParam ? `tab=${tabParam}` : null,

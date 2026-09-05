@@ -46,7 +46,6 @@ export default function MyTeamScreen() {
   const myParticipantId = group?.myParticipantId
     ? String(group.myParticipantId)
     : null;
-  const participantRound = round === "SECOND_ROUND" ? 2 : 1;
 
   const handleMemberSelect = (member: TeamMember) => {
     const selectedParticipantId = String(member.participantId);
@@ -66,7 +65,6 @@ export default function MyTeamScreen() {
     }
 
     const profileSearchParams = new URLSearchParams({
-      round: String(participantRound),
       tab: activeTab,
       from: `/groups/${params.groupId}/team?tab=${activeTab}`,
     });
