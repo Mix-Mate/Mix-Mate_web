@@ -59,10 +59,6 @@ export default function TeamHistoryScreen() {
       from: `/groups/${params.groupId}/history`,
     });
 
-    if (canViewPrivateProfiles) {
-      profileSearchParams.set("role", "admin");
-    }
-
     router.push(
       withSessionContext(
         `/groups/${params.groupId}/participants/${selectedParticipantId}?${profileSearchParams}`,

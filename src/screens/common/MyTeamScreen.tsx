@@ -71,10 +71,6 @@ export default function MyTeamScreen() {
       from: `/groups/${params.groupId}/team?tab=${activeTab}`,
     });
 
-    if (canViewPrivateProfiles) {
-      profileSearchParams.set("role", "admin");
-    }
-
     router.push(
       withSessionContext(
         `/groups/${params.groupId}/participants/${selectedParticipantId}?${profileSearchParams}`,

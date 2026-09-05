@@ -11,7 +11,9 @@ interface GroupCreateScreenProps {
   onSuccess?: (groupId: string, code: string) => void;
 }
 
-export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps) {
+export default function GroupCreateScreen({
+  onSuccess,
+}: GroupCreateScreenProps) {
   const router = useRouter();
 
   // State requirements
@@ -38,7 +40,7 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
       router.push(
         `${groupRoutes.createExtra()}?groupName=${encodeURIComponent(
           groupName.trim(),
-        )}&description=${encodeURIComponent(description.trim())}&role=admin&from=create`,
+        )}&description=${encodeURIComponent(description.trim())}&from=create`,
       );
     }
   };
@@ -65,7 +67,11 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
 
       {/* 2. 메인 폼 입력 영역 */}
       <main className={styles.main}>
-        <form id="create-group-form" onSubmit={handleMainAction} className={styles.form}>
+        <form
+          id="create-group-form"
+          onSubmit={handleMainAction}
+          className={styles.form}
+        >
           {/* 입력 1: 그룹명 (필수) */}
           <div className={styles.inputGroup}>
             <label htmlFor="group-name-input" className={styles.inputLabel}>
@@ -99,7 +105,9 @@ export default function GroupCreateScreen({ onSuccess }: GroupCreateScreenProps)
                 rows={4}
               />
               <div className={styles.counterRow}>
-                <span className={styles.charCounter}>{description.length}/120</span>
+                <span className={styles.charCounter}>
+                  {description.length}/120
+                </span>
               </div>
             </div>
           </div>

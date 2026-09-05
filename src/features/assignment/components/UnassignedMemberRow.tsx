@@ -5,7 +5,10 @@ import type { Participant } from "@/features/participant/types/participant.types
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toGender } from "../model/assignment.mapper";
-import type { AssignmentRound, ParticipantCandidate } from "../types/assignment.types";
+import type {
+  AssignmentRound,
+  ParticipantCandidate,
+} from "../types/assignment.types";
 import styles from "./fixed-members.module.css";
 
 interface UnassignedMemberRowProps {
@@ -42,7 +45,7 @@ export default function UnassignedMemberRow({
   return (
     <li className={styles.unassignedRow}>
       <Link
-        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin&from=${encodeURIComponent(
+        href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&from=${encodeURIComponent(
           groupRoutes.adminAssignmentFixedMembers(groupId, round),
         )}`}
         className={styles.unassignedRowLink}

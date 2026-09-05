@@ -59,13 +59,11 @@ function toParticipant(
 }
 
 function MvpWinnerList({
-  canViewPrivateProfiles,
   groupId,
   myParticipantId,
   searchParams,
   winners,
 }: {
-  canViewPrivateProfiles: boolean;
   groupId: string;
   myParticipantId: string | null;
   searchParams: { get: (key: string) => string | null };
@@ -87,10 +85,6 @@ function MvpWinnerList({
           myParticipantId !== null &&
           String(winner.participantId) === myParticipantId;
         const profileSearchParams = new URLSearchParams({ list: "mvp" });
-
-        if (canViewPrivateProfiles) {
-          profileSearchParams.set("role", "admin");
-        }
 
         const profileHref = isMyProfile
           ? withSessionContext(groupRoutes.profile(groupId), searchParams)
@@ -217,7 +211,6 @@ export default function VoteResultListScreen({
           {data ? (
             isMvpList ? (
               <MvpWinnerList
-                canViewPrivateProfiles={canViewPrivateProfiles}
                 groupId={params.groupId}
                 myParticipantId={myParticipantId}
                 searchParams={searchParams}
