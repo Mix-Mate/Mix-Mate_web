@@ -1115,8 +1115,11 @@ describe("Blacklist Feature & API Integration", () => {
         {
           ...mockParticipantProfile,
           userId: 202,
+          displayName: mockParticipantProfile.name,
+          email: "test@example.com",
           reason: "테스트",
           blockedAt: new Date().toISOString(),
+          bannedAt: new Date().toISOString(),
         },
       ]);
 
@@ -1165,12 +1168,13 @@ describe("Blacklist Feature & API Integration", () => {
         .mockResolvedValue({
           groupId: 17,
           groupName: "테스트 모임",
+          description: null,
           status: "RECRUITING",
-          myRole: "HOST",
-          hasPassword: false,
+          inviteCode: "ABC1234",
+          createdAt: "2026-08-30T00:00:00.000Z",
           memberCount: 5,
-          targetRound: 1,
-          maxCapacity: 20,
+          myRole: "HOST",
+          myParticipantId: 1,
         });
 
       const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
@@ -1384,9 +1388,16 @@ describe("Blacklist Feature & API Integration", () => {
     });
 
     it("getGroupDetail이 '그룹정보가 없습니다' 에러로 실패해도 getGroupBlacklist와 checkUserBlockedInGroup은 unhandledRejection을 일으키지 않고 안전하게 처리된다", async () => {
-      vi.spyOn(groupApi, "getGroupDetail").mockRejectedValue(
-        new groupApi.GroupApiError("그룹정보가 없습니다.", 400),
-      );
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: "Not found" }),
+      } as Response);
+      const groupDetailSpy = vi
+        .spyOn(groupApi, "getGroupDetail")
+        .mockRejectedValue(
+          new groupApi.GroupApiError("그룹정보가 없습니다.", 400),
+        );
 
       // getGroupBlacklist 호출 시 크래시 없이 폴백 그룹명 반환
       const res = await blacklistApi.getGroupBlacklist("99999");
@@ -1395,6 +1406,9 @@ describe("Blacklist Feature & API Integration", () => {
       // checkUserBlockedInGroup 호출 시 크래시 없이 null 반환
       const blocked = await blacklistApi.checkUserBlockedInGroup("99999");
       expect(blocked).toBeNull();
+
+      fetchSpy.mockRestore();
+      groupDetailSpy.mockRestore();
     });
   });
 });

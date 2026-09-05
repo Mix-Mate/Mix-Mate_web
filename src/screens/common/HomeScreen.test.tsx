@@ -426,8 +426,8 @@ describe("HomeScreen", () => {
       );
 
       // 서버에서 완료 모임으로 777번의 실제 그룹명이 반환되는 상황
-      getMyGroupsApiMock.mockImplementation(async ({ state }: { state?: string }) => {
-        if (state === "finished") {
+      getMyGroupsApiMock.mockImplementation(async (params) => {
+        if (params?.state === "finished") {
           return {
             groups: [
               {
@@ -475,8 +475,11 @@ describe("HomeScreen", () => {
         id: "888",
         userId: 888,
         name: "테스터",
+        displayName: "테스터",
+        email: "tester@example.com",
         reason: "그룹 홈에서 관리자에 의해 차단됨",
         blockedAt: "2026-09-05T12:00:00Z",
+        bannedAt: "2026-09-05T12:00:00Z",
       });
 
       render(<HomeScreen userName="테스터" />);
@@ -522,8 +525,11 @@ describe("HomeScreen", () => {
         id: "999",
         userId: 999,
         name: "테스터",
+        displayName: "테스터",
+        email: "tester@example.com",
         reason: "규칙 위반",
         blockedAt: "2026-09-01T12:00:00Z",
+        bannedAt: "2026-09-01T12:00:00Z",
       });
 
       const { unmount } = render(<HomeScreen userName="테스터" />);
