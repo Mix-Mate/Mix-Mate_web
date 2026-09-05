@@ -1,10 +1,11 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo } from "react";
 import AssignmentGroupList from "@/features/assignment/components/AssignmentGroupList";
 import { useConfirmAssignmentMutation } from "@/features/assignment/hooks/useConfirmAssignmentMutation";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
+import { resolveAssignmentRound } from "@/features/assignment/model/assignment-round";
 import {
   toBackendConditions,
   toFixedMembersFromTeams,
@@ -18,7 +19,6 @@ import {
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -26,16 +26,17 @@ import TabNavigation from "@/shared/ui/TabNavigation";
 import styles from "./assignment-result.module.css";
 
 export default function AssignmentResultScreen() {
-  const params = useParams<{ groupId: string; round: string }>();
+  const params = useParams<{ groupId: string; round?: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(params.round);
   const { data: group, refetch: refetchGroup } = useAdminGroupQuery(
     params.groupId,
   );
+  const round = resolveAssignmentRound(params.round, group?.status);
 
-  const [result] = useState(() =>
-    getAssignmentResultDraft(params.groupId, round),
+  const result = useMemo(
+    () => getAssignmentResultDraft(params.groupId, round),
+    [params.groupId, round],
   );
 
   const {
@@ -48,6 +49,17 @@ export default function AssignmentResultScreen() {
     isPending: isConfirming,
     error: confirmError,
   } = useConfirmAssignmentMutation();
+
+  useEffect(() => {
+    if (!params.round) return;
+
+    router.replace(
+      withSessionContext(
+        groupRoutes.adminAssignmentResult(params.groupId, round),
+        searchParams,
+      ),
+    );
+  }, [params.groupId, params.round, round, router, searchParams]);
 
   const handleReshuffle = async () => {
     if (!result) return;
@@ -85,8 +97,7 @@ export default function AssignmentResultScreen() {
     // "회차 준비 중" 상태로 렌더링되어 조편성 전 화면으로 되돌아간다.
     await refetchGroup();
 
-    const scenario = round === 2 ? "round2-active" : "round1-active";
-    router.replace(`${groupRoutes.home(params.groupId)}?scenario=${scenario}`);
+    router.replace(groupRoutes.home(params.groupId));
   };
 
   const isBusy = isReshuffling || isConfirming;

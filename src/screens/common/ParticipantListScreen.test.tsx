@@ -73,7 +73,7 @@ describe("ParticipantListScreen manual participant addition", () => {
     fireEvent.click(screen.getByRole("button", { name: "사용자 추가" }));
 
     expect(pushMock).toHaveBeenCalledWith(
-      "/groups/6/admin/participants/new?round=1&returnTo=participant-list",
+      "/groups/6/admin/participants/new?returnTo=participant-list",
     );
   });
 
@@ -92,9 +92,7 @@ describe("ParticipantListScreen manual participant addition", () => {
   it("모집 중에는 전체/조별 보기 필터를 보여주지 않는다", () => {
     render(<ParticipantListScreen />);
 
-    expect(
-      screen.queryByLabelText("참가자 보기 방식"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("참가자 보기 방식")).not.toBeInTheDocument();
   });
 
   it("그룹명은 목록 응답 대신 전역 그룹 정보로 표시한다", () => {
@@ -133,10 +131,8 @@ describe("ParticipantListScreen manual participant addition", () => {
     });
 
     render(<AddParticipantScreen />);
-    fireEvent.click(
-      screen.getByRole("button", { name: "이전 화면으로 이동" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
 
-    expect(pushMock).toHaveBeenCalledWith("/groups/6/participants?round=1");
+    expect(pushMock).toHaveBeenCalledWith("/groups/6/participants");
   });
 });

@@ -130,8 +130,24 @@ export default function UserHomeScreen() {
   const endRoundError =
     snapshot?.round === 1 ? finishFirstRoundError : finalRoundError;
   const canLeaveGroup = snapshot?.permissions.canLeaveGroup ?? false;
+  const scenarioParam = searchParams.get("scenario");
+  const roleParam = searchParams.get("role");
   const postVoteDialogOpen =
     canDecideSecondRound && searchParams.get("dialog") === "post-vote";
+
+  useEffect(() => {
+    if (!scenarioParam && !roleParam) return;
+
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("scenario");
+    nextSearchParams.delete("role");
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${groupRoutes.home(params.groupId)}${nextQuery ? `?${nextQuery}` : ""}`,
+      { scroll: false },
+    );
+  }, [params.groupId, roleParam, router, scenarioParam, searchParams]);
 
   useEffect(() => {
     if (!group) return;

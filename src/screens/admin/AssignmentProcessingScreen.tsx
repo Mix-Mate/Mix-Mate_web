@@ -4,22 +4,33 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import AssignmentProgressIndicator from "@/features/assignment/components/AssignmentProgressIndicator";
 import { useAssignmentStatusQuery } from "@/features/assignment/hooks/useAssignmentStatusQuery";
+import { resolveAssignmentRound } from "@/features/assignment/model/assignment-round";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import TabNavigation from "@/shared/ui/TabNavigation";
 import styles from "@/features/assignment/components/processing.module.css";
 
 export default function AssignmentProcessingScreen() {
-  const params = useParams<{ groupId: string; round: string }>();
+  const params = useParams<{ groupId: string; round?: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const round = resolveAssignmentRound(params.round, group?.status);
   const status = useAssignmentStatusQuery();
+
+  useEffect(() => {
+    if (!params.round) return;
+
+    router.replace(
+      withSessionContext(
+        groupRoutes.adminAssignmentProcessing(params.groupId, round),
+        searchParams,
+      ),
+    );
+  }, [params.groupId, params.round, round, router, searchParams]);
 
   useEffect(() => {
     if (!status.isComplete) return;

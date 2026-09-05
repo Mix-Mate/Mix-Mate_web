@@ -37,10 +37,22 @@ import {
 import styles from "./GroupExtraInfoScreen.module.css";
 
 const MBTI_LIST = [
-  "ISTJ", "ISFJ", "INFJ", "INTJ",
-  "ISTP", "ISFP", "INFP", "INTP",
-  "ESTP", "ESFP", "ENFP", "ENTP",
-  "ESTJ", "ESFJ", "ENFJ", "ENTJ",
+  "ISTJ",
+  "ISFJ",
+  "INFJ",
+  "INTJ",
+  "ISTP",
+  "ISFP",
+  "INFP",
+  "INTP",
+  "ESTP",
+  "ESFP",
+  "ENFP",
+  "ENTP",
+  "ESTJ",
+  "ESFJ",
+  "ENFJ",
+  "ENTJ",
 ] as const;
 
 export type GradeType = "1학년" | "2학년" | "3학년" | "4학년" | "기타" | "";
@@ -218,7 +230,8 @@ export default function GroupExtraInfoScreen({
           setErrorModal({
             open: true,
             title: "그룹 참여가 제한되었습니다",
-            description: errMsg || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+            description:
+              errMsg || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
             isBlocked: true,
             isClosed: true,
           });
@@ -387,8 +400,7 @@ export default function GroupExtraInfoScreen({
         (error instanceof Error && error.message.includes("차단"));
 
       if (isBlocked) {
-        let reason =
-          error instanceof GroupApiError ? error.reason : undefined;
+        let reason = error instanceof GroupApiError ? error.reason : undefined;
         if (!reason && error && typeof error === "object") {
           const errObj = error as unknown as Record<string, unknown>;
           const errData =
@@ -417,7 +429,7 @@ export default function GroupExtraInfoScreen({
         const errGroupName =
           error instanceof GroupApiError
             ? error.groupName
-            : (error && typeof error === "object" && "groupName" in error)
+            : error && typeof error === "object" && "groupName" in error
               ? (error as { groupName?: string }).groupName
               : undefined;
 
@@ -474,8 +486,7 @@ export default function GroupExtraInfoScreen({
           : error && typeof error === "object" && "code" in error
             ? (error as { code?: string }).code
             : undefined;
-      const errorMessage =
-        error instanceof Error ? error.message : "";
+      const errorMessage = error instanceof Error ? error.message : "";
 
       const isClosedOrStarted =
         errorStatus === 409 ||
@@ -524,7 +535,11 @@ export default function GroupExtraInfoScreen({
       <Header title="그룹별 추가 정보 입력" onBack={handleBack} smallTitle />
 
       {/* 2. 메인 폼 컨텐츠 (내부 스크롤) */}
-      <form id="group-extra-form" className={styles.content} onSubmit={handleSubmit}>
+      <form
+        id="group-extra-form"
+        className={styles.content}
+        onSubmit={handleSubmit}
+      >
         {/* 안내 배너: 파란 배경 박스 (멘트 색상 #27272A) */}
         <InfoBanner className={styles.notice}>
           <p>자리 배치와 프로필에 사용됩니다.</p>
@@ -584,7 +599,10 @@ export default function GroupExtraInfoScreen({
         {/* 4. 소속 (필수) */}
         <label className={styles.field}>
           <span>
-            소속 <span className={styles.helperTextRed}>*정식 명칭을 입력해 주세요.</span>
+            소속{" "}
+            <span className={styles.helperTextRed}>
+              *정식 명칭을 입력해 주세요.
+            </span>
           </span>
           <input
             value={department}
@@ -621,7 +639,9 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={rolePosition === item ? styles.activeChip : ""}
-                onClick={() => setRolePosition(rolePosition === item ? "" : item)}
+                onClick={() =>
+                  setRolePosition(rolePosition === item ? "" : item)
+                }
               >
                 {item}
               </button>
@@ -696,7 +716,9 @@ export default function GroupExtraInfoScreen({
             value={instagramId}
             maxLength={31}
             onChange={(e) => handleInstagramInputChange(e, setInstagramId)}
-            onFocus={() => handleInstagramInputFocus(instagramId, setInstagramId)}
+            onFocus={() =>
+              handleInstagramInputFocus(instagramId, setInstagramId)
+            }
             onBlur={() => handleInstagramInputBlur(instagramId, setInstagramId)}
             onKeyDown={handleInstagramInputKeyDown}
             placeholder="@아이디 입력"

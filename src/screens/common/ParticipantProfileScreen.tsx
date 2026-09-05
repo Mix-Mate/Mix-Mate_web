@@ -13,6 +13,7 @@ import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfi
 import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
@@ -66,37 +67,42 @@ export default function ParticipantProfileScreen({
   const { message: toastMessage, showToast } = useToast();
 
   const roundParam = searchParams.get("round");
-  const adminRound = roundParam ? toAssignmentRound(roundParam) : undefined;
-  const resolvedRound = adminRound ?? 1;
+  const fromParam = searchParams.get("from");
+  const listParam = searchParams.get("list");
+  const explicitRound = roundParam ? toAssignmentRound(roundParam) : undefined;
+  const inferredRound =
+    listParam === "second-round"
+      ? 2
+      : fromParam?.includes("/history")
+        ? 1
+        : group
+          ? getCurrentGroupRound(group.status)
+          : 1;
+  const resolvedRound = explicitRound ?? inferredRound;
   const isAdminView = group?.myRole === "HOST";
   const myParticipantId = group?.myParticipantId
     ? String(group.myParticipantId)
     : null;
   const isSelfProfile =
     myParticipantId !== null && myParticipantId === participantId;
-  const { data: myProfile, isError: isMyProfileError } =
-    useMyGroupProfileQuery(groupId, {
-      enabled: isSelfProfile,
-    });
-  const shouldFetchProfileDetail =
-    Boolean(group) && (!isSelfProfile || isMyProfileError);
-  const {
-    data: profileDetail,
-    isError: isProfileDetailError,
-  } = useParticipantProfileQuery(
+  const { data: myProfile, isError: isMyProfileError } = useMyGroupProfileQuery(
     groupId,
-    participantId,
     {
-      detailRole: isAdminView ? "admin" : undefined,
-      enabled: shouldFetchProfileDetail,
+      enabled: isSelfProfile,
     },
   );
+  const shouldFetchProfileDetail =
+    Boolean(group) && (!isSelfProfile || isMyProfileError);
+  const { data: profileDetail, isError: isProfileDetailError } =
+    useParticipantProfileQuery(groupId, participantId, {
+      detailRole: isAdminView ? "admin" : undefined,
+      enabled: shouldFetchProfileDetail,
+    });
   const shouldFetchListFallback =
     Boolean(group) &&
     (!isSelfProfile || isMyProfileError) &&
     isProfileDetailError;
-  const shouldFetchAdminFallback =
-    shouldFetchListFallback && isAdminView;
+  const shouldFetchAdminFallback = shouldFetchListFallback && isAdminView;
   const shouldFetchParticipantFallback =
     shouldFetchListFallback && !isAdminView;
   const { data: adminParticipantGroup } = useAdminParticipantListQuery(
@@ -116,9 +122,7 @@ export default function ParticipantProfileScreen({
       ? adminParticipantGroup.participants.find(
           (item) => item.id === participantId,
         )
-      : participantGroup.participants.find(
-          (item) => item.id === participantId,
-        );
+      : participantGroup.participants.find((item) => item.id === participantId);
 
     if (!participant) {
       return null;
@@ -166,8 +170,7 @@ export default function ParticipantProfileScreen({
     group.status === "RECRUITING" ||
     group.status === "BEFORE_FIRST_ROUND" ||
     group.status === "BEFORE_SECOND_ROUND";
-  const canBlockParticipant =
-    isAdminView && !isSelf && canManageParticipant;
+  const canBlockParticipant = isAdminView && !isSelf && canManageParticipant;
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
   const instagramText = profile.instagramId
@@ -188,7 +191,6 @@ export default function ParticipantProfileScreen({
 
   const resolveReturnUrl = () => {
     // 1. 명시적 from 경로가 있는 경우 (예: 필터/탭 상태 포함된 이전 URL)
-    const fromParam = searchParams.get("from");
     if (fromParam) {
       return decodeURIComponent(fromParam);
     }
@@ -209,7 +211,6 @@ export default function ParticipantProfileScreen({
     }
 
     // 3. 투표 결과/최종 참가자 list 파라미터가 있는 경우
-    const listParam = searchParams.get("list");
     if (listParam === "mvp") {
       return groupRoutes.voteResultMvpList(groupId);
     }
@@ -257,12 +258,7 @@ export default function ParticipantProfileScreen({
         `${profile.name}님을 그룹에서 차단했습니다.`,
       );
     }
-    router.replace(
-      withSessionContext(
-        resolveReturnUrl(),
-        searchParams,
-      ),
-    );
+    router.replace(withSessionContext(resolveReturnUrl(), searchParams));
   };
 
   return (
@@ -309,7 +305,9 @@ export default function ParticipantProfileScreen({
             <div className={styles.badges}>
               {profile.isNew && <span>신입</span>}
               {profile.role === "staff" && <span>운영진</span>}
-              {profile.role === "general" && !profile.isNew && <span>일반</span>}
+              {profile.role === "general" && !profile.isNew && (
+                <span>일반</span>
+              )}
             </div>
           )}
         </section>
@@ -397,7 +395,9 @@ export default function ParticipantProfileScreen({
             <Ban size={22} strokeWidth={1.8} />
           </span>
 
-          <h2 id="block-participant-title">참가자를 그룹에서 차단하시겠습니까?</h2>
+          <h2 id="block-participant-title">
+            참가자를 그룹에서 차단하시겠습니까?
+          </h2>
           <p id="block-participant-description">
             {profile.name}님을 그룹에서 차단합니다.
             <br />

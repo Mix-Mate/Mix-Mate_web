@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAddParticipantMutation } from "@/features/participant/hooks/useAddParticipantMutation";
 import type {
   ParticipantProfileRequest,
@@ -19,6 +21,7 @@ import {
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
+import { withSessionContext } from "@/features/session/utils/session-navigation";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
@@ -85,7 +88,13 @@ export default function AddParticipantScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(searchParams.get("round") ?? "1");
+  const { data: group } = useAdminGroupQuery(params.groupId);
+  const roundParam = searchParams.get("round");
+  const round = roundParam
+    ? toAssignmentRound(roundParam)
+    : group
+      ? getCurrentGroupRound(group.status)
+      : 1;
   const returnToParticipantList =
     searchParams.get("returnTo") === "participant-list";
   const { mutate, isPending } = useAddParticipantMutation();
@@ -103,6 +112,28 @@ export default function AddParticipantScreen() {
     bio: null,
     visibility: null,
   });
+
+  useEffect(() => {
+    if (roundParam) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminParticipantNew(
+            params.groupId,
+            round,
+            returnToParticipantList ? "participant-list" : undefined,
+          ),
+          searchParams,
+        ),
+      );
+    }
+  }, [
+    params.groupId,
+    returnToParticipantList,
+    round,
+    roundParam,
+    router,
+    searchParams,
+  ]);
 
   const updateField = <TKey extends keyof AddParticipantForm>(
     field: TKey,
@@ -171,7 +202,9 @@ export default function AddParticipantScreen() {
         <label className={styles.field}>
           <div className={styles.fieldHeader}>
             <span>이름</span>
-            <span className={styles.charCount}>{form.displayName.length}/10</span>
+            <span className={styles.charCount}>
+              {form.displayName.length}/10
+            </span>
           </div>
           <input
             value={form.displayName}
@@ -204,7 +237,9 @@ export default function AddParticipantScreen() {
               <button
                 key={option.value}
                 type="button"
-                className={form.gender === option.value ? styles.activeChip : ""}
+                className={
+                  form.gender === option.value ? styles.activeChip : ""
+                }
                 onClick={() => updateField("gender", option.value)}
               >
                 {option.label}
@@ -245,7 +280,9 @@ export default function AddParticipantScreen() {
               <button
                 key={option.value}
                 type="button"
-                className={form.position === option.value ? styles.activeChip : ""}
+                className={
+                  form.position === option.value ? styles.activeChip : ""
+                }
                 onClick={() => updateField("position", option.value)}
               >
                 {option.label}

@@ -68,6 +68,17 @@ export default function AdminParticipantManagementScreen() {
   );
 
   useEffect(() => {
+    if (roundParam) {
+      router.replace(
+        withSessionContext(
+          groupRoutes.adminParticipants(params.groupId),
+          searchParams,
+        ),
+      );
+    }
+  }, [params.groupId, roundParam, router, searchParams]);
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = sessionStorage.getItem("adminToast");
       if (stored) {
@@ -156,9 +167,7 @@ export default function AdminParticipantManagementScreen() {
   );
 
   return (
-    <MobileFrame
-      data-testid="admin-participant-management"
-    >
+    <MobileFrame data-testid="admin-participant-management">
       <Header
         title={group?.groupName ?? data.groupName}
         onBack={() =>
@@ -187,7 +196,6 @@ export default function AdminParticipantManagementScreen() {
       />
 
       <main className={styles.content}>
-
         <SearchBar
           value={keyword}
           placeholder="이름 검색"
@@ -228,15 +236,12 @@ export default function AdminParticipantManagementScreen() {
           <AdminParticipantList
             groupId={params.groupId}
             participants={filteredParticipants}
-            round={round}
           />
         </section>
       </main>
 
       <footer className={styles.footer}>
-        <Button onClick={goToAssignment}>
-          조 편성
-        </Button>
+        <Button onClick={goToAssignment}>조 편성</Button>
       </footer>
 
       {toastMessage && (

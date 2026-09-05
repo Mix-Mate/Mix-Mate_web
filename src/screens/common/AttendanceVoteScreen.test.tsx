@@ -128,7 +128,7 @@ describe("AttendanceVoteScreen", () => {
         screen.getByRole("button", { name: "이전 화면으로 이동" }),
       );
       expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
-        "/groups/7/votes/mvp?scenario=round2-waiting",
+        "/groups/7/votes/mvp",
       );
       expect(pushMock).not.toHaveBeenCalled();
       expect(backMock).not.toHaveBeenCalled();

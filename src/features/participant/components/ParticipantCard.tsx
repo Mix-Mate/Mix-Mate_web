@@ -16,15 +16,16 @@ interface ParticipantCardProps {
   currentParticipantId?: string | null;
   onPrivateSelect?: (participant: Participant) => void;
   canViewPrivateProfiles?: boolean;
+  detailFrom?: string;
 }
 
 export default function ParticipantCard({
   participant,
   groupId,
-  round,
   currentParticipantId,
   onPrivateSelect,
   canViewPrivateProfiles = false,
+  detailFrom,
 }: ParticipantCardProps) {
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
@@ -52,12 +53,12 @@ export default function ParticipantCard({
   const returnTo = searchParams?.get("returnTo");
   const fromParam = searchParams?.get("from");
   const tabParam = searchParams?.get("tab");
+  const resolvedFrom = detailFrom ?? fromParam;
   const profileSearchParams = [
-    round ? `round=${round}` : null,
     listMode ? `list=${listMode}` : null,
     returnTo ? `returnTo=${returnTo}` : null,
     tabParam ? `tab=${tabParam}` : null,
-    fromParam ? `from=${encodeURIComponent(fromParam)}` : null,
+    resolvedFrom ? `from=${encodeURIComponent(resolvedFrom)}` : null,
   ].filter(Boolean);
   const profileHref = `/groups/${resolvedGroupId}/participants/${participant.id}${
     profileSearchParams.length > 0 ? `?${profileSearchParams.join("&")}` : ""

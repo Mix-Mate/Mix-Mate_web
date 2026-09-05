@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AssignmentSetupForm from "@/features/assignment/components/AssignmentSetupForm";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
+import { resolveAssignmentRound } from "@/features/assignment/model/assignment-round";
 import { toBackendConditions } from "@/features/assignment/model/assignment.mapper";
 import {
   saveAssignmentResultDraft,
@@ -15,22 +16,32 @@ import { withSessionContext } from "@/features/session/utils/session-navigation"
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
 import AssignmentWarningDialog from "@/modals/admin/AssignmentWarningDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
-import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import TabNavigation from "@/shared/ui/TabNavigation";
 
 export default function AssignmentSetupScreen() {
-  const params = useParams<{ groupId: string; round: string }>();
+  const params = useParams<{ groupId: string; round?: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const round = toAssignmentRound(params.round);
   const { data: group } = useAdminGroupQuery(params.groupId);
+  const round = resolveAssignmentRound(params.round, group?.status);
   const [warningMessages, setWarningMessages] = useState<string[] | null>(null);
   const {
     mutate: createAssignment,
     isPending: isAssigning,
     error: assignError,
   } = useCreateAssignmentMutation();
+
+  useEffect(() => {
+    if (!params.round) return;
+
+    router.replace(
+      withSessionContext(
+        groupRoutes.adminAssignmentSetup(params.groupId, round),
+        searchParams,
+      ),
+    );
+  }, [params.groupId, params.round, round, router, searchParams]);
 
   const goToProcessing = () => {
     router.push(

@@ -55,7 +55,6 @@ export default function TeamHistoryScreen() {
     }
 
     const profileSearchParams = new URLSearchParams({
-      round: "1",
       from: `/groups/${params.groupId}/history`,
     });
 

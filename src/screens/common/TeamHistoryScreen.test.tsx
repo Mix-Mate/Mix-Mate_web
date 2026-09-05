@@ -84,7 +84,7 @@ describe("TeamHistoryScreen", () => {
     );
 
     expect(pushMock).toHaveBeenCalledWith(
-      "/groups/7/participants/11?round=1&from=%2Fgroups%2F7%2Fhistory",
+      "/groups/7/participants/11?from=%2Fgroups%2F7%2Fhistory",
     );
   });
 

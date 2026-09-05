@@ -10,6 +10,7 @@ interface ParticipantListProps {
   currentParticipantId?: string | null;
   onPrivateSelect?: (participant: Participant) => void;
   canViewPrivateProfiles?: boolean;
+  detailFrom?: string;
 }
 
 export default function ParticipantList({
@@ -18,6 +19,7 @@ export default function ParticipantList({
   currentParticipantId,
   onPrivateSelect,
   canViewPrivateProfiles = false,
+  detailFrom,
 }: ParticipantListProps) {
   if (participants.length === 0) {
     return (
@@ -38,6 +40,7 @@ export default function ParticipantList({
           currentParticipantId={currentParticipantId}
           onPrivateSelect={onPrivateSelect}
           canViewPrivateProfiles={canViewPrivateProfiles}
+          detailFrom={detailFrom}
         />
       ))}
     </ul>

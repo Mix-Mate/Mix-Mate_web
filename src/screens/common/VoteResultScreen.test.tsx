@@ -177,7 +177,7 @@ describe("VoteResultScreen", () => {
     });
     fireEvent.click(backButton);
 
-    expect(pushMock).toHaveBeenCalledWith("/groups/10?scenario=round2-waiting");
+    expect(pushMock).toHaveBeenCalledWith("/groups/10");
   });
 
   it("2차에 불참하는 일반 참가자는 결과 화면에서 뒤로가기 시 확인 후 메인 홈으로 이동한다", () => {
@@ -229,9 +229,7 @@ describe("VoteResultScreen", () => {
     ).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "홈으로 이동하기" }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "홈으로 이동하기" }));
 
     expect(replaceMock).toHaveBeenCalledWith("/home");
   });
