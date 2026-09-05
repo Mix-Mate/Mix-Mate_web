@@ -38,11 +38,28 @@ export default function ParticipantListScreen() {
   const searchParams = useSearchParams();
   const resultListMode = searchParams.get("list");
 
-  if (resultListMode === "mvp" || resultListMode === "second-round") {
+  if (resultListMode === "second-round") {
+    return <LegacySecondRoundParticipantListRedirect />;
+  }
+
+  if (resultListMode === "mvp") {
     return <VoteResultListScreen mode={resultListMode} />;
   }
 
   return <DefaultParticipantListScreen />;
+}
+
+function LegacySecondRoundParticipantListRedirect() {
+  const params = useParams<{ groupId: string }>();
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(
+      groupRoutes.voteResultSecondRoundParticipants(params.groupId),
+    );
+  }, [params.groupId, router]);
+
+  return null;
 }
 
 function DefaultParticipantListScreen() {

@@ -223,6 +223,9 @@ export default function VoteResultListScreen({
                 currentParticipantId={myParticipantId}
                 onPrivateSelect={setPrivateParticipant}
                 canViewPrivateProfiles={canViewPrivateProfiles}
+                detailFrom={groupRoutes.voteResultSecondRoundParticipants(
+                  params.groupId,
+                )}
               />
             )
           ) : (

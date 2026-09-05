@@ -706,9 +706,9 @@ describe("Blacklist Feature & API Integration", () => {
       });
     });
 
-    it("투표 결과/2차 참가자 목록(list=second-round)에서 차단 시 2차 참가자 목록으로 복귀한다", async () => {
+    it("투표 결과/선택 참가자 목록에서 차단 시 선택 참가자 목록으로 복귀한다", async () => {
       mockSearchParams.set("role", "admin");
-      mockSearchParams.set("list", "second-round");
+      mockSearchParams.set("from", "/groups/17/participants/selected");
 
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: {
@@ -765,7 +765,7 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          "/groups/17/participants?list=second-round",
+          "/groups/17/participants/selected",
         );
       });
     });

@@ -46,7 +46,7 @@ export const groupRoutes = {
   voteResultMvpList: (groupId: string) =>
     `${groupBase(groupId)}/participants?list=mvp`,
   voteResultSecondRoundParticipants: (groupId: string) =>
-    `${groupBase(groupId)}/participants?list=second-round`,
+    `${groupBase(groupId)}/participants/selected`,
   adminRecruitment: (groupId: string) =>
     `${groupBase(groupId)}/admin/recruitment`,
   adminParticipants: (groupId: string, round?: AssignmentRound) => {
