@@ -24,6 +24,12 @@ export type SignupResponse = string | { message?: string; [key: string]: unknown
 
 export type LogoutResponse = string | { message?: string; [key: string]: unknown };
 
+export type WithdrawResponse = string | { message?: string; [key: string]: unknown };
+
+export interface WithdrawRequest {
+  password: string;
+}
+
 export interface SendVerificationCodeParams {
   email: string;
 }
@@ -278,6 +284,49 @@ export async function logoutApi(): Promise<LogoutResponse> {
 }
 
 /**
+ * 회원탈퇴 API 호출
+ * DELETE /api/v1/auth/withdraw
+ */
+export async function withdrawApi(
+  data: WithdrawRequest,
+): Promise<WithdrawResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/withdraw`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: withAuthHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify({
+      password: data.password,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorData: AuthErrorResponse | null = null;
+    try {
+      errorData = (await response.json()) as AuthErrorResponse;
+    } catch {
+      // Non-JSON fallback
+    }
+
+    const message = errorData?.message || "회원탈퇴에 실패했습니다.";
+
+    throw new AuthApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as WithdrawResponse;
+  }
+  return await response.text();
+}
+
+/**
  * 클라이언트 로그아웃 통합 핸들러
  */
 export async function performLogout(): Promise<void> {
@@ -288,6 +337,14 @@ export async function performLogout(): Promise<void> {
   } finally {
     clearAuthTokens();
   }
+}
+
+/**
+ * 클라이언트 회원탈퇴 통합 핸들러
+ */
+export async function performWithdraw(password: string): Promise<void> {
+  await withdrawApi({ password });
+  clearAuthTokens();
 }
 
 export interface SendPasswordResetCodeParams {
@@ -453,4 +510,3 @@ export async function resetPasswordApi(
   }
   return await response.text();
 }
-

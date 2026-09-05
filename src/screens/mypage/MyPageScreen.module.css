@@ -350,6 +350,15 @@
   margin: 0;
 }
 
+.modalErrorText {
+  width: 100%;
+  margin: 4px 0 0;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .modalActions {
   display: grid;
   grid-template-columns: 1fr 1fr;

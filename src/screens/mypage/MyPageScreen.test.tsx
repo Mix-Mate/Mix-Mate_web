@@ -95,5 +95,63 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
         expect(mockPush).toHaveBeenCalledWith("/login");
       });
     });
+
+    it("회원탈퇴 버튼 클릭 시 확인 모달이 열리고, 탈퇴 확정 시 세션 정리 후 /login으로 이동한다", async () => {
+      const withdrawSpy = vi
+        .spyOn(authApi, "performWithdraw")
+        .mockResolvedValue(undefined);
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+
+      expect(screen.getByText("정말 탈퇴하시겠습니까?")).toBeInTheDocument();
+
+      fireEvent.change(screen.getByPlaceholderText("비밀번호 입력"), {
+        target: { value: "password123" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      await waitFor(() => {
+        expect(withdrawSpy).toHaveBeenCalledWith("password123");
+        expect(mockPush).toHaveBeenCalledWith("/login");
+      });
+    });
+
+    it("회원탈퇴 비밀번호를 입력하지 않으면 API를 호출하지 않고 안내한다", async () => {
+      const withdrawSpy = vi
+        .spyOn(authApi, "performWithdraw")
+        .mockResolvedValue(undefined);
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      expect(await screen.findByText("비밀번호를 입력해주세요.")).toBeInTheDocument();
+      expect(withdrawSpy).not.toHaveBeenCalled();
+    });
+
+    it("회원탈퇴 실패 시 모달에 에러 메시지를 표시한다", async () => {
+      vi.spyOn(authApi, "performWithdraw").mockRejectedValue(
+        new Error("이메일 또는 비밀번호가 일치하지 않습니다."),
+      );
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+      fireEvent.change(screen.getByPlaceholderText("비밀번호 입력"), {
+        target: { value: "wrong-password" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      expect(
+        await screen.findByText("비밀번호가 일치하지 않습니다."),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText("이메일 또는 비밀번호가 일치하지 않습니다."),
+      ).not.toBeInTheDocument();
+      expect(mockPush).not.toHaveBeenCalledWith("/login");
+    });
   });
 });
