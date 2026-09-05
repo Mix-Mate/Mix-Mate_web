@@ -135,7 +135,7 @@ describe("group status SSE transport", () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it.each([401, 403, 404])(
+  it.each([403, 404])(
     "HTTP %s는 재시도하지 않고 오류를 전달한다",
     async (status) => {
       fetchMock.mockResolvedValue(
@@ -152,6 +152,52 @@ describe("group status SSE transport", () => {
       expect(fetchMock).toHaveBeenCalledOnce();
     },
   );
+
+  it("HTTP 401이면 accessToken을 재발급받아 새 토큰으로 다시 연결한다", async () => {
+    fetchMock.mockImplementation(async (input, init) => {
+      if (String(input).endsWith("/api/v1/auth/reissue")) {
+        return new Response(JSON.stringify({ accessToken: "new-token" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      const authorization = new Headers(init?.headers).get("Authorization");
+      if (authorization !== "Bearer new-token") {
+        return new Response('{"message":"error"}', {
+          status: 401,
+          headers: { "Content-Type": "text/event-stream" },
+        });
+      }
+
+      return streamResponse(init?.signal);
+    });
+
+    await connect();
+
+    expect(onError).not.toHaveBeenCalled();
+    // 최초 연결(401) → 재발급 → 새 토큰으로 재연결
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(localStorage.getItem("accessToken")).toBe("new-token");
+  });
+
+  it("HTTP 401에서 재발급까지 실패하면 재연결 없이 오류를 전달한다", async () => {
+    fetchMock.mockResolvedValue(
+      new Response('{"message":"error"}', {
+        status: 401,
+        headers: { "Content-Type": "text/event-stream" },
+      }),
+    );
+
+    await connect();
+
+    expect(onError).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ status: 401 }),
+    );
+    await vi.advanceTimersByTimeAsync(60_000);
+    // 최초 연결과 재발급 시도 각각 1회뿐이고, 그 뒤로 재연결하지 않는다.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 
   it("토큰이 없으면 인증 없는 요청을 보내지 않는다", async () => {
     localStorage.clear();

@@ -1,17 +1,16 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import { createVoteApiError } from "./voteApiError";
 
 export async function voteMvp(
   groupId: string,
   targetParticipantId: number,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/votes/mvp`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ targetParticipantId }),
     },
   );

@@ -1,6 +1,6 @@
 import { getGroupDetail, GroupApiError } from "@/features/group/api/group.api";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import type {
   BanListResponse,
   BanUserItem,
@@ -140,12 +140,10 @@ export async function getGroupBlacklist(
   const groupDetailPromise = getGroupDetail(groupId);
 
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/api/v1/groups/${groupId}/bans`,
       {
         method: "GET",
-        headers: withAuthHeaders(),
-        credentials: "include",
         signal,
       },
     );
@@ -203,14 +201,13 @@ export async function blockParticipantApi(
     ? `?reason=${encodeURIComponent(reasonTrimmed)}`
     : "";
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/participants/${participant.id}${queryParams}`,
     {
       method: "DELETE",
-      headers: withAuthHeaders({
+      headers: {
         "Content-Type": "application/json",
-      }),
-      credentials: "include",
+      },
     },
   );
 
@@ -275,12 +272,10 @@ export async function unblockParticipantApi(
 ): Promise<{ ok: true; source: "api" }> {
   const targetIdStr = String(targetUserId);
 
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/bans/${targetUserId}`,
     {
       method: "DELETE",
-      headers: withAuthHeaders(),
-      credentials: "include",
     },
   );
 

@@ -3,8 +3,8 @@ import type {
   MyProfileResponse,
   ParticipantProfileRequest,
 } from "../types/profile.types";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import {
   readMyGroupProfileDraft,
   rememberMyGroupProfileDraft,
@@ -76,13 +76,12 @@ async function createRequestError(response: Response, fallbackMessage: string) {
 export async function getMyGroupProfile(
   groupId: string,
 ): Promise<MyGroupProfile> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
     {
-      credentials: "include",
-      headers: withAuthHeaders({
+      headers: {
         Accept: "application/json",
-      }),
+      },
     },
   );
 
@@ -104,14 +103,13 @@ export async function updateParticipantProfile(
   groupId: string,
   profile: ParticipantProfileRequest,
 ) {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
     {
       method: "PUT",
-      credentials: "include",
-      headers: withAuthHeaders({
+      headers: {
         "Content-Type": "application/json",
-      }),
+      },
       body: JSON.stringify(profile),
     },
   );

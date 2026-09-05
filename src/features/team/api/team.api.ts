@@ -1,5 +1,5 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import type { MyTeamResponse, TeamRound } from "../types/team.types";
 
 const MY_TEAM_ERROR_MESSAGE = "내 조 정보를 불러오지 못했습니다.";
@@ -20,12 +20,11 @@ export async function getMyTeam(
   round: TeamRound,
   signal?: AbortSignal,
 ): Promise<MyTeamResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${round}/teams/my-team`,
     {
       method: "GET",
-      credentials: "include",
-      headers: withAuthHeaders({ Accept: "application/json" }),
+      headers: { Accept: "application/json" },
       signal,
     },
   );
