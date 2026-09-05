@@ -188,9 +188,11 @@ describe("blockedGroupsStorage", () => {
     // 사용자가 명시적으로 dismiss한 경우에만 true
     dismissBlockedGroup("501");
     expect(isDismissedBlockedGroup("501")).toBe(true);
+    expect(isDismissedBlockedGroup(501)).toBe(true); // number 타입 정규화 검증
 
-    // 다시 recordBlockedGroup 호출 시 dismiss 해제
+    // 이미 dismiss된 그룹에 대해 recordBlockedGroup이 호출되어도 dismiss 상태가 유지되고 재기록되지 않음
     recordBlockedGroup({ groupId: "501", groupName: "모임501" });
-    expect(isDismissedBlockedGroup("501")).toBe(false);
+    expect(isDismissedBlockedGroup("501")).toBe(true);
+    expect(readBlockedGroups()).toHaveLength(0);
   });
 });

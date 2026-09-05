@@ -368,7 +368,6 @@ export function removeKnownGroupName(groupId: string | number): void {
  * (홈 화면의 차단 안내 모달에서 '목록에서 삭제하기' 버튼을 명시적으로 클릭했을 때만 호출)
  */
 export function dismissBlockedGroup(groupId: string | number): void {
-  console.trace("[CRITICAL BUG TRACE] dismissBlockedGroup called for groupId:", groupId);
   if (typeof window === "undefined" || !groupId) return;
   const targetId = String(groupId).trim();
 
@@ -378,9 +377,6 @@ export function dismissBlockedGroup(groupId: string | number): void {
     if (!list.some((id) => String(id).trim() === targetId)) {
       list.push(targetId);
       window.localStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
-      if (typeof console !== "undefined" && console.log) {
-        console.log("[DEBUG] dismissBlockedGroup updated DISMISSED_KEY:", list);
-      }
     }
   } catch {
     // ignore
@@ -413,9 +409,6 @@ export function isDismissedBlockedGroup(groupId: string | number): boolean {
 export function undismissBlockedGroup(groupId: string | number): void {
   if (typeof window === "undefined" || !groupId) return;
   const targetId = String(groupId).trim();
-  if (typeof console !== "undefined" && console.log) {
-    console.log("[DEBUG] undismissBlockedGroup called for groupId:", targetId);
-  }
 
   try {
     const raw = window.localStorage.getItem(DISMISSED_KEY);
@@ -426,9 +419,6 @@ export function undismissBlockedGroup(groupId: string | number): void {
         (id) => String(id).trim() !== targetId,
       );
       window.localStorage.setItem(DISMISSED_KEY, JSON.stringify(updated));
-      if (typeof console !== "undefined" && console.log) {
-        console.log("[DEBUG] undismissBlockedGroup updated DISMISSED_KEY:", updated);
-      }
     }
   } catch {
     // ignore
@@ -439,9 +429,12 @@ export function undismissBlockedGroup(groupId: string | number): void {
  * 차단된 그룹 정보를 로컬에 기록 (홈 화면 유지용)
  */
 export function recordBlockedGroup(item: BlockedGroupStorageItem): void {
-  console.log("[DEBUG] recordBlockedGroup called with:", item);
   if (typeof window === "undefined" || !item.groupId) return;
   try {
+    // 이미 사용자가 명시적으로 dismiss한 그룹인 경우, 강제로 undismiss하지 않고 사용자 의도 보존
+    if (isDismissedBlockedGroup(item.groupId)) {
+      return;
+    }
     undismissBlockedGroup(item.groupId);
 
     const list = readBlockedGroups();
@@ -493,9 +486,6 @@ export function recordBlockedGroup(item: BlockedGroupStorageItem): void {
       list.push(newItem);
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    if (typeof console !== "undefined" && console.log) {
-      console.log("[DEBUG] recordBlockedGroup updated STORAGE_KEY:", list);
-    }
   } catch (err) {
     if (typeof console !== "undefined" && console.error) {
       console.error("[DEBUG] recordBlockedGroup error:", err);

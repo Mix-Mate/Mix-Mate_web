@@ -1322,5 +1322,19 @@ describe("Blacklist Feature & API Integration", () => {
         }),
       ).toBeUndefined();
     });
+
+    it("getGroupDetail이 '그룹정보가 없습니다' 에러로 실패해도 getGroupBlacklist와 checkUserBlockedInGroup은 unhandledRejection을 일으키지 않고 안전하게 처리된다", async () => {
+      vi.spyOn(groupApi, "getGroupDetail").mockRejectedValue(
+        new groupApi.GroupApiError("그룹정보가 없습니다.", 400),
+      );
+
+      // getGroupBlacklist 호출 시 크래시 없이 폴백 그룹명 반환
+      const res = await blacklistApi.getGroupBlacklist("99999");
+      expect(res.groupName).toBe("그룹");
+
+      // checkUserBlockedInGroup 호출 시 크래시 없이 null 반환
+      const blocked = await blacklistApi.checkUserBlockedInGroup("99999");
+      expect(blocked).toBeNull();
+    });
   });
 });
