@@ -1,5 +1,6 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { z } from "zod";
+import { reissueAccessToken } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { getAccessToken } from "@/shared/api/authToken";
 import { GROUP_STATUSES, type GroupStatusEvent } from "../types/group.types";
@@ -45,14 +46,26 @@ export function subscribeGroupStatus(
       cache: "no-store",
       // 그룹 화면에 있는 동안 유지한다. 탭 표시 변경으로 중복 재연결하지 않는다.
       openWhenHidden: true,
-      fetch: (input, init) => {
+      fetch: async (input, init) => {
         // 30분 종료나 네트워크 오류로 재연결할 때도 최신 토큰을 사용한다.
         const token = getAccessToken();
         if (!token) throw new GroupStatusStreamError(401);
 
-        const headers = new Headers(init?.headers);
-        headers.set("Authorization", `Bearer ${token}`);
-        return fetch(input, { ...init, headers });
+        const sendRequest = (accessToken: string) => {
+          const headers = new Headers(init?.headers);
+          headers.set("Authorization", `Bearer ${accessToken}`);
+          return fetch(input, { ...init, headers });
+        };
+
+        const response = await sendRequest(token);
+        if (response.status !== 401) return response;
+
+        // 스트림은 apiFetch를 태울 수 없으므로 같은 재발급 경로를 직접 쓴다.
+        // 실패하면 401을 그대로 넘겨 onopen이 로그인 만료로 처리하게 둔다.
+        const newAccessToken = await reissueAccessToken();
+        if (!newAccessToken) return response;
+
+        return sendRequest(newAccessToken);
       },
       async onopen(response) {
         if (!response.ok) {
