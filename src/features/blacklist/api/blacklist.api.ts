@@ -89,34 +89,36 @@ export function deduplicateBlacklist(
 function mapBanUserItemToBlockedParticipant(
   item: BanUserItem | Record<string, unknown>,
 ): BlockedParticipant {
-  const userId =
-    Number(item.userId || (item as { id?: string | number }).id) || 0;
-  const displayName =
-    (item.displayName as string) ||
-    (item as { name?: string }).name ||
-    "사용자";
-  const email = (item.email as string) || "";
   const rawItem = item as Record<string, unknown>;
-  const rawNested = (typeof rawItem.data === "object" && rawItem.data !== null)
-    ? (rawItem.data as Record<string, unknown>)
-    : undefined;
+  const rawNested =
+    typeof rawItem.data === "object" && rawItem.data !== null
+      ? (rawItem.data as Record<string, unknown>)
+      : undefined;
+
+  const userId =
+    Number(rawItem.userId || rawItem.id) || 0;
+  const displayName =
+    (typeof rawItem.displayName === "string" ? rawItem.displayName : "") ||
+    (typeof rawItem.name === "string" ? rawItem.name : "") ||
+    "사용자";
+  const email = typeof rawItem.email === "string" ? rawItem.email : "";
   const reason =
-    (item.reason as string) ||
-    (rawNested?.reason as string) ||
-    (item.banReason as string) ||
-    (rawNested?.banReason as string) ||
-    (rawItem.blockReason as string) ||
-    (rawNested?.blockReason as string) ||
-    (rawItem.detail as string) ||
-    (rawNested?.detail as string) ||
+    (typeof rawItem.reason === "string" ? rawItem.reason : "") ||
+    (typeof rawNested?.reason === "string" ? rawNested.reason : "") ||
+    (typeof rawItem.banReason === "string" ? rawItem.banReason : "") ||
+    (typeof rawNested?.banReason === "string" ? rawNested.banReason : "") ||
+    (typeof rawItem.blockReason === "string" ? rawItem.blockReason : "") ||
+    (typeof rawNested?.blockReason === "string" ? rawNested.blockReason : "") ||
+    (typeof rawItem.detail === "string" ? rawItem.detail : "") ||
+    (typeof rawNested?.detail === "string" ? rawNested.detail : "") ||
     "";
   const bannedAt =
-    (item.bannedAt as string) ||
-    (item as { blockedAt?: string }).blockedAt ||
+    (typeof rawItem.bannedAt === "string" ? rawItem.bannedAt : "") ||
+    (typeof rawItem.blockedAt === "string" ? rawItem.blockedAt : "") ||
     new Date().toISOString();
 
   return {
-    id: String(userId || (item as { id?: string }).id || ""),
+    id: String(userId || rawItem.id || ""),
     userId,
     name: displayName,
     displayName,

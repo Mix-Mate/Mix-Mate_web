@@ -279,7 +279,7 @@ export default function GroupExtraInfoScreen({
         let reason =
           error instanceof GroupApiError ? error.reason : undefined;
         if (!reason && error && typeof error === "object") {
-          const errObj = error as Record<string, unknown>;
+          const errObj = error as unknown as Record<string, unknown>;
           const errData =
             typeof errObj.data === "object" && errObj.data !== null
               ? (errObj.data as Record<string, unknown>)
