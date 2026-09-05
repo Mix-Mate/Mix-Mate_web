@@ -917,12 +917,13 @@ describe("Blacklist Feature & API Integration", () => {
       const groupCard = screen.getByText("금요 러닝 크루");
       fireEvent.click(groupCard);
 
-      // 차단 사유 팝업 확인
+      // 차단 안내 팝업 확인
       await waitFor(() => {
         expect(screen.getByText("그룹 이용 제한 안내")).toBeInTheDocument();
         expect(
-          screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 모임 불참 및 비매너 행위로 인한 영구 차단/),
+          screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
         ).toBeInTheDocument();
+        expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
         // 라우터 이동 방지 확인
         expect(mockPush).not.toHaveBeenCalled();
       });
@@ -1202,7 +1203,7 @@ describe("Blacklist Feature & API Integration", () => {
   });
 
   describe("GroupJoinScreen & AdminGroupQueryProvider - Block Reason Display", () => {
-    it("GroupJoinScreen에서 차단된 사용자가 코드를 제출하면 차단 사유가 포함된 에러 모달이 표시된다", async () => {
+    it("GroupJoinScreen에서 차단된 사용자가 코드를 제출하면 차단 사유 없이 에러 모달이 표시된다", async () => {
       vi.spyOn(groupApi, "verifyInviteCodeApi").mockRejectedValue(
         new groupApi.GroupApiError(
           "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
@@ -1229,8 +1230,9 @@ describe("Blacklist Feature & API Integration", () => {
       await waitFor(() => {
         expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
         expect(
-          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 지속적인 노쇼 및 비매너 행위/),
+          screen.getByText("이 그룹에 참여하고 있지 않거나 차단되었습니다."),
         ).toBeInTheDocument();
+        expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
       });
 
       // 홈으로 이동 버튼 클릭
@@ -1264,7 +1266,7 @@ describe("Blacklist Feature & API Integration", () => {
       });
     });
 
-    it("GroupExtraInfoScreen에서 참가자가 프로필 제출 시 차단(403)되면 차단 사유 모달이 표시되고 홈으로 이동할 수 있다", async () => {
+    it("GroupExtraInfoScreen에서 참가자가 프로필 제출 시 차단(403)되면 차단 사유 없이 모달이 표시되고 홈으로 이동할 수 있다", async () => {
       mockSearchParams = new Map<string, string>([["inviteCode", "JOIN123"]]);
 
       vi.spyOn(groupApi, "joinGroupWithProfileApi").mockRejectedValue(
@@ -1298,8 +1300,9 @@ describe("Blacklist Feature & API Integration", () => {
       await waitFor(() => {
         expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
         expect(
-          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 경고 누적으로 인한 참여 제한/),
+          screen.getByText("해당 그룹 관리자에 의해 참여가 차단된 사용자입니다."),
         ).toBeInTheDocument();
+        expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
       });
 
       // 확인 / 홈으로 이동 버튼 클릭

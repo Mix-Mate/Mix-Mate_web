@@ -14,7 +14,11 @@ import {
   GroupApiError,
   type GroupProfileDto,
 } from "@/features/group/api/group.api";
-import { recordBlockedGroup } from "@/features/blacklist/lib/blockedGroupsStorage";
+import {
+  recordBlockedGroup,
+  getKnownGroupName,
+  isDummyGroupName,
+} from "@/features/blacklist/lib/blockedGroupsStorage";
 import { normalizeMajor } from "@/features/profile/lib/normalize-major";
 import {
   getValidationMessage,
@@ -297,20 +301,47 @@ export default function GroupExtraInfoScreen({
             reason = candidate.trim();
           }
         }
-        const description = reason
-          ? `그룹에서 차단되었습니다.\n차단 사유: ${reason}`
-          : (error instanceof Error
-              ? error.message
-              : "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.");
+        const description =
+          error instanceof Error
+            ? error.message
+            : "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.";
 
         // Record to mixmate_blocked_groups so it appears on the home screen
-        const pendingGroupName =
-          (typeof window !== "undefined" &&
-            window.sessionStorage.getItem("pendingGroupName")) ||
-          "그룹";
+        const errGroupName =
+          error instanceof GroupApiError
+            ? error.groupName
+            : (error && typeof error === "object" && "groupName" in error)
+              ? (error as { groupName?: string }).groupName
+              : undefined;
+
+        const qGroupName =
+          searchParams.get("groupName") || searchParams.get("name");
+
+        const sessionGroupName =
+          typeof window !== "undefined"
+            ? window.sessionStorage.getItem(`groupName_${groupId}`) ||
+              window.sessionStorage.getItem("pendingGroupName")
+            : null;
+
+        const knownName = getKnownGroupName(groupId);
+
+        const candidates = [
+          errGroupName,
+          qGroupName,
+          knownName,
+          sessionGroupName,
+        ];
+        let resolvedGroupName = "그룹";
+        for (const cand of candidates) {
+          if (cand && !isDummyGroupName(cand)) {
+            resolvedGroupName = cand.trim();
+            break;
+          }
+        }
+
         recordBlockedGroup({
           groupId: String(groupId),
-          groupName: pendingGroupName,
+          groupName: resolvedGroupName,
           reason,
         });
 

@@ -15,9 +15,18 @@ import { isGroupHost } from "@/features/group/lib/group-entry-route";
 import type { GroupStatus as ApiGroupStatus } from "@/features/group/types/group.types";
 import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api";
 import {
-  readBlockedGroups,
   recordBlockedGroup,
   removeBlockedGroup,
+  getKnownGroupName,
+  saveKnownGroupNames,
+  repairBlockedGroupNames,
+  isDummyGroupName,
+  getKnownGroupIds,
+  getBlacklistedGroupIds,
+  dismissBlockedGroup,
+  undismissBlockedGroup,
+  removeKnownGroupName,
+  type BlockedGroupStorageItem,
 } from "@/features/blacklist/lib/blockedGroupsStorage";
 import {
   clearAuthTokens,
@@ -299,7 +308,97 @@ export default function HomeScreen({
           return;
         }
 
-        const localBlockedList = readBlockedGroups();
+        const allApiGroups: MyGroupItem[] = [];
+        if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
+          allApiGroups.push(...activeRes.value.groups);
+        }
+        if (finishedRes.status === "fulfilled" && finishedRes.value?.groups) {
+          allApiGroups.push(...finishedRes.value.groups);
+        }
+        if (allApiGroups.length > 0) {
+          saveKnownGroupNames(allApiGroups);
+        }
+
+        const localBlockedList = repairBlockedGroupNames(allApiGroups);
+
+        // 알려진 그룹 또는 로컬 블랙리스트에 있지만 서버 응답 및 로컬 차단 목록에 없는 그룹 탐색
+        const candidateIds = Array.from(
+          new Set([...getKnownGroupIds(), ...getBlacklistedGroupIds()]),
+        ).filter(
+          (cid) =>
+            !allApiGroups.some((g) => String(g.groupId).trim() === String(cid).trim()) &&
+            !localBlockedList.some((b) => String(b.groupId).trim() === String(cid).trim()),
+        );
+
+        if (candidateIds.length > 0) {
+          const checked = await Promise.allSettled(
+            candidateIds.map(async (cid) => {
+              const blocked = await checkUserBlockedInGroup(cid, {
+                name: userName,
+              });
+              if (blocked) {
+                undismissBlockedGroup(cid);
+                const realName =
+                  getKnownGroupName(cid) ||
+                  (blocked.name && !isDummyGroupName(blocked.name)
+                    ? blocked.name
+                    : undefined) ||
+                  "그룹";
+                const item: BlockedGroupStorageItem = {
+                  groupId: cid,
+                  groupName: realName,
+                  reason: blocked.reason,
+                  blockedAt: blocked.blockedAt,
+                };
+                recordBlockedGroup(item);
+                return item;
+              }
+              return null;
+            }),
+          );
+
+          for (const res of checked) {
+            if (res.status === "fulfilled" && res.value) {
+              const item = res.value;
+              if (
+                !localBlockedList.some(
+                  (b) => String(b.groupId).trim() === String(item.groupId).trim(),
+                )
+              ) {
+                localBlockedList.push(item);
+              }
+            }
+          }
+        }
+
+        const resolveBlockedGroupName = (
+          blocked: BlockedGroupStorageItem,
+        ): string => {
+          if (!isDummyGroupName(blocked.groupName)) {
+            return blocked.groupName;
+          }
+          const foundInApi = allApiGroups.find(
+            (g) => String(g.groupId) === String(blocked.groupId),
+          );
+          if (foundInApi && !isDummyGroupName(foundInApi.groupName)) {
+            return foundInApi.groupName;
+          }
+          const foundInInitial =
+            initialActiveGroups.find(
+              (g) => String(g.id) === String(blocked.groupId),
+            ) ||
+            initialCompletedGroups.find(
+              (g) => String(g.id) === String(blocked.groupId),
+            );
+          if (foundInInitial && !isDummyGroupName(foundInInitial.name)) {
+            return foundInInitial.name;
+          }
+          const fromCache = getKnownGroupName(blocked.groupId);
+          if (fromCache && !isDummyGroupName(fromCache)) {
+            return fromCache;
+          }
+          return blocked.groupName || "그룹";
+        };
 
         if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
           const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
@@ -307,6 +406,12 @@ export default function HomeScreen({
               const localBlocked = localBlockedList.find(
                 (b) => String(b.groupId) === String(g.groupId),
               );
+              if (localBlocked && isDummyGroupName(localBlocked.groupName)) {
+                recordBlockedGroup({
+                  ...localBlocked,
+                  groupName: g.groupName,
+                });
+              }
               return {
                 id: String(g.groupId),
                 name: g.groupName,
@@ -329,9 +434,19 @@ export default function HomeScreen({
           // 로컬에 저장된 차단 그룹 중 서버 활성 응답에 없는 그룹 병합 (최초 1회 유지)
           for (const blocked of localBlockedList) {
             if (!mapped.some((item) => item.id === String(blocked.groupId))) {
+              const resolvedName = resolveBlockedGroupName(blocked);
+              if (
+                isDummyGroupName(blocked.groupName) &&
+                !isDummyGroupName(resolvedName)
+              ) {
+                recordBlockedGroup({
+                  ...blocked,
+                  groupName: resolvedName,
+                });
+              }
               mapped.push({
                 id: String(blocked.groupId),
-                name: blocked.groupName || "그룹",
+                name: resolvedName,
                 status: "BEFORE_FIRST_ROUND",
                 role: "PARTICIPANT",
                 memberCount: 0,
@@ -346,17 +461,29 @@ export default function HomeScreen({
           setActiveGroups(sortActiveGroups(mapped));
         } else if (localBlockedList.length > 0) {
           const mapped: HomeScreenGroupItem[] = localBlockedList.map(
-            (blocked) => ({
-              id: String(blocked.groupId),
-              name: blocked.groupName || "그룹",
-              status: "BEFORE_FIRST_ROUND",
-              role: "PARTICIPANT",
-              memberCount: 0,
-              date: "차단됨",
-              createdAt: blocked.blockedAt,
-              isBlocked: true,
-              blockReason: blocked.reason,
-            }),
+            (blocked) => {
+              const resolvedName = resolveBlockedGroupName(blocked);
+              if (
+                isDummyGroupName(blocked.groupName) &&
+                !isDummyGroupName(resolvedName)
+              ) {
+                recordBlockedGroup({
+                  ...blocked,
+                  groupName: resolvedName,
+                });
+              }
+              return {
+                id: String(blocked.groupId),
+                name: resolvedName,
+                status: "BEFORE_FIRST_ROUND",
+                role: "PARTICIPANT",
+                memberCount: 0,
+                date: "차단됨",
+                createdAt: blocked.blockedAt,
+                isBlocked: true,
+                blockReason: blocked.reason,
+              };
+            },
           );
           setActiveGroups(sortActiveGroups(mapped));
         }
@@ -456,6 +583,8 @@ export default function HomeScreen({
 
   const handleRemoveBlockedGroup = () => {
     if (!blockedModalInfo) return;
+    dismissBlockedGroup(blockedModalInfo.groupId);
+    removeKnownGroupName(blockedModalInfo.groupId);
     removeBlockedGroup(blockedModalInfo.groupId);
     setActiveGroups((prev) =>
       prev.filter((item) => item.id !== blockedModalInfo.groupId),
@@ -689,9 +818,7 @@ export default function HomeScreen({
             id="blocked-alert-modal-description"
             className={styles.modalDescription}
           >
-            {blockedModalInfo?.reason
-              ? `관리자에 의해 해당 그룹에서 차단되었습니다.\n차단 사유: ${blockedModalInfo.reason}`
-              : "관리자에 의해 해당 그룹에서 차단되었습니다."}
+            관리자에 의해 해당 그룹에서 차단되었습니다.
           </p>
         </div>
 

@@ -1,6 +1,7 @@
 import type { GroupDetail, UpdateGroupRequest } from "../types/group.types";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { saveKnownGroupName } from "@/features/blacklist/lib/blockedGroupsStorage";
 
 async function getErrorMessage(response: Response, fallback: string) {
   try {
@@ -42,6 +43,7 @@ export class GroupApiError extends Error {
   code?: string;
   fieldErrors?: Record<string, string>;
   reason?: string;
+  groupName?: string;
 
   constructor(
     message: string,
@@ -49,6 +51,7 @@ export class GroupApiError extends Error {
     code?: string,
     fieldErrors?: Record<string, string>,
     reason?: string,
+    groupName?: string,
   ) {
     super(message);
     this.name = "GroupApiError";
@@ -56,7 +59,46 @@ export class GroupApiError extends Error {
     this.code = code;
     this.fieldErrors = fieldErrors;
     this.reason = reason;
+    this.groupName = groupName;
   }
+}
+
+export function extractErrorGroupName(errorData: unknown): string | undefined {
+  if (!errorData || typeof errorData !== "object") return undefined;
+  const dataObj = errorData as Record<string, unknown>;
+  const nestedData =
+    typeof dataObj.data === "object" && dataObj.data !== null
+      ? (dataObj.data as Record<string, unknown>)
+      : undefined;
+  const nestedResult =
+    typeof dataObj.result === "object" && dataObj.result !== null
+      ? (dataObj.result as Record<string, unknown>)
+      : undefined;
+
+  const candidates = [
+    dataObj.groupName,
+    nestedData?.groupName,
+    nestedResult?.groupName,
+    dataObj.name,
+    nestedData?.name,
+    nestedResult?.name,
+  ];
+
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim().length > 0) {
+      const trimmed = c.trim();
+      if (
+        trimmed !== "차단된 그룹" &&
+        trimmed !== "차단된그룹" &&
+        trimmed !== "차단된 모임" &&
+        trimmed !== "그룹" &&
+        trimmed !== "모임"
+      ) {
+        return trimmed;
+      }
+    }
+  }
+  return undefined;
 }
 
 export function extractErrorReason(errorData: unknown): string | undefined {
@@ -202,6 +244,7 @@ export async function createGroupApi(
           : "그룹 생성에 실패했습니다.");
 
     const reason = extractErrorReason(errorData);
+    const groupName = extractErrorGroupName(errorData);
 
     throw new GroupApiError(
       message,
@@ -209,10 +252,15 @@ export async function createGroupApi(
       errorData?.code,
       errorData?.errors,
       reason,
+      groupName,
     );
   }
 
-  return (await response.json()) as CreateGroupResponse;
+  const result = (await response.json()) as CreateGroupResponse;
+  if (result?.groupId && result?.groupName) {
+    saveKnownGroupName(result.groupId, result.groupName);
+  }
+  return result;
 }
 
 export interface GetMyGroupsRequest {
@@ -313,6 +361,7 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
           : "그룹 정보를 불러오지 못했습니다.");
 
     const reason = extractErrorReason(errorData);
+    const groupName = extractErrorGroupName(errorData);
 
     throw new GroupApiError(
       message,
@@ -320,10 +369,15 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
       errorData?.code,
       undefined,
       reason,
+      groupName,
     );
   }
 
-  return (await response.json()) as GroupDetail;
+  const detail = (await response.json()) as GroupDetail;
+  if (detail?.groupId && detail?.groupName) {
+    saveKnownGroupName(detail.groupId, detail.groupName);
+  }
+  return detail;
 }
 
 export async function closeRecruiting(groupId: string): Promise<void> {
@@ -483,6 +537,7 @@ export async function joinGroupWithProfileApi(
             : "그룹 입장에 실패했습니다.");
 
     const reason = extractErrorReason(errorData);
+    const groupName = extractErrorGroupName(errorData);
 
     throw new GroupApiError(
       message,
@@ -490,10 +545,15 @@ export async function joinGroupWithProfileApi(
       errorData?.code,
       errorData?.errors,
       reason,
+      groupName,
     );
   }
 
-  return (await response.json()) as JoinGroupResponse;
+  const joinRes = (await response.json()) as JoinGroupResponse;
+  if (joinRes?.groupId && joinRes?.groupName) {
+    saveKnownGroupName(joinRes.groupId, joinRes.groupName);
+  }
+  return joinRes;
 }
 
 export async function joinGroupByCode(
@@ -568,6 +628,7 @@ export async function verifyInviteCodeApi(
 
     const message = errorData?.message || defaultMessage;
     const reason = extractErrorReason(errorData);
+    const groupName = extractErrorGroupName(errorData);
 
     throw new GroupApiError(
       message,
@@ -575,8 +636,13 @@ export async function verifyInviteCodeApi(
       errorData?.code,
       undefined,
       reason,
+      groupName,
     );
   }
 
-  return (await response.json()) as VerifyInviteCodeResponse;
+  const verified = (await response.json()) as VerifyInviteCodeResponse;
+  if (verified?.groupId && verified?.groupName) {
+    saveKnownGroupName(verified.groupId, verified.groupName);
+  }
+  return verified;
 }

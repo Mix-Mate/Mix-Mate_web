@@ -30,6 +30,10 @@ import AdminRecruitmentScreen from "@/screens/admin/AdminRecruitmentScreen";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
+import {
+  removeBlockedGroup,
+  removeKnownGroupName,
+} from "@/features/blacklist/lib/blockedGroupsStorage";
 import styles from "./UserHomeScreen.module.css";
 
 export default function UserHomeScreen() {
@@ -146,6 +150,9 @@ export default function UserHomeScreen() {
 
     const left = await leaveGroup(params.groupId);
     if (!left) return;
+
+    removeKnownGroupName(params.groupId);
+    removeBlockedGroup(params.groupId);
 
     setLeaveDialogOpen(false);
     router.replace("/home");

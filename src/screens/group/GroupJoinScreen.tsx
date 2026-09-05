@@ -7,6 +7,10 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { verifyInviteCodeApi } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import {
+  recordBlockedGroup,
+  saveKnownGroupName,
+} from "@/features/blacklist/lib/blockedGroupsStorage";
 import styles from "./GroupJoinScreen.module.css";
 
 interface GroupJoinScreenProps {
@@ -133,15 +137,30 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         return;
       }
 
-      // 200 성공 시: 참여코드를 저장하고 추가 정보 입력 화면으로 전환
+      // 200 성공 시: 참여코드 및 그룹명을 저장하고 추가 정보 입력 화면으로 전환
       if (typeof window !== "undefined") {
         window.sessionStorage.setItem("pendingInviteCode", fullCode);
+        window.sessionStorage.setItem("pendingGroupId", String(result.groupId));
+        if (result.groupName) {
+          window.sessionStorage.setItem("pendingGroupName", result.groupName);
+          window.sessionStorage.setItem(`groupName_${result.groupId}`, result.groupName);
+        }
+      }
+
+      if (result.groupId && result.groupName) {
+        saveKnownGroupName(result.groupId, result.groupName);
+      }
+
+      const queryParams = new URLSearchParams({
+        from: "join",
+        inviteCode: fullCode,
+      });
+      if (result.groupName) {
+        queryParams.set("groupName", result.groupName);
       }
 
       router.push(
-        `${groupRoutes.extra(String(result.groupId))}?from=join&inviteCode=${encodeURIComponent(
-          fullCode,
-        )}`,
+        `${groupRoutes.extra(String(result.groupId))}?${queryParams.toString()}`,
       );
     } catch (err: unknown) {
       const errorObj =
@@ -159,6 +178,14 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
       const errorReason =
         err && typeof err === "object" && "reason" in err
           ? (err as { reason?: string }).reason
+          : undefined;
+      const errGroupId =
+        err && typeof err === "object" && "groupId" in err
+          ? (err as { groupId?: string | number }).groupId
+          : undefined;
+      const errGroupName =
+        err && typeof err === "object" && "groupName" in err
+          ? (err as { groupName?: string }).groupName
           : undefined;
 
       if (onJoinError) {
@@ -181,9 +208,16 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         errorCode === "BLOCKED" ||
         errorObj.message.includes("차단")
       ) {
-        const description = errorReason
-          ? `그룹에서 차단되었습니다.\n차단 사유: ${errorReason}`
-          : (errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.");
+        if (errGroupId) {
+          recordBlockedGroup({
+            groupId: String(errGroupId),
+            groupName: errGroupName || "그룹",
+            reason: errorReason,
+          });
+        }
+
+        const description =
+          errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.";
 
         setErrorModal({
           open: true,

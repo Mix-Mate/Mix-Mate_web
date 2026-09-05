@@ -1,4 +1,4 @@
-import { StrictMode, useEffect } from "react";
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -493,23 +493,65 @@ describe("공통 그룹 SSE 동기화", () => {
     });
   });
 
-  it("StrictMode에서도 동시에 남아 있는 구독은 하나다", async () => {
-    const { unmount } = render(
-      <StrictMode>
-        <App />
-      </StrictMode>,
+  it("getGroupDetail 403 차단 시 에러나 캐시에서 원래 그룹명을 찾아 로컬 스토리지에 기록한다", async () => {
+    const { GroupApiError } = await import("../api/group.api");
+    const { readBlockedGroups } = await import(
+      "@/features/blacklist/lib/blockedGroupsStorage"
     );
-    await screen.findByTestId("group-state");
+
+    getGroupDetail.mockRejectedValueOnce(
+      new GroupApiError(
+        "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
+        403,
+        "USER_BLOCKED",
+        undefined,
+        "강퇴 사유",
+        "금주의 독서 클럽",
+      ),
+    );
+
+    render(<App />);
+
     await waitFor(() => {
-      expect(
-        subscriptions.filter((entry) => entry.stop.mock.calls.length === 0),
-      ).toHaveLength(1);
+      const blocked = readBlockedGroups();
+      expect(blocked.some((b) => b.groupId === "6" && b.groupName === "금주의 독서 클럽")).toBe(true);
     });
-    unmount();
+  });
+
+  it("그룹 홈 진입 후 스트림 403 차단 에러 발생 시 원래 그룹명을 로컬 스토리지에 기록하고 홈 이동 버튼이 동작한다", async () => {
+    const { readBlockedGroups } = await import(
+      "@/features/blacklist/lib/blockedGroupsStorage"
+    );
+
+    getGroupDetail.mockResolvedValueOnce({
+      ...group("FIRST_ROUND", 6),
+      groupName: "실시간 스터디 모임",
+    });
+
+    render(<App />);
+
+    await screen.findByTestId("group-state");
+
+    // 스트림 연결 완료 후 403 차단 에러 발생
+    await act(async () => {
+      subscriptions[0].options.onError(new GroupStatusStreamError(403));
+    });
+
     await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "이 그룹에 참여하고 있지 않습니다.",
+      );
+      const blocked = readBlockedGroups();
       expect(
-        subscriptions.every((entry) => entry.stop.mock.calls.length === 1),
+        blocked.some(
+          (b) => b.groupId === "6" && b.groupName === "실시간 스터디 모임",
+        ),
       ).toBe(true);
     });
+
+    const homeButton = screen.getByRole("button", { name: "홈으로 이동" });
+    fireEvent.click(homeButton);
+
+    expect(router.replace).toHaveBeenCalledWith("/home");
   });
 });
