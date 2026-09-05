@@ -53,6 +53,8 @@ export default function MyTeamScreen() {
 
     const profileSearchParams = new URLSearchParams({
       round: String(participantRound),
+      tab: activeTab,
+      from: `/groups/${params.groupId}/team?tab=${activeTab}`,
     });
 
     if (canViewPrivateProfiles) {

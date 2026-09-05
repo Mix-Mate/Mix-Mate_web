@@ -316,3 +316,106 @@
   color: #a1a1aa;
   cursor: not-allowed;
 }
+
+/* ==========================================================================
+   Modals & Dialogs
+   ========================================================================== */
+.modalScrim {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  border-radius: inherit;
+}
+
+.modalSheet {
+  --bottom-sheet-border-radius: 28px 28px 0 0;
+  --bottom-sheet-handle-margin: 0 auto 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  height: auto;
+  max-height: 85%;
+  padding: 12px 20px 24px;
+  background: #ffffff;
+  box-sizing: border-box;
+  width: 100%;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.modalIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: #fef2f2;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.modalTitle {
+  font-size: 19px;
+  font-weight: 700;
+  color: #18181b;
+  margin: 0;
+  letter-spacing: -0.4px;
+  word-break: keep-all;
+}
+
+.modalDescription {
+  font-size: 13.5px;
+  color: #71717a;
+  margin: 0;
+  line-height: 1.5;
+  word-break: keep-all;
+  white-space: pre-line;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.modalActionButton {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #256ad3;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.modalActionButton:active {
+  transform: scale(0.985);
+}
+

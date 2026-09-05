@@ -134,7 +134,7 @@ export function LoginForm() {
         </div>
 
         <h1 className={styles.title}>MixMate</h1>
-        <p className={styles.subtitle}>술자리 조 편성 서비스</p>
+        <p className={styles.subtitle}>모임의 시작부터 마무리까지, MIXMATE</p>
       </div>
 
       {/* 2. 입력 폼 영역 */}

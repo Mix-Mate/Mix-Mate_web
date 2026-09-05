@@ -4,6 +4,9 @@ import BlacklistScreen from "@/screens/admin/BlacklistScreen";
 import BlockedUserProfileModal from "./components/BlockedUserProfileModal";
 import ParticipantProfileScreen from "@/screens/common/ParticipantProfileScreen";
 import HomeScreen from "@/screens/common/HomeScreen";
+import GroupJoinScreen from "@/screens/group/GroupJoinScreen";
+import GroupExtraInfoScreen from "@/screens/group/GroupExtraInfoScreen";
+import AdminGroupQueryProvider from "@/features/group/components/AdminGroupQueryProvider";
 import ParticipantPageHeader from "@/features/participant/components/ParticipantPageHeader";
 import * as blacklistApi from "./api/blacklist.api";
 import * as groupApi from "@/features/group/api/group.api";
@@ -17,15 +20,17 @@ import type { AdminParticipantGroup, ParticipantProfile } from "@/features/parti
 
 const mockPush = vi.fn();
 const mockBack = vi.fn();
+const mockReplace = vi.fn();
 let mockSearchParams = new Map<string, string>([["role", "admin"]]);
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: mockPush,
     back: mockBack,
-    replace: vi.fn(),
+    replace: mockReplace,
   }),
   useParams: () => ({ groupId: "17" }),
+  usePathname: () => "/groups/17",
   useSearchParams: () => ({
     get: (key: string) => mockSearchParams.get(key) ?? null,
     has: (key: string) => mockSearchParams.has(key),
@@ -234,6 +239,7 @@ describe("Blacklist Feature & API Integration", () => {
       mockSearchParams = new Map<string, string>([["role", "admin"]]);
       mockPush.mockClear();
       mockBack.mockClear();
+      mockReplace.mockClear();
     });
 
     it("상세 프로필 조회가 성공하면 목록 fallback 요청을 시작하지 않는다", () => {
@@ -483,8 +489,8 @@ describe("Blacklist Feature & API Integration", () => {
           expect.objectContaining({ id: "202", name: "이순신" }),
           { reason: "지속적인 불참 및 운영 방해" },
         );
-        expect(mockPush).toHaveBeenCalledWith(
-          expect.stringContaining("/groups/17/admin/participants"),
+        expect(mockReplace).toHaveBeenCalledWith(
+          expect.stringContaining("/groups/17/participants"),
         );
         expect(sessionStorage.getItem("adminToast")).toBe(
           "이순신님을 그룹에서 차단했습니다.",
@@ -550,7 +556,7 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitBlockBtn);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
+        expect(mockReplace).toHaveBeenCalledWith(
           expect.stringContaining("/groups/17/admin/participants?round=2"),
         );
       });
@@ -610,8 +616,65 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitBlockBtn);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
+        expect(mockReplace).toHaveBeenCalledWith(
           "/groups/17/admin/assignment/fixed?round=2",
+        );
+      });
+    });
+
+    it("tab 파라미터가 있는 경우 차단 완료 후 탭 쿼리가 보존된 참가자 목록 경로로 복귀한다", async () => {
+      mockSearchParams.set("role", "admin");
+      mockSearchParams.set("tab", "staff");
+
+      vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
+        data: mockAdminGroup,
+      } as ReturnType<typeof adminGroupQuery.useAdminGroupQuery>);
+
+      vi.spyOn(
+        adminParticipantQuery,
+        "useAdminParticipantListQuery",
+      ).mockReturnValue({
+        data: mockAdminParticipants,
+      } as ReturnType<typeof adminParticipantQuery.useAdminParticipantListQuery>);
+
+      vi.spyOn(participantListQuery, "useParticipantListQuery").mockReturnValue({
+        data: {
+          participants: [mockParticipantProfile],
+          teams: [],
+        },
+        isLoading: false,
+        isError: false,
+      });
+
+      vi.spyOn(
+        participantProfileQuery,
+        "useParticipantProfileQuery",
+      ).mockReturnValue({
+        data: null,
+      } as ReturnType<typeof participantProfileQuery.useParticipantProfileQuery>);
+
+      vi.spyOn(blacklistApi, "blockParticipantApi").mockResolvedValue({
+        ok: true,
+        source: "api",
+      });
+
+      render(
+        <ParticipantProfileScreen groupId="17" participantId="202" />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("이순신")).toBeInTheDocument();
+      });
+
+      const blockBtn = screen.getByLabelText("참가자 그룹 차단");
+      fireEvent.click(blockBtn);
+
+      const submitBlockBtn = screen.getByRole("button", { name: "차단하기" });
+      fireEvent.click(submitBlockBtn);
+
+      await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith(
+          "/groups/17/team?tab=staff",
         );
       });
     });
@@ -670,7 +733,7 @@ describe("Blacklist Feature & API Integration", () => {
       fireEvent.click(submitBlockBtn);
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith(
+        expect(mockReplace).toHaveBeenCalledWith(
           "/groups/17/participants?list=second-round",
         );
       });
@@ -835,21 +898,21 @@ describe("Blacklist Feature & API Integration", () => {
 
       // 차단 사유 팝업 확인
       await waitFor(() => {
-        expect(screen.getByText("그룹에서 차단되었습니다")).toBeInTheDocument();
+        expect(screen.getByText("그룹 이용 제한 안내")).toBeInTheDocument();
         expect(
-          screen.getByText("모임 불참 및 비매너 행위로 인한 영구 차단"),
+          screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 모임 불참 및 비매너 행위로 인한 영구 차단/),
         ).toBeInTheDocument();
         // 라우터 이동 방지 확인
         expect(mockPush).not.toHaveBeenCalled();
       });
 
-      // 확인 버튼 클릭 시 모달 닫힘
-      const confirmButton = screen.getByRole("button", { name: "확인" });
-      fireEvent.click(confirmButton);
+      // 목록에서 삭제하기 버튼 클릭 시 모달 닫히고 목록에서 삭제됨
+      const deleteButton = screen.getByRole("button", { name: "목록에서 삭제하기" });
+      fireEvent.click(deleteButton);
 
       await waitFor(() => {
         expect(
-          screen.queryByText("그룹에서 차단되었습니다"),
+          screen.queryByText("금요 러닝 크루"),
         ).not.toBeInTheDocument();
       });
     });
@@ -1114,6 +1177,126 @@ describe("Blacklist Feature & API Integration", () => {
       expect(screen.queryByText("@gildong_insta")).not.toBeInTheDocument();
       expect(screen.queryByText("gildong_insta")).not.toBeInTheDocument();
       expect(screen.queryByText("안녕하세요 자기소개입니다")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("GroupJoinScreen & AdminGroupQueryProvider - Block Reason Display", () => {
+    it("GroupJoinScreen에서 차단된 사용자가 코드를 제출하면 차단 사유가 포함된 에러 모달이 표시된다", async () => {
+      vi.spyOn(groupApi, "verifyInviteCodeApi").mockRejectedValue(
+        new groupApi.GroupApiError(
+          "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
+          403,
+          "USER_BLOCKED",
+          undefined,
+          "지속적인 노쇼 및 비매너 행위",
+        ),
+      );
+
+      render(<GroupJoinScreen />);
+
+      const inputs = screen.getAllByRole("textbox");
+      expect(inputs.length).toBe(6);
+
+      // OTP 6자리 입력
+      "ABC123".split("").forEach((char, i) => {
+        fireEvent.change(inputs[i], { target: { value: char } });
+      });
+
+      const submitButton = screen.getByRole("button", { name: "입장하기" });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
+        expect(
+          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 지속적인 노쇼 및 비매너 행위/),
+        ).toBeInTheDocument();
+      });
+
+      // 홈으로 이동 버튼 클릭
+      const homeBtn = screen.getByRole("button", { name: "홈으로 이동" });
+      fireEvent.click(homeBtn);
+      expect(mockReplace).toHaveBeenCalledWith("/home");
+    });
+
+    it("AdminGroupQueryProvider에서 차단(403) 및 사유 반환 시 화면에 차단 사유가 표시된다", async () => {
+      vi.spyOn(groupApi, "getGroupDetail").mockRejectedValue(
+        new groupApi.GroupApiError(
+          "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
+          403,
+          "USER_BLOCKED",
+          undefined,
+          "운영 방해로 인한 퇴장",
+        ),
+      );
+
+      render(
+        <AdminGroupQueryProvider>
+          <div>콘텐츠</div>
+        </AdminGroupQueryProvider>,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 운영 방해로 인한 퇴장/),
+        ).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "홈으로 이동" })).toBeInTheDocument();
+      });
+    });
+
+    it("GroupExtraInfoScreen에서 참가자가 프로필 제출 시 차단(403)되면 차단 사유 모달이 표시되고 홈으로 이동할 수 있다", async () => {
+      mockSearchParams = new Map<string, string>([["inviteCode", "JOIN123"]]);
+
+      vi.spyOn(groupApi, "joinGroupWithProfileApi").mockRejectedValue(
+        new groupApi.GroupApiError(
+          "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          403,
+          "USER_BLOCKED",
+          undefined,
+          "경고 누적으로 인한 참여 제한",
+        ),
+      );
+
+      render(
+        <GroupExtraInfoScreen
+          groupId="17"
+          initialData={{
+            name: "김철수",
+            department: "경영학과",
+            grade: "1학년",
+            gender: "남",
+            isNew: "신입",
+            rolePosition: "일반",
+            mbti: "ENFP",
+          }}
+        />,
+      );
+
+      const submitButton = screen.getByRole("button", { name: "저장하기" });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("그룹 참여가 제한되었습니다")).toBeInTheDocument();
+        expect(
+          screen.getByText(/그룹에서 차단되었습니다\.\s*차단 사유: 경고 누적으로 인한 참여 제한/),
+        ).toBeInTheDocument();
+      });
+
+      // 확인 / 홈으로 이동 버튼 클릭
+      const homeBtn = screen.getByRole("button", { name: "홈으로 이동" });
+      fireEvent.click(homeBtn);
+      expect(mockReplace).toHaveBeenCalledWith("/home");
+    });
+
+    it("extractErrorReason은 reason, data.reason, banReason, detail 등의 필드에서 실제 사유를 누락 없이 추출한다", () => {
+      expect(groupApi.extractErrorReason({ reason: "사유1" })).toBe("사유1");
+      expect(groupApi.extractErrorReason({ data: { reason: "사유2" } })).toBe("사유2");
+      expect(groupApi.extractErrorReason({ banReason: "사유3" })).toBe("사유3");
+      expect(groupApi.extractErrorReason({ detail: "사유4" })).toBe("사유4");
+      expect(
+        groupApi.extractErrorReason({
+          reason: "관리자에 의해 해당 그룹에서 차단되었습니다.",
+        }),
+      ).toBeUndefined();
     });
   });
 });

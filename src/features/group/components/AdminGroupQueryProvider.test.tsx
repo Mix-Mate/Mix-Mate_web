@@ -473,6 +473,26 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(router.replace).toHaveBeenCalledWith("/home");
   });
 
+  it("getGroupDetail 403 차단 및 사유 반환 시 화면에 차단 사유가 포맷팅되어 표시된다", async () => {
+    const { GroupApiError } = await import("../api/group.api");
+    getGroupDetail.mockRejectedValueOnce(
+      new GroupApiError(
+        "이 그룹에 참여하고 있지 않거나 차단되었습니다.",
+        403,
+        "USER_BLOCKED",
+        undefined,
+        "지속적인 불참 및 비매너",
+      ),
+    );
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        /그룹에서 차단되었습니다\.\s*차단 사유: 지속적인 불참 및 비매너/,
+      );
+      expect(screen.getByRole("button", { name: "홈으로 이동" })).toBeInTheDocument();
+    });
+  });
+
   it("StrictMode에서도 동시에 남아 있는 구독은 하나다", async () => {
     const { unmount } = render(
       <StrictMode>

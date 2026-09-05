@@ -289,12 +289,83 @@ describe("HomeScreen", () => {
       fireEvent.click(blockedCard);
 
       expect(
-        await screen.findByText("그룹에서 차단되었습니다"),
+        await screen.findByText("그룹 이용 제한 안내"),
       ).toBeInTheDocument();
       expect(
-        screen.getByText("부적절한 언행으로 차단되었습니다."),
+        screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 부적절한 언행으로 차단되었습니다\./),
       ).toBeInTheDocument();
       expect(push).not.toHaveBeenCalled();
+    });
+
+    it("로컬에 저장된 차단 그룹이 홈 화면에 '차단됨' 뱃지와 함께 표시되고, '목록에서 삭제하기' 클릭 시 화면과 로컬에서 제거된다", async () => {
+      const { recordBlockedGroup, readBlockedGroups } = await import(
+        "@/features/blacklist/lib/blockedGroupsStorage"
+      );
+
+      recordBlockedGroup({
+        groupId: "77",
+        groupName: "퇴장당한 모임",
+        reason: "노쇼 3회 누적",
+        blockedAt: "2026-09-01T12:00:00Z",
+      });
+
+      getMyGroupsApiMock.mockImplementation(async () => ({
+        groups: [],
+      }));
+
+      render(<HomeScreen userName="테스터" />);
+
+      // '퇴장당한 모임'과 '차단됨' 뱃지가 목록에 표시됨
+      expect(await screen.findByText("퇴장당한 모임")).toBeInTheDocument();
+      expect(screen.getByText("차단됨")).toBeInTheDocument();
+
+      // 카드 클릭
+      const card = screen.getByRole("button", { name: /퇴장당한 모임/ });
+      fireEvent.click(card);
+
+      // 모달 열림
+      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      expect(
+        screen.getByText(/관리자에 의해 해당 그룹에서 차단되었습니다\.\s*차단 사유: 노쇼 3회 누적/),
+      ).toBeInTheDocument();
+
+      // '목록에서 삭제하기' 버튼 클릭
+      const deleteBtn = screen.getByRole("button", { name: "목록에서 삭제하기" });
+      fireEvent.click(deleteBtn);
+
+      // 모달이 닫히고 목록에서 그룹 제거됨
+      await waitFor(() => {
+        expect(screen.queryByText("퇴장당한 모임")).not.toBeInTheDocument();
+      });
+
+      // localStorage에서도 제거되었는지 확인
+      expect(readBlockedGroups()).toHaveLength(0);
+    });
+
+    it("사유 없이 차단된 그룹의 경우 '차단 사유:' 라벨 없이 기본 안내 문구만 노출된다", async () => {
+      const { recordBlockedGroup } = await import(
+        "@/features/blacklist/lib/blockedGroupsStorage"
+      );
+
+      recordBlockedGroup({
+        groupId: "88",
+        groupName: "사유없는 차단 모임",
+      });
+
+      getMyGroupsApiMock.mockImplementation(async () => ({
+        groups: [],
+      }));
+
+      render(<HomeScreen userName="테스터" />);
+
+      const card = await screen.findByRole("button", { name: /사유없는 차단 모임/ });
+      fireEvent.click(card);
+
+      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      expect(
+        screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
     });
   });
 });

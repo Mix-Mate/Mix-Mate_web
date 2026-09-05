@@ -3,6 +3,7 @@ import { Lock } from "lucide-react";
 import Link from "next/link";
 import type { Participant } from "@/features/participant/types/participant.types";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toGender } from "../model/assignment.mapper";
 import type { AssignmentRound, ParticipantCandidate } from "../types/assignment.types";
 import styles from "./fixed-members.module.css";
@@ -42,7 +43,7 @@ export default function UnassignedMemberRow({
     <li className={styles.unassignedRow}>
       <Link
         href={`/groups/${groupId}/participants/${member.participantId}?round=${round}&role=admin&from=${encodeURIComponent(
-          `/groups/${groupId}/admin/assignment/fixed?round=${round}`,
+          groupRoutes.adminAssignmentFixedMembers(groupId, round),
         )}`}
         className={styles.unassignedRowLink}
       >

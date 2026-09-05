@@ -189,7 +189,7 @@ export default function ParticipantProfileScreen({
     // 1. 명시적 from 경로가 있는 경우 (예: 필터/탭 상태 포함된 이전 URL)
     const fromParam = searchParams.get("from");
     if (fromParam) {
-      return fromParam;
+      return decodeURIComponent(fromParam);
     }
 
     // 2. returnTo 파라미터가 있는 경우
@@ -197,11 +197,14 @@ export default function ParticipantProfileScreen({
     if (returnToParam === "participant-list") {
       return groupRoutes.participants(groupId, resolvedRound);
     }
+    if (returnToParam === "admin-participants") {
+      return groupRoutes.adminParticipants(groupId, resolvedRound);
+    }
     if (returnToParam === "recruitment") {
       return groupRoutes.adminRecruitment(groupId);
     }
     if (returnToParam === "fixed") {
-      return `/groups/${groupId}/admin/assignment/fixed?round=${resolvedRound}`;
+      return groupRoutes.adminAssignmentFixedMembers(groupId, resolvedRound);
     }
 
     // 3. 투표 결과/최종 참가자 list 파라미터가 있는 경우
@@ -213,12 +216,21 @@ export default function ParticipantProfileScreen({
       return groupRoutes.voteResultSecondRoundParticipants(groupId);
     }
 
-    // 4. 관리자 뷰인 경우 (해당 round 1차 또는 2차 준비중 참가자 목록 유지)
+    // 4. tab 파라미터가 있는 경우 (예: team?tab=members)
+    const tabParam = searchParams.get("tab");
+    if (tabParam) {
+      return `/groups/${groupId}/team?tab=${tabParam}`;
+    }
+
+    // 5. 관리자 뷰인 경우
     if (isAdminView) {
+      if (group?.status === "RECRUITING") {
+        return groupRoutes.participants(groupId, resolvedRound);
+      }
       return groupRoutes.adminParticipants(groupId, resolvedRound);
     }
 
-    // 5. 기본 fallback: 해당 round 참가자 목록
+    // 6. 기본 fallback: 해당 round 참가자 목록
     return groupRoutes.participants(groupId, resolvedRound);
   };
 
@@ -244,7 +256,7 @@ export default function ParticipantProfileScreen({
         `${profile.name}님을 그룹에서 차단했습니다.`,
       );
     }
-    router.push(
+    router.replace(
       withSessionContext(
         resolveReturnUrl(),
         searchParams,
