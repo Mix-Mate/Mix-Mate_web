@@ -82,7 +82,8 @@ export default function GroupExtraInfoScreen({
 }: GroupExtraInfoScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get("role");
+  const fromParam = searchParams.get("from");
+  const isCreateFlow = fromParam === "create" || groupId === "new";
 
   // Form states
   const [name, setName] = useState(initialData?.name ?? "");
@@ -91,7 +92,7 @@ export default function GroupExtraInfoScreen({
   const [department, setDepartment] = useState(initialData?.department ?? "");
   const [isNew, setIsNew] = useState<NewStatusType>(initialData?.isNew ?? "");
   const [rolePosition, setRolePosition] = useState<RolePositionType>(
-    initialData?.rolePosition ?? (roleParam === "admin" ? "운영진" : ""),
+    initialData?.rolePosition ?? (isCreateFlow ? "운영진" : ""),
   );
   const [mbti, setMbti] = useState<string>(initialData?.mbti ?? "");
   const [age, setAge] = useState(initialData?.age ?? "");
@@ -139,8 +140,6 @@ export default function GroupExtraInfoScreen({
 
   // 화면 진입 즉시 참여코드 유효성 및 그룹 마감 여부 사전 검사
   useEffect(() => {
-    const fromParam = searchParams.get("from");
-    const isCreateFlow = fromParam === "create" || groupId === "new";
     if (isCreateFlow) return;
 
     const inviteCodeParam =
@@ -243,7 +242,7 @@ export default function GroupExtraInfoScreen({
     return () => {
       ignore = true;
     };
-  }, [groupId, searchParams]);
+  }, [groupId, isCreateFlow, searchParams]);
 
   const handleBack = () => {
     router.back();
@@ -317,14 +316,11 @@ export default function GroupExtraInfoScreen({
       bio: validation.data.bio ?? undefined,
     };
 
-    const fromParam = searchParams.get("from");
     const inviteCodeParam =
       searchParams.get("inviteCode") ||
       (typeof window !== "undefined" &&
         window.sessionStorage.getItem("pendingInviteCode")) ||
       "";
-
-    const isCreateFlow = fromParam === "create" || groupId === "new";
 
     try {
       if (isCreateFlow) {

@@ -54,7 +54,6 @@ export default function ParticipantCard({
   const tabParam = searchParams?.get("tab");
   const profileSearchParams = [
     round ? `round=${round}` : null,
-    canViewPrivateProfiles ? "role=admin" : null,
     listMode ? `list=${listMode}` : null,
     returnTo ? `returnTo=${returnTo}` : null,
     tabParam ? `tab=${tabParam}` : null,

@@ -22,7 +22,7 @@ export default function AdminParticipantItem({
   return (
     <li>
       <Link
-        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&role=admin&from=${encodeURIComponent(
+        href={`/groups/${groupId}/participants/${participant.id}?round=${round}&from=${encodeURIComponent(
           `/groups/${groupId}/admin/participants?round=${round}`,
         )}`}
         className={styles.participantItem}
