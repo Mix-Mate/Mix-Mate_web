@@ -85,8 +85,7 @@ export default function AssignmentResultScreen() {
     // "회차 준비 중" 상태로 렌더링되어 조편성 전 화면으로 되돌아간다.
     await refetchGroup();
 
-    const scenario = round === 2 ? "round2-active" : "round1-active";
-    router.replace(`${groupRoutes.home(params.groupId)}?scenario=${scenario}`);
+    router.replace(groupRoutes.home(params.groupId));
   };
 
   const isBusy = isReshuffling || isConfirming;

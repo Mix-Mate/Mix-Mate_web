@@ -43,7 +43,7 @@ export default function VoteResultScreen() {
   const footerHomeHref = isAdmin
     ? withSessionContext(`${homeHref}?dialog=post-vote`, searchParams)
     : didJoinSecondRound
-      ? `${homeHref}?scenario=round2-waiting`
+      ? homeHref
       : "/home";
   const myTeamMvpWinner = firstRoundTeam
     ? (data?.mvpWinners.find(
@@ -78,8 +78,7 @@ export default function VoteResultScreen() {
 
     router.replace(footerHomeHref);
   }, [footerHomeHref, router]);
-  const isSecondRoundAbsentExit =
-    mainHomeExitReason === "second-round-absent";
+  const isSecondRoundAbsentExit = mainHomeExitReason === "second-round-absent";
 
   return (
     <VoteScreenLayout
@@ -136,9 +135,7 @@ export default function VoteResultScreen() {
         open={mainHomeExitReason !== null}
         onClose={closeMainHomeExitPopup}
         onConfirm={confirmMainHomeExit}
-        variant={
-          isSecondRoundAbsentExit ? "first-round-complete" : "default"
-        }
+        variant={isSecondRoundAbsentExit ? "first-round-complete" : "default"}
       />
     </VoteScreenLayout>
   );

@@ -3,7 +3,7 @@ import {
   type SearchParamReader,
 } from "@/shared/lib/navigation/preserveSearchParams";
 
-const sessionContextKeys = ["scenario"] as const;
+const sessionContextKeys = [] as const;
 
 export function withSessionContext(
   href: string,
