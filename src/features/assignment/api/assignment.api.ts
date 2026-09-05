@@ -1,5 +1,5 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import { toBackendRound } from "../model/assignment.mapper";
 import type {
   AssignmentProgressStatus,
@@ -25,9 +25,9 @@ export async function getParticipants(
   groupId: string,
   round: AssignmentRound,
 ): Promise<ParticipantCandidate[]> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/participants?round=${toBackendRound(round)}`,
-    { credentials: "include", headers: withAuthHeaders() },
+    {},
   );
 
   if (!response.ok) {
@@ -48,12 +48,11 @@ export async function generateTeams(
   round: AssignmentRound,
   body: TeamGenerateRequestBody,
 ): Promise<TeamGenerateResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams/generate`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     },
   );
@@ -71,9 +70,9 @@ export async function getTeams(
   groupId: string,
   round: AssignmentRound,
 ): Promise<AssignmentTeam[]> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams`,
-    { credentials: "include", headers: withAuthHeaders() },
+    {},
   );
 
   if (!response.ok) {
@@ -98,9 +97,9 @@ export async function hasSecondRoundTeams(
   signal?: AbortSignal,
 ): Promise<boolean | null> {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/SECOND_ROUND/teams`,
-      { credentials: "include", headers: withAuthHeaders(), signal },
+      { signal },
     );
 
     if (response.ok) return true;
@@ -115,12 +114,10 @@ export async function confirmTeams(
   groupId: string,
   round: AssignmentRound,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/rounds/${toBackendRound(round)}/teams/confirm`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 

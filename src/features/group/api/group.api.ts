@@ -1,6 +1,6 @@
 import type { GroupDetail, UpdateGroupRequest } from "../types/group.types";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 
 async function getErrorMessage(response: Response, fallback: string) {
   try {
@@ -174,10 +174,9 @@ export async function createGroupApi(
     profile: request.profile || defaultProfile,
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/groups`, {
     method: "POST",
-    credentials: "include",
-    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
@@ -252,10 +251,8 @@ export async function getMyGroupsApi(
     state: params.state || "active",
   }).toString();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups?${query}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/groups?${query}`, {
     method: "GET",
-    credentials: "include",
-    headers: withAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -294,9 +291,7 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
-      credentials: "include",
-      headers: withAuthHeaders(),
+    response = await apiFetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
     });
   } catch {
     throw new GroupApiError("그룹 정보를 불러오지 못했습니다.");
@@ -332,12 +327,10 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
 }
 
 export async function closeRecruiting(groupId: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/close-recruiting`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 
@@ -349,12 +342,10 @@ export async function closeRecruiting(groupId: string): Promise<void> {
 }
 
 export async function finishFirstRound(groupId: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/voting`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 
@@ -366,12 +357,10 @@ export async function finishFirstRound(groupId: string): Promise<void> {
 }
 
 export async function decideSecondRound(groupId: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/second-round`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 
@@ -383,12 +372,10 @@ export async function decideSecondRound(groupId: string): Promise<void> {
 }
 
 export async function finishGroup(groupId: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/finish`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 
@@ -403,10 +390,9 @@ export async function updateGroup(
   groupId: string,
   request: UpdateGroupRequest,
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
     method: "PUT",
-    credentials: "include",
-    headers: withAuthHeaders({ "Content-Type": "application/json" }),
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request),
   });
 
@@ -418,10 +404,8 @@ export async function updateGroup(
 }
 
 export async function deleteGroup(groupId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
     method: "DELETE",
-    credentials: "include",
-    headers: withAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -432,12 +416,10 @@ export async function deleteGroup(groupId: string): Promise<void> {
 }
 
 export async function leaveGroup(groupId: string): Promise<void> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/participants/me`,
     {
       method: "DELETE",
-      credentials: "include",
-      headers: withAuthHeaders(),
     },
   );
 
@@ -465,12 +447,11 @@ export interface JoinGroupResponse {
 export async function joinGroupWithProfileApi(
   request: JoinGroupWithProfileRequest,
 ): Promise<JoinGroupResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/invitations/join`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         inviteCode: request.inviteCode.trim().toUpperCase(),
         profile: request.profile,
@@ -553,12 +534,11 @@ export interface VerifyInviteCodeResponse {
 export async function verifyInviteCodeApi(
   request: VerifyInviteCodeRequest,
 ): Promise<VerifyInviteCodeResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/invitations/verify`,
     {
       method: "POST",
-      credentials: "include",
-      headers: withAuthHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         inviteCode: request.inviteCode.trim().toUpperCase(),
       }),

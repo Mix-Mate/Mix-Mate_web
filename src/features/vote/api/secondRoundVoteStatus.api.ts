@@ -1,5 +1,5 @@
+import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { withAuthHeaders } from "@/shared/api/authToken";
 import type { SecondRoundVoteStatusResponse } from "../types/secondRoundVoteStatus.types";
 import { createVoteApiError } from "./voteApiError";
 
@@ -7,12 +7,10 @@ export async function getSecondRoundVoteStatus(
   groupId: string,
   signal?: AbortSignal,
 ): Promise<SecondRoundVoteStatusResponse> {
-  const response = await fetch(
+  const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/${groupId}/votes/second-round/status`,
     {
       method: "GET",
-      credentials: "include",
-      headers: withAuthHeaders(),
       signal,
     },
   );
