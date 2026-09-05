@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, SquarePen, Trash2 } from "lucide-react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { updateGroupSchema } from "@/features/group/schemas/group.schemas";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
@@ -32,14 +32,14 @@ export default function EditGroupDialog({
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors },
   } = useForm<UpdateGroupInput>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: initialValues,
   });
 
-  const descriptionValue = watch("description") ?? "";
+  const descriptionValue = useWatch({ control, name: "description" }) ?? "";
 
   useEffect(() => {
     if (!open) return;

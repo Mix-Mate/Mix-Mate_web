@@ -537,7 +537,7 @@ export default function HomeScreen({
     return () => {
       isMounted = false;
     };
-  }, [router]);
+  }, [router, initialActiveGroups, initialCompletedGroups, userName]);
 
   const handleGroupClick = async (group: HomeScreenGroupItem) => {
     if (group.isBlocked) {
