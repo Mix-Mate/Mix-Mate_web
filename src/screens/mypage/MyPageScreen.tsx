@@ -2,13 +2,13 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, LogOut } from "lucide-react";
+import { ChevronRight, Lock, LogOut, UserX } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { authRoutes } from "@/shared/lib/navigation/routes";
-import { performLogout } from "@/features/auth/api/auth.api";
+import { performLogout, performWithdraw } from "@/features/auth/api/auth.api";
 import styles from "./MyPageScreen.module.css";
 
 function subscribeStorage(callback: () => void) {
@@ -39,6 +39,16 @@ function getServerEmailSnapshot(): string {
   return "user@mixmate.kr";
 }
 
+function getWithdrawErrorMessage(error: unknown) {
+  if (!(error instanceof Error)) {
+    return "회원탈퇴에 실패했습니다.";
+  }
+
+  return error.message === "이메일 또는 비밀번호가 일치하지 않습니다."
+    ? "비밀번호가 일치하지 않습니다."
+    : error.message;
+}
+
 export default function MyPageScreen() {
   const router = useRouter();
 
@@ -57,8 +67,11 @@ export default function MyPageScreen() {
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  // [회원탈퇴 보류] const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [withdrawPassword, setWithdrawPassword] = useState("");
+  const [withdrawError, setWithdrawError] = useState("");
 
   const handleBack = () => {
     router.back();
@@ -81,20 +94,28 @@ export default function MyPageScreen() {
     }
   };
 
-  /* [회원탈퇴 기능 보류 - 추후 필요 시 주석 해제]
   const handleConfirmWithdraw = async () => {
-    if (isLoggingOut) return;
-    setIsLoggingOut(true);
+    if (isWithdrawing) return;
+
+    if (!withdrawPassword.trim()) {
+      setWithdrawError("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setIsWithdrawing(true);
+    setWithdrawError("");
+
     try {
-      await performLogout();
+      await performWithdraw(withdrawPassword);
       setIsWithdrawModalOpen(false);
-      alert("회원 탈퇴가 정상적으로 처리되었습니다. 이용해 주셔서 감사합니다.");
+      setWithdrawPassword("");
       router.push(authRoutes.login());
+    } catch (error) {
+      setWithdrawError(getWithdrawErrorMessage(error));
     } finally {
-      setIsLoggingOut(false);
+      setIsWithdrawing(false);
     }
   };
-  */
 
   return (
     <MobileFrame
@@ -166,11 +187,14 @@ export default function MyPageScreen() {
               </div>
             </button>
 
-            {/* [회원탈퇴 기능 보류 - 추후 필요 시 주석 해제]
             <button
               type="button"
               className={styles.dangerMenuItem}
-              onClick={() => setIsWithdrawModalOpen(true)}
+              onClick={() => {
+                setWithdrawPassword("");
+                setWithdrawError("");
+                setIsWithdrawModalOpen(true);
+              }}
             >
               <div className={styles.menuItemLeft}>
                 <span className={`${styles.menuItemIcon} ${styles.withdrawLabel}`}>
@@ -182,7 +206,6 @@ export default function MyPageScreen() {
                 <ChevronRight size={18} aria-hidden="true" />
               </div>
             </button>
-            */}
           </div>
         </section>
       </main>
@@ -231,15 +254,18 @@ export default function MyPageScreen() {
         </div>
       </BottomSheetDialog>
 
-      {/* [회원탈퇴 확인 바텀시트 모달 - 보류로 주석 처리]
       <BottomSheetDialog
         open={isWithdrawModalOpen}
         titleId="withdraw-dialog-title"
         descriptionId="withdraw-dialog-description"
         scrimClassName={styles.modalScrim}
         sheetClassName={styles.modalSheet}
-        onClose={() => setIsWithdrawModalOpen(false)}
-        closeDisabled={isLoggingOut}
+        onClose={() => {
+          setWithdrawPassword("");
+          setWithdrawError("");
+          setIsWithdrawModalOpen(false);
+        }}
+        closeDisabled={isWithdrawing}
       >
         <div className={`${styles.modalIcon} ${styles.modalIconDanger}`} aria-hidden="true">
           <UserX size={24} strokeWidth={2} />
@@ -250,16 +276,39 @@ export default function MyPageScreen() {
             정말 탈퇴하시겠습니까?
           </h2>
           <p id="withdraw-dialog-description" className={styles.modalDescription}>
-            회원 탈퇴 시 등록된 프로필 정보 및 모든 모임 참여 기록이 영구 삭제되며 복구할 수 없습니다.
+            회원 탈퇴 시 계정이 비활성화되며 현재 계정으로 다시 로그인할 수 없습니다.
           </p>
+          <div className={styles.inputWrapper}>
+            <input
+              type="password"
+              className={styles.nameInput}
+              value={withdrawPassword}
+              placeholder="비밀번호 입력"
+              autoComplete="current-password"
+              onChange={(event) => {
+                setWithdrawPassword(event.target.value);
+                if (withdrawError) setWithdrawError("");
+              }}
+              disabled={isWithdrawing}
+            />
+          </div>
+          {withdrawError && (
+            <p className={styles.modalErrorText} role="alert">
+              {withdrawError}
+            </p>
+          )}
         </div>
 
         <div className={styles.modalActions}>
           <button
             type="button"
             className={styles.modalCancelButton}
-            onClick={() => setIsWithdrawModalOpen(false)}
-            disabled={isLoggingOut}
+            onClick={() => {
+              setWithdrawPassword("");
+              setWithdrawError("");
+              setIsWithdrawModalOpen(false);
+            }}
+            disabled={isWithdrawing}
           >
             취소
           </button>
@@ -268,13 +317,12 @@ export default function MyPageScreen() {
             type="button"
             className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
             onClick={handleConfirmWithdraw}
-            disabled={isLoggingOut}
+            disabled={isWithdrawing}
           >
-            {isLoggingOut ? "탈퇴 처리 중..." : "탈퇴하기"}
+            {isWithdrawing ? "탈퇴 처리 중..." : "탈퇴하기"}
           </button>
         </div>
       </BottomSheetDialog>
-      */}
     </MobileFrame>
   );
 }
