@@ -24,7 +24,7 @@ import {
   getKnownGroupIds,
   getBlacklistedGroupIds,
   dismissBlockedGroup,
-  undismissBlockedGroup,
+  isDismissedBlockedGroup,
   removeKnownGroupName,
   type BlockedGroupStorageItem,
 } from "@/features/blacklist/lib/blockedGroupsStorage";
@@ -319,13 +319,16 @@ export default function HomeScreen({
           saveKnownGroupNames(allApiGroups);
         }
 
-        const localBlockedList = repairBlockedGroupNames(allApiGroups);
+        const localBlockedList = repairBlockedGroupNames(allApiGroups).filter(
+          (b) => !isDismissedBlockedGroup(b.groupId),
+        );
 
-        // 알려진 그룹 또는 로컬 블랙리스트에 있지만 서버 응답 및 로컬 차단 목록에 없는 그룹 탐색
+        // 알려진 그룹 또는 로컬 블랙리스트에 있지만 서버 응답 및 로컬 차단 목록에 없고 dismiss되지 않은 그룹 탐색
         const candidateIds = Array.from(
           new Set([...getKnownGroupIds(), ...getBlacklistedGroupIds()]),
         ).filter(
           (cid) =>
+            !isDismissedBlockedGroup(cid) &&
             !allApiGroups.some((g) => String(g.groupId).trim() === String(cid).trim()) &&
             !localBlockedList.some((b) => String(b.groupId).trim() === String(cid).trim()),
         );
@@ -333,11 +336,11 @@ export default function HomeScreen({
         if (candidateIds.length > 0) {
           const checked = await Promise.allSettled(
             candidateIds.map(async (cid) => {
+              if (isDismissedBlockedGroup(cid)) return null;
               const blocked = await checkUserBlockedInGroup(cid, {
                 name: userName,
               });
-              if (blocked) {
-                undismissBlockedGroup(cid);
+              if (blocked && !isDismissedBlockedGroup(cid)) {
                 const realName =
                   getKnownGroupName(cid) ||
                   (blocked.name && !isDummyGroupName(blocked.name)
@@ -345,7 +348,7 @@ export default function HomeScreen({
                     : undefined) ||
                   "그룹";
                 const item: BlockedGroupStorageItem = {
-                  groupId: cid,
+                  groupId: String(cid).trim(),
                   groupName: realName,
                   reason: blocked.reason,
                   blockedAt: blocked.blockedAt,
@@ -361,6 +364,7 @@ export default function HomeScreen({
             if (res.status === "fulfilled" && res.value) {
               const item = res.value;
               if (
+                !isDismissedBlockedGroup(item.groupId) &&
                 !localBlockedList.some(
                   (b) => String(b.groupId).trim() === String(item.groupId).trim(),
                 )
@@ -403,9 +407,12 @@ export default function HomeScreen({
         if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
           const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
             (g: MyGroupItem) => {
-              const localBlocked = localBlockedList.find(
-                (b) => String(b.groupId) === String(g.groupId),
-              );
+              const isDismissed = isDismissedBlockedGroup(g.groupId);
+              const localBlocked = !isDismissed
+                ? localBlockedList.find(
+                    (b) => String(b.groupId).trim() === String(g.groupId).trim(),
+                  )
+                : undefined;
               if (localBlocked && isDummyGroupName(localBlocked.groupName)) {
                 recordBlockedGroup({
                   ...localBlocked,
@@ -433,7 +440,10 @@ export default function HomeScreen({
 
           // 로컬에 저장된 차단 그룹 중 서버 활성 응답에 없는 그룹 병합 (최초 1회 유지)
           for (const blocked of localBlockedList) {
-            if (!mapped.some((item) => item.id === String(blocked.groupId))) {
+            if (
+              !isDismissedBlockedGroup(blocked.groupId) &&
+              !mapped.some((item) => String(item.id).trim() === String(blocked.groupId).trim())
+            ) {
               const resolvedName = resolveBlockedGroupName(blocked);
               if (
                 isDummyGroupName(blocked.groupName) &&
@@ -445,7 +455,7 @@ export default function HomeScreen({
                 });
               }
               mapped.push({
-                id: String(blocked.groupId),
+                id: String(blocked.groupId).trim(),
                 name: resolvedName,
                 status: "BEFORE_FIRST_ROUND",
                 role: "PARTICIPANT",
@@ -458,9 +468,15 @@ export default function HomeScreen({
             }
           }
 
-          setActiveGroups(sortActiveGroups(mapped));
+          const visibleActiveGroups = mapped.filter(
+            (item) => !item.isBlocked || !isDismissedBlockedGroup(item.id),
+          );
+          setActiveGroups(sortActiveGroups(visibleActiveGroups));
         } else if (localBlockedList.length > 0) {
-          const mapped: HomeScreenGroupItem[] = localBlockedList.map(
+          const visibleBlockedList = localBlockedList.filter(
+            (blocked) => !isDismissedBlockedGroup(blocked.groupId),
+          );
+          const mapped: HomeScreenGroupItem[] = visibleBlockedList.map(
             (blocked) => {
               const resolvedName = resolveBlockedGroupName(blocked);
               if (
@@ -473,7 +489,7 @@ export default function HomeScreen({
                 });
               }
               return {
-                id: String(blocked.groupId),
+                id: String(blocked.groupId).trim(),
                 name: resolvedName,
                 status: "BEFORE_FIRST_ROUND",
                 role: "PARTICIPANT",
@@ -583,11 +599,12 @@ export default function HomeScreen({
 
   const handleRemoveBlockedGroup = () => {
     if (!blockedModalInfo) return;
-    dismissBlockedGroup(blockedModalInfo.groupId);
-    removeKnownGroupName(blockedModalInfo.groupId);
-    removeBlockedGroup(blockedModalInfo.groupId);
+    const targetGroupId = String(blockedModalInfo.groupId).trim();
+    dismissBlockedGroup(targetGroupId);
+    removeKnownGroupName(targetGroupId);
+    removeBlockedGroup(targetGroupId);
     setActiveGroups((prev) =>
-      prev.filter((item) => item.id !== blockedModalInfo.groupId),
+      prev.filter((item) => String(item.id).trim() !== targetGroupId),
     );
     setIsBlockedModalOpen(false);
     setBlockedModalInfo(null);
@@ -709,9 +726,17 @@ export default function HomeScreen({
                   <div className={styles.skeletonCard} />
                   <div className={styles.skeletonCard} />
                 </div>
-              ) : activeGroups.length > 0 ? (
+              ) : activeGroups.filter(
+                  (group) =>
+                    !group.isBlocked || !isDismissedBlockedGroup(group.id),
+                ).length > 0 ? (
                 <div className={styles.groupList}>
-                  {activeGroups.map((group) => {
+                  {activeGroups
+                    .filter(
+                      (group) =>
+                        !group.isBlocked || !isDismissedBlockedGroup(group.id),
+                    )
+                    .map((group) => {
                     const statusInfo =
                       STATUS_CONFIG[group.status] || STATUS_CONFIG.FIRST_ROUND;
 

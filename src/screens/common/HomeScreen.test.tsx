@@ -494,5 +494,72 @@ describe("HomeScreen", () => {
         ),
       ).toBe(true);
     });
+
+    it("차단된 그룹을 '목록에서 삭제하기'로 삭제한 뒤 페이지를 새로고침(재마운트)해도 해당 차단 카드가 다시 부활하지 않는다", async () => {
+      const { recordBlockedGroup, readBlockedGroups, isDismissedBlockedGroup } =
+        await import("@/features/blacklist/lib/blockedGroupsStorage");
+      const { checkUserBlockedInGroup } = await import(
+        "@/features/blacklist/api/blacklist.api"
+      );
+
+      // 1. 차단 그룹 등록 및 로컬 블랙리스트 키 존재 상황 모사
+      recordBlockedGroup({
+        groupId: "999",
+        groupName: "삭제할 차단 그룹",
+        reason: "규칙 위반",
+        blockedAt: "2026-09-01T12:00:00Z",
+      });
+      localStorage.setItem(
+        "mixmate:group-blacklist:999",
+        JSON.stringify({ blocked: true }),
+      );
+
+      getMyGroupsApiMock.mockImplementation(async () => ({
+        groups: [],
+      }));
+
+      vi.mocked(checkUserBlockedInGroup).mockResolvedValue({
+        id: "999",
+        userId: 999,
+        name: "테스터",
+        reason: "규칙 위반",
+        blockedAt: "2026-09-01T12:00:00Z",
+      });
+
+      const { unmount } = render(<HomeScreen userName="테스터" />);
+
+      // 카드 노출 확인
+      expect(await screen.findByText("삭제할 차단 그룹")).toBeInTheDocument();
+
+      // 모달 열고 삭제 클릭
+      fireEvent.click(
+        screen.getByRole("button", { name: /삭제할 차단 그룹/ }),
+      );
+      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      fireEvent.click(
+        screen.getByRole("button", { name: "목록에서 삭제하기" }),
+      );
+
+      // 화면 및 스토리지에서 삭제되고 dismiss 목록에 추가되었는지 확인
+      await waitFor(() => {
+        expect(screen.queryByText("삭제할 차단 그룹")).not.toBeInTheDocument();
+      });
+      expect(readBlockedGroups()).toHaveLength(0);
+      expect(isDismissedBlockedGroup("999")).toBe(true);
+
+      // 2. 컴포넌트 언마운트 후 재마운트 (새로고침 시뮬레이션)
+      unmount();
+      vi.mocked(checkUserBlockedInGroup).mockClear();
+
+      render(<HomeScreen userName="테스터" />);
+
+      // 새로고침 후에도 차단 카드가 부활하지 않고 빈 상태 문구가 보여야 함
+      expect(
+        await screen.findByText("진행 중인 모임이 없습니다."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("삭제할 차단 그룹")).not.toBeInTheDocument();
+      expect(readBlockedGroups()).toHaveLength(0);
+      expect(isDismissedBlockedGroup("999")).toBe(true);
+    });
   });
 });

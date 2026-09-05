@@ -1,4 +1,5 @@
 import { getGroupDetail, GroupApiError } from "@/features/group/api/group.api";
+import { getKnownGroupName } from "../lib/blockedGroupsStorage";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import type {
@@ -137,7 +138,7 @@ export async function getGroupBlacklist(
   groupId: string,
   signal?: AbortSignal,
 ): Promise<BlockedParticipantGroup> {
-  const groupDetailPromise = getGroupDetail(groupId);
+  const groupDetailPromise = getGroupDetail(groupId).catch(() => null);
 
   try {
     const response = await apiFetch(
@@ -165,7 +166,10 @@ export async function getGroupBlacklist(
 
       const group = await groupDetailPromise;
       return {
-        groupName: group.groupName,
+        groupName:
+          group?.groupName ||
+          getKnownGroupName(groupId) ||
+          "그룹",
         participants: serverList,
       };
     }
@@ -176,7 +180,10 @@ export async function getGroupBlacklist(
   const storedList = deduplicateBlacklist(readStoredBlacklist(groupId));
   const group = await groupDetailPromise;
   return {
-    groupName: group.groupName,
+    groupName:
+      group?.groupName ||
+      getKnownGroupName(groupId) ||
+      "그룹",
     participants: storedList,
   };
 }
