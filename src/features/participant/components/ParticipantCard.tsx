@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import type { Participant } from "../types/participant.types";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
@@ -62,6 +63,9 @@ export default function ParticipantCard({
   const profileHref = `/groups/${resolvedGroupId}/participants/${participant.id}${
     profileSearchParams.length > 0 ? `?${profileSearchParams.join("&")}` : ""
   }`;
+  const href = isCurrentParticipant
+    ? groupRoutes.profile(resolvedGroupId)
+    : profileHref;
 
   const content = (
     <>
@@ -93,10 +97,7 @@ export default function ParticipantCard({
   return (
     <li>
       {canViewProfile ? (
-        <Link
-          href={profileHref}
-          className={styles.participantItem}
-        >
+        <Link href={href} className={styles.participantItem}>
           {content}
         </Link>
       ) : (

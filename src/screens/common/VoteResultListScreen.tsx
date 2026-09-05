@@ -52,8 +52,7 @@ function toParticipant(
     id: String(participant.participantId),
     name: participant.displayName,
     department: participant.major,
-    visibility:
-      participant.visibility === "PUBLIC" ? "public" : "private",
+    visibility: participant.visibility === "PUBLIC" ? "public" : "private",
     role: "general",
     gender: participant.gender === "MALE" ? "male" : "female",
   };
@@ -62,11 +61,13 @@ function toParticipant(
 function MvpWinnerList({
   canViewPrivateProfiles,
   groupId,
+  myParticipantId,
   searchParams,
   winners,
 }: {
   canViewPrivateProfiles: boolean;
   groupId: string;
+  myParticipantId: string | null;
   searchParams: { get: (key: string) => string | null };
   winners: MvpWinner[];
 }) {
@@ -82,16 +83,21 @@ function MvpWinnerList({
   return (
     <ul className={participantStyles.participantList}>
       {winners.map((winner) => {
+        const isMyProfile =
+          myParticipantId !== null &&
+          String(winner.participantId) === myParticipantId;
         const profileSearchParams = new URLSearchParams({ list: "mvp" });
 
         if (canViewPrivateProfiles) {
           profileSearchParams.set("role", "admin");
         }
 
-        const profileHref = withSessionContext(
-          `/groups/${groupId}/participants/${winner.participantId}?${profileSearchParams}`,
-          searchParams,
-        );
+        const profileHref = isMyProfile
+          ? withSessionContext(groupRoutes.profile(groupId), searchParams)
+          : withSessionContext(
+              `/groups/${groupId}/participants/${winner.participantId}?${profileSearchParams}`,
+              searchParams,
+            );
 
         return (
           <li key={winner.participantId}>
@@ -213,6 +219,7 @@ export default function VoteResultListScreen({
               <MvpWinnerList
                 canViewPrivateProfiles={canViewPrivateProfiles}
                 groupId={params.groupId}
+                myParticipantId={myParticipantId}
                 searchParams={searchParams}
                 winners={mvpWinners}
               />
