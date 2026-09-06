@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 
 const WITHDRAW_URL = `${API_BASE_URL}/api/v1/auth/withdraw`;
-const REISSUE_URL = `${API_BASE_URL}/api/v1/auth/reissue`;
 
 function jsonResponse(status: number, body: unknown = {}) {
   return new Response(JSON.stringify(body), {
@@ -39,36 +38,51 @@ describe("withdrawApi", () => {
     window.localStorage.clear();
   });
 
-  it("access token 만료 응답을 받으면 재발급 후 회원탈퇴 요청을 재시도한다", async () => {
-    window.localStorage.setItem("accessToken", "old-token");
+  it("비밀번호 오류로 401을 받아도 저장된 토큰을 제거하지 않는다", async () => {
+    window.localStorage.setItem("accessToken", "access-token");
     window.localStorage.setItem("refreshToken", "refresh-token");
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(401, {
+        code: "UNAUTHORIZED",
+        message: "로그인이 필요합니다.",
+      }),
+    );
 
+    const { withdrawApi } = await importAuthApi();
+
+    await expect(withdrawApi({ password: "wrong-password" })).rejects.toThrow(
+      "로그인이 필요합니다.",
+    );
+
+    expect(window.localStorage.getItem("accessToken")).toBe("access-token");
+    expect(window.localStorage.getItem("refreshToken")).toBe("refresh-token");
+  });
+
+  it("실패 후 다시 시도해도 Authorization 헤더를 유지한다", async () => {
+    window.localStorage.setItem("accessToken", "access-token");
     fetchMock
-      .mockResolvedValueOnce(jsonResponse(401, { code: "UNAUTHORIZED" }))
-      .mockResolvedValueOnce(jsonResponse(200, { accessToken: "new-token" }))
+      .mockResolvedValueOnce(
+        jsonResponse(401, {
+          code: "UNAUTHORIZED",
+          message: "로그인이 필요합니다.",
+        }),
+      )
       .mockResolvedValueOnce(emptyResponse(204));
 
     const { withdrawApi } = await importAuthApi();
 
+    await expect(withdrawApi({ password: "wrong-password" })).rejects.toThrow();
     await expect(
       withdrawApi({ password: "correct-password" }),
     ).resolves.toBe("");
 
     const calls = fetchMock.mock.calls as [string, RequestInit][];
-    expect(calls).toHaveLength(3);
+    expect(calls).toHaveLength(2);
     expect(calls[0][0]).toBe(WITHDRAW_URL);
-    expect(calls[0][1].method).toBe("DELETE");
-    expect(authHeaderOf(calls[0])).toBe("Bearer old-token");
-    expect(calls[0][1].body).toBe(
-      JSON.stringify({ password: "correct-password" }),
-    );
-
-    expect(calls[1][0]).toBe(REISSUE_URL);
-
-    expect(calls[2][0]).toBe(WITHDRAW_URL);
-    expect(calls[2][1].method).toBe("DELETE");
-    expect(authHeaderOf(calls[2])).toBe("Bearer new-token");
-    expect(calls[2][1].body).toBe(
+    expect(calls[1][0]).toBe(WITHDRAW_URL);
+    expect(authHeaderOf(calls[0])).toBe("Bearer access-token");
+    expect(authHeaderOf(calls[1])).toBe("Bearer access-token");
+    expect(calls[1][1].body).toBe(
       JSON.stringify({ password: "correct-password" }),
     );
   });
