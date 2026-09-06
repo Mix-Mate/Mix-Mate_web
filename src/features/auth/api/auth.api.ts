@@ -1,5 +1,4 @@
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-import { apiFetch } from "@/shared/api/apiFetch";
 import { withAuthHeaders, clearAuthTokens } from "@/shared/api/authToken";
 
 export interface LoginRequest {
@@ -291,11 +290,12 @@ export async function logoutApi(): Promise<LogoutResponse> {
 export async function withdrawApi(
   data: WithdrawRequest,
 ): Promise<WithdrawResponse> {
-  const response = await apiFetch(`${API_BASE_URL}/api/v1/auth/withdraw`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/withdraw`, {
     method: "DELETE",
-    headers: {
+    credentials: "include",
+    headers: withAuthHeaders({
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify({
       password: data.password,
     }),
