@@ -44,12 +44,16 @@
 ## 주요 기능
 <img width="100%" alt="README • Key Features 1" src="https://github.com/user-attachments/assets/f205b0aa-9c90-4af9-b816-c4e79621e22b" />
 
+- 주요 기능 이미지 추가 예정
 
 ## 서비스 이용 흐름
 
 <img width="100%" alt="README • User Flow" src="https://github.com/user-attachments/assets/c56e5577-086c-436c-bed2-85ccefae39cf" />
 
 ---
+
+## 아키텍처
+- 이미지 추가 예정
 
 ## 🛠 Tech Stack
 
@@ -109,27 +113,6 @@ mix-mate-web/
 ├── vitest.config.ts
 └── vercel.json
 ```
-
-## 🗺 Routes
-
-`[groupId]`는 그룹 ID이며, 조 편성 경로의 `[round]`에는 `1` 또는 `2`를 사용합니다.
-
-| Route | 설명 |
-| --- | --- |
-| `/login`, `/signup` | 로그인과 이메일 인증 기반 회원가입 |
-| `/home` | 진행 중·완료된 모임 목록 |
-| `/groups/create`, `/groups/create/extra` | 그룹 정보와 HOST 프로필 입력 |
-| `/groups/join`, `/groups/[groupId]/extra` | 참여 코드 확인과 참가자 프로필 등록 |
-| `/groups/[groupId]` | 역할·진행 상태에 따른 그룹 홈 |
-| `/groups/[groupId]/participants` | 참가자 명단과 조별 보기 |
-| `/groups/[groupId]/team` | 내 조와 같은 조 멤버 확인 |
-| `/groups/[groupId]/play` | 술게임·스몰토크·밸런스 게임 메뉴 |
-| `/groups/[groupId]/votes/mvp`, `/groups/[groupId]/votes/attendance` | MVP와 2차 참여 투표 |
-| `/groups/[groupId]/votes/status`, `/groups/[groupId]/votes/result` | 투표 현황과 결과 |
-| `/groups/[groupId]/admin/recruitment` | 참여 코드 공유와 모집 관리 |
-| `/groups/[groupId]/admin/assignments/[round]/setup` | 회차별 조 편성 설정 |
-| `/groups/[groupId]/admin/progress` | 모임 진행 현황과 회차 종료 |
-| `/groups/[groupId]/completed` | 모임 종료 화면 |
 
 ## 실행 방법
 
