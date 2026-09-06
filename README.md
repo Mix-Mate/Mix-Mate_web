@@ -47,7 +47,7 @@
         <p>조를 편성하고 같은 조 멤버 확인하기</p>
       </td>
       <td align="center" valign="top">
-        <!-- TODO: MVP 투표 → 2차 참여 투표 → 투표 마감 및 결과 GIF -->
+        <img width="70%" alt="20260906-1434-29 3568066" src="https://github.com/user-attachments/assets/3f549f6b-2cf5-4c9e-87cf-799dbc7e150f" />
         <p>모임의 MVP와 다음 일정 참여자 확인하기</p>
       </td>
     </tr>
