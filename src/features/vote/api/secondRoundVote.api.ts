@@ -23,3 +23,24 @@ export async function voteSecondRound(
     );
   }
 }
+
+export async function updateSecondRoundVote(
+  groupId: string,
+  choice: SecondRoundVoteChoice,
+): Promise<void> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/votes/second-round`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ choice }),
+    },
+  );
+
+  if (!response.ok) {
+    throw await createVoteApiError(
+      response,
+      "2차 참여 여부 투표 정정에 실패했습니다.",
+    );
+  }
+}
