@@ -382,6 +382,7 @@ export function SignupForm() {
       <InfoBanner>
         <p>이름과 이메일만으로 간단하게 가입합니다.</p>
         <p>그룹별 상세 정보는 그룹 입장 후 입력합니다.</p>
+        <p>인증 메일이 오지 않았다면 스팸 메일함을 확인해주세요.</p>
       </InfoBanner>
 
       {/* 1. 이름 필드 */}
