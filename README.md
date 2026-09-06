@@ -39,7 +39,7 @@
   <tbody>
     <tr>
       <td align="center" valign="top">
-        <!-- TODO: 그룹 생성 → 참여 코드 공유 → 참가자 프로필 등록 GIF -->
+        <img width="70%" alt="20260906-1416-45 9167804" src="https://github.com/user-attachments/assets/9583ca31-b780-457c-a992-da6648e61b27" />
         <p>그룹을 만들고 참여 코드로 함께하기</p>
       </td>
       <td align="center" valign="top">
