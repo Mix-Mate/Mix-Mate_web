@@ -11,10 +11,13 @@ import styles from "@/features/vote/components/status/VoteStatus.module.css";
 import VoteStatusList from "@/features/vote/components/status/VoteStatusList";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import { useVoteNavigation } from "@/features/vote/hooks/useVoteNavigation";
+import { getSecondRoundVoteUpdatedToastKey } from "@/features/vote/lib/second-round";
 import type { SecondRoundVoteStatusFilter } from "@/features/vote/types/secondRoundVoteStatus.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
+import useToast from "@/shared/hooks/useToast";
 import { appRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
+import Toast from "@/shared/ui/Toast";
 import VoteScreenLayout from "./VoteScreenLayout";
 
 export default function VoteStatusScreen() {
@@ -26,7 +29,13 @@ export default function VoteStatusScreen() {
   const canForceEndVote = isAdmin && group?.status === "VOTING";
   const { data, isLoading, isRefreshing, error, isComplete, refetch } =
     useVoteStatusQuery(params.groupId);
-  const { back: navigateToMainHome } = useVoteNavigation(appRoutes.home());
+  const canCorrectSecondRoundVote = group?.status === "VOTING";
+  const { back: navigateBack } = useVoteNavigation(
+    canCorrectSecondRoundVote
+      ? groupRoutes.attendanceVoteCorrection(params.groupId)
+      : appRoutes.home(),
+  );
+  const { message: toastMessage, showToast } = useToast();
   const [selectedFilter, setSelectedFilter] =
     useState<SecondRoundVoteStatusFilter>("PENDING");
   const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
@@ -67,6 +76,16 @@ export default function VoteStatusScreen() {
   }, [params.groupId, router, searchParams]);
 
   useEffect(() => {
+    const toastKey = getSecondRoundVoteUpdatedToastKey(params.groupId);
+    const storedToast = window.sessionStorage.getItem(toastKey);
+
+    if (storedToast) {
+      showToast(storedToast);
+      window.sessionStorage.removeItem(toastKey);
+    }
+  }, [params.groupId, showToast]);
+
+  useEffect(() => {
     if (!group) return;
 
     const isVoteFinished =
@@ -99,14 +118,14 @@ export default function VoteStatusScreen() {
 
   const confirmMainHomeExit = useCallback(() => {
     setMainHomeExitPopupOpen(false);
-    navigateToMainHome();
-  }, [navigateToMainHome]);
+    navigateBack();
+  }, [navigateBack]);
 
   return (
     <VoteScreenLayout
       title="투표 현황"
-      status={isComplete ? "CLOSED" : "OPEN"}
-      onBack={requestMainHomeExit}
+      status={canCorrectSecondRoundVote ? "OPEN" : "CLOSED"}
+      onBack={canCorrectSecondRoundVote ? navigateBack : requestMainHomeExit}
       testId="vote-status-screen"
     >
       <section
@@ -168,9 +187,7 @@ export default function VoteStatusScreen() {
               </p>
             )}
 
-            {canForceEndVote && (
-              <AdminVoteEndButton onEnd={showAdminVoteEnd} />
-            )}
+            {canForceEndVote && <AdminVoteEndButton onEnd={showAdminVoteEnd} />}
 
             <span className={styles.visuallyHidden} aria-live="polite">
               {isRefreshing ? "투표 현황을 갱신하고 있습니다." : ""}
@@ -186,6 +203,8 @@ export default function VoteStatusScreen() {
         onClose={closeMainHomeExitPopup}
         onConfirm={confirmMainHomeExit}
       />
+
+      {toastMessage && <Toast>{toastMessage}</Toast>}
     </VoteScreenLayout>
   );
 }

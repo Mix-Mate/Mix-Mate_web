@@ -5,6 +5,10 @@ import type {
   GroupMemberRole,
   GroupStatus,
 } from "@/features/group/types/group.types";
+import {
+  getSecondRoundVoteUpdatedToastKey,
+  SECOND_ROUND_VOTE_UPDATED_MESSAGE,
+} from "@/features/vote/lib/second-round";
 import VoteStatusScreen from "./VoteStatusScreen";
 
 const {
@@ -65,6 +69,7 @@ function createGroup(
 describe("VoteStatusScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.sessionStorage.clear();
     useVoteStatusQueryMock.mockReturnValue({
       data: {
         totalParticipantCount: 2,
@@ -112,7 +117,7 @@ describe("VoteStatusScreen", () => {
   });
 
   it.each(["PARTICIPANT", "HOST"] as const)(
-    "%s는 헤더 뒤로가기에서 확인 후 메인 홈으로 이동한다",
+    "%s는 투표 진행 중 헤더 뒤로가기로 2차 투표 정정 화면에 이동한다",
     (myRole) => {
       useAdminGroupQueryMock.mockReturnValue({
         data: createGroup("VOTING", myRole),
@@ -123,17 +128,61 @@ describe("VoteStatusScreen", () => {
         screen.getByRole("button", { name: "이전 화면으로 이동" }),
       );
 
+      expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
+        "/groups/6/votes/attendance?mode=edit",
+      );
       expect(
-        screen.getByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
-      ).toBeInTheDocument();
-      expect(replaceMock).not.toHaveBeenCalled();
-
-      fireEvent.click(screen.getByRole("button", { name: "나가기" }));
-
-      expect(replaceMock).toHaveBeenCalledExactlyOnceWith("/home");
+        screen.queryByRole("dialog", { name: "메인 홈으로 나가시겠습니까?" }),
+      ).not.toBeInTheDocument();
       expect(pushMock).not.toHaveBeenCalled();
     },
   );
+
+  it("전원이 제출했어도 관리자가 종료하기 전에는 정정할 수 있는 진행 상태로 표시한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "PARTICIPANT"),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 1,
+        votedCount: 1,
+        participateCount: 1,
+        notParticipateCount: 0,
+        participants: [
+          { participantId: 3, displayName: "나", choice: "PARTICIPATE" },
+        ],
+      },
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      isComplete: true,
+    });
+
+    render(<VoteStatusScreen />);
+
+    expect(screen.getByText("투표 진행 중")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+    expect(replaceMock).toHaveBeenCalledWith(
+      "/groups/6/votes/attendance?mode=edit",
+    );
+  });
+
+  it("정정 완료 메시지를 한 번 소비해 토스트로 보여준다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "PARTICIPANT"),
+    });
+    window.sessionStorage.setItem(
+      getSecondRoundVoteUpdatedToastKey("6"),
+      SECOND_ROUND_VOTE_UPDATED_MESSAGE,
+    );
+
+    render(<VoteStatusScreen />);
+
+    expect(screen.getByText(SECOND_ROUND_VOTE_UPDATED_MESSAGE)).toBeVisible();
+    expect(
+      window.sessionStorage.getItem(getSecondRoundVoteUpdatedToastKey("6")),
+    ).toBeNull();
+  });
 
   it("투표 종료 상태인 경우 결과 화면으로 이동한다", () => {
     useAdminGroupQueryMock.mockReturnValue({

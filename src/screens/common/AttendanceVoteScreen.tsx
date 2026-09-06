@@ -9,6 +9,10 @@ import styles from "@/features/vote/components/vote.module.css";
 import { useAttendanceVote } from "@/features/vote/hooks/useAttendanceVote";
 import { useVoteNavigation } from "@/features/vote/hooks/useVoteNavigation";
 import { getVotePageRedirect } from "@/features/vote/lib/vote-page-route";
+import {
+  getSecondRoundVoteUpdatedToastKey,
+  SECOND_ROUND_VOTE_UPDATED_MESSAGE,
+} from "@/features/vote/lib/second-round";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import VoteScreenLayout from "./VoteScreenLayout";
@@ -16,17 +20,22 @@ import VoteScreenLayout from "./VoteScreenLayout";
 export default function AttendanceVoteScreen() {
   const params = useParams<{ groupId: string }>();
   const searchParams = useSearchParams();
+  const isCorrectionFlow = searchParams.get("mode") === "edit";
   const { data: group } = useAdminGroupQuery(params.groupId);
-  const { data: voteStatusData, isComplete } = useVoteStatusQuery(
-    params.groupId,
-    { pollingEnabled: false },
-  );
-  const { context, isLoading, isSubmitting, error, submit } = useAttendanceVote(
-    params.groupId,
-  );
+  const {
+    data: voteStatusData,
+    isLoading: isVoteStatusLoading,
+    error: voteStatusError,
+    isComplete,
+  } = useVoteStatusQuery(params.groupId, { pollingEnabled: false });
 
   const myVote = voteStatusData?.participants.find(
     (participant) => participant.participantId === group?.myParticipantId,
+  );
+  const existingChoice = myVote?.choice ?? null;
+  const { context, isLoading, isSubmitting, error, submit } = useAttendanceVote(
+    params.groupId,
+    existingChoice,
   );
   const hasVoted = myVote ? myVote.choice !== null : false;
   const redirect = getVotePageRedirect(
@@ -34,10 +43,13 @@ export default function AttendanceVoteScreen() {
     group,
     isComplete,
     hasVoted,
+    isCorrectionFlow,
   );
   const { back, replace } = useVoteNavigation(
     withSessionContext(
-      redirect ?? groupRoutes.mvpVote(params.groupId),
+      isCorrectionFlow
+        ? groupRoutes.voteStatus(params.groupId)
+        : (redirect ?? groupRoutes.mvpVote(params.groupId)),
       searchParams,
     ),
   );
@@ -51,6 +63,12 @@ export default function AttendanceVoteScreen() {
     const result = await submit(choice);
 
     if (result.success) {
+      if (result.isUpdated) {
+        window.sessionStorage.setItem(
+          getSecondRoundVoteUpdatedToastKey(params.groupId),
+          SECOND_ROUND_VOTE_UPDATED_MESSAGE,
+        );
+      }
       replace(
         withSessionContext(
           groupRoutes.voteStatus(params.groupId),
@@ -83,9 +101,9 @@ export default function AttendanceVoteScreen() {
           initialChoice={context.selectedChoice}
           isSubmitted={context.hasSubmitted}
           isClosed={context.status === "CLOSED" || !group || redirect !== null}
-          isLoading={isLoading}
+          isLoading={isLoading || isVoteStatusLoading || !voteStatusData}
           isSubmitting={isSubmitting}
-          error={error}
+          error={error ?? voteStatusError}
           onSubmit={(choice) => {
             void handleSubmit(choice);
           }}

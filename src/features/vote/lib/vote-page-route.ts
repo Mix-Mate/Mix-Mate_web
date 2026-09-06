@@ -7,6 +7,7 @@ export function getVotePageRedirect(
   group: GroupDetail | null,
   isComplete: boolean,
   hasAttendanceVote: boolean,
+  allowAttendanceVoteUpdate = false,
 ): string | null {
   if (!group) return null;
 
@@ -18,11 +19,11 @@ export function getVotePageRedirect(
     return getGroupEntryRoute(groupId, group.myRole, group.status);
   }
 
-  if (group.status !== "VOTING" || isComplete) {
+  if (group.status !== "VOTING" || (isComplete && !allowAttendanceVoteUpdate)) {
     return groupRoutes.voteResult(groupId);
   }
 
-  if (hasAttendanceVote) {
+  if (hasAttendanceVote && !allowAttendanceVoteUpdate) {
     return groupRoutes.voteStatus(groupId);
   }
 

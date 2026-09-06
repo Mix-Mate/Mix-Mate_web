@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getGroupDetail } from "@/features/group/api/group.api";
-import { voteSecondRound } from "../api/secondRoundVote.api";
+import {
+  updateSecondRoundVote,
+  voteSecondRound,
+} from "../api/secondRoundVote.api";
 import { isAlreadyVotedError } from "../api/voteApiError";
 import type {
   AttendanceVoteContext,
@@ -13,9 +16,13 @@ import type { VoteStatus } from "../types/vote.types";
 export interface AttendanceVoteSubmitResult {
   success: boolean;
   isAlreadyVoted?: boolean;
+  isUpdated?: boolean;
 }
 
-export function useAttendanceVote(groupId: string) {
+export function useAttendanceVote(
+  groupId: string,
+  existingChoice: SecondRoundVoteChoice | null = null,
+) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [status, setStatus] = useState<VoteStatus>("OPEN");
@@ -58,7 +65,9 @@ export function useAttendanceVote(groupId: string) {
   }, [groupId]);
 
   const submit = useCallback(
-    async (choice: SecondRoundVoteChoice): Promise<AttendanceVoteSubmitResult> => {
+    async (
+      choice: SecondRoundVoteChoice,
+    ): Promise<AttendanceVoteSubmitResult> => {
       if (hasSubmitted || isSubmitting || submissionInFlightRef.current) {
         return { success: false };
       }
@@ -68,9 +77,16 @@ export function useAttendanceVote(groupId: string) {
       submissionInFlightRef.current = true;
 
       try {
-        await voteSecondRound(groupId, choice);
+        if (existingChoice === null) {
+          await voteSecondRound(groupId, choice);
+        } else {
+          await updateSecondRoundVote(groupId, choice);
+        }
         setHasSubmitted(true);
-        return { success: true };
+        return {
+          success: true,
+          ...(existingChoice !== null ? { isUpdated: true } : {}),
+        };
       } catch (submitError) {
         if (isAlreadyVotedError(submitError)) {
           setHasSubmitted(true);
@@ -87,12 +103,12 @@ export function useAttendanceVote(groupId: string) {
         submissionInFlightRef.current = false;
       }
     },
-    [groupId, hasSubmitted, isSubmitting],
+    [existingChoice, groupId, hasSubmitted, isSubmitting],
   );
 
   const context: AttendanceVoteContext = {
     status,
-    selectedChoice: null,
+    selectedChoice: existingChoice,
     hasSubmitted,
   };
 
