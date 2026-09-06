@@ -55,6 +55,15 @@ export default function AdminParticipantManagementScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { message: toastMessage, showToast } = useToast();
   const canAddParticipant = round === 1;
+  const isAssignmentPreparationFlow =
+    group?.status === "BEFORE_FIRST_ROUND" ||
+    group?.status === "BEFORE_SECOND_ROUND";
+  const backHref =
+    group?.status === "RECRUITING"
+      ? groupRoutes.adminRecruitment(params.groupId)
+      : isAssignmentPreparationFlow
+        ? groupRoutes.adminPreparation(params.groupId)
+        : groupRoutes.home(params.groupId);
   const myParticipantId = resolveMyParticipantId(
     myProfile,
     group?.myParticipantId,
@@ -170,30 +179,25 @@ export default function AdminParticipantManagementScreen() {
     <MobileFrame data-testid="admin-participant-management">
       <Header
         title={group?.groupName ?? data.groupName}
-        onBack={() =>
-          router.push(
-            withSessionContext(
-              groupRoutes.adminPreparation(params.groupId),
-              searchParams,
-            ),
-          )
-        }
+        onBack={() => router.push(withSessionContext(backHref, searchParams))}
         rightAction={headerRightAction}
       />
 
-      <TabNavigation
-        items={[
-          { id: "participants", label: "참가자" },
-          { id: "statistics", label: "통계" },
-          { id: "assignment", label: "조 편성" },
-        ]}
-        activeItemId="participants"
-        ariaLabel="관리자 메뉴"
-        onSelect={(item) => {
-          if (item.id === "statistics") goToStatistics();
-          if (item.id === "assignment") goToAssignment();
-        }}
-      />
+      {isAssignmentPreparationFlow && (
+        <TabNavigation
+          items={[
+            { id: "participants", label: "참가자" },
+            { id: "statistics", label: "통계" },
+            { id: "assignment", label: "조 편성" },
+          ]}
+          activeItemId="participants"
+          ariaLabel="관리자 메뉴"
+          onSelect={(item) => {
+            if (item.id === "statistics") goToStatistics();
+            if (item.id === "assignment") goToAssignment();
+          }}
+        />
+      )}
 
       <main className={styles.content}>
         <SearchBar
@@ -240,9 +244,11 @@ export default function AdminParticipantManagementScreen() {
         </section>
       </main>
 
-      <footer className={styles.footer}>
-        <Button onClick={goToAssignment}>조 편성</Button>
-      </footer>
+      {isAssignmentPreparationFlow && (
+        <footer className={styles.footer}>
+          <Button onClick={goToAssignment}>조 편성</Button>
+        </footer>
+      )}
 
       {toastMessage && (
         <Toast className={styles.toast} role="status">

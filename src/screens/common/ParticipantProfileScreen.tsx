@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Ban, LockKeyhole } from "lucide-react";
+import { Ban, LockKeyhole, Pencil } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useBlockParticipantMutation } from "@/features/blacklist/hooks/useBlockParticipantMutation";
@@ -170,6 +170,7 @@ export default function ParticipantProfileScreen({
     group.status === "RECRUITING" ||
     group.status === "BEFORE_FIRST_ROUND" ||
     group.status === "BEFORE_SECOND_ROUND";
+  const canEditOwnProfile = isSelf && group.status === "RECRUITING";
   const canBlockParticipant = isAdminView && !isSelf && canManageParticipant;
   const shouldBlockPrivateProfile =
     profile.visibility === "private" && !isAdminView;
@@ -264,7 +265,29 @@ export default function ParticipantProfileScreen({
   return (
     <MobileFrame className={styles.phone} viewportClassName={styles.viewport}>
       {!shouldBlockPrivateProfile && (
-        <Header title="참가자 프로필" onBack={() => router.back()} />
+        <Header
+          title="참가자 프로필"
+          onBack={() => router.back()}
+          rightAction={
+            canEditOwnProfile ? (
+              <button
+                type="button"
+                className={styles.editProfileButton}
+                aria-label="프로필 수정"
+                onClick={() =>
+                  router.push(
+                    withSessionContext(
+                      groupRoutes.profileEdit(groupId),
+                      searchParams,
+                    ),
+                  )
+                }
+              >
+                <Pencil aria-hidden="true" size={18} strokeWidth={1.8} />
+              </button>
+            ) : undefined
+          }
+        />
       )}
 
       {!shouldBlockPrivateProfile && canBlockParticipant && (
