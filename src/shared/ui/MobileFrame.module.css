@@ -32,6 +32,17 @@
   box-sizing: border-box;
 }
 
+.fitViewport {
+  height: 100dvh;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.fitPhone {
+  height: 100%;
+  min-height: 0;
+}
+
 .phone,
 .phone * {
   scrollbar-width: none;

@@ -8,6 +8,7 @@
   min-height: 0;
   padding: 13px 16px 16px;
   background: #fcfcff;
+  overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
 }

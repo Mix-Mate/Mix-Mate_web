@@ -7,6 +7,7 @@
   gap: 12px;
   padding: 16px;
   background: #fcfcff;
+  overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
 }

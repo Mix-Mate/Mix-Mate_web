@@ -309,7 +309,7 @@ export default function UserHomeScreen() {
 
   if (isCheckingSecondRoundAttendance) {
     return (
-      <MobileFrame data-testid="second-round-attendance-loading">
+      <MobileFrame fitViewport data-testid="second-round-attendance-loading">
         <GroupHomeHeader title={snapshot.groupName} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryState} role="status">
@@ -323,6 +323,7 @@ export default function UserHomeScreen() {
   if (isSecondRoundAbsent) {
     return (
       <MobileFrame
+        fitViewport
         data-testid="absent-participant-waiting-screen"
         data-status={group.status}
       >
@@ -344,7 +345,7 @@ export default function UserHomeScreen() {
 
   if (shouldCheckSecondRoundAttendance && voteStatusError) {
     return (
-      <MobileFrame data-testid="second-round-attendance-error">
+      <MobileFrame fitViewport data-testid="second-round-attendance-error">
         <GroupHomeHeader title={snapshot.groupName} />
         <main className={styles.absentWaitingContent}>
           <p className={styles.attendanceQueryError} role="alert">
@@ -357,6 +358,7 @@ export default function UserHomeScreen() {
 
   return (
     <MobileFrame
+      fitViewport
       data-testid="user-home"
       data-scenario={snapshot.scenario}
       data-role={snapshot.role}
