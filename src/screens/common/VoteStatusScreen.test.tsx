@@ -16,11 +16,13 @@ const {
   replaceMock,
   useAdminGroupQueryMock,
   useVoteStatusQueryMock,
+  voteStatusListMock,
 } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   replaceMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useVoteStatusQueryMock: vi.fn(),
+  voteStatusListMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -42,7 +44,10 @@ vi.mock("@/features/vote/components/status/VoteProgressCard", () => ({
 }));
 
 vi.mock("@/features/vote/components/status/VoteStatusList", () => ({
-  default: () => null,
+  default: (props: unknown) => {
+    voteStatusListMock(props);
+    return null;
+  },
 }));
 
 vi.mock("@/features/vote/components/status/VoteCompletionWatcher", () => ({
@@ -86,6 +91,55 @@ describe("VoteStatusScreen", () => {
       error: null,
       isComplete: false,
     });
+  });
+
+  it("수동 참가자도 투표 완료 후에는 미투표 목록에서 제외한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "HOST"),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 3,
+        votedCount: 2,
+        participateCount: 1,
+        notParticipateCount: 1,
+        participants: [
+          {
+            participantId: 1,
+            displayName: "Manual Participate",
+            choice: "PARTICIPATE",
+            manualEntry: true,
+          },
+          {
+            participantId: 2,
+            displayName: "Manual Absence",
+            choice: "NOT_PARTICIPATE",
+            manualEntry: true,
+          },
+          {
+            participantId: 3,
+            displayName: "Manual Pending",
+            choice: null,
+            manualEntry: true,
+          },
+        ],
+      },
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      isComplete: false,
+      refetch: vi.fn(),
+    });
+
+    render(<VoteStatusScreen />);
+
+    const listProps = voteStatusListMock.mock.calls.at(-1)?.[0] as {
+      members: Array<{ participantId: number }>;
+    };
+
+    expect(listProps.members.map((member) => member.participantId)).toEqual([
+      3,
+    ]);
   });
 
   it("관리자(HOST)는 공통 현황 화면에서 전체 투표 종료 버튼을 사용할 수 있다", () => {
