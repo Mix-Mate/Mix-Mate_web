@@ -17,16 +17,10 @@ import { checkUserBlockedInGroup } from "@/features/blacklist/api/blacklist.api"
 import {
   recordBlockedGroup,
   removeBlockedGroup,
-  getKnownGroupName,
   saveKnownGroupNames,
-  repairBlockedGroupNames,
-  isDummyGroupName,
-  getKnownGroupIds,
-  getBlacklistedGroupIds,
   dismissBlockedGroup,
   isDismissedBlockedGroup,
   removeKnownGroupName,
-  type BlockedGroupStorageItem,
 } from "@/features/blacklist/lib/blockedGroupsStorage";
 import {
   clearAuthTokens,
@@ -180,7 +174,7 @@ function mapStatus(status: string): GroupStatus {
   return "FIRST_ROUND";
 }
 
-function mapRole(role: string): GroupRole {
+function mapRole(role?: string): GroupRole {
   return isGroupHost(role) ? "HOST" : "PARTICIPANT";
 }
 
@@ -277,9 +271,10 @@ export default function HomeScreen({
     async function fetchMyGroups() {
       setIsLoading(true);
       try {
-        const [activeRes, finishedRes] = await Promise.allSettled([
+        const [activeRes, finishedRes, bannedRes] = await Promise.allSettled([
           getMyGroupsApi({ scope: "me", state: "active" }),
           getMyGroupsApi({ scope: "me", state: "finished" }),
+          getMyGroupsApi({ scope: "me", state: "banned" }),
         ]);
 
         if (!isMounted) return;
@@ -302,7 +297,11 @@ export default function HomeScreen({
           return false;
         };
 
-        if (isUnauthorized(activeRes) || isUnauthorized(finishedRes)) {
+        if (
+          isUnauthorized(activeRes) ||
+          isUnauthorized(finishedRes) ||
+          isUnauthorized(bannedRes)
+        ) {
           clearAuthTokens();
           router.replace(authRoutes.login());
           return;
@@ -319,190 +318,61 @@ export default function HomeScreen({
           saveKnownGroupNames(allApiGroups);
         }
 
-        const localBlockedList = repairBlockedGroupNames(allApiGroups).filter(
-          (b) => !isDismissedBlockedGroup(b.groupId),
+        const activeServerGroups =
+          activeRes.status === "fulfilled" && activeRes.value?.groups
+            ? activeRes.value.groups
+            : [];
+        const mapped: HomeScreenGroupItem[] = activeServerGroups.map(
+          (g: MyGroupItem) => {
+            return {
+              id: String(g.groupId),
+              name: g.groupName,
+              status: mapStatus(g.status ?? ""),
+              role: mapRole(g.role),
+              memberCount: g.memberCount || 0,
+              date: g.date || "진행 중",
+              time: g.time,
+              location: g.location,
+              createdAt: g.createdAt,
+              updatedAt: g.updatedAt,
+              finishedAt: g.finishedAt,
+              closedAt: g.closedAt,
+            };
+          },
         );
 
-        // 알려진 그룹 또는 로컬 블랙리스트에 있지만 서버 응답 및 로컬 차단 목록에 없고 dismiss되지 않은 그룹 탐색
-        const candidateIds = Array.from(
-          new Set([...getKnownGroupIds(), ...getBlacklistedGroupIds()]),
-        ).filter(
-          (cid) =>
-            !isDismissedBlockedGroup(cid) &&
-            !allApiGroups.some((g) => String(g.groupId).trim() === String(cid).trim()) &&
-            !localBlockedList.some((b) => String(b.groupId).trim() === String(cid).trim()),
-        );
-
-        if (candidateIds.length > 0) {
-          const checked = await Promise.allSettled(
-            candidateIds.map(async (cid) => {
-              if (isDismissedBlockedGroup(cid)) return null;
-              const blocked = await checkUserBlockedInGroup(cid, {
-                name: userName,
+        if (bannedRes.status === "fulfilled" && bannedRes.value?.groups) {
+          const bannedGroups: HomeScreenGroupItem[] = bannedRes.value.groups
+            .filter((g) => !isDismissedBlockedGroup(g.groupId))
+            .map((g: MyGroupItem) => {
+              recordBlockedGroup({
+                groupId: String(g.groupId),
+                groupName: g.groupName,
+                reason: g.reason,
+                blockedAt: g.bannedAt,
               });
-              if (blocked && !isDismissedBlockedGroup(cid)) {
-                const realName =
-                  getKnownGroupName(cid) ||
-                  (blocked.name && !isDummyGroupName(blocked.name)
-                    ? blocked.name
-                    : undefined) ||
-                  "그룹";
-                const item: BlockedGroupStorageItem = {
-                  groupId: String(cid).trim(),
-                  groupName: realName,
-                  reason: blocked.reason,
-                  blockedAt: blocked.blockedAt,
-                };
-                recordBlockedGroup(item);
-                return item;
-              }
-              return null;
-            }),
-          );
 
-          for (const res of checked) {
-            if (res.status === "fulfilled" && res.value) {
-              const item = res.value;
-              if (
-                !isDismissedBlockedGroup(item.groupId) &&
-                !localBlockedList.some(
-                  (b) => String(b.groupId).trim() === String(item.groupId).trim(),
-                )
-              ) {
-                localBlockedList.push(item);
-              }
-            }
-          }
-        }
-
-        const resolveBlockedGroupName = (
-          blocked: BlockedGroupStorageItem,
-        ): string => {
-          if (!isDummyGroupName(blocked.groupName)) {
-            return blocked.groupName;
-          }
-          const foundInApi = allApiGroups.find(
-            (g) => String(g.groupId) === String(blocked.groupId),
-          );
-          if (foundInApi && !isDummyGroupName(foundInApi.groupName)) {
-            return foundInApi.groupName;
-          }
-          const foundInInitial =
-            initialActiveGroups.find(
-              (g) => String(g.id) === String(blocked.groupId),
-            ) ||
-            initialCompletedGroups.find(
-              (g) => String(g.id) === String(blocked.groupId),
-            );
-          if (foundInInitial && !isDummyGroupName(foundInInitial.name)) {
-            return foundInInitial.name;
-          }
-          const fromCache = getKnownGroupName(blocked.groupId);
-          if (fromCache && !isDummyGroupName(fromCache)) {
-            return fromCache;
-          }
-          return blocked.groupName || "그룹";
-        };
-
-        if (activeRes.status === "fulfilled" && activeRes.value?.groups) {
-          const mapped: HomeScreenGroupItem[] = activeRes.value.groups.map(
-            (g: MyGroupItem) => {
-              const isDismissed = isDismissedBlockedGroup(g.groupId);
-              const localBlocked = !isDismissed
-                ? localBlockedList.find(
-                    (b) => String(b.groupId).trim() === String(g.groupId).trim(),
-                  )
-                : undefined;
-              if (localBlocked && isDummyGroupName(localBlocked.groupName)) {
-                recordBlockedGroup({
-                  ...localBlocked,
-                  groupName: g.groupName,
-                });
-              }
               return {
                 id: String(g.groupId),
                 name: g.groupName,
-                status: mapStatus(g.status),
-                role: mapRole(g.role),
-                memberCount: g.memberCount || 0,
-                date: g.date || "진행 중",
-                time: g.time,
-                location: g.location,
-                createdAt: g.createdAt,
-                updatedAt: g.updatedAt,
-                finishedAt: g.finishedAt,
-                closedAt: g.closedAt,
-                isBlocked: Boolean(localBlocked),
-                blockReason: localBlocked?.reason,
-              };
-            },
-          );
-
-          // 로컬에 저장된 차단 그룹 중 서버 활성 응답에 없는 그룹 병합 (최초 1회 유지)
-          for (const blocked of localBlockedList) {
-            if (
-              !isDismissedBlockedGroup(blocked.groupId) &&
-              !mapped.some((item) => String(item.id).trim() === String(blocked.groupId).trim())
-            ) {
-              const resolvedName = resolveBlockedGroupName(blocked);
-              if (
-                isDummyGroupName(blocked.groupName) &&
-                !isDummyGroupName(resolvedName)
-              ) {
-                recordBlockedGroup({
-                  ...blocked,
-                  groupName: resolvedName,
-                });
-              }
-              mapped.push({
-                id: String(blocked.groupId).trim(),
-                name: resolvedName,
                 status: "BEFORE_FIRST_ROUND",
                 role: "PARTICIPANT",
                 memberCount: 0,
                 date: "차단됨",
-                createdAt: blocked.blockedAt,
+                createdAt: g.bannedAt,
                 isBlocked: true,
-                blockReason: blocked.reason,
-              });
-            }
-          }
-
-          const visibleActiveGroups = mapped.filter(
-            (item) => !item.isBlocked || !isDismissedBlockedGroup(item.id),
-          );
-          setActiveGroups(sortActiveGroups(visibleActiveGroups));
-        } else if (localBlockedList.length > 0) {
-          const visibleBlockedList = localBlockedList.filter(
-            (blocked) => !isDismissedBlockedGroup(blocked.groupId),
-          );
-          const mapped: HomeScreenGroupItem[] = visibleBlockedList.map(
-            (blocked) => {
-              const resolvedName = resolveBlockedGroupName(blocked);
-              if (
-                isDummyGroupName(blocked.groupName) &&
-                !isDummyGroupName(resolvedName)
-              ) {
-                recordBlockedGroup({
-                  ...blocked,
-                  groupName: resolvedName,
-                });
-              }
-              return {
-                id: String(blocked.groupId).trim(),
-                name: resolvedName,
-                status: "BEFORE_FIRST_ROUND",
-                role: "PARTICIPANT",
-                memberCount: 0,
-                date: "차단됨",
-                createdAt: blocked.blockedAt,
-                isBlocked: true,
-                blockReason: blocked.reason,
+                blockReason: g.reason,
               };
-            },
+            });
+
+          mapped.push(
+            ...bannedGroups.filter(
+              (banned) => !mapped.some((item) => item.id === banned.id),
+            ),
           );
-          setActiveGroups(sortActiveGroups(mapped));
         }
+
+        setActiveGroups(sortActiveGroups(mapped));
 
         if (finishedRes.status === "fulfilled" && finishedRes.value?.groups) {
           const mapped: HomeScreenGroupItem[] = finishedRes.value.groups.map(
@@ -737,56 +607,57 @@ export default function HomeScreen({
                         !group.isBlocked || !isDismissedBlockedGroup(group.id),
                     )
                     .map((group) => {
-                    const statusInfo =
-                      STATUS_CONFIG[group.status] || STATUS_CONFIG.FIRST_ROUND;
+                      const statusInfo =
+                        STATUS_CONFIG[group.status] ||
+                        STATUS_CONFIG.FIRST_ROUND;
 
-                    return (
-                      <article
-                        key={group.id}
-                        className={styles.groupCard}
-                        onClick={() => handleGroupClick(group)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleGroupClick(group);
-                          }
-                        }}
-                      >
-                        <div className={styles.groupCardLeft}>
-                          <h4 className={styles.groupName}>{group.name}</h4>
+                      return (
+                        <article
+                          key={group.id}
+                          className={styles.groupCard}
+                          onClick={() => handleGroupClick(group)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              handleGroupClick(group);
+                            }
+                          }}
+                        >
+                          <div className={styles.groupCardLeft}>
+                            <h4 className={styles.groupName}>{group.name}</h4>
 
-                          <p className={styles.groupMetaText}>
-                            {group.isBlocked ? "이용 제한" : statusInfo.label} ·{" "}
-                            {group.memberCount}명
-                          </p>
+                            <p className={styles.groupMetaText}>
+                              {group.isBlocked ? "이용 제한" : statusInfo.label}{" "}
+                              · {group.memberCount}명
+                            </p>
 
-                          <div className={styles.roleTagWrap}>
-                            <span
-                              className={`${styles.roleTag} ${
-                                group.isBlocked
-                                  ? styles.roleTagBlocked
+                            <div className={styles.roleTagWrap}>
+                              <span
+                                className={`${styles.roleTag} ${
+                                  group.isBlocked
+                                    ? styles.roleTagBlocked
+                                    : group.role === "HOST"
+                                      ? styles.roleTagAdmin
+                                      : styles.roleTagUser
+                                }`}
+                              >
+                                {group.isBlocked
+                                  ? "차단됨"
                                   : group.role === "HOST"
-                                    ? styles.roleTagAdmin
-                                    : styles.roleTagUser
-                              }`}
-                            >
-                              {group.isBlocked
-                                ? "차단됨"
-                                : group.role === "HOST"
-                                  ? "관리자"
-                                  : "사용자"}
-                            </span>
+                                    ? "관리자"
+                                    : "사용자"}
+                              </span>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className={styles.groupCardRight}>
-                          <ChevronRight size={18} aria-hidden="true" />
-                        </div>
-                      </article>
-                    );
-                  })}
+                          <div className={styles.groupCardRight}>
+                            <ChevronRight size={18} aria-hidden="true" />
+                          </div>
+                        </article>
+                      );
+                    })}
                 </div>
               ) : (
                 <div className={styles.emptyState}>

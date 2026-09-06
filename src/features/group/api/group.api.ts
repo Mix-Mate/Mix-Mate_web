@@ -269,15 +269,17 @@ export async function createGroupApi(
 
 export interface GetMyGroupsRequest {
   scope?: "me";
-  state?: "active" | "finished";
+  state?: "active" | "finished" | "banned";
 }
 
 export interface MyGroupItem {
   groupId: number;
   groupName: string;
-  status: string; // 'RECRUITING' | 'PROGRESS' | 'FINISHED' | 'FIRST_ROUND' | 'VOTING' | 'SECOND_ROUND'
-  memberCount: number;
-  role: string; // 'HOST' | 'MEMBER' | 'PARTICIPANT'
+  status?: string; // 'RECRUITING' | 'PROGRESS' | 'FINISHED' | 'FIRST_ROUND' | 'VOTING' | 'SECOND_ROUND'
+  memberCount?: number;
+  role?: string; // 'HOST' | 'MEMBER' | 'PARTICIPANT'
+  reason?: string;
+  bannedAt?: string;
   date?: string;
   time?: string;
   location?: string;
