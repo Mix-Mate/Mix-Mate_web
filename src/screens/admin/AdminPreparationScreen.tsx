@@ -73,6 +73,7 @@ export default function AdminPreparationScreen() {
 
   return (
     <MobileFrame
+      fitViewport
       className={styles.phone}
       viewportClassName={styles.viewport}
       data-testid="admin-preparation"

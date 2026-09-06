@@ -1,15 +1,18 @@
 .content {
   display: flex;
-  height: 738px;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   gap: 26px;
   padding: 16px;
   background: #fcfcff;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .firstRoundContent {
-  height: 746px;
   gap: 16px;
 }
 
