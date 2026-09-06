@@ -12,6 +12,7 @@ import VoteStatusList from "@/features/vote/components/status/VoteStatusList";
 import { useVoteStatusQuery } from "@/features/vote/hooks/useVoteStatusQuery";
 import { useVoteNavigation } from "@/features/vote/hooks/useVoteNavigation";
 import { getSecondRoundVoteUpdatedToastKey } from "@/features/vote/lib/second-round";
+import type { SecondRoundVoteChoice } from "@/features/vote/types/secondRoundVote.types";
 import type { SecondRoundVoteStatusFilter } from "@/features/vote/types/secondRoundVoteStatus.types";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import MainHomeExitPopup from "@/modals/user/MainHomeExitPopup";
@@ -38,36 +39,65 @@ export default function VoteStatusScreen() {
   const { message: toastMessage, showToast } = useToast();
   const [selectedFilter, setSelectedFilter] =
     useState<SecondRoundVoteStatusFilter>("PENDING");
+  const [manualVoteChoices, setManualVoteChoices] = useState<
+    Record<number, SecondRoundVoteChoice>
+  >({});
   const [mainHomeExitPopupOpen, setMainHomeExitPopupOpen] = useState(false);
   const [manualVoteError, setManualVoteError] = useState<string | null>(null);
+  const participants = data
+    ? data.participants.map((participant) => {
+        const manualChoice = manualVoteChoices[participant.participantId];
+
+        return manualChoice
+          ? { ...participant, choice: manualChoice }
+          : participant;
+      })
+    : [];
+  const participateCount = participants.filter(
+    (participant) => participant.choice === "PARTICIPATE",
+  ).length;
+  const notParticipateCount = participants.filter(
+    (participant) => participant.choice === "NOT_PARTICIPATE",
+  ).length;
+  const votedCount = participateCount + notParticipateCount;
   const pendingCount = data
-    ? Math.max(0, data.totalParticipantCount - data.votedCount)
+    ? Math.max(0, data.totalParticipantCount - votedCount)
     : 0;
   const listContent = data
     ? {
         PARTICIPATE: {
           title: "2차 참여 명단",
-          members: data.participants.filter(
+          members: participants.filter(
             (participant) => participant.choice === "PARTICIPATE",
           ),
           emptyMessage: "2차 참여를 선택한 참가자가 없습니다.",
         },
         NOT_PARTICIPATE: {
           title: "불참 명단",
-          members: data.participants.filter(
+          members: participants.filter(
             (participant) => participant.choice === "NOT_PARTICIPATE",
           ),
           emptyMessage: "불참을 선택한 참가자가 없습니다.",
         },
         PENDING: {
           title: "미투표 멤버",
-          members: data.participants.filter(
+          members: participants.filter(
             (participant) => participant.choice === null,
           ),
           emptyMessage: "모든 참가자가 투표를 완료했습니다.",
         },
       }[selectedFilter]
     : null;
+  const handleManualVoteChange = useCallback(
+    (participantId: number, choice: SecondRoundVoteChoice) => {
+      setManualVoteChoices((previousChoices) => ({
+        ...previousChoices,
+        [participantId]: choice,
+      }));
+      void refetch();
+    },
+    [refetch],
+  );
   const showVoteResult = useCallback(() => {
     router.replace(
       withSessionContext(groupRoutes.voteResult(params.groupId), searchParams),
@@ -146,9 +176,9 @@ export default function VoteStatusScreen() {
           <>
             <VoteProgressCard
               totalCount={data.totalParticipantCount}
-              completedCount={data.votedCount}
-              attendanceCount={data.participateCount}
-              absenceCount={data.notParticipateCount}
+              completedCount={votedCount}
+              attendanceCount={participateCount}
+              absenceCount={notParticipateCount}
               pendingCount={pendingCount}
               selectedFilter={selectedFilter}
               onSelectFilter={setSelectedFilter}
@@ -159,10 +189,8 @@ export default function VoteStatusScreen() {
               members={listContent.members}
               emptyMessage={listContent.emptyMessage}
               groupId={params.groupId}
-              canManageManualVote={isAdmin && selectedFilter === "PENDING"}
-              onVoteChange={() => {
-                void refetch();
-              }}
+              canManageManualVote={canForceEndVote}
+              onVoteChange={handleManualVoteChange}
               onManualVoteError={setManualVoteError}
             />
 

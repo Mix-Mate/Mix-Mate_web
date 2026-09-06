@@ -1,4 +1,5 @@
 import { CircleCheck, CircleX } from "lucide-react";
+import type { SecondRoundVoteChoice } from "../../types/secondRoundVote.types";
 import type { SecondRoundVoteParticipant } from "../../types/secondRoundVoteStatus.types";
 import AdminManualVoteControl from "./AdminManualVoteControl";
 import styles from "./VoteStatus.module.css";
@@ -7,7 +8,7 @@ interface VoteStatusItemProps {
   member: SecondRoundVoteParticipant;
   groupId: string;
   canManageManualVote: boolean;
-  onVoteChange: () => void;
+  onVoteChange: (participantId: number, choice: SecondRoundVoteChoice) => void;
   onManualVoteError: (message: string | null) => void;
 }
 
@@ -27,7 +28,7 @@ export default function VoteStatusItem({
         <AdminManualVoteControl
           groupId={groupId}
           member={member}
-          onVoteChange={onVoteChange}
+          onVoteChange={(choice) => onVoteChange(member.participantId, choice)}
           onError={onManualVoteError}
         />
       ) : (
