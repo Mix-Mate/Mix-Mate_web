@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Lock, LogOut, UserX } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -85,6 +85,7 @@ export default function MyPageScreen() {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [withdrawPassword, setWithdrawPassword] = useState("");
   const [withdrawError, setWithdrawError] = useState("");
+  const withdrawPasswordInputRef = useRef<HTMLInputElement>(null);
 
   const handleBack = () => {
     router.back();
@@ -92,6 +93,11 @@ export default function MyPageScreen() {
 
   const handlePasswordChange = () => {
     router.push(authRoutes.changePassword());
+  };
+
+  const handleWithdrawPasswordChange = (value: string) => {
+    setWithdrawPassword(value);
+    if (withdrawError) setWithdrawError("");
   };
 
   // Logout action
@@ -110,7 +116,11 @@ export default function MyPageScreen() {
   const handleConfirmWithdraw = async () => {
     if (isWithdrawing) return;
 
-    if (!withdrawPassword.trim()) {
+    const password = (
+      withdrawPasswordInputRef.current?.value ?? withdrawPassword
+    ).trim();
+
+    if (!password) {
       setWithdrawError("비밀번호를 입력해주세요.");
       return;
     }
@@ -119,7 +129,7 @@ export default function MyPageScreen() {
     setWithdrawError("");
 
     try {
-      await performWithdraw(withdrawPassword);
+      await performWithdraw(password);
       setIsWithdrawModalOpen(false);
       setWithdrawPassword("");
       router.push(authRoutes.login());
@@ -295,12 +305,20 @@ export default function MyPageScreen() {
             <input
               type="password"
               className={styles.nameInput}
+              ref={withdrawPasswordInputRef}
+              id="withdraw-password"
+              name="password"
               value={withdrawPassword}
               placeholder="비밀번호 입력"
               autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               onChange={(event) => {
-                setWithdrawPassword(event.target.value);
-                if (withdrawError) setWithdrawError("");
+                handleWithdrawPasswordChange(event.currentTarget.value);
+              }}
+              onInput={(event) => {
+                handleWithdrawPasswordChange(event.currentTarget.value);
               }}
               disabled={isWithdrawing}
             />

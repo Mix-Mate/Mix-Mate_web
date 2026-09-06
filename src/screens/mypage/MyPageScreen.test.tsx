@@ -118,6 +118,49 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
       });
     });
 
+    it("회원탈퇴 비밀번호 입력값의 앞뒤 공백은 제거해서 전송한다", async () => {
+      const withdrawSpy = vi
+        .spyOn(authApi, "performWithdraw")
+        .mockResolvedValue(undefined);
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+      fireEvent.change(screen.getByPlaceholderText("비밀번호 입력"), {
+        target: { value: " password123 " },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      await waitFor(() => {
+        expect(withdrawSpy).toHaveBeenCalledWith("password123");
+        expect(mockPush).toHaveBeenCalledWith("/login");
+      });
+    });
+
+    it("자동완성으로 React state가 갱신되지 않아도 input의 실제 값으로 회원탈퇴를 요청한다", async () => {
+      const withdrawSpy = vi
+        .spyOn(authApi, "performWithdraw")
+        .mockResolvedValue(undefined);
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+      const input = screen.getByPlaceholderText(
+        "비밀번호 입력",
+      ) as HTMLInputElement;
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set?.call(input, "password123");
+
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      await waitFor(() => {
+        expect(withdrawSpy).toHaveBeenCalledWith("password123");
+        expect(mockPush).toHaveBeenCalledWith("/login");
+      });
+    });
+
     it("회원탈퇴 비밀번호를 입력하지 않으면 API를 호출하지 않고 안내한다", async () => {
       const withdrawSpy = vi
         .spyOn(authApi, "performWithdraw")
