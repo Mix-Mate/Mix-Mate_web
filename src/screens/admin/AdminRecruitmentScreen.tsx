@@ -2,7 +2,14 @@
 
 import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
@@ -17,6 +24,14 @@ import RecruitmentTransitionScreen, {
 } from "@/features/group/components/RecruitmentTransitionScreen";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
 import GroupHomeHeader from "@/features/session/components/GroupHomeHeader";
+import SpotlightOnboarding, {
+  type SpotlightStep,
+} from "@/features/onboarding/components/SpotlightOnboarding";
+import { useHostRecruitmentOnboarding } from "@/features/onboarding/hooks/useHostRecruitmentOnboarding";
+import {
+  hostRecruitmentOnboardingSteps,
+  type HostRecruitmentOnboardingStepId,
+} from "@/features/onboarding/model/host-recruitment-onboarding-steps";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
 import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
 import EditGroupDialog from "@/modals/admin/EditGroupDialog";
@@ -88,6 +103,11 @@ export default function AdminRecruitmentScreen() {
   const [transitionPhase, setTransitionPhase] =
     useState<RecruitmentTransitionPhase | null>(null);
   const cancelTransitionRef = useRef<(() => void) | null>(null);
+  const statusCardRef = useRef<HTMLElement>(null);
+  const inviteCodeCardRef = useRef<HTMLDivElement>(null);
+  const recruitingCardRef = useRef<HTMLElement>(null);
+  const participantCountRef = useRef<HTMLButtonElement>(null);
+  const closeRecruitmentRef = useRef<HTMLButtonElement>(null);
   const { message: toast, showToast } = useToast();
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
@@ -101,6 +121,28 @@ export default function AdminRecruitmentScreen() {
     }),
     [group?.description, group?.groupName],
   );
+  const onboardingTargetRefs: Record<
+    HostRecruitmentOnboardingStepId,
+    RefObject<HTMLElement | null>
+  > = {
+    status: statusCardRef,
+    inviteCode: inviteCodeCardRef,
+    recruiting: recruitingCardRef,
+    participantCount: participantCountRef,
+    closeRecruitment: closeRecruitmentRef,
+  };
+  const onboardingSteps: SpotlightStep[] = hostRecruitmentOnboardingSteps.map(
+    (step) => ({ ...step, targetRef: onboardingTargetRefs[step.id] }),
+  );
+  const { open: onboardingOpen, dismiss: dismissOnboarding } =
+    useHostRecruitmentOnboarding(
+      // 다이얼로그가 열린 채로 들어온 경우에는 온보딩을 띄우지 않는다.
+      canEditGroup &&
+        !transitionPhase &&
+        !closeDialogOpen &&
+        !editDialogOpen &&
+        !deleteDialogOpen,
+    );
 
   useEffect(() => {
     return () => {
@@ -318,7 +360,11 @@ export default function AdminRecruitmentScreen() {
       />
 
       <div className={styles.content}>
-        <section className={styles.statusCard} aria-label="현재 모집 상태">
+        <section
+          ref={statusCardRef}
+          className={styles.statusCard}
+          aria-label="현재 모집 상태"
+        >
           <div className={styles.statusSummary}>
             <span className={styles.statusDot} aria-hidden="true" />
             <div>
@@ -327,7 +373,7 @@ export default function AdminRecruitmentScreen() {
             </div>
           </div>
 
-          <div className={styles.inviteCodeCard}>
+          <div ref={inviteCodeCardRef} className={styles.inviteCodeCard}>
             <span className={styles.inviteCodeIcon} aria-hidden="true">
               <BriefcaseBusiness size={22} strokeWidth={1.7} />
             </span>
@@ -349,7 +395,7 @@ export default function AdminRecruitmentScreen() {
 
         <InviteCodeExpirationNotice createdAt={group.createdAt} />
 
-        <section className={styles.recruitingCard}>
+        <section ref={recruitingCardRef} className={styles.recruitingCard}>
           <span className={styles.clockIcon} aria-hidden="true">
             <Clock3 size={25} strokeWidth={1.8} />
           </span>
@@ -361,6 +407,7 @@ export default function AdminRecruitmentScreen() {
         </section>
 
         <button
+          ref={participantCountRef}
           type="button"
           className={styles.participantCountCard}
           aria-label={`현재 모집된 인원 ${group.memberCount}명, 참가자 목록 보기`}
@@ -382,6 +429,7 @@ export default function AdminRecruitmentScreen() {
         </button>
 
         <Button
+          ref={closeRecruitmentRef}
           className={styles.closeRecruitmentButton}
           disabled={!canCloseRecruitment}
           onClick={() => setCloseDialogOpen(true)}
@@ -423,6 +471,13 @@ export default function AdminRecruitmentScreen() {
         }}
         onConfirm={confirmDeleteGroup}
       />
+
+      {onboardingOpen && (
+        <SpotlightOnboarding
+          steps={onboardingSteps}
+          onDismiss={dismissOnboarding}
+        />
+      )}
     </MobileFrame>
   );
 }
