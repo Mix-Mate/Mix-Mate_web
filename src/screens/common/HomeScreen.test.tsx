@@ -300,96 +300,94 @@ describe("HomeScreen", () => {
       expect(push).not.toHaveBeenCalled();
     });
 
-    it("로컬에 저장된 차단 그룹이 홈 화면에 '차단됨' 뱃지와 함께 표시되고, '목록에서 삭제하기' 클릭 시 화면과 로컬에서 제거된다", async () => {
-      const { recordBlockedGroup, readBlockedGroups } = await import(
-        "@/features/blacklist/lib/blockedGroupsStorage"
-      );
+    it("서버의 차단 그룹 API 응답이 홈 화면에 '차단됨' 뱃지와 함께 표시되고, '목록에서 삭제하기' 클릭 시 화면과 로컬에서 제거된다", async () => {
+      const { readBlockedGroups } =
+        await import("@/features/blacklist/lib/blockedGroupsStorage");
 
-      recordBlockedGroup({
-        groupId: "77",
-        groupName: "퇴장당한 모임",
-        reason: "노쇼 3회 누적",
-        blockedAt: "2026-09-01T12:00:00Z",
+      getMyGroupsApiMock.mockImplementation(async (params) => {
+        if (params?.state === "banned") {
+          return {
+            groups: [
+              {
+                groupId: 77,
+                groupName: "퇴장당한 모임",
+                reason: "노쇼 3회 누적",
+                bannedAt: "2026-09-01T12:00:00Z",
+              },
+            ],
+          };
+        }
+        return { groups: [] };
       });
-
-      getMyGroupsApiMock.mockImplementation(async () => ({
-        groups: [],
-      }));
 
       render(<HomeScreen userName="테스터" />);
 
-      // '퇴장당한 모임'과 '차단됨' 뱃지가 목록에 표시됨
       expect(await screen.findByText("퇴장당한 모임")).toBeInTheDocument();
       expect(screen.getByText("차단됨")).toBeInTheDocument();
 
-      // 카드 클릭
       const card = screen.getByRole("button", { name: /퇴장당한 모임/ });
       fireEvent.click(card);
 
-      // 모달 열림
-      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      expect(
+        await screen.findByText("그룹 이용 제한 안내"),
+      ).toBeInTheDocument();
       expect(
         screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
       ).toBeInTheDocument();
       expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
 
-      // '목록에서 삭제하기' 버튼 클릭
-      const deleteBtn = screen.getByRole("button", { name: "목록에서 삭제하기" });
+      const deleteBtn = screen.getByRole("button", {
+        name: "목록에서 삭제하기",
+      });
       fireEvent.click(deleteBtn);
 
-      // 모달이 닫히고 목록에서 그룹 제거됨
       await waitFor(() => {
         expect(screen.queryByText("퇴장당한 모임")).not.toBeInTheDocument();
       });
 
-      // localStorage에서도 제거되었는지 확인
       expect(readBlockedGroups()).toHaveLength(0);
     });
 
     it("차단된 그룹 클릭 시 모달에 차단 사유 없이 기본 안내 문구만 노출된다", async () => {
-      const { recordBlockedGroup } = await import(
-        "@/features/blacklist/lib/blockedGroupsStorage"
-      );
-
-      recordBlockedGroup({
-        groupId: "88",
-        groupName: "사유없는 차단 모임",
+      getMyGroupsApiMock.mockImplementation(async (params) => {
+        if (params?.state === "banned") {
+          return {
+            groups: [
+              {
+                groupId: 88,
+                groupName: "사유없는 차단 모임",
+              },
+            ],
+          };
+        }
+        return { groups: [] };
       });
-
-      getMyGroupsApiMock.mockImplementation(async () => ({
-        groups: [],
-      }));
 
       render(<HomeScreen userName="테스터" />);
 
-      const card = await screen.findByRole("button", { name: /사유없는 차단 모임/ });
+      const card = await screen.findByRole("button", {
+        name: /사유없는 차단 모임/,
+      });
       fireEvent.click(card);
 
-      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      expect(
+        await screen.findByText("그룹 이용 제한 안내"),
+      ).toBeInTheDocument();
       expect(
         screen.getByText("관리자에 의해 해당 그룹에서 차단되었습니다."),
       ).toBeInTheDocument();
       expect(screen.queryByText(/차단 사유:/)).not.toBeInTheDocument();
     });
 
-    it("로컬 스토리지에 '차단된 그룹'으로 저장되어 있더라도 캐시 및 완료 모임 정보에서 원래 이름을 찾아 카드에 표시하고 스토리지를 갱신한다", async () => {
-      const { saveKnownGroupName, readBlockedGroups } = await import(
-        "@/features/blacklist/lib/blockedGroupsStorage"
-      );
+    it("로컬 스토리지에 차단 그룹이 남아 있어도 서버의 banned 응답이 비어 있으면 차단 카드를 표시하지 않는다", async () => {
+      const { recordBlockedGroup, saveKnownGroupName } =
+        await import("@/features/blacklist/lib/blockedGroupsStorage");
 
-      // 스토리지에 더미 이름으로 저장된 상태
-      localStorage.setItem(
-        "mixmate_blocked_groups",
-        JSON.stringify([
-          {
-            groupId: "555",
-            groupName: "차단된 그룹",
-            reason: "비매너 행위",
-          },
-        ]),
-      );
-
-      // 캐시에 원래 이름 등록 (이전 세션이나 다른 화면에서 저장된 캐시)
+      recordBlockedGroup({
+        groupId: "555",
+        groupName: "차단된 그룹",
+        reason: "비매너 행위",
+      });
       saveKnownGroupName("555", "신촌 불금 볼링 클럽");
 
       getMyGroupsApiMock.mockImplementation(async () => ({
@@ -398,21 +396,16 @@ describe("HomeScreen", () => {
 
       render(<HomeScreen userName="테스터" />);
 
-      // '차단된 그룹' 대신 실제 그룹명인 '신촌 불금 볼링 클럽'이 렌더링되어야 함
-      expect(await screen.findByText("신촌 불금 볼링 클럽")).toBeInTheDocument();
+      expect(
+        await screen.findByText("진행 중인 모임이 없습니다."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("신촌 불금 볼링 클럽")).not.toBeInTheDocument();
       expect(screen.queryByText("차단된 그룹")).not.toBeInTheDocument();
-
-      // 로컬 스토리지도 더미 텍스트에서 실제 그룹명으로 자가 치유(repair)되었는지 확인
-      await waitFor(() => {
-        const stored = readBlockedGroups();
-        expect(stored.find((g) => g.groupId === "555")?.groupName).toBe("신촌 불금 볼링 클럽");
-      });
     });
 
-    it("서버 API 응답(완료된 모임 등)에 원래 그룹명이 있는 경우 '차단된 그룹' 더미 데이터를 해당 이름으로 매핑하고 갱신한다", async () => {
-      const { readBlockedGroups } = await import(
-        "@/features/blacklist/lib/blockedGroupsStorage"
-      );
+    it("서버의 banned 응답이 로컬 더미 차단 그룹명보다 우선하며 로컬 스토리지도 최신 정보로 갱신한다", async () => {
+      const { readBlockedGroups } =
+        await import("@/features/blacklist/lib/blockedGroupsStorage");
 
       localStorage.setItem(
         "mixmate_blocked_groups",
@@ -425,17 +418,15 @@ describe("HomeScreen", () => {
         ]),
       );
 
-      // 서버에서 완료 모임으로 777번의 실제 그룹명이 반환되는 상황
       getMyGroupsApiMock.mockImplementation(async (params) => {
-        if (params?.state === "finished") {
+        if (params?.state === "banned") {
           return {
             groups: [
               {
                 groupId: 777,
                 groupName: "원래 이름있는 스터디",
-                status: "FINISHED",
-                role: "PARTICIPANT",
-                memberCount: 5,
+                reason: "서버 차단 사유",
+                bannedAt: "2026-09-02T12:00:00Z",
               },
             ],
           };
@@ -445,121 +436,64 @@ describe("HomeScreen", () => {
 
       render(<HomeScreen userName="테스터" />);
 
-      // 활성 탭에 병합된 차단 카드에 원래 이름이 표시됨
-      expect(await screen.findByText("원래 이름있는 스터디")).toBeInTheDocument();
+      expect(
+        await screen.findByText("원래 이름있는 스터디"),
+      ).toBeInTheDocument();
       expect(screen.queryByText("차단된 그룹")).not.toBeInTheDocument();
 
-      // 로컬 스토리지 데이터도 복원되었는지 확인
       await waitFor(() => {
         const stored = readBlockedGroups();
-        expect(stored.find((g) => g.groupId === "777")?.groupName).toBe("원래 이름있는 스터디");
+        expect(stored.find((g) => g.groupId === "777")?.groupName).toBe(
+          "원래 이름있는 스터디",
+        );
+        expect(stored.find((g) => g.groupId === "777")?.reason).toBe(
+          "서버 차단 사유",
+        );
       });
-    });
-
-    it("서버 응답에서 누락되었더라도 기존에 알고 있던 그룹이 차단된 경우 홈 화면에 실제 그룹명과 '차단됨'으로 표시된다", async () => {
-      const { saveKnownGroupName, readBlockedGroups } = await import(
-        "@/features/blacklist/lib/blockedGroupsStorage"
-      );
-      const { checkUserBlockedInGroup } = await import(
-        "@/features/blacklist/api/blacklist.api"
-      );
-
-      // 사용자가 그룹 홈에 진입한 적이 있어 캐시에 남아 있는 상태
-      saveKnownGroupName("888", "그룹홈 스터디 모임");
-
-      // 차단으로 인해 서버 응답에는 빈 배열
-      getMyGroupsApiMock.mockResolvedValue({ groups: [] });
-
-      // checkUserBlockedInGroup에서 차단 정보 반환
-      vi.mocked(checkUserBlockedInGroup).mockResolvedValue({
-        id: "888",
-        userId: 888,
-        name: "테스터",
-        displayName: "테스터",
-        email: "tester@example.com",
-        reason: "그룹 홈에서 관리자에 의해 차단됨",
-        blockedAt: "2026-09-05T12:00:00Z",
-        bannedAt: "2026-09-05T12:00:00Z",
-      });
-
-      render(<HomeScreen userName="테스터" />);
-
-      // '진행 중인 모임이 없습니다'가 아닌 차단된 그룹 카드가 렌더링되어야 함
-      expect(await screen.findByText("그룹홈 스터디 모임")).toBeInTheDocument();
-      expect(screen.getByText("차단됨")).toBeInTheDocument();
-      expect(screen.queryByText("진행 중인 모임이 없습니다.")).not.toBeInTheDocument();
-
-      // 로컬 스토리지에도 차단 그룹으로 등록되었는지 확인
-      const blocked = readBlockedGroups();
-      expect(
-        blocked.some(
-          (b) => b.groupId === "888" && b.groupName === "그룹홈 스터디 모임",
-        ),
-      ).toBe(true);
     });
 
     it("차단된 그룹을 '목록에서 삭제하기'로 삭제한 뒤 페이지를 새로고침(재마운트)해도 해당 차단 카드가 다시 부활하지 않는다", async () => {
-      const { recordBlockedGroup, readBlockedGroups, isDismissedBlockedGroup } =
+      const { readBlockedGroups, isDismissedBlockedGroup } =
         await import("@/features/blacklist/lib/blockedGroupsStorage");
-      const { checkUserBlockedInGroup } = await import(
-        "@/features/blacklist/api/blacklist.api"
-      );
 
-      // 1. 차단 그룹 등록 및 로컬 블랙리스트 키 존재 상황 모사
-      recordBlockedGroup({
-        groupId: "999",
-        groupName: "삭제할 차단 그룹",
-        reason: "규칙 위반",
-        blockedAt: "2026-09-01T12:00:00Z",
-      });
-      localStorage.setItem(
-        "mixmate:group-blacklist:999",
-        JSON.stringify({ blocked: true }),
-      );
-
-      getMyGroupsApiMock.mockImplementation(async () => ({
-        groups: [],
-      }));
-
-      vi.mocked(checkUserBlockedInGroup).mockResolvedValue({
-        id: "999",
-        userId: 999,
-        name: "테스터",
-        displayName: "테스터",
-        email: "tester@example.com",
-        reason: "규칙 위반",
-        blockedAt: "2026-09-01T12:00:00Z",
-        bannedAt: "2026-09-01T12:00:00Z",
+      getMyGroupsApiMock.mockImplementation(async (params) => {
+        if (params?.state === "banned") {
+          return {
+            groups: [
+              {
+                groupId: 999,
+                groupName: "삭제할 차단 그룹",
+                reason: "규칙 위반",
+                bannedAt: "2026-09-01T12:00:00Z",
+              },
+            ],
+          };
+        }
+        return { groups: [] };
       });
 
       const { unmount } = render(<HomeScreen userName="테스터" />);
 
-      // 카드 노출 확인
       expect(await screen.findByText("삭제할 차단 그룹")).toBeInTheDocument();
 
-      // 모달 열고 삭제 클릭
-      fireEvent.click(
-        screen.getByRole("button", { name: /삭제할 차단 그룹/ }),
-      );
-      expect(await screen.findByText("그룹 이용 제한 안내")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: /삭제할 차단 그룹/ }));
+      expect(
+        await screen.findByText("그룹 이용 제한 안내"),
+      ).toBeInTheDocument();
       fireEvent.click(
         screen.getByRole("button", { name: "목록에서 삭제하기" }),
       );
 
-      // 화면 및 스토리지에서 삭제되고 dismiss 목록에 추가되었는지 확인
       await waitFor(() => {
         expect(screen.queryByText("삭제할 차단 그룹")).not.toBeInTheDocument();
       });
       expect(readBlockedGroups()).toHaveLength(0);
       expect(isDismissedBlockedGroup("999")).toBe(true);
 
-      // 2. 컴포넌트 언마운트 후 재마운트 (새로고침 시뮬레이션)
       unmount();
-      vi.mocked(checkUserBlockedInGroup).mockClear();
 
       render(<HomeScreen userName="테스터" />);
 
-      // 새로고침 후에도 차단 카드가 부활하지 않고 빈 상태 문구가 보여야 함
       expect(
         await screen.findByText("진행 중인 모임이 없습니다."),
       ).toBeInTheDocument();
