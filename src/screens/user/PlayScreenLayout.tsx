@@ -27,15 +27,13 @@ export default function PlayScreenLayout({
 
   return (
     <MobileFrame
+      fitViewport
       className={styles.phone}
       data-testid={testId}
       data-status={group.status}
       data-role={group.myRole === "HOST" ? "ADMIN" : "USER"}
     >
-      <Header
-        title={group.groupName}
-        onBack={() => router.push(backHref)}
-      />
+      <Header title={group.groupName} onBack={() => router.push(backHref)} />
 
       <TeamSectionTabs
         groupId={params.groupId}

@@ -11,6 +11,8 @@
   flex: 1;
   padding: 16px;
   background: #fcfcff;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .absentWaitingCard,
