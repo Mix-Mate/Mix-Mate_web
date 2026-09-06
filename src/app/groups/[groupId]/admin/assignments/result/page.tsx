@@ -1,5 +1,5 @@
-import AssignmentResultScreen from "@/screens/admin/AssignmentResultScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AssignmentResultPage() {
-  return <AssignmentResultScreen />;
+  return <LegacyAdminRouteRedirect target="assignment-result" />;
 }

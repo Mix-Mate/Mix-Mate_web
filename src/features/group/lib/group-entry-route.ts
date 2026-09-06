@@ -5,11 +5,16 @@ export function isGroupHost(role: string | null | undefined): boolean {
 }
 
 export function isGroupHomeRoute(pathname: string, groupId: string): boolean {
+  const groupPath = `/groups/${groupId}`;
+
   return [
     groupRoutes.home(groupId),
     groupRoutes.adminHome(groupId),
     groupRoutes.adminRecruitment(groupId),
     groupRoutes.adminPreparation(groupId),
+    `${groupPath}/admin`,
+    `${groupPath}/admin/recruitment`,
+    `${groupPath}/admin/preparation`,
   ].includes(pathname);
 }
 

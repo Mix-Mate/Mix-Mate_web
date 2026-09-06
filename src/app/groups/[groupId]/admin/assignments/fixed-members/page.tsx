@@ -1,5 +1,5 @@
-import FixedMemberSetupScreen from "@/screens/admin/FixedMemberSetupScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function FixedMembersPage() {
-  return <FixedMemberSetupScreen />;
+  return <LegacyAdminRouteRedirect target="assignment-fixed-members" />;
 }

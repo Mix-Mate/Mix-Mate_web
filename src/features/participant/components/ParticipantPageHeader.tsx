@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Ban, ChevronLeft, Menu } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
 interface ParticipantPageHeaderProps {
@@ -33,7 +34,7 @@ export default function ParticipantPageHeader({
 
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
-    router.push(`/groups/${params.groupId}/admin/blacklist`);
+    router.push(groupRoutes.blacklist(params.groupId));
   };
 
   return (

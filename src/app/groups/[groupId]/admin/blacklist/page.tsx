@@ -1,5 +1,5 @@
-import BlacklistScreen from "@/screens/admin/BlacklistScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminBlacklistPage() {
-  return <BlacklistScreen />;
+  return <LegacyAdminRouteRedirect target="blacklist" />;
 }

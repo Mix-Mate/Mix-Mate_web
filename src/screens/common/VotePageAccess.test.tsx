@@ -98,9 +98,7 @@ describe.each([
     (myRole) => {
       query.data = { ...query.data!, status: "FIRST_ROUND", myRole };
       render(<Page />);
-      expect(router.replace).toHaveBeenCalledExactlyOnceWith(
-        myRole === "HOST" ? "/groups/7/admin" : "/groups/7",
-      );
+      expect(router.replace).toHaveBeenCalledExactlyOnceWith("/groups/7");
       expect(screen.getByRole("button", { name: button })).toBeDisabled();
       expect(submit).not.toHaveBeenCalled();
     },

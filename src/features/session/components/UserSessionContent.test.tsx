@@ -40,6 +40,6 @@ describe("UserSessionContent", () => {
       }),
     );
 
-    expect(onNavigate).toHaveBeenCalledWith("/groups/12/admin/progress");
+    expect(onNavigate).toHaveBeenCalledWith("/groups/12/progress");
   });
 });

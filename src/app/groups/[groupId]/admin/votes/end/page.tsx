@@ -1,5 +1,5 @@
-import EndVoteScreen from "@/screens/admin/EndVoteScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminVoteEndPage() {
-  return <EndVoteScreen />;
+  return <LegacyAdminRouteRedirect target="vote-end" />;
 }

@@ -578,14 +578,14 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          expect.stringContaining("/groups/17/admin/participants"),
+          expect.stringContaining("/groups/17/participants"),
         );
       });
     });
 
     it("from 파라미터가 있는 경우 차단 완료 후 해당 from 경로로 정확히 복귀한다", async () => {
       mockSearchParams.set("role", "admin");
-      mockSearchParams.set("from", "/groups/17/admin/assignment/fixed");
+      mockSearchParams.set("from", "/groups/17/assignments/fixed-members");
 
       vi.spyOn(adminGroupQuery, "useAdminGroupQuery").mockReturnValue({
         data: {
@@ -642,7 +642,7 @@ describe("Blacklist Feature & API Integration", () => {
 
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith(
-          "/groups/17/admin/assignment/fixed",
+          "/groups/17/assignments/fixed-members",
         );
       });
     });

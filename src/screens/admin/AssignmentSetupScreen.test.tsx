@@ -120,7 +120,7 @@ describe("AssignmentSetupScreen Navigation", () => {
     const participantsTab = screen.getByRole("button", { name: "참가자" });
     fireEvent.click(participantsTab);
 
-    expect(pushMock).toHaveBeenCalledWith("/groups/6/admin/participants");
+    expect(pushMock).toHaveBeenCalledWith("/groups/6/participants");
   });
 
   it("legacy 회차 URL로 진입하면 clean 조편성 URL로 교체한다", () => {
@@ -131,6 +131,6 @@ describe("AssignmentSetupScreen Navigation", () => {
 
     render(<AssignmentSetupScreen />);
 
-    expect(replaceMock).toHaveBeenCalledWith("/groups/6/admin/assignments/setup");
+    expect(replaceMock).toHaveBeenCalledWith("/groups/6/assignments/setup");
   });
 });

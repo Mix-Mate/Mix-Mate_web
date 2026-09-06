@@ -1,5 +1,5 @@
-import AdminRecruitmentScreen from "@/screens/admin/AdminRecruitmentScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminRecruitmentPage() {
-  return <AdminRecruitmentScreen />;
+  return <LegacyAdminRouteRedirect target="recruitment" />;
 }

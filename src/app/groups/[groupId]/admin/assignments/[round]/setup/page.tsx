@@ -1,5 +1,5 @@
-import AssignmentSetupScreen from "@/screens/admin/AssignmentSetupScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
-export default function AssignmentSetupPage() {
-  return <AssignmentSetupScreen />;
+export default function LegacyAssignmentSetupPage() {
+  return <LegacyAdminRouteRedirect target="assignment-setup" />;
 }

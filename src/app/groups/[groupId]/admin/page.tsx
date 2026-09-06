@@ -1,5 +1,5 @@
-import AdminHomeScreen from "@/screens/admin/AdminHomeScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
-export default function GroupAdminPage() {
-  return <AdminHomeScreen />;
+export default function AdminHomePage() {
+  return <LegacyAdminRouteRedirect target="home" />;
 }

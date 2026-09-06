@@ -1,5 +1,5 @@
-﻿import AdminParticipantManagementScreen from "@/screens/admin/AdminParticipantManagementScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminParticipantsPage() {
-  return <AdminParticipantManagementScreen />;
+  return <LegacyAdminRouteRedirect target="participants" />;
 }

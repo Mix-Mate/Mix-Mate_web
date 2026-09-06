@@ -73,7 +73,7 @@ describe("ParticipantListScreen manual participant addition", () => {
     fireEvent.click(screen.getByRole("button", { name: "사용자 추가" }));
 
     expect(pushMock).toHaveBeenCalledWith(
-      "/groups/6/admin/participants/new?returnTo=participant-list",
+      "/groups/6/participants/new?returnTo=participant-list",
     );
   });
 
