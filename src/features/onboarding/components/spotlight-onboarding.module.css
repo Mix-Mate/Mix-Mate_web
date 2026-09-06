@@ -1,0 +1,202 @@
+/* BottomSheetDialog의 스크림과 같은 방식이다. fixed로 현재 보이는 화면을 기준으로 삼되
+   데스크톱 목업 밖으로 퍼지지 않도록 폭만 목업 크기로 묶는다. */
+.overlay {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  width: var(--mobile-frame-width);
+  margin: 0 auto;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: inherit;
+  animation: onboardingFadeIn 180ms ease-out;
+  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+}
+
+/* 큰 spread의 box-shadow로 강조 영역만 남기고 바깥을 어둡게 덮는다.
+   .overlay의 overflow: hidden이 그림자를 목업 안으로 잘라준다. */
+.spotlight {
+  position: absolute;
+  /* 실제 위치는 대상 DOM을 측정해 인라인 스타일로 덮어쓴다.
+     측정 전에는 크기 0이라 화면 전체가 어둡게만 덮인다. */
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: 18px;
+  box-shadow: 0 0 0 9999px rgba(24, 24, 27, 0.66);
+  pointer-events: none;
+  transition:
+    top 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    left 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: inherit;
+}
+
+.coachMark {
+  position: absolute;
+  /* 세로 위치는 강조 영역을 기준으로 계산해 인라인 스타일로 덮어쓴다. */
+  top: 16px;
+  right: 16px;
+  left: 16px;
+  box-sizing: border-box;
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
+  cursor: auto;
+  transition: top 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.coachMark:focus {
+  outline: none;
+}
+
+.coachMarkBody {
+  animation: onboardingStepIn 240ms ease-out;
+}
+
+.stepCounter {
+  display: inline-flex;
+  height: 24px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0.2px;
+}
+
+.coachMark h2 {
+  margin: 10px 0 0;
+  color: #18181b;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: -0.3px;
+}
+
+.coachMark p {
+  margin: 6px 0 0;
+  color: #52525b;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f4f4f5;
+  list-style: none;
+}
+
+.notes li {
+  position: relative;
+  padding-left: 14px;
+  color: #52525b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.notes li::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #a1a1aa;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.skipButton {
+  cursor: pointer;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: #a1a1aa;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.nextButton {
+  min-width: 104px;
+  height: 44px;
+  cursor: pointer;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  background: #256ad3;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+  transition:
+    background 120ms ease,
+    transform 100ms ease;
+}
+
+.nextButton:active {
+  background: #2567c9;
+  transform: scale(0.98);
+}
+
+.skipButton:focus-visible,
+.nextButton:focus-visible {
+  outline: 2px solid #89bfff;
+  outline-offset: 2px;
+}
+
+@keyframes onboardingFadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes onboardingStepIn {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .coachMarkBody {
+    animation: none;
+  }
+
+  .spotlight,
+  .coachMark {
+    transition: none;
+  }
+}

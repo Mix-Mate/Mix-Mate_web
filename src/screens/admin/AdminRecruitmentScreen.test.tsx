@@ -7,10 +7,12 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GroupDetail } from "@/features/group/types/group.types";
+import { HOST_RECRUITMENT_ONBOARDING_STORAGE_KEY } from "@/features/onboarding/model/host-recruitment-onboarding-storage";
 import AdminRecruitmentScreen from "./AdminRecruitmentScreen";
 
 const {
   refetchMock,
+  pushMock,
   replaceMock,
   closeRecruitingMock,
   useAdminGroupQueryMock,
@@ -19,6 +21,7 @@ const {
   useUpdateGroupMutationMock,
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
+  pushMock: vi.fn(),
   replaceMock: vi.fn(),
   closeRecruitingMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
@@ -30,7 +33,7 @@ const {
 vi.mock("next/navigation", () => ({
   useParams: () => ({ groupId: "7" }),
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
     replace: replaceMock,
   }),
   useSearchParams: () => new URLSearchParams(),
@@ -99,6 +102,11 @@ describe("AdminRecruitmentScreen", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    // 온보딩을 이미 확인한 상태를 기본값으로 두고, 온보딩 자체는 아래에서 따로 검증한다.
+    window.localStorage.setItem(
+      HOST_RECRUITMENT_ONBOARDING_STORAGE_KEY,
+      "true",
+    );
     useAdminGroupQueryMock.mockReturnValue({
       data: group,
       refetch: refetchMock,
@@ -123,6 +131,7 @@ describe("AdminRecruitmentScreen", () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+    window.localStorage.clear();
   });
 
   it("모집 안내에 최소 참가 인원을 강조해서 보여준다", () => {
@@ -360,5 +369,90 @@ describe("AdminRecruitmentScreen", () => {
       screen.getByRole("button", { name: "모집 마감하기" }),
     ).toBeInTheDocument();
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  describe("HOST 온보딩", () => {
+    beforeEach(() => {
+      window.localStorage.clear();
+    });
+
+    const onboarding = () => screen.getByTestId("spotlight-onboarding");
+
+    it("HOST가 처음 진입하면 첫 단계부터 온보딩을 보여준다", () => {
+      render(<AdminRecruitmentScreen />);
+
+      expect(onboarding()).toBeInTheDocument();
+      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+      expect(
+        screen.getByRole("dialog", { name: "모임의 진행 상태를 확인해요" }),
+      ).toHaveTextContent("현재 모임이 어느 단계인지 한눈에 확인할 수 있어요.");
+    });
+
+    it("참가자에게는 온보딩을 노출하지 않는다", () => {
+      useAdminGroupQueryMock.mockReturnValue({
+        data: { ...group, myRole: "PARTICIPANT" as const },
+        refetch: refetchMock,
+      });
+
+      render(<AdminRecruitmentScreen />);
+
+      expect(
+        screen.queryByTestId("spotlight-onboarding"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("화면을 눌러도 단계만 넘어가고 기존 버튼 동작은 실행되지 않는다", () => {
+      render(<AdminRecruitmentScreen />);
+
+      fireEvent.click(onboarding());
+
+      expect(screen.getByText("2 / 5")).toBeInTheDocument();
+      expect(pushMock).not.toHaveBeenCalled();
+    });
+
+    it("마지막 단계에서 시작하기를 누르면 온보딩이 끝나고 다시 열리지 않는다", () => {
+      const { unmount } = render(<AdminRecruitmentScreen />);
+
+      for (const stepLabel of ["1 / 5", "2 / 5", "3 / 5", "4 / 5"]) {
+        expect(screen.getByText(stepLabel)).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: "다음" }));
+      }
+
+      expect(screen.getByText("5 / 5")).toBeInTheDocument();
+      expect(
+        screen.getByRole("dialog", { name: "모두 모였다면 모집을 마감해요" }),
+      ).toHaveTextContent(
+        "HOST는 이후 2차 참여 투표에서 불참을 선택하더라도 모임 진행과 관리 기능을 계속 사용할 수 있어요.",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "시작하기" }));
+      expect(
+        screen.queryByTestId("spotlight-onboarding"),
+      ).not.toBeInTheDocument();
+
+      unmount();
+      render(<AdminRecruitmentScreen />);
+      expect(
+        screen.queryByTestId("spotlight-onboarding"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("건너뛰기도 완료와 동일하게 확인한 상태로 저장한다", () => {
+      const { unmount } = render(<AdminRecruitmentScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: "건너뛰기" }));
+      expect(
+        screen.queryByTestId("spotlight-onboarding"),
+      ).not.toBeInTheDocument();
+      expect(
+        window.localStorage.getItem(HOST_RECRUITMENT_ONBOARDING_STORAGE_KEY),
+      ).toBe("true");
+
+      unmount();
+      render(<AdminRecruitmentScreen />);
+      expect(
+        screen.queryByTestId("spotlight-onboarding"),
+      ).not.toBeInTheDocument();
+    });
   });
 });
