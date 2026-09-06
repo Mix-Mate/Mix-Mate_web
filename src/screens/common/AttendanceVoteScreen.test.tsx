@@ -5,6 +5,10 @@ import type {
   GroupMemberRole,
   GroupStatus,
 } from "@/features/group/types/group.types";
+import {
+  getSecondRoundVoteUpdatedToastKey,
+  SECOND_ROUND_VOTE_UPDATED_MESSAGE,
+} from "@/features/vote/lib/second-round";
 import AttendanceVoteScreen from "./AttendanceVoteScreen";
 
 const {
@@ -69,6 +73,7 @@ function createGroup(
 describe("AttendanceVoteScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.sessionStorage.clear();
     mockSearchParams = new URLSearchParams();
     useAdminGroupQueryMock.mockReturnValue({
       data: createGroup("VOTING", "PARTICIPANT"),
@@ -84,6 +89,8 @@ describe("AttendanceVoteScreen", () => {
           { participantId: 2, displayName: "상대1", choice: null },
         ],
       },
+      isLoading: false,
+      error: null,
       isComplete: false,
     });
     useAttendanceVoteMock.mockReturnValue({
@@ -268,5 +275,108 @@ describe("AttendanceVoteScreen", () => {
     render(<AttendanceVoteScreen />);
 
     expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
+  });
+
+  it("현황에서 돌아온 참가자는 전원 제출 후에도 기존 선택을 바꿔 정정할 수 있다", async () => {
+    mockSearchParams = new URLSearchParams("mode=edit");
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 2,
+        votedCount: 2,
+        participateCount: 1,
+        notParticipateCount: 1,
+        participants: [
+          { participantId: 1, displayName: "나", choice: "PARTICIPATE" },
+          {
+            participantId: 2,
+            displayName: "상대1",
+            choice: "NOT_PARTICIPATE",
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+      isComplete: true,
+    });
+    useAttendanceVoteMock.mockReturnValue({
+      context: {
+        status: "OPEN",
+        selectedChoice: "PARTICIPATE",
+        hasSubmitted: false,
+      },
+      isLoading: false,
+      isSubmitting: false,
+      error: null,
+      submit: submitMock,
+    });
+    submitMock.mockResolvedValue({ success: true, isUpdated: true });
+
+    render(<AttendanceVoteScreen />);
+
+    expect(replaceMock).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue("PARTICIPATE")).toBeChecked();
+    expect(
+      screen.getByRole("button", { name: "투표 정정하기" }),
+    ).toBeDisabled();
+
+    fireEvent.click(screen.getByDisplayValue("NOT_PARTICIPATE"));
+    fireEvent.click(screen.getByRole("button", { name: "투표 정정하기" }));
+
+    expect(submitMock).toHaveBeenCalledWith("NOT_PARTICIPATE");
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledWith("/groups/7/votes/status");
+    });
+    expect(
+      window.sessionStorage.getItem(getSecondRoundVoteUpdatedToastKey("7")),
+    ).toBe(SECOND_ROUND_VOTE_UPDATED_MESSAGE);
+  });
+
+  it("정정 화면에서 뒤로가면 MVP가 아닌 투표 현황으로 돌아간다", () => {
+    mockSearchParams = new URLSearchParams("mode=edit");
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 2,
+        votedCount: 1,
+        participateCount: 1,
+        notParticipateCount: 0,
+        participants: [
+          { participantId: 1, displayName: "나", choice: "PARTICIPATE" },
+        ],
+      },
+      isLoading: false,
+      error: null,
+      isComplete: false,
+    });
+
+    render(<AttendanceVoteScreen />);
+    fireEvent.click(screen.getByRole("button", { name: "이전 화면으로 이동" }));
+
+    expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
+      "/groups/7/votes/status",
+    );
+    expect(backMock).not.toHaveBeenCalled();
+  });
+
+  it("정정 진입에서 투표 현황 조회가 실패하면 POST로 오판하지 않고 제출을 잠근다", () => {
+    mockSearchParams = new URLSearchParams("mode=edit");
+    useVoteStatusQueryMock.mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: "투표 현황을 불러오지 못했습니다.",
+      isComplete: false,
+    });
+
+    render(<AttendanceVoteScreen />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "투표 현황을 불러오지 못했습니다.",
+    );
+    expect(
+      screen.getByRole("button", { name: "투표 완료하기" }),
+    ).toBeDisabled();
+    fireEvent.submit(
+      screen.getByRole("button", { name: "투표 완료하기" }).closest("form")!,
+    );
+    expect(submitMock).not.toHaveBeenCalled();
   });
 });

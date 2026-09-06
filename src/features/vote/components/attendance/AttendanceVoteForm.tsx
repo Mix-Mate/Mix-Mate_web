@@ -27,15 +27,27 @@ export default function AttendanceVoteForm({
   error,
   onSubmit,
 }: AttendanceVoteFormProps) {
-  const [selectedChoice, setSelectedChoice] = useState(initialChoice);
+  const [selectionState, setSelectionState] = useState(() => ({
+    initialChoice,
+    selectedChoice: initialChoice,
+  }));
+  const selectedChoice =
+    selectionState.initialChoice === initialChoice
+      ? selectionState.selectedChoice
+      : initialChoice;
   const locked = isSubmitted || isClosed || isLoading || isSubmitting;
+  const isCorrection = initialChoice !== null;
+  const isUnchanged = isCorrection && selectedChoice === initialChoice;
+  const selectChoice = (choice: SecondRoundVoteChoice) => {
+    setSelectionState({ initialChoice, selectedChoice: choice });
+  };
 
   return (
     <form
       className={styles.attendanceForm}
       onSubmit={(event) => {
         event.preventDefault();
-        if (selectedChoice && !locked) {
+        if (selectedChoice && !isUnchanged && !locked) {
           onSubmit(selectedChoice);
         }
       }}
@@ -47,8 +59,8 @@ export default function AttendanceVoteForm({
           aria-label="2차 술자리 진행 기준"
         >
           <p>
-            2차 참여 희망자가 <strong>{SECOND_ROUND_MIN_PARTICIPANTS}명 이상</strong>{" "}
-            모이면{" "}
+            2차 참여 희망자가{" "}
+            <strong>{SECOND_ROUND_MIN_PARTICIPANTS}명 이상</strong> 모이면{" "}
             <br />
             2차 술자리가 진행됩니다.
           </p>
@@ -66,14 +78,14 @@ export default function AttendanceVoteForm({
             label="참여할게요"
             selected={selectedChoice === "PARTICIPATE"}
             disabled={locked}
-            onSelect={setSelectedChoice}
+            onSelect={selectChoice}
           />
           <AttendanceOptionCard
             value="NOT_PARTICIPATE"
             label="불참합니다"
             selected={selectedChoice === "NOT_PARTICIPATE"}
             disabled={locked}
-            onSelect={setSelectedChoice}
+            onSelect={selectChoice}
           />
         </fieldset>
 
@@ -93,12 +105,21 @@ export default function AttendanceVoteForm({
       </div>
 
       <div className={styles.voteFooter}>
-        <Button type="submit" disabled={selectedChoice === null || locked}>
+        <Button
+          type="submit"
+          disabled={selectedChoice === null || isUnchanged || locked}
+        >
           {isSubmitting
-            ? "투표 중..."
+            ? isCorrection
+              ? "정정 중..."
+              : "투표 중..."
             : isSubmitted
-              ? "투표 완료됨"
-              : "투표 완료하기"}
+              ? isCorrection
+                ? "투표 정정됨"
+                : "투표 완료됨"
+              : isCorrection
+                ? "투표 정정하기"
+                : "투표 완료하기"}
         </Button>
       </div>
     </form>

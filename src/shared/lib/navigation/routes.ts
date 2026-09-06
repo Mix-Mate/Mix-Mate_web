@@ -41,6 +41,8 @@ export const groupRoutes = {
     `${groupBase(groupId)}/play/${activity}`,
   mvpVote: (groupId: string) => `${groupBase(groupId)}/votes/mvp`,
   attendanceVote: (groupId: string) => `${groupBase(groupId)}/votes/attendance`,
+  attendanceVoteCorrection: (groupId: string) =>
+    `${groupBase(groupId)}/votes/attendance?mode=edit`,
   voteStatus: (groupId: string) => `${groupBase(groupId)}/votes/status`,
   voteResult: (groupId: string) => `${groupBase(groupId)}/votes/result`,
   voteResultMvpList: (groupId: string) =>
