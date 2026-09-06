@@ -1,8 +1,17 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import styles from "./BottomSheetDialog.module.css";
+
+const FOCUSABLE_ELEMENT_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
 
 interface BottomSheetDialogProps {
   open: boolean;
@@ -27,6 +36,8 @@ export default function BottomSheetDialog({
   onClose,
   closeDisabled = false,
 }: BottomSheetDialogProps) {
+  const dialogRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     if (!open || !onClose) return;
 
@@ -37,6 +48,89 @@ export default function BottomSheetDialog({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [closeDisabled, onClose, open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const scrim = dialog.parentElement;
+    const backgroundElements = scrim?.parentElement
+      ? Array.from(scrim.parentElement.children).filter(
+          (element): element is HTMLElement =>
+            element instanceof HTMLElement && element !== scrim,
+        )
+      : [];
+    const elementsAlreadyInert = new Set(
+      backgroundElements.filter((element) => element.hasAttribute("inert")),
+    );
+    const previouslyFocusedElement =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const getFocusableElements = () =>
+      Array.from(
+        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_ELEMENT_SELECTOR),
+      ).filter(
+        (element) =>
+          !element.hidden && element.getAttribute("aria-hidden") !== "true",
+      );
+
+    backgroundElements.forEach((element) => element.setAttribute("inert", ""));
+    (getFocusableElements()[0] ?? dialog).focus();
+
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey) {
+        if (activeElement === firstElement || !dialog.contains(activeElement)) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        return;
+      }
+
+      if (activeElement === lastElement || !dialog.contains(activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", trapFocus);
+    return () => {
+      document.removeEventListener("keydown", trapFocus);
+      backgroundElements.forEach((element) => {
+        if (!elementsAlreadyInert.has(element))
+          element.removeAttribute("inert");
+      });
+      if (previouslyFocusedElement?.isConnected) {
+        previouslyFocusedElement.focus();
+      }
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -51,11 +145,13 @@ export default function BottomSheetDialog({
       }}
     >
       <section
+        ref={dialogRef}
         className={clsx(styles.sheet, sheetClassName)}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
+        tabIndex={-1}
       >
         <span
           className={clsx(styles.handle, handleClassName)}

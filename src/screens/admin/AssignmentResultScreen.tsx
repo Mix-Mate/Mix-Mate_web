@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AssignmentGroupList from "@/features/assignment/components/AssignmentGroupList";
 import { useConfirmAssignmentMutation } from "@/features/assignment/hooks/useConfirmAssignmentMutation";
 import { useCreateAssignmentMutation } from "@/features/assignment/hooks/useCreateAssignmentMutation";
@@ -18,6 +18,7 @@ import {
 } from "@/features/assignment/model/assignmentDraft.store";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
+import ConfirmAssignmentDialog from "@/modals/admin/ConfirmAssignmentDialog";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
@@ -33,6 +34,9 @@ export default function AssignmentResultScreen() {
     params.groupId,
   );
   const round = resolveAssignmentRound(params.round, group?.status);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isConfirmFlowPending, setIsConfirmFlowPending] = useState(false);
+  const confirmRequestInFlightRef = useRef(false);
 
   const result = useMemo(
     () => getAssignmentResultDraft(params.groupId, round),
@@ -88,19 +92,29 @@ export default function AssignmentResultScreen() {
   };
 
   const handleConfirm = async () => {
-    const confirmed = await confirmAssignment(params.groupId, round);
-    if (!confirmed) return;
+    if (confirmRequestInFlightRef.current) return;
+    confirmRequestInFlightRef.current = true;
+    setIsConfirmFlowPending(true);
 
-    clearAssignmentResultDraft(params.groupId, round);
+    try {
+      const confirmed = await confirmAssignment(params.groupId, round);
+      if (!confirmed) return;
 
-    // 확정 직후 그룹 상태를 다시 불러오지 않으면 홈 화면이 캐시된
-    // "회차 준비 중" 상태로 렌더링되어 조편성 전 화면으로 되돌아간다.
-    await refetchGroup();
+      clearAssignmentResultDraft(params.groupId, round);
 
-    router.replace(groupRoutes.home(params.groupId));
+      // 확정 직후 그룹 상태를 다시 불러오지 않으면 홈 화면이 캐시된
+      // "회차 준비 중" 상태로 렌더링되어 조편성 전 화면으로 되돌아간다.
+      await refetchGroup();
+
+      router.replace(groupRoutes.home(params.groupId));
+    } finally {
+      confirmRequestInFlightRef.current = false;
+      setIsConfirmFlowPending(false);
+    }
   };
 
-  const isBusy = isReshuffling || isConfirming;
+  const isConfirmActionPending = isConfirmFlowPending || isConfirming;
+  const isBusy = isReshuffling || isConfirmActionPending;
 
   if (!group) return null;
 
@@ -185,11 +199,19 @@ export default function AssignmentResultScreen() {
         <Button
           type="button"
           disabled={!result || isBusy}
-          onClick={handleConfirm}
+          onClick={() => setIsConfirmDialogOpen(true)}
         >
-          {isConfirming ? "확정 중..." : "결과 확정하기"}
+          조 편성 확정하기
         </Button>
       </div>
+
+      <ConfirmAssignmentDialog
+        open={isConfirmDialogOpen}
+        isConfirming={isConfirmActionPending}
+        error={confirmError}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={handleConfirm}
+      />
     </MobileFrame>
   );
 }
