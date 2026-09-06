@@ -153,5 +153,25 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
       ).not.toBeInTheDocument();
       expect(mockPush).not.toHaveBeenCalledWith("/login");
     });
+
+    it("회원탈퇴 401 실패가 로그인 필요 메시지여도 비밀번호 오류로 표시한다", async () => {
+      vi.spyOn(authApi, "performWithdraw").mockRejectedValue(
+        new authApi.AuthApiError("로그인이 필요합니다.", 401, "UNAUTHORIZED"),
+      );
+
+      render(<MyPageScreen />);
+
+      fireEvent.click(screen.getByRole("button", { name: /회원탈퇴/ }));
+      fireEvent.change(screen.getByPlaceholderText("비밀번호 입력"), {
+        target: { value: "wrong-password" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+
+      expect(
+        await screen.findByText("비밀번호가 일치하지 않습니다."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("로그인이 필요합니다.")).not.toBeInTheDocument();
+      expect(mockPush).not.toHaveBeenCalledWith("/login");
+    });
   });
 });

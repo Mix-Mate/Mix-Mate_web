@@ -8,7 +8,11 @@ import Header from "@/shared/ui/Header";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { authRoutes } from "@/shared/lib/navigation/routes";
-import { performLogout, performWithdraw } from "@/features/auth/api/auth.api";
+import {
+  AuthApiError,
+  performLogout,
+  performWithdraw,
+} from "@/features/auth/api/auth.api";
 import styles from "./MyPageScreen.module.css";
 
 function subscribeStorage(callback: () => void) {
@@ -44,9 +48,18 @@ function getWithdrawErrorMessage(error: unknown) {
     return "회원탈퇴에 실패했습니다.";
   }
 
-  return error.message === "이메일 또는 비밀번호가 일치하지 않습니다."
-    ? "비밀번호가 일치하지 않습니다."
-    : error.message;
+  if (error.message === "이메일 또는 비밀번호가 일치하지 않습니다.") {
+    return "비밀번호가 일치하지 않습니다.";
+  }
+
+  if (
+    error instanceof AuthApiError &&
+    (error.status === 400 || error.status === 401)
+  ) {
+    return "비밀번호가 일치하지 않습니다.";
+  }
+
+  return error.message;
 }
 
 export default function MyPageScreen() {
