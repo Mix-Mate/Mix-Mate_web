@@ -1,0 +1,65 @@
+.bottomSheet {
+  --bottom-sheet-padding: 16px 26px
+    calc(26px + env(safe-area-inset-bottom, 0px));
+  --bottom-sheet-border-radius: 36px 36px 0 0;
+  --bottom-sheet-handle-width: 48px;
+  --bottom-sheet-handle-height: 4px;
+  --bottom-sheet-handle-margin: 0 auto 22px;
+
+  text-align: center;
+}
+
+.warningIcon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 19px;
+  place-items: center;
+  border: 1px solid #fecaca;
+  border-radius: 23px;
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.bottomSheet h2 {
+  margin: 0;
+  color: #18181b;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 39px;
+  letter-spacing: -0.3px;
+}
+
+.bottomSheet p {
+  margin: 9px 0 0;
+  color: #71717a;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+.error {
+  display: block;
+  margin-top: 10px;
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.divider {
+  height: 1px;
+  margin: 24px -26px 18px;
+  background: #e4e4e7;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.actions button {
+  height: 58px;
+  border-radius: 15px;
+  font-size: 16px;
+}
