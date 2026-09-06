@@ -1,5 +1,5 @@
-import AdminPreparationScreen from "@/screens/admin/AdminPreparationScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminPreparationPage() {
-  return <AdminPreparationScreen />;
+  return <LegacyAdminRouteRedirect target="preparation" />;
 }

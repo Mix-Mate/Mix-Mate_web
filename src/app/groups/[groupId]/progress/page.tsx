@@ -1,10 +1,10 @@
 import AdminAccessGuard from "@/features/session/components/AdminAccessGuard";
-import BlacklistScreen from "@/screens/admin/BlacklistScreen";
+import ProgressScreen from "@/screens/admin/ProgressScreen";
 
-export default function BlacklistPage() {
+export default function ProgressPage() {
   return (
     <AdminAccessGuard>
-      <BlacklistScreen />
+      <ProgressScreen />
     </AdminAccessGuard>
   );
 }

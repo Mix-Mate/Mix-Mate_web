@@ -129,7 +129,7 @@ export default function AdminParticipantManagementScreen() {
 
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
-    router.push(`/groups/${params.groupId}/admin/blacklist`);
+    router.push(groupRoutes.blacklist(params.groupId));
   };
 
   const headerRightAction = (

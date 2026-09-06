@@ -213,7 +213,7 @@ describe("공통 그룹 SSE 동기화", () => {
     expect(subscriptions[0].stop).not.toHaveBeenCalled();
   });
 
-  it.each(["/groups/6", "/groups/6/admin"])(
+  it.each(["/groups/6"])(
     "관리자도 %s에서 투표 시작 이벤트를 받으면 MVP 투표로 한 번만 이동한다",
     async (pathname) => {
       route.pathname = pathname;
@@ -239,7 +239,7 @@ describe("공통 그룹 SSE 동기화", () => {
   );
 
   it.each(
-    ["/groups/6", "/groups/6/admin"].flatMap((pathname) =>
+    ["/groups/6"].flatMap((pathname) =>
       (["FIRST_ROUND", "SECOND_ROUND", "VOTING", "VOTE_CLOSED"] as const).map(
         (status) => ({ pathname, status }),
       ),

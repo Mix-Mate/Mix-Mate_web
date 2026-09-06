@@ -228,7 +228,7 @@ describe("AdminRecruitmentScreen", () => {
       await vi.advanceTimersByTimeAsync(1);
     });
     expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
-      "/groups/7/admin/preparation",
+      "/groups/7/preparation",
     );
   });
 
@@ -283,7 +283,7 @@ describe("AdminRecruitmentScreen", () => {
         await vi.advanceTimersByTimeAsync(1);
       });
       expect(replaceMock).toHaveBeenCalledExactlyOnceWith(
-        "/groups/7/admin/preparation",
+        "/groups/7/preparation",
       );
       expect(refetchMock).toHaveBeenCalledTimes(1);
     },

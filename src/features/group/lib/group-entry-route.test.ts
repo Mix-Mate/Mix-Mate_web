@@ -29,9 +29,9 @@ describe("group-entry-route", () => {
       );
     });
 
-    it("관리자(HOST)가 RECRUITING 상태일 때는 모집 관리 화면(/groups/:id/admin/recruitment)으로 이동한다", () => {
+    it("관리자(HOST)가 RECRUITING 상태일 때는 모집 관리 화면(/groups/:id/recruitment)으로 이동한다", () => {
       expect(getGroupEntryRoute("10", "HOST", "RECRUITING")).toBe(
-        "/groups/10/admin/recruitment",
+        "/groups/10/recruitment",
       );
     });
 
@@ -50,9 +50,9 @@ describe("group-entry-route", () => {
       },
     );
 
-    it("관리자(HOST)의 기본 상태는 관리자 홈(/groups/:id/admin)으로 이동한다", () => {
+    it("관리자(HOST)의 기본 상태는 그룹 홈(/groups/:id)으로 이동한다", () => {
       expect(getGroupEntryRoute("10", "HOST", "FIRST_ROUND")).toBe(
-        "/groups/10/admin",
+        "/groups/10",
       );
     });
   });

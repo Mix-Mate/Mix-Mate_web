@@ -97,9 +97,7 @@ describe("VoteStatusScreen", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "전체 투표 종료하기" }));
 
-    expect(pushMock).toHaveBeenCalledExactlyOnceWith(
-      "/groups/6/admin/votes/end",
-    );
+    expect(pushMock).toHaveBeenCalledExactlyOnceWith("/groups/6/votes/end");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 

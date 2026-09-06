@@ -1,5 +1,5 @@
-﻿import ParticipantListScreen from "@/screens/common/ParticipantListScreen";
+import ParticipantListRouteScreen from "@/screens/common/ParticipantListRouteScreen";
 
 export default function ParticipantsPage() {
-  return <ParticipantListScreen />;
+  return <ParticipantListRouteScreen />;
 }

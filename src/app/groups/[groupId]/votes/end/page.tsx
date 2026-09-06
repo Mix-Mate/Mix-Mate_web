@@ -1,10 +1,10 @@
 import AdminAccessGuard from "@/features/session/components/AdminAccessGuard";
-import BlacklistScreen from "@/screens/admin/BlacklistScreen";
+import EndVoteScreen from "@/screens/admin/EndVoteScreen";
 
-export default function BlacklistPage() {
+export default function VoteEndPage() {
   return (
     <AdminAccessGuard>
-      <BlacklistScreen />
+      <EndVoteScreen />
     </AdminAccessGuard>
   );
 }

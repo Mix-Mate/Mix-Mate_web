@@ -19,6 +19,9 @@ export function useGroupStatusNavigation(groupId: string) {
   const groupPath = `/groups/${groupId}`;
   const isCurrentGroupPage =
     pathname === groupPath || pathname.startsWith(`${groupPath}/`);
+  const isLegacyAdminPage =
+    pathname === `${groupPath}/admin` ||
+    pathname.startsWith(`${groupPath}/admin/`);
   const isVoteFlowPage =
     pathname.startsWith(`${groupPath}/votes/`) ||
     pathname.startsWith(`${groupPath}/admin/votes/`);
@@ -36,6 +39,7 @@ export function useGroupStatusNavigation(groupId: string) {
       status === "VOTING" &&
       isCurrentGroupPage &&
       !isVoteFlowPage &&
+      !isLegacyAdminPage &&
       !pathname.includes("/extra") &&
       /^[1-9]\d*$/.test(groupId) &&
       (!isGroupHomeRoute(pathname, groupId) || didStartVoting)
@@ -51,5 +55,13 @@ export function useGroupStatusNavigation(groupId: string) {
     if (lastNavigationRef.current === navigation) return;
     lastNavigationRef.current = navigation;
     router.replace(target);
-  }, [groupId, isCurrentGroupPage, isVoteFlowPage, pathname, router, status]);
+  }, [
+    groupId,
+    isCurrentGroupPage,
+    isLegacyAdminPage,
+    isVoteFlowPage,
+    pathname,
+    router,
+    status,
+  ]);
 }

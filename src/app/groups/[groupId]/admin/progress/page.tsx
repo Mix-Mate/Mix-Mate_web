@@ -1,5 +1,5 @@
-import ProgressScreen from "@/screens/admin/ProgressScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AdminProgressPage() {
-  return <ProgressScreen />;
+  return <LegacyAdminRouteRedirect target="progress" />;
 }

@@ -1,5 +1,5 @@
-import AssignmentProcessingScreen from "@/screens/admin/AssignmentProcessingScreen";
+import LegacyAdminRouteRedirect from "@/features/group/components/LegacyAdminRouteRedirect";
 
 export default function AssignmentProcessingPage() {
-  return <AssignmentProcessingScreen />;
+  return <LegacyAdminRouteRedirect target="assignment-processing" />;
 }
