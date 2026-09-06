@@ -8,7 +8,20 @@
 > MixMate는 참가자 모집과 자동 조 편성, 술게임·대화 주제 추천, MVP·2차 참여 투표를 하나의 흐름으로 연결하는 모임 운영 서비스입니다.   
 운영자는 모임의 진행을 관리하고, 참가자는 자신의 조와 다음 활동을 확인하며 자연스럽게 어울릴 수 있습니다.  
  <br/>
- 
+
+현재 학생들을 상대로 실사용 운영중입니다.
+
+실사용 운영 및 유지보수 : 2026.09.05 ~  
+
+![Next.js](https://img.shields.io/badge/Next.js-16.2.11-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react&logoColor=000000)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![CSS Modules](https://img.shields.io/badge/CSS%20Modules-000000?logo=cssmodules&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-24.x-339933?logo=nodedotjs&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)
+
 ## 서비스 소개
 <img width="100%" alt="README • About MixMate" src="https://github.com/user-attachments/assets/b3058c84-402f-4b8e-ab49-9d6b75bba6d2" />
 
@@ -42,9 +55,8 @@
 </table>
 
 ## 주요 기능
-<img width="100%" alt="README • Key Features 1" src="https://github.com/user-attachments/assets/f205b0aa-9c90-4af9-b816-c4e79621e22b" />
-
-- 주요 기능 이미지 추가 예정
+<img width="100%" alt="README • Key Features 4" src="https://github.com/user-attachments/assets/7559697d-76df-4c69-8dce-54f6f5faf7ba" />
+<img width="100%" alt="README • Key Features 5" src="https://github.com/user-attachments/assets/362da093-c4c1-484f-8182-33ea175edec1" />
 
 ## 서비스 이용 흐름
 
@@ -52,8 +64,8 @@
 
 ---
 
-## 아키텍처
-- 이미지 추가 예정
+## 🏗️ Architecture
+<img width="70%" alt="Architecture" src="https://github.com/user-attachments/assets/8cffacdb-31d9-49ce-a3a6-82681820ded2" />
 
 ## 🛠 Tech Stack
 
@@ -158,3 +170,15 @@ GitHub Actions는 `main`, `dev` 브랜치의 Push와 Pull Request에서 의존�
 | :-----------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------: |
 | <img src="https://avatars.githubusercontent.com/Koo134o" height="100"/> <br> [고민경](https://github.com/Koo134o) | <img src="https://avatars.githubusercontent.com/moonchanju" height="100"/> <br> [문찬주](https://github.com/moonchanju) | <img src="https://avatars.githubusercontent.com/pdar124" height="100"/> <br> [박다래](https://github.com/pdar124) | <img src="https://avatars.githubusercontent.com/BaekSeungBin" height="100"/> <br> [백승빈](https://github.com/BaekSeungBin) | <img src="https://avatars.githubusercontent.com/KDWorld81" height="100"/> <br> 👑[곽동욱](https://github.com/KDWorld81)👑 | <img src="https://avatars.githubusercontent.com/meoooogus" height="100"/> <br> [김대현](https://github.com/meoooogus) |
 
+
+## 📝 브랜치 · 커밋 컨벤션
+
+| **메시지 타입** | **설명**                                                    |
+| --------------- | ----------------------------------------------------------- |
+| **feat**        | ✨ 새로운 기능 추가 및 기존 기능 수정                       |
+| **fix**         | 🐛 버그 수정                                                |
+| **docs**        | 📚 문서 및 주석 수정                                        |
+| **style**       | 🎨 코드 스타일 및 포맷팅 수정                               |
+| **refact**      | ♻️ 기능 변화 없는 코드 리팩터링                             |
+| **test**        | ✅ 테스트 코드 추가/수정                                    |
+| **chore**       | 🔧 패키지 매니저 수정 및 기타 잡다한 변경(ex: `.gitignore`) |
