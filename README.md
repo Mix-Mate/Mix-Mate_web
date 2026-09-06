@@ -26,7 +26,7 @@
 <img width="100%" alt="README • About MixMate" src="https://github.com/user-attachments/assets/b3058c84-402f-4b8e-ab49-9d6b75bba6d2" />
 
 
-## 📱 Preview
+## Preview
 
 <table>
   <thead>
@@ -39,15 +39,15 @@
   <tbody>
     <tr>
       <td align="center" valign="top">
-        <img width="70%" alt="20260906-1416-45 9167804" src="https://github.com/user-attachments/assets/9583ca31-b780-457c-a992-da6648e61b27" />
+        <img width="70%" alt="GIF1" src="https://github.com/user-attachments/assets/9583ca31-b780-457c-a992-da6648e61b27" />
         <p>그룹을 만들고 참여 코드로 함께하기</p>
       </td>
       <td align="center" valign="top">
-        <!-- TODO: 편성 조건 설정 → 결과 확정 → 내 조 확인 GIF -->
+       <img width="70%" height="742" alt="GIF2" src="https://github.com/user-attachments/assets/3123033f-55fa-441c-b9aa-dde4399c5a59" />
         <p>조를 편성하고 같은 조 멤버 확인하기</p>
       </td>
       <td align="center" valign="top">
-        <img width="70%" alt="20260906-1434-29 3568066" src="https://github.com/user-attachments/assets/3f549f6b-2cf5-4c9e-87cf-799dbc7e150f" />
+        <img width="70%" alt="GIF3" src="https://github.com/user-attachments/assets/3f549f6b-2cf5-4c9e-87cf-799dbc7e150f" />
         <p>모임의 MVP와 다음 일정 참여자 확인하기</p>
       </td>
     </tr>
