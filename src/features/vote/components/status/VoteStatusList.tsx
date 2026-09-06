@@ -1,3 +1,4 @@
+import type { SecondRoundVoteChoice } from "../../types/secondRoundVote.types";
 import type { SecondRoundVoteParticipant } from "../../types/secondRoundVoteStatus.types";
 import styles from "./VoteStatus.module.css";
 import VoteStatusItem from "./VoteStatusItem";
@@ -8,7 +9,7 @@ interface VoteStatusListProps {
   emptyMessage: string;
   groupId: string;
   canManageManualVote: boolean;
-  onVoteChange: () => void;
+  onVoteChange: (participantId: number, choice: SecondRoundVoteChoice) => void;
   onManualVoteError: (message: string | null) => void;
 }
 

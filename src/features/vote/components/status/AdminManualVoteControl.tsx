@@ -20,7 +20,7 @@ const VIEWPORT_MARGIN = 8;
 interface AdminManualVoteControlProps {
   groupId: string;
   member: SecondRoundVoteParticipant;
-  onVoteChange: () => void;
+  onVoteChange: (choice: SecondRoundVoteChoice) => void;
   onSubmittingChange?: (participantId: number, isSubmitting: boolean) => void;
   /** 행 안에서는 목록 overflow에 잘려 보이지 않으므로 화면 단위로 올려서 노출한다. */
   onError?: (message: string | null) => void;
@@ -92,7 +92,7 @@ export default function AdminManualVoteControl({
           choice,
         );
       }
-      onVoteChange();
+      onVoteChange(choice);
     } catch (submitError) {
       onError?.(
         submitError instanceof Error

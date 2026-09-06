@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   GroupDetail,
@@ -16,11 +16,15 @@ const {
   replaceMock,
   useAdminGroupQueryMock,
   useVoteStatusQueryMock,
+  voteProgressCardMock,
+  voteStatusListMock,
 } = vi.hoisted(() => ({
   pushMock: vi.fn(),
   replaceMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useVoteStatusQueryMock: vi.fn(),
+  voteProgressCardMock: vi.fn(),
+  voteStatusListMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -38,11 +42,17 @@ vi.mock("@/features/vote/hooks/useVoteStatusQuery", () => ({
 }));
 
 vi.mock("@/features/vote/components/status/VoteProgressCard", () => ({
-  default: () => null,
+  default: (props: unknown) => {
+    voteProgressCardMock(props);
+    return null;
+  },
 }));
 
 vi.mock("@/features/vote/components/status/VoteStatusList", () => ({
-  default: () => null,
+  default: (props: unknown) => {
+    voteStatusListMock(props);
+    return null;
+  },
 }));
 
 vi.mock("@/features/vote/components/status/VoteCompletionWatcher", () => ({
@@ -85,7 +95,152 @@ describe("VoteStatusScreen", () => {
       isRefreshing: false,
       error: null,
       isComplete: false,
+      refetch: vi.fn(),
     });
+  });
+
+  it("수동 참가자도 투표 완료 후에는 미투표 목록에서 제외한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "HOST"),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 3,
+        votedCount: 2,
+        participateCount: 1,
+        notParticipateCount: 1,
+        participants: [
+          {
+            participantId: 1,
+            displayName: "Manual Participate",
+            choice: "PARTICIPATE",
+            manualEntry: true,
+          },
+          {
+            participantId: 2,
+            displayName: "Manual Absence",
+            choice: "NOT_PARTICIPATE",
+            manualEntry: true,
+          },
+          {
+            participantId: 3,
+            displayName: "Manual Pending",
+            choice: null,
+            manualEntry: true,
+          },
+        ],
+      },
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      isComplete: false,
+      refetch: vi.fn(),
+    });
+
+    render(<VoteStatusScreen />);
+
+    const listProps = voteStatusListMock.mock.calls.at(-1)?.[0] as {
+      members: Array<{ participantId: number }>;
+    };
+
+    expect(listProps.members.map((member) => member.participantId)).toEqual([
+      3,
+    ]);
+  });
+
+  it("수동 투표 성공 시 현재 미투표 목록에서만 제거한다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "HOST"),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 1,
+        votedCount: 0,
+        participateCount: 0,
+        notParticipateCount: 0,
+        participants: [
+          {
+            participantId: 1,
+            displayName: "Manual Pending",
+            choice: null,
+            manualEntry: true,
+          },
+        ],
+      },
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      isComplete: false,
+      refetch: vi.fn(),
+    });
+
+    render(<VoteStatusScreen />);
+
+    const pendingListProps = voteStatusListMock.mock.calls.at(-1)?.[0] as {
+      members: Array<{ participantId: number }>;
+      onVoteChange: (participantId: number, choice: "PARTICIPATE") => void;
+    };
+
+    act(() => {
+      pendingListProps.onVoteChange(1, "PARTICIPATE");
+    });
+
+    const updatedPendingListProps = voteStatusListMock.mock.calls.at(-1)?.[0] as {
+      members: Array<{ participantId: number }>;
+      canManageManualVote: boolean;
+    };
+
+    expect(
+      updatedPendingListProps.members.map((member) => member.participantId),
+    ).toEqual([]);
+    expect(updatedPendingListProps.canManageManualVote).toBe(true);
+  });
+
+  it("관리자는 참여 목록에서도 수동 참가자 투표를 수정할 수 있다", () => {
+    useAdminGroupQueryMock.mockReturnValue({
+      data: createGroup("VOTING", "HOST"),
+    });
+    useVoteStatusQueryMock.mockReturnValue({
+      data: {
+        totalParticipantCount: 1,
+        votedCount: 1,
+        participateCount: 1,
+        notParticipateCount: 0,
+        participants: [
+          {
+            participantId: 1,
+            displayName: "Manual Participate",
+            choice: "PARTICIPATE",
+            manualEntry: true,
+          },
+        ],
+      },
+      isLoading: false,
+      isRefreshing: false,
+      error: null,
+      isComplete: false,
+      refetch: vi.fn(),
+    });
+
+    render(<VoteStatusScreen />);
+
+    const progressProps = voteProgressCardMock.mock.calls.at(-1)?.[0] as {
+      onSelectFilter: (filter: "PARTICIPATE") => void;
+    };
+
+    act(() => {
+      progressProps.onSelectFilter("PARTICIPATE");
+    });
+
+    const attendanceListProps = voteStatusListMock.mock.calls.at(-1)?.[0] as {
+      members: Array<{ participantId: number }>;
+      canManageManualVote: boolean;
+    };
+
+    expect(
+      attendanceListProps.members.map((member) => member.participantId),
+    ).toEqual([1]);
+    expect(attendanceListProps.canManageManualVote).toBe(true);
   });
 
   it("관리자(HOST)는 공통 현황 화면에서 전체 투표 종료 버튼을 사용할 수 있다", () => {
