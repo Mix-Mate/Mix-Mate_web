@@ -235,14 +235,7 @@
    5. Warning / Error Modal (BottomSheet)
    ========================================================================== */
 .modalScrim {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  transform: none !important;
   z-index: 100 !important;
-  display: flex !important;
-  align-items: flex-end !important;
   border-radius: inherit;
 }
 
