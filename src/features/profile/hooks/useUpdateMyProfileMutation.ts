@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { updateParticipantProfile } from "../api/profile.api";
+import { ProfileApiError, updateParticipantProfile } from "../api/profile.api";
 import type {
   MyGroupProfile,
   ParticipantProfileRequest,
@@ -14,7 +14,11 @@ type UpdateMyProfileInput = {
 
 type UpdateMyProfileResult =
   | { ok: true }
-  | { ok: false; message: string };
+  | {
+      ok: false;
+      message: string;
+      fieldErrors?: Record<string, string>;
+    };
 
 function toParticipantProfileRequest(
   profile: MyGroupProfile,
@@ -56,6 +60,8 @@ export function useUpdateMyProfileMutation() {
           error instanceof Error
             ? error.message
             : "프로필 수정에 실패했습니다.",
+        fieldErrors:
+          error instanceof ProfileApiError ? error.fieldErrors : undefined,
       };
     } finally {
       setIsPending(false);

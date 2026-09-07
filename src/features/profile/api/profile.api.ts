@@ -19,6 +19,22 @@ type MyProfileResponsePayload =
       profile?: MyProfileResponse;
     };
 
+export class ProfileApiError extends Error {
+  status: number;
+  fieldErrors?: Record<string, string>;
+
+  constructor(
+    message: string,
+    status: number,
+    fieldErrors?: Record<string, string>,
+  ) {
+    super(message);
+    this.name = "ProfileApiError";
+    this.status = status;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
 function hasOwn(value: object, key: string) {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
@@ -66,10 +82,17 @@ function toMyGroupProfile(
 
 async function createRequestError(response: Response, fallbackMessage: string) {
   try {
-    const body = (await response.json()) as { message?: string };
-    return new Error(body.message ?? fallbackMessage);
+    const body = (await response.json()) as {
+      message?: string;
+      errors?: Record<string, string>;
+    };
+    return new ProfileApiError(
+      body.message ?? fallbackMessage,
+      response.status,
+      body.errors,
+    );
   } catch {
-    return new Error(fallbackMessage);
+    return new ProfileApiError(fallbackMessage, response.status);
   }
 }
 

@@ -53,11 +53,15 @@ export default function EditMyProfileScreen() {
               profile,
             });
 
-            showToast(
-              result.ok
-                ? "프로필이 저장되었습니다."
-                : result.message,
-            );
+            if (result.ok) {
+              showToast("프로필이 저장되었습니다.");
+            } else if (
+              !result.fieldErrors ||
+              Object.keys(result.fieldErrors).length === 0
+            ) {
+              showToast(result.message);
+            }
+            return result;
           }}
         />
       </main>
