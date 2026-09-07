@@ -176,6 +176,22 @@
   box-shadow: 0 0 0 4.969px rgba(37, 106, 211, 0.15);
 }
 
+.inputField.inputError,
+.textareaField.inputError,
+.inputField[aria-invalid="true"],
+.textareaField[aria-invalid="true"] {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4.969px rgba(239, 68, 68, 0.12);
+}
+
+.fieldError {
+  color: #ef4444;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
 .textareaWrapper {
   display: flex;
   flex-direction: column;
