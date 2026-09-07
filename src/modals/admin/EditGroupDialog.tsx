@@ -7,6 +7,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { updateGroupSchema } from "@/features/group/schemas/group.schemas";
 import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import { mapServerFieldErrors } from "@/shared/lib/input-validation";
 import styles from "./edit-group-dialog.module.css";
 
 interface EditGroupDialogProps {
@@ -14,6 +15,7 @@ interface EditGroupDialogProps {
   initialValues: UpdateGroupInput;
   isSaving?: boolean;
   error?: string | null;
+  fieldErrors?: Record<string, string>;
   onClose: () => void;
   onDelete: () => void;
   onSubmit: (input: UpdateGroupInput) => void | Promise<void>;
@@ -24,6 +26,7 @@ export default function EditGroupDialog({
   initialValues,
   isSaving = false,
   error,
+  fieldErrors,
   onClose,
   onDelete,
   onSubmit,
@@ -33,10 +36,14 @@ export default function EditGroupDialog({
     handleSubmit,
     reset,
     control,
+    clearErrors,
+    setError,
     formState: { errors },
   } = useForm<UpdateGroupInput>({
     resolver: zodResolver(updateGroupSchema),
     defaultValues: initialValues,
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const descriptionValue = useWatch({ control, name: "description" }) ?? "";
@@ -46,6 +53,20 @@ export default function EditGroupDialog({
 
     reset(initialValues);
   }, [initialValues, open, reset]);
+
+  useEffect(() => {
+    if (!open || !fieldErrors) return;
+
+    const mappedErrors = mapServerFieldErrors(fieldErrors, {
+      groupName: "name",
+    });
+    clearErrors(["name", "description"]);
+    for (const [field, message] of Object.entries(mappedErrors)) {
+      if (field === "name" || field === "description") {
+        setError(field, { type: "server", message });
+      }
+    }
+  }, [clearErrors, fieldErrors, open, setError]);
 
   return (
     <BottomSheetDialog
@@ -82,7 +103,6 @@ export default function EditGroupDialog({
           <input
             id="edit-group-name"
             type="text"
-            maxLength={30}
             autoComplete="off"
             aria-invalid={Boolean(errors.name)}
             {...register("name")}
@@ -99,7 +119,6 @@ export default function EditGroupDialog({
           <textarea
             id="edit-group-description"
             rows={2}
-            maxLength={120}
             placeholder="설명 입력"
             aria-invalid={Boolean(errors.description)}
             {...register("description")}
@@ -118,7 +137,7 @@ export default function EditGroupDialog({
           </div>
         </div>
 
-        {error && (
+        {error && Object.keys(fieldErrors ?? {}).length === 0 && (
           <p className={styles.submitError} role="alert">
             <CircleAlert aria-hidden="true" size={17} strokeWidth={1.8} />
             {error}

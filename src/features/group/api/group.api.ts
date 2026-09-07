@@ -457,8 +457,22 @@ export async function updateGroup(
   });
 
   if (!response.ok) {
-    throw new Error(
-      await getErrorMessage(response, "그룹 정보 수정에 실패했습니다."),
+    let errorData: {
+      message?: string;
+      code?: string;
+      errors?: Record<string, string>;
+    } | null = null;
+    try {
+      errorData = await response.json();
+    } catch {
+      // Non-JSON fallback
+    }
+
+    throw new GroupApiError(
+      errorData?.message ?? "그룹 정보 수정에 실패했습니다.",
+      response.status,
+      errorData?.code,
+      errorData?.errors,
     );
   }
 }
