@@ -11,6 +11,10 @@ import {
   AuthApiError,
 } from '../api/auth.api';
 import { signupSchema } from '../schemas/auth.schema';
+import {
+  mapServerFieldErrors,
+  validateInputField,
+} from '@/shared/lib/input-validation';
 import styles from './SignupForm.module.css';
 
 type VerificationStatus =
@@ -22,6 +26,11 @@ type VerificationStatus =
   | 'FAILED';
 
 const VERIFICATION_TIME_LIMIT_SEC = 300; // 5분 유효시간
+
+function getUserNameError(value: string) {
+  if (!value.trim()) return '이름을 입력해주세요.';
+  return validateInputField('userName', value.trim());
+}
 
 export function SignupForm() {
   const router = useRouter();
@@ -69,15 +78,29 @@ export function SignupForm() {
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
+    const nextValue = e.target.value;
+    setName(nextValue);
     if (fieldErrors.userName || fieldErrors.name) {
       setFieldErrors((prev) => {
         const next = { ...prev };
         delete next.userName;
         delete next.name;
+        const validationError = getUserNameError(nextValue);
+        if (validationError) next.userName = validationError;
         return next;
       });
     }
+  };
+
+  const handleNameBlur = () => {
+    const validationError = getUserNameError(name);
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next.userName;
+      delete next.name;
+      if (validationError) next.userName = validationError;
+      return next;
+    });
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -321,10 +344,9 @@ export function SignupForm() {
           error.fieldErrors &&
           Object.keys(error.fieldErrors).length > 0
         ) {
-          const mappedErrors: Record<string, string> = { ...error.fieldErrors };
-          if (error.fieldErrors.name && !mappedErrors.userName) {
-            mappedErrors.userName = error.fieldErrors.name;
-          }
+          const mappedErrors = mapServerFieldErrors(error.fieldErrors, {
+            name: 'userName',
+          });
           setFieldErrors(mappedErrors);
         } else if (
           error.code === 'EMAIL_NOT_VERIFIED' ||
@@ -395,7 +417,9 @@ export function SignupForm() {
           type="text"
           value={name}
           onChange={handleNameChange}
+          onBlur={handleNameBlur}
           required
+          aria-invalid={Boolean(fieldErrors.userName || fieldErrors.name)}
           className={`${styles.inputBase} ${
             fieldErrors.userName || fieldErrors.name ? styles.inputError : ''
           }`}
