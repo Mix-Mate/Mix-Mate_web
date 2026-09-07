@@ -122,6 +122,18 @@
   border-color: #3b82c4;
 }
 
+.field input[aria-invalid="true"],
+.textArea[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.fieldError {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
 /* 커스텀 MBTI 드롭다운 스타일 */
 .dropdownTrigger {
   box-sizing: border-box;
