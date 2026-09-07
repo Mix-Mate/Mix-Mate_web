@@ -5,6 +5,8 @@ interface ProfileTextAreaFieldProps {
   value: string;
   onChange: (value: string) => void;
   maxLength?: number;
+  onBlur?: () => void;
+  error?: string;
 }
 
 export default function ProfileTextAreaField({
@@ -12,6 +14,8 @@ export default function ProfileTextAreaField({
   value,
   onChange,
   maxLength,
+  onBlur,
+  error,
 }: ProfileTextAreaFieldProps) {
   return (
     <label className={styles.field}>
@@ -21,7 +25,14 @@ export default function ProfileTextAreaField({
         value={value}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
+        aria-invalid={Boolean(error)}
       />
+      {error && (
+        <small className={styles.fieldError} role="alert">
+          {error}
+        </small>
+      )}
     </label>
   );
 }

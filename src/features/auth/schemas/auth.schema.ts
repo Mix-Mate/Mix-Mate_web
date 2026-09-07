@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { validatedStringSchema } from '@/shared/lib/input-validation';
 
 export const signupSchema = z
   .object({
-    userName: z.string().min(1, '이름을 입력해주세요.'),
+    userName: validatedStringSchema('userName').min(1, '이름을 입력해주세요.'),
     email: z.string().email('올바른 이메일 형식을 입력해주세요.'),
     authCode: z.string().min(1, '인증번호를 입력해주세요.'),
     password: z.string().min(8, '비밀번호는 8자 이상이어야 합니다.'),

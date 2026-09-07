@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Info } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { validateInputField } from "@/shared/lib/input-validation";
 import styles from "./GroupCreateScreen.module.css";
 
 interface GroupCreateScreenProps {
@@ -19,6 +20,34 @@ export default function GroupCreateScreen({
   // State requirements
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    groupName?: string;
+    description?: string;
+  }>({});
+
+  const getFieldError = (field: "groupName" | "description", value: string) => {
+    const submittedValue = value.trim();
+    if (field === "groupName" && !submittedValue) {
+      return "그룹명을 입력해주세요.";
+    }
+    return validateInputField(field, submittedValue);
+  };
+
+  const validateField = (field: "groupName" | "description", value: string) => {
+    const error = getFieldError(field, value);
+    setFieldErrors((current) => ({ ...current, [field]: error ?? undefined }));
+    return error;
+  };
+
+  const handleFieldChange = (
+    field: "groupName" | "description",
+    value: string,
+  ) => {
+    if (field === "groupName") setGroupName(value);
+    else setDescription(value);
+
+    if (fieldErrors[field]) validateField(field, value);
+  };
 
   const handleBack = () => {
     router.back();
@@ -27,7 +56,12 @@ export default function GroupCreateScreen({
   // Main button: [조 편성하기]
   const handleMainAction = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!groupName.trim()) return;
+    const nextErrors = {
+      groupName: getFieldError("groupName", groupName) ?? undefined,
+      description: getFieldError("description", description) ?? undefined,
+    };
+    setFieldErrors(nextErrors);
+    if (nextErrors.groupName || nextErrors.description) return;
 
     if (typeof window !== "undefined") {
       window.sessionStorage.setItem("pendingGroupName", groupName.trim());
@@ -80,13 +114,21 @@ export default function GroupCreateScreen({
             <input
               id="group-name-input"
               type="text"
-              className={styles.inputField}
+              className={`${styles.inputField} ${
+                fieldErrors.groupName ? styles.inputError : ""
+              }`}
               value={groupName}
-              maxLength={30}
-              onChange={(e) => setGroupName(e.target.value)}
+              onChange={(e) => handleFieldChange("groupName", e.target.value)}
+              onBlur={() => validateField("groupName", groupName)}
+              aria-invalid={Boolean(fieldErrors.groupName)}
               required
               autoFocus
             />
+            {fieldErrors.groupName && (
+              <span className={styles.fieldError} role="alert">
+                {fieldErrors.groupName}
+              </span>
+            )}
           </div>
 
           {/* 입력 2: 설명 (선택) */}
@@ -100,10 +142,18 @@ export default function GroupCreateScreen({
                 className={styles.textareaField}
                 placeholder="설명 입력"
                 value={description}
-                maxLength={120}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) =>
+                  handleFieldChange("description", e.target.value)
+                }
+                onBlur={() => validateField("description", description)}
+                aria-invalid={Boolean(fieldErrors.description)}
                 rows={4}
               />
+              {fieldErrors.description && (
+                <span className={styles.fieldError} role="alert">
+                  {fieldErrors.description}
+                </span>
+              )}
               <div className={styles.counterRow}>
                 <span className={styles.charCounter}>
                   {description.length}/120

@@ -27,6 +27,11 @@ import {
 } from "@/features/profile/schemas/group-profile.schema";
 import { getGroupEntryRoute } from "@/features/group/lib/group-entry-route";
 import {
+  getZodFieldErrors,
+  mapServerFieldErrors,
+  validateInputField,
+} from "@/shared/lib/input-validation";
+import {
   cleanInstagramForSubmit,
   formatInstagramDisplay,
   handleInstagramInputBlur,
@@ -119,6 +124,9 @@ export default function GroupExtraInfoScreen({
   const [isMbtiOpen, setIsMbtiOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({});
   const [errorModal, setErrorModal] = useState<{
     open: boolean;
     title: string;
@@ -263,9 +271,43 @@ export default function GroupExtraInfoScreen({
 
   const isFormValid = name.trim().length > 0 && department.trim().length > 0;
 
+  const validateProfileField = (
+    field: "displayName" | "major" | "instaId" | "bio",
+    value: string,
+  ) => {
+    const normalizedValue =
+      field === "instaId"
+        ? (cleanInstagramForSubmit(value) ?? "")
+        : field === "major"
+          ? normalizeMajor(value)
+          : value.trim();
+    const error =
+      field === "displayName" && !normalizedValue
+        ? "이름을 입력해주세요."
+        : field === "major" && !normalizedValue
+          ? "소속을 입력해주세요."
+          : validateInputField(field, normalizedValue);
+
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: error ?? undefined,
+    }));
+  };
+
+  const updateProfileField = (
+    field: "displayName" | "major" | "instaId" | "bio",
+    value: string,
+  ) => {
+    if (field === "displayName") setName(value);
+    if (field === "major") setDepartment(value);
+    if (field === "instaId") setInstagramId(value);
+    if (field === "bio") setBio(value);
+    if (fieldErrors[field]) validateProfileField(field, value);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isFormValid || isSubmitting) return;
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
 
@@ -317,10 +359,17 @@ export default function GroupExtraInfoScreen({
     const validation = groupProfileSchema.safeParse(profileFormData);
 
     if (!validation.success) {
-      alert(getValidationMessage(validation.error));
+      const nextErrors = getZodFieldErrors(validation.error);
+      setFieldErrors(nextErrors);
+      const firstField = String(validation.error.issues[0]?.path[0] ?? "");
+      if (!["displayName", "major", "instaId", "bio"].includes(firstField)) {
+        alert(getValidationMessage(validation.error));
+      }
       setIsSubmitting(false);
       return;
     }
+
+    setFieldErrors({});
 
     const profileDto: GroupProfileDto = {
       ...validation.data,
@@ -380,6 +429,23 @@ export default function GroupExtraInfoScreen({
         router.replace(getGroupEntryRoute(groupId, "PARTICIPANT"));
       }
     } catch (error: unknown) {
+      if (
+        error instanceof GroupApiError &&
+        error.status === 400 &&
+        error.fieldErrors
+      ) {
+        const mappedErrors = mapServerFieldErrors(error.fieldErrors);
+        const profileErrors = Object.fromEntries(
+          Object.entries(mappedErrors).filter(([field]) =>
+            ["displayName", "major", "instaId", "bio"].includes(field),
+          ),
+        );
+        if (Object.keys(profileErrors).length > 0) {
+          setFieldErrors(profileErrors);
+          return;
+        }
+      }
+
       if (error instanceof GroupApiError && error.status === 401) {
         setErrorModal({
           open: true,
@@ -555,11 +621,17 @@ export default function GroupExtraInfoScreen({
           </div>
           <input
             value={name}
-            maxLength={10}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => updateProfileField("displayName", e.target.value)}
+            onBlur={() => validateProfileField("displayName", name)}
             placeholder="이름 입력"
+            aria-invalid={Boolean(fieldErrors.displayName)}
             required
           />
+          {fieldErrors.displayName && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.displayName}
+            </small>
+          )}
         </label>
 
         {/* 2. 학년 (단일 선택 칩) */}
@@ -606,11 +678,17 @@ export default function GroupExtraInfoScreen({
           </span>
           <input
             value={department}
-            maxLength={15}
-            onChange={(e) => setDepartment(e.target.value)}
+            onChange={(e) => updateProfileField("major", e.target.value)}
+            onBlur={() => validateProfileField("major", department)}
             placeholder="소속 입력"
+            aria-invalid={Boolean(fieldErrors.major)}
             required
           />
+          {fieldErrors.major && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.major}
+            </small>
+          )}
         </label>
 
         {/* 5. 신입 여부 (단일 선택 칩) */}
@@ -714,18 +792,30 @@ export default function GroupExtraInfoScreen({
           <span>인스타 ID (선택)</span>
           <input
             value={instagramId}
-            maxLength={31}
-            onChange={(e) => handleInstagramInputChange(e, setInstagramId)}
+            onChange={(e) =>
+              handleInstagramInputChange(e, (value) =>
+                updateProfileField("instaId", value),
+              )
+            }
             onFocus={() =>
               handleInstagramInputFocus(instagramId, setInstagramId)
             }
-            onBlur={() => handleInstagramInputBlur(instagramId, setInstagramId)}
+            onBlur={() => {
+              handleInstagramInputBlur(instagramId, setInstagramId);
+              validateProfileField("instaId", instagramId);
+            }}
             onKeyDown={handleInstagramInputKeyDown}
             placeholder="@아이디 입력"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
+            aria-invalid={Boolean(fieldErrors.instaId)}
           />
+          {fieldErrors.instaId && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.instaId}
+            </small>
+          )}
         </label>
 
         {/* 10. 자기소개 (선택) */}
@@ -734,10 +824,16 @@ export default function GroupExtraInfoScreen({
           <textarea
             className={styles.textArea}
             value={bio}
-            maxLength={50}
-            onChange={(e) => setBio(e.target.value)}
+            onChange={(e) => updateProfileField("bio", e.target.value)}
+            onBlur={() => validateProfileField("bio", bio)}
             placeholder="자기소개를 입력해 주세요"
+            aria-invalid={Boolean(fieldErrors.bio)}
           />
+          {fieldErrors.bio && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.bio}
+            </small>
+          )}
         </label>
 
         {/* 11. 프로필 공개 여부 (필수*) */}

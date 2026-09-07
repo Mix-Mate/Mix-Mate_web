@@ -23,13 +23,35 @@ describe("EditGroupDialog", () => {
     const descTextarea = screen.getByLabelText(/설명 \(선택\)/);
 
     expect(nameInput).toHaveValue("테스트 모임");
-    expect(nameInput).toHaveAttribute("maxLength", "30");
+    expect(nameInput).not.toHaveAttribute("maxLength");
 
     expect(descTextarea).toHaveValue("테스트 설명입니다.");
-    expect(descTextarea).toHaveAttribute("maxLength", "120");
+    expect(descTextarea).not.toHaveAttribute("maxLength");
 
     // 카운터 렌더링 확인 (10글자/120)
     expect(screen.getByText("10/120")).toBeInTheDocument();
+  });
+
+  it("blur 시 허용되지 않은 그룹명 문자를 필드 에러로 표시한다", async () => {
+    render(
+      <EditGroupDialog
+        open={true}
+        initialValues={defaultValues}
+        onClose={vi.fn()}
+        onDelete={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const nameInput = screen.getByLabelText(/그룹명/);
+    fireEvent.change(nameInput, { target: { value: "모임🔥" } });
+    fireEvent.blur(nameInput);
+
+    expect(
+      await screen.findByText(
+        "그룹 이름에는 한글, 영문, 숫자와 일부 기호만 사용할 수 있습니다.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("설명 입력 시 실시간으로 글자 수 카운터가 갱신된다", () => {
@@ -46,7 +68,9 @@ describe("EditGroupDialog", () => {
     const descTextarea = screen.getByLabelText(/설명 \(선택\)/);
     expect(screen.getByText("0/120")).toBeInTheDocument();
 
-    fireEvent.change(descTextarea, { target: { value: "안녕하세요 반갑습니다!" } });
+    fireEvent.change(descTextarea, {
+      target: { value: "안녕하세요 반갑습니다!" },
+    });
     expect(screen.getByText("12/120")).toBeInTheDocument();
   });
 

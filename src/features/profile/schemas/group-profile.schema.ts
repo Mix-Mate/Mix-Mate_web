@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validatedStringSchema } from "@/shared/lib/input-validation";
 
 export const profileMbtiValues = [
   "ISTJ",
@@ -32,17 +33,11 @@ export const profilePositionValues = ["MEMBER", "STAFF"] as const;
 export const profileVisibilityValues = ["PUBLIC", "PRIVATE"] as const;
 
 export const groupProfileSchema = z.object({
-  displayName: z
-    .string()
+  displayName: validatedStringSchema("displayName")
     .trim()
-    .min(1, "이름을 입력해주세요.")
-    .max(10, "이름은 10자까지 입력할 수 있습니다."),
+    .min(1, "이름을 입력해주세요."),
   position: z.enum(profilePositionValues, "직급을 선택해주세요."),
-  major: z
-    .string()
-    .trim()
-    .min(1, "소속을 입력해주세요.")
-    .max(15, "소속은 15자까지 입력할 수 있습니다."),
+  major: validatedStringSchema("major").trim().min(1, "소속을 입력해주세요."),
   isNew: z.boolean("신입 여부를 선택해주세요."),
   grade: z.enum(profileGradeValues, "학년을 선택해주세요."),
   gender: z.enum(profileGenderValues, "성별을 선택해주세요."),
@@ -53,16 +48,8 @@ export const groupProfileSchema = z.object({
     .min(0, "나이는 0 이상이어야 합니다.")
     .max(9999999999, "나이는 10자리까지 입력할 수 있습니다.")
     .nullable(),
-  instaId: z
-    .string()
-    .trim()
-    .max(30, "인스타 ID는 30자까지 입력할 수 있습니다.")
-    .nullable(),
-  bio: z
-    .string()
-    .trim()
-    .max(50, "자기소개는 50자까지 입력할 수 있습니다.")
-    .nullable(),
+  instaId: validatedStringSchema("instaId").trim().nullable(),
+  bio: validatedStringSchema("bio").trim().nullable(),
   visibility: z.enum(profileVisibilityValues, "프로필 공개 여부를 선택해주세요."),
 });
 

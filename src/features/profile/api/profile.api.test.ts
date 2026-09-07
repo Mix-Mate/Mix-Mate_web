@@ -78,4 +78,27 @@ describe("profile api", () => {
       instaId: "alt_user",
     });
   });
+
+  it("프로필 수정 400 응답의 필드 오류를 보존한다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json(
+        {
+          message: "입력값이 올바르지 않습니다.",
+          errors: {
+            displayName: "보여질 이름은 10자를 넘을 수 없습니다.",
+          },
+        },
+        { status: 400 },
+      ),
+    );
+
+    await expect(
+      updateParticipantProfile("10", fullProfile),
+    ).rejects.toMatchObject({
+      status: 400,
+      fieldErrors: {
+        displayName: "보여질 이름은 10자를 넘을 수 없습니다.",
+      },
+    });
+  });
 });

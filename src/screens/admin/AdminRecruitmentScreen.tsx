@@ -85,6 +85,7 @@ export default function AdminRecruitmentScreen() {
     mutate: updateGroup,
     isPending: isSavingGroup,
     error: updateGroupError,
+    fieldErrors: updateGroupFieldErrors,
   } = useUpdateGroupMutation();
   const {
     mutate: deleteGroup,
@@ -455,6 +456,7 @@ export default function AdminRecruitmentScreen() {
         initialValues={editInitialValues}
         isSaving={isSavingGroup}
         error={updateGroupError}
+        fieldErrors={updateGroupFieldErrors}
         onClose={() => {
           if (!isSavingGroup) setEditDialogOpen(false);
         }}

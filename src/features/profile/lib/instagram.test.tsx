@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import GroupProfileForm from "../components/GroupProfileForm";
 import {
   formatInstagramInput,
@@ -217,6 +217,47 @@ describe("Instagram ID Prefix & Interaction Helpers", () => {
         expect.objectContaining({
           instaId: null,
         }),
+      );
+    });
+
+    it("중첩된 서버 validation 오류를 관련 input 하단에 표시한다", async () => {
+      const initialProfile = {
+        id: "1",
+        displayName: "홍길동",
+        position: "MEMBER" as const,
+        major: "컴퓨터공학과",
+        isNew: true,
+        grade: "FIRST" as const,
+        gender: "MALE" as const,
+        mbti: "ENFP" as const,
+        age: 20,
+        instaId: "existing_user",
+        bio: "반갑습니다",
+        visibility: "PUBLIC" as const,
+      };
+
+      render(
+        <GroupProfileForm
+          mode="edit"
+          initialProfile={initialProfile}
+          isSubmitting={false}
+          submitLabel="저장하기"
+          onSubmit={async () => ({
+            fieldErrors: {
+              "profile.displayName": "보여질 이름 서버 오류",
+            },
+          })}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "저장하기" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("보여질 이름 서버 오류")).toBeInTheDocument();
+      });
+      expect(screen.getByLabelText(/이름/)).toHaveAttribute(
+        "aria-invalid",
+        "true",
       );
     });
   });

@@ -8,6 +8,7 @@ interface ProfileTextFieldProps {
   required?: boolean;
   inputMode?: "text" | "numeric";
   maxLength?: number;
+  error?: string;
 }
 
 export default function ProfileTextField({
@@ -18,6 +19,7 @@ export default function ProfileTextField({
   required = false,
   inputMode = "text",
   maxLength,
+  error,
 }: ProfileTextFieldProps) {
   return (
     <label className={styles.field}>
@@ -32,7 +34,13 @@ export default function ProfileTextField({
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
+        aria-invalid={Boolean(error)}
       />
+      {error && (
+        <small className={styles.fieldError} role="alert">
+          {error}
+        </small>
+      )}
     </label>
   );
 }

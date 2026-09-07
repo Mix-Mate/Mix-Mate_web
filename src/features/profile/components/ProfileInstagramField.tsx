@@ -15,6 +15,7 @@ interface ProfileInstagramFieldProps {
   onBlur?: () => void;
   maxLength?: number;
   placeholder?: string;
+  error?: string;
 }
 
 export default function ProfileInstagramField({
@@ -22,8 +23,9 @@ export default function ProfileInstagramField({
   value,
   onChange,
   onBlur,
-  maxLength = 31,
+  maxLength,
   placeholder = "@아이디 입력",
+  error,
 }: ProfileInstagramFieldProps) {
   return (
     <label className={styles.field}>
@@ -43,7 +45,13 @@ export default function ProfileInstagramField({
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
+        aria-invalid={Boolean(error)}
       />
+      {error && (
+        <small className={styles.fieldError} role="alert">
+          {error}
+        </small>
+      )}
     </label>
   );
 }

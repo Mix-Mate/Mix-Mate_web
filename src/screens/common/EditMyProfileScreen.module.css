@@ -117,6 +117,18 @@
   border-color: #3b82c4;
 }
 
+.textInput[aria-invalid="true"],
+.textArea[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.fieldError {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
 .chipGroup {
   display: flex;
   flex-wrap: wrap;

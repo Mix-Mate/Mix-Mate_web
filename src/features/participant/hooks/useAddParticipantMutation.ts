@@ -1,12 +1,19 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { addParticipant } from "../api/admin-participant.api";
+import {
+  addParticipant,
+  ParticipantApiError,
+} from "../api/admin-participant.api";
 import type { ParticipantProfileRequest } from "../types/participant.types";
 
 type AddParticipantResult =
   | { ok: true; source: "api" }
-  | { ok: false; message: string };
+  | {
+      ok: false;
+      message: string;
+      fieldErrors?: Record<string, string>;
+    };
 
 export function useAddParticipantMutation() {
   const [isPending, setIsPending] = useState(false);
@@ -26,6 +33,8 @@ export function useAddParticipantMutation() {
           error instanceof Error
             ? error.message
             : "참가자 추가에 실패했습니다.",
+        fieldErrors:
+          error instanceof ParticipantApiError ? error.fieldErrors : undefined,
       };
     } finally {
       setIsPending(false);
