@@ -28,9 +28,9 @@
   padding: var(--bottom-sheet-padding, 16px 20px calc(24px + env(safe-area-inset-bottom, 0px)));
   border-radius: var(--bottom-sheet-border-radius, 28px 28px 0 0);
   background: #fff;
-  transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 100%, 0);
   transform-origin: bottom center;
-  animation: slideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: slideUp 320ms cubic-bezier(0.2, 0, 0, 1) forwards;
   will-change: transform, opacity;
   overscroll-behavior: contain;
 }
