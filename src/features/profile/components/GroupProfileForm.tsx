@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import {
+  getZodFieldErrors,
+  mapServerFieldErrors,
+  validateInputField,
+  type ValidatedInputField,
+} from "@/shared/lib/input-validation";
 import type {
   EditableGroupProfile,
   MyGroupProfile,
@@ -32,7 +38,14 @@ interface GroupProfileFormProps {
   initialProfile: MyGroupProfile;
   isSubmitting: boolean;
   submitLabel: string;
-  onSubmit: (profile: MyGroupProfile) => void | Promise<void>;
+  onSubmit: (profile: MyGroupProfile) =>
+    | void
+    | { ok?: boolean; message?: string; fieldErrors?: Record<string, string> }
+    | Promise<void | {
+        ok?: boolean;
+        message?: string;
+        fieldErrors?: Record<string, string>;
+      }>;
   onValidationError?: (message: string) => void;
 }
 
@@ -80,6 +93,9 @@ export default function GroupProfileForm({
     bio: initialProfile.bio,
     visibility: initialProfile.visibility,
   });
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({});
 
   const updateField = <TKey extends keyof EditableGroupProfile>(
     field: TKey,
@@ -88,11 +104,45 @@ export default function GroupProfileForm({
     setProfile((prev) => ({ ...prev, [field]: value }));
   };
 
+  const validateTextField = (
+    field: Extract<
+      ValidatedInputField,
+      "displayName" | "major" | "instaId" | "bio"
+    >,
+    value: string | null,
+  ) => {
+    const normalizedValue =
+      field === "instaId"
+        ? (cleanInstagramForSubmit(value) ?? "")
+        : field === "major"
+          ? normalizeMajor(value ?? "")
+          : (value ?? "").trim();
+    const error =
+      field === "displayName" && !normalizedValue
+        ? "이름을 입력해주세요."
+        : field === "major" && !normalizedValue
+          ? "소속을 입력해주세요."
+          : validateInputField(field, normalizedValue);
+
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: error ?? undefined,
+    }));
+  };
+
+  const updateTextField = (
+    field: "displayName" | "major" | "instaId" | "bio",
+    value: string | null,
+  ) => {
+    updateField(field, value);
+    if (fieldErrors[field]) validateTextField(field, value);
+  };
+
   return (
     <form
       className={styles.form}
       data-mode={mode}
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         const normalizedProfile = {
           ...initialProfile,
@@ -103,19 +153,26 @@ export default function GroupProfileForm({
         const result = groupProfileSchema.safeParse(normalizedProfile);
 
         if (!result.success) {
-          const message = getValidationMessage(result.error);
-          if (onValidationError) {
-            onValidationError(message);
-          } else {
-            window.alert(message);
+          const nextErrors = getZodFieldErrors(result.error);
+          setFieldErrors(nextErrors);
+          const firstField = String(result.error.issues[0]?.path[0] ?? "");
+          if (
+            onValidationError &&
+            !["displayName", "major", "instaId", "bio"].includes(firstField)
+          ) {
+            onValidationError(getValidationMessage(result.error));
           }
           return;
         }
 
-        void onSubmit({
+        setFieldErrors({});
+        const submitResult = await onSubmit({
           ...normalizedProfile,
           ...result.data,
         });
+        if (submitResult?.fieldErrors) {
+          setFieldErrors(mapServerFieldErrors(submitResult.fieldErrors));
+        }
       }}
     >
       <div className={styles.formBody}>
@@ -131,8 +188,9 @@ export default function GroupProfileForm({
           label="이름"
           value={profile.displayName}
           required
-          maxLength={10}
-          onChange={(value) => updateField("displayName", value)}
+          onChange={(value) => updateTextField("displayName", value)}
+          onBlur={() => validateTextField("displayName", profile.displayName)}
+          error={fieldErrors.displayName}
         />
 
         <ProfileChipField
@@ -152,9 +210,13 @@ export default function GroupProfileForm({
         <ProfileTextField
           label="소속 (학과·팀 등)"
           value={profile.major}
-          maxLength={15}
-          onChange={(value) => updateField("major", value)}
-          onBlur={() => updateField("major", normalizeMajor(profile.major))}
+          onChange={(value) => updateTextField("major", value)}
+          onBlur={() => {
+            const normalizedMajor = normalizeMajor(profile.major);
+            updateField("major", normalizedMajor);
+            validateTextField("major", normalizedMajor);
+          }}
+          error={fieldErrors.major}
         />
 
         <ProfileChipField
@@ -192,14 +254,17 @@ export default function GroupProfileForm({
 
         <ProfileInstagramField
           value={profile.instaId ?? ""}
-          onChange={(value) => updateField("instaId", value)}
+          onChange={(value) => updateTextField("instaId", value)}
+          onBlur={() => validateTextField("instaId", profile.instaId)}
+          error={fieldErrors.instaId}
         />
 
         <ProfileTextAreaField
           label="자기소개 (선택)"
           value={profile.bio ?? ""}
-          maxLength={50}
-          onChange={(value) => updateField("bio", value || null)}
+          onChange={(value) => updateTextField("bio", value || null)}
+          onBlur={() => validateTextField("bio", profile.bio)}
+          error={fieldErrors.bio}
         />
 
         <ProfileVisibilityField
