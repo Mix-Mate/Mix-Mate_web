@@ -27,6 +27,11 @@ import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
+import {
+  getZodFieldErrors,
+  mapServerFieldErrors,
+  validateInputField,
+} from "@/shared/lib/input-validation";
 import styles from "./AddParticipantScreen.module.css";
 
 const gradeOptions: { label: string; value: ProfileGrade }[] = [
@@ -112,6 +117,9 @@ export default function AddParticipantScreen() {
     bio: null,
     visibility: null,
   });
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({});
 
   useEffect(() => {
     if (roundParam) {
@@ -142,6 +150,25 @@ export default function AddParticipantScreen() {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
   };
 
+  const validateTextField = (field: "displayName" | "major", value: string) => {
+    const normalizedValue = value.trim();
+    const error = !normalizedValue
+      ? field === "displayName"
+        ? "이름을 입력해주세요."
+        : "소속을 입력해주세요."
+      : validateInputField(field, normalizedValue);
+    setFieldErrors((current) => ({
+      ...current,
+      [field]: error ?? undefined,
+    }));
+    return error;
+  };
+
+  const updateTextField = (field: "displayName" | "major", value: string) => {
+    updateField(field, value);
+    if (fieldErrors[field]) validateTextField(field, value);
+  };
+
   const goToParticipantList = () => {
     router.push(
       returnToParticipantList
@@ -158,6 +185,17 @@ export default function AddParticipantScreen() {
       displayName: form.displayName.trim(),
       major: form.major.trim(),
     };
+    const textErrors = {
+      displayName:
+        validateInputField("displayName", formData.displayName) ??
+        (!formData.displayName ? "이름을 입력해주세요." : undefined),
+      major:
+        validateInputField("major", formData.major) ??
+        (!formData.major ? "소속을 입력해주세요." : undefined),
+    };
+    setFieldErrors(textErrors);
+    if (textErrors.displayName || textErrors.major) return;
+
     const missingFieldMessage = getMissingFieldMessage(formData);
 
     if (missingFieldMessage) {
@@ -168,6 +206,7 @@ export default function AddParticipantScreen() {
     const validation = groupProfileSchema.safeParse(formData);
 
     if (!validation.success) {
+      setFieldErrors(getZodFieldErrors(validation.error));
       showToast(getValidationMessage(validation.error));
       return;
     }
@@ -177,6 +216,18 @@ export default function AddParticipantScreen() {
     const result = await mutate(params.groupId, requestBody);
 
     if (!result.ok) {
+      if (result.fieldErrors) {
+        const mappedErrors = mapServerFieldErrors(result.fieldErrors);
+        const profileErrors = Object.fromEntries(
+          Object.entries(mappedErrors).filter(([field]) =>
+            ["displayName", "major", "instaId", "bio"].includes(field),
+          ),
+        );
+        if (Object.keys(profileErrors).length > 0) {
+          setFieldErrors(profileErrors);
+          return;
+        }
+      }
       showToast(result.message);
       return;
     }
@@ -208,10 +259,18 @@ export default function AddParticipantScreen() {
           </div>
           <input
             value={form.displayName}
-            maxLength={10}
-            onChange={(event) => updateField("displayName", event.target.value)}
+            onChange={(event) =>
+              updateTextField("displayName", event.target.value)
+            }
+            onBlur={() => validateTextField("displayName", form.displayName)}
             placeholder="이름 입력"
+            aria-invalid={Boolean(fieldErrors.displayName)}
           />
+          {fieldErrors.displayName && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.displayName}
+            </small>
+          )}
         </label>
 
         <div className={styles.field}>
@@ -252,9 +311,15 @@ export default function AddParticipantScreen() {
           <span>소속</span>
           <input
             value={form.major}
-            maxLength={15}
-            onChange={(event) => updateField("major", event.target.value)}
+            onChange={(event) => updateTextField("major", event.target.value)}
+            onBlur={() => validateTextField("major", form.major)}
+            aria-invalid={Boolean(fieldErrors.major)}
           />
+          {fieldErrors.major && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.major}
+            </small>
+          )}
         </label>
 
         <div className={styles.field}>
