@@ -78,7 +78,7 @@ export default function BottomSheetDialog({
       );
 
     backgroundElements.forEach((element) => element.setAttribute("inert", ""));
-    (getFocusableElements()[0] ?? dialog).focus();
+    (getFocusableElements()[0] ?? dialog).focus({ preventScroll: true });
 
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
@@ -86,7 +86,7 @@ export default function BottomSheetDialog({
       const focusableElements = getFocusableElements();
       if (focusableElements.length === 0) {
         event.preventDefault();
-        dialog.focus();
+        dialog.focus({ preventScroll: true });
         return;
       }
 
@@ -97,14 +97,14 @@ export default function BottomSheetDialog({
       if (event.shiftKey) {
         if (activeElement === firstElement || !dialog.contains(activeElement)) {
           event.preventDefault();
-          lastElement.focus();
+          lastElement.focus({ preventScroll: true });
         }
         return;
       }
 
       if (activeElement === lastElement || !dialog.contains(activeElement)) {
         event.preventDefault();
-        firstElement.focus();
+        firstElement.focus({ preventScroll: true });
       }
     };
 
@@ -116,7 +116,7 @@ export default function BottomSheetDialog({
           element.removeAttribute("inert");
       });
       if (previouslyFocusedElement?.isConnected) {
-        previouslyFocusedElement.focus();
+        previouslyFocusedElement.focus({ preventScroll: true });
       }
     };
   }, [open]);
