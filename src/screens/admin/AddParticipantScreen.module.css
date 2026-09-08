@@ -144,3 +144,165 @@
   left: 20px;
   --toast-z-index: 30;
 }
+
+.fileField {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.fileFieldLabel {
+  color: #52525b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.filePicker,
+.selectedFile {
+  cursor: pointer;
+  border-radius: 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.filePicker input,
+.selectedFile input {
+  display: none;
+}
+
+.filePicker {
+  display: flex;
+  min-height: 132px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1.5px dashed #d1d5db;
+  padding: 20px 14px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.filePicker:hover {
+  border-color: #2f80d1;
+  background: #f8fbff;
+}
+
+.pickerIcon,
+.selectedFileIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2f80d1;
+}
+
+.pickerTitle {
+  color: #27272a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pickerHint {
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.selectedFile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid #2f80d1;
+  padding: 14px;
+  background: #eff6ff;
+}
+
+.selectedFileIcon {
+  background: #ffffff;
+}
+
+.selectedFileInfo {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.selectedFileName {
+  overflow: hidden;
+  color: #27272a;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedFileMeta {
+  color: #2f80d1;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.uploadResult {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 14px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.uploadResultTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.uploadFailures {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid #f4f4f5;
+  padding-top: 10px;
+}
+
+.uploadFailuresTitle {
+  color: #52525b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.uploadFailures ul {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.uploadFailures li {
+  display: flex;
+  gap: 7px;
+  border-radius: 9px;
+  padding: 7px 9px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.failureRow {
+  flex: 0 0 auto;
+  font-weight: 700;
+}

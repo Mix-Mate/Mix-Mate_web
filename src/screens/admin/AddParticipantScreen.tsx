@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { CircleCheck, FileSpreadsheet, Upload } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { useAddParticipantMutation } from "@/features/participant/hooks/useAddParticipantMutation";
+import { useUploadParticipantsExcelMutation } from "@/features/participant/hooks/useUploadParticipantsExcelMutation";
 import type {
+  ParticipantExcelUploadResult,
   ParticipantProfileRequest,
   ProfileGender,
   ProfileGrade,
@@ -26,6 +29,7 @@ import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import TabNavigation from "@/shared/ui/TabNavigation";
 import Toast from "@/shared/ui/Toast";
 import {
   getZodFieldErrors,
@@ -33,6 +37,13 @@ import {
   validateInputField,
 } from "@/shared/lib/input-validation";
 import styles from "./AddParticipantScreen.module.css";
+
+type AddParticipantMode = "manual" | "excel";
+
+const addParticipantModeTabs: { id: AddParticipantMode; label: string }[] = [
+  { id: "manual", label: "직접 입력" },
+  { id: "excel", label: "엑셀로 추가" },
+];
 
 const gradeOptions: { label: string; value: ProfileGrade }[] = [
   { label: "1학년", value: "FIRST" },
@@ -76,6 +87,13 @@ type AddParticipantForm = {
   visibility: ProfileVisibility | null;
 };
 
+function formatFileSize(size: number) {
+  if (size < 1024) return `${size}B`;
+  if (size < 1024 * 1024) return `${Math.round(size / 1024)}KB`;
+
+  return `${(size / (1024 * 1024)).toFixed(1)}MB`;
+}
+
 function getMissingFieldMessage(form: AddParticipantForm) {
   if (!form.displayName.trim()) return "이름을 입력해주세요.";
   if (!form.grade) return "학년을 선택해주세요.";
@@ -103,7 +121,13 @@ export default function AddParticipantScreen() {
   const returnToParticipantList =
     searchParams.get("returnTo") === "participant-list";
   const { mutate, isPending } = useAddParticipantMutation();
+  const { mutate: uploadExcel, isPending: isUploadingExcel } =
+    useUploadParticipantsExcelMutation();
   const { message: toast, showToast } = useToast();
+  const [mode, setMode] = useState<AddParticipantMode>("manual");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadResult, setUploadResult] =
+    useState<ParticipantExcelUploadResult | null>(null);
   const [form, setForm] = useState<AddParticipantForm>({
     displayName: "",
     position: null,
@@ -237,6 +261,40 @@ export default function AddParticipantScreen() {
     window.setTimeout(goToParticipantList, 350);
   };
 
+  const handleModeChange = (nextMode: AddParticipantMode) => {
+    setMode(nextMode);
+    setSelectedFile(null);
+    setUploadResult(null);
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSelectedFile(event.target.files?.[0] ?? null);
+    setUploadResult(null);
+  };
+
+  const handleExcelSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!selectedFile) {
+      showToast("업로드할 엑셀 파일을 선택해주세요.");
+      return;
+    }
+
+    const result = await uploadExcel(params.groupId, selectedFile);
+
+    if (!result.ok) {
+      showToast(result.message);
+      return;
+    }
+
+    setUploadResult(result.data);
+
+    if (result.data.failures.length === 0) {
+      showToast(`${result.data.successCount}명을 추가했습니다.`);
+      window.setTimeout(goToParticipantList, 350);
+    }
+  };
+
   return (
     <MobileFrame
       className={styles.phone}
@@ -245,6 +303,14 @@ export default function AddParticipantScreen() {
     >
       <Header title="참가자 추가" onBack={goToParticipantList} smallTitle />
 
+      <TabNavigation
+        items={addParticipantModeTabs}
+        activeItemId={mode}
+        ariaLabel="참가자 추가 방식"
+        onSelect={(item) => handleModeChange(item.id)}
+      />
+
+      {mode === "manual" ? (
       <form className={styles.content} onSubmit={handleSubmit}>
         <InfoBanner className={styles.notice}>
           <p>앱을 사용하지 않는 사람도 등록 가능합니다.</p>
@@ -385,6 +451,82 @@ export default function AddParticipantScreen() {
           </Button>
         </div>
       </form>
+      ) : (
+      <form className={styles.content} onSubmit={handleExcelSubmit}>
+        <InfoBanner className={styles.notice}>
+          <p>엑셀 파일로 여러 명을 한 번에 등록할 수 있습니다.</p>
+        </InfoBanner>
+
+        <div className={styles.fileField}>
+          <span className={styles.fileFieldLabel}>엑셀 파일</span>
+
+          {selectedFile ? (
+            <label className={styles.selectedFile}>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+              />
+              <span className={styles.selectedFileIcon}>
+                <FileSpreadsheet size={20} strokeWidth={2} aria-hidden="true" />
+              </span>
+              <span className={styles.selectedFileInfo}>
+                <span className={styles.selectedFileName}>
+                  {selectedFile.name}
+                </span>
+                <span className={styles.selectedFileMeta}>
+                  {formatFileSize(selectedFile.size)} · 다시 눌러 변경
+                </span>
+              </span>
+            </label>
+          ) : (
+            <label className={styles.filePicker}>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileChange}
+              />
+              <span className={styles.pickerIcon}>
+                <Upload size={20} strokeWidth={2} aria-hidden="true" />
+              </span>
+              <span className={styles.pickerTitle}>엑셀 파일 선택</span>
+              <span className={styles.pickerHint}>.xlsx, .xls 형식 지원</span>
+            </label>
+          )}
+        </div>
+
+        {uploadResult && (
+          <div className={styles.uploadResult}>
+            <p className={styles.uploadResultTitle}>
+              <CircleCheck size={16} strokeWidth={2.2} aria-hidden="true" />
+              {uploadResult.successCount}명 등록 완료
+            </p>
+
+            {uploadResult.failures.length > 0 && (
+              <div className={styles.uploadFailures}>
+                <span className={styles.uploadFailuresTitle}>
+                  {uploadResult.failures.length}건 등록 실패
+                </span>
+                <ul>
+                  {uploadResult.failures.map((failure) => (
+                    <li key={failure.row}>
+                      <span className={styles.failureRow}>{failure.row}행</span>
+                      <span>{failure.reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className={styles.footer}>
+          <Button type="submit" disabled={isUploadingExcel}>
+            업로드
+          </Button>
+        </div>
+      </form>
+      )}
 
       {toast && <Toast className={styles.toast}>{toast}</Toast>}
     </MobileFrame>
