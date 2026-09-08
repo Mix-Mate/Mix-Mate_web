@@ -12,7 +12,6 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
   border: 1px solid #e4e4e7;
@@ -60,6 +59,7 @@
 }
 
 .headerTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 17px;
   font-weight: 700;
   color: #18181b;
@@ -92,7 +92,7 @@
 .mainTitle {
   color: #18181b;
   text-align: center;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
+  font-family: "42dot Sans", sans-serif;
   font-size: 19.715px;
   font-style: normal;
   font-weight: 600;
@@ -152,7 +152,6 @@
   text-align: center;
   text-transform: uppercase;
   outline: none;
-  font-family: inherit;
   box-sizing: border-box;
   transition:
     border-color 0.15s ease,
@@ -214,7 +213,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: inherit;
   transition:
     background-color 0.15s ease,
     opacity 0.15s ease,
@@ -279,6 +277,7 @@
 }
 
 .modalTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 19px;
   font-weight: 700;
   color: #18181b;
@@ -316,7 +315,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: inherit;
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;
@@ -339,7 +337,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: inherit;
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;

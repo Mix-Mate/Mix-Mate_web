@@ -4,7 +4,6 @@
   height: auto;
   flex-direction: column;
   overflow: visible;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
 .pageViewport.pageViewport {
@@ -80,7 +79,6 @@
   padding: 0 13px;
   background: #ffffff;
   color: #27272a;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   line-height: 40px;
@@ -104,7 +102,6 @@
   padding: 10px 13px;
   background: #ffffff;
   color: #27272a;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   line-height: 18px;
@@ -143,7 +140,6 @@
   padding: 0 11px;
   background: #ffffff;
   color: #52525b;
-  font-family: inherit;
   font-size: 12px;
   font-weight: 700;
   line-height: 17px;
@@ -173,6 +169,7 @@
 }
 
 .sheetTitle {
+  font-family: "42dot Sans", sans-serif;
   margin: 0 0 14px;
   color: #18181b;
   font-size: 16px;
@@ -194,7 +191,6 @@
   border-radius: 12px;
   background: #ffffff;
   color: #52525b;
-  font-family: inherit;
   font-size: 14px;
   font-weight: 700;
 }
@@ -214,7 +210,6 @@
   border-radius: 14px;
   background: #ffffff;
   color: #52525b;
-  font-family: inherit;
   font-size: 15px;
   font-weight: 700;
 }

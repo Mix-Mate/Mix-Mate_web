@@ -107,7 +107,6 @@
   border-radius: 10px;
   outline: none;
   resize: none;
-  font-family: inherit;
   box-sizing: border-box;
 }
 
@@ -148,6 +147,7 @@
 }
 
 .profileHeader h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 8px 0 0;
   color: #18181b;
   font-size: 20px;
@@ -216,7 +216,6 @@
   padding: 0;
   background: transparent;
   color: #2f80d1;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   line-height: 20px;
@@ -306,6 +305,7 @@
 }
 
 .deleteDialogContent h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 8px 0 4px;
   color: #18181b;
   font-size: 15.5px;

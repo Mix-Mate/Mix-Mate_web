@@ -99,6 +99,7 @@
 }
 
 .titleArea h1 {
+  font-family: "42dot Sans", sans-serif;
   overflow: hidden;
   margin: 0;
   color: #172b3d;
@@ -223,7 +224,6 @@
   background: #256ad3;
   color: #ffffff;
   box-shadow: 0 2px 6px rgb(37 106 211 / 20%);
-  font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   line-height: 18px;
@@ -271,6 +271,7 @@
 }
 
 .participantInfo strong {
+  font-family: "42dot Sans", sans-serif;
   overflow: hidden;
   color: #18181b;
   font-size: 15px;
@@ -411,7 +412,6 @@
   height: auto;
   flex-direction: column;
   overflow: visible;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
 .pageViewport.pageViewport {
@@ -437,7 +437,6 @@
   border-left: 0;
   padding: 13px 15px;
   background: transparent;
-  font-family: inherit;
   text-align: left;
 }
 
@@ -456,6 +455,7 @@
 }
 
 .privateProfileContent h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 14px 0 0;
   color: #18181b;
   font-size: 20px;

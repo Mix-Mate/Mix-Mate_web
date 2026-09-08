@@ -12,7 +12,6 @@
   max-height: var(--mobile-frame-height, 844px);
   flex-direction: column;
   overflow: hidden;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
 }
@@ -50,6 +49,7 @@
 }
 
 .brandTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 19px;
   font-weight: 800;
   letter-spacing: -0.5px;
@@ -100,6 +100,7 @@
 }
 
 .welcomeTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: #18181b;
@@ -153,7 +154,6 @@
 
 .actionRoleAdmin {
   color: #3b82c4;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 700;
@@ -165,7 +165,6 @@
 
 .actionRoleUser {
   color: #8b5cf6;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 12px;
   font-style: normal;
   font-weight: 700;
@@ -187,6 +186,7 @@
 }
 
 .actionCardTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 15.5px;
   font-weight: 700;
   color: #18181b;
@@ -232,7 +232,6 @@
   align-items: center;
   justify-content: center;
   padding: 12px 0;
-  font-family: inherit;
   font-size: 15px;
   font-weight: 500;
   color: #a1a1aa;
@@ -352,6 +351,7 @@
 
 .groupName,
 .completedGroupName {
+  font-family: "42dot Sans", sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #18181b;
@@ -367,7 +367,6 @@
 .groupMetaText,
 .completedMetaText {
   color: #52525b;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 13.5px;
   font-style: normal;
   font-weight: 400;
@@ -390,7 +389,6 @@
   border-radius: 12px;
   background: var(--Color-2, #eff6ff);
   color: #3b82c4;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 11.5px;
   font-style: normal;
   font-weight: 700;
@@ -436,7 +434,6 @@
 
 .emptyText {
   color: #a1a1aa;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   font-size: 15px;
   font-style: normal;
   font-weight: 500;
@@ -503,6 +500,7 @@
 }
 
 .modalTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: #18181b;
@@ -553,7 +551,6 @@
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
-  font-family: inherit;
 }
 
 .inputField:focus {

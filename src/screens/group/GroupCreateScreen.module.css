@@ -12,7 +12,6 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
   border: 1px solid #e4e4e7;
@@ -62,6 +61,7 @@
 }
 
 .headerTitle {
+  font-family: "42dot Sans", sans-serif;
   font-size: 17px;
   font-weight: 700;
   color: #18181b;
@@ -125,7 +125,6 @@
   box-shadow: 0 0 0 4.969px rgba(197, 199, 204, 0.13);
   outline: none;
   box-sizing: border-box;
-  font-family: inherit;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -157,7 +156,6 @@
   box-shadow: 0 0 0 4.969px rgba(197, 199, 204, 0.13);
   outline: none;
   box-sizing: border-box;
-  font-family: inherit;
   resize: none;
   line-height: 1.5;
   transition:
@@ -266,7 +264,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: inherit;
   transition:
     background-color 0.15s ease,
     opacity 0.15s ease,

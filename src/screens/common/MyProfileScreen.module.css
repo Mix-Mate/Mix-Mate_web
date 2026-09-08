@@ -4,7 +4,6 @@
   height: auto;
   flex-direction: column;
   overflow: visible;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
 .pageViewport.pageViewport {
@@ -45,6 +44,7 @@
 }
 
 .profileHeader h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 12px 0 4px;
   color: #111827;
   font-size: 18px;
@@ -130,7 +130,6 @@
   padding: 0;
   background: transparent;
   color: #2f80d1;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 800;
   line-height: 20px;
