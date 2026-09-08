@@ -10,7 +10,6 @@
   overflow: hidden;
   border-radius: inherit;
   animation: onboardingFadeIn 180ms ease-out;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
 /* 큰 spread의 box-shadow로 강조 영역만 남기고 바깥을 어둡게 덮는다.
@@ -79,6 +78,7 @@
 }
 
 .coachMark h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 10px 0 0;
   color: #18181b;
   font-size: 18px;
@@ -141,7 +141,6 @@
   border-radius: 8px;
   background: none;
   color: #a1a1aa;
-  font-family: inherit;
   font-size: 14px;
   font-weight: 500;
   line-height: 21px;
@@ -156,7 +155,6 @@
   border-radius: 14px;
   background: #256ad3;
   color: #ffffff;
-  font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   line-height: 22px;
