@@ -25,6 +25,7 @@
 }
 
 .heading {
+  font-family: "42dot Sans", sans-serif;
   margin: 0;
   color: #18181b;
   font-size: 20px;
@@ -40,6 +41,7 @@
 }
 
 .sectionHeading {
+  font-family: "42dot Sans", sans-serif;
   margin: 0;
   color: #18181b;
   font-size: 18px;
@@ -90,6 +92,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
+  font-family: "42dot Sans", sans-serif;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -203,6 +206,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
+  font-family: "42dot Sans", sans-serif;
   text-align: left;
   text-decoration: none;
   cursor: pointer;

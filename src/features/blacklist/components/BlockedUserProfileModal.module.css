@@ -27,6 +27,7 @@
 }
 
 .profileHeader h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 4px 0 0;
   color: #18181b;
   font-size: 17px;
@@ -167,6 +168,7 @@
 }
 
 .confirmContent h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 12px 0 6px;
   color: #18181b;
   font-size: 16px;

@@ -86,6 +86,7 @@
 }
 
 .cardHeader h3 {
+  font-family: "42dot Sans", sans-serif;
   color: #18181b;
   font-size: 15px;
   font-weight: 900;
@@ -321,7 +322,6 @@
   border-radius: 10px;
   background: #f6f7f9;
   color: #5f6875;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 900;
   line-height: 18px;
@@ -346,7 +346,6 @@
   border: 0;
   background: #ffffff;
   color: #18181b;
-  font-family: inherit;
   font-size: 15px;
   font-weight: 900;
   line-height: 21px;

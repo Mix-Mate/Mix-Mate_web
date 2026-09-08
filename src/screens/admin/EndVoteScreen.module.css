@@ -15,6 +15,7 @@
 }
 
 .sectionTitle {
+  font-family: "42dot Sans", sans-serif;
   margin: 0;
   padding: 0 2px;
   color: #52525b;
@@ -126,6 +127,7 @@
 }
 
 .infoCard h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #1d4ed8;
   font-size: 13px;
   font-weight: 700;

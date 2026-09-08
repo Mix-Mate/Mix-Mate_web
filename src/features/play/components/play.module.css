@@ -31,6 +31,7 @@
 }
 
 .menuIntro h2 {
+  font-family: "42dot Sans", sans-serif;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -171,6 +172,7 @@
 }
 
 .gameRecommendation h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #16172b;
   font-size: 20px;
   font-weight: 700;
@@ -204,6 +206,7 @@
 }
 
 .gameSection h3 {
+  font-family: "42dot Sans", sans-serif;
   color: #9090a8;
   font-size: 13px;
   font-weight: 600;
@@ -277,6 +280,7 @@
 }
 
 .categorySection h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #16172b;
   font-size: 19px;
   font-weight: 700;

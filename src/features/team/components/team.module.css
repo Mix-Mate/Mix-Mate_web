@@ -17,6 +17,7 @@
 }
 
 .panelHeader h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #1d2a36;
   font-size: 15px;
   font-weight: 600;
@@ -88,6 +89,7 @@
 }
 
 .memberText strong {
+  font-family: "42dot Sans", sans-serif;
   color: #1d2a36;
   font-size: 16px;
   font-weight: 600;

@@ -11,7 +11,6 @@
       transparent 35%
     )
     #ffffff;
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
 }
 
 .content {
@@ -201,6 +200,7 @@
 }
 
 .content h1 {
+  font-family: "42dot Sans", sans-serif;
   margin: 20px 0 0;
   color: #172554;
   font-size: 28px;

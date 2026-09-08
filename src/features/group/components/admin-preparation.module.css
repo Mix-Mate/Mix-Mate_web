@@ -59,7 +59,7 @@
 
 .assignmentButton > span {
   color: #1a3f57;
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: "42dot Sans", sans-serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -68,7 +68,7 @@
 
 .assignmentButton strong {
   gap: 8px;
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: "42dot Sans", sans-serif;
   font-size: 29px;
   font-weight: 700;
   letter-spacing: -0.7px;

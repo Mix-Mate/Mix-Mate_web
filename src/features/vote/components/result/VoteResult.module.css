@@ -88,7 +88,6 @@
 
 button.resultPill {
   cursor: pointer;
-  font-family: inherit;
 }
 
 .overallResultCard .resultPill {
@@ -161,6 +160,7 @@ button.resultPill {
 }
 
 .mvpWinnerNames {
+  font-family: "42dot Sans", sans-serif;
   display: flex;
   width: 100%;
   max-width: 200px;
@@ -527,6 +527,7 @@ button.resultPill {
 }
 
 .rankEntry > strong {
+  font-family: "42dot Sans", sans-serif;
   display: block;
   width: 100%;
   max-width: 86px;
@@ -568,7 +569,6 @@ button.resultPill {
   border-radius: 20px;
   background: #fff;
   color: #18181b;
-  font-family: inherit;
   font-size: 15px;
   font-weight: 600;
   line-height: 30px;
@@ -615,6 +615,7 @@ button.resultPill:focus-visible,
 }
 
 .resultSummary strong {
+  font-family: "42dot Sans", sans-serif;
   color: #1d4ed8;
   font-size: 13px;
   font-weight: 700;

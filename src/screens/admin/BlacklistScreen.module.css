@@ -50,6 +50,7 @@
 }
 
 .titleArea h1 {
+  font-family: "42dot Sans", sans-serif;
   overflow: hidden;
   margin: 0;
   color: #172b3d;
@@ -185,6 +186,7 @@
 }
 
 .nameRow strong {
+  font-family: "42dot Sans", sans-serif;
   color: #18181b;
   font-size: 15px;
   font-weight: 700;

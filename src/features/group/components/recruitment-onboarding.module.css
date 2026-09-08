@@ -4,7 +4,6 @@
   inset: 0;
   overflow: hidden;
   background: rgba(24, 24, 27, 0.62);
-  font-family: "42dot Sans", "Noto Sans KR", sans-serif;
   opacity: 0;
   pointer-events: none;
   transition: opacity 160ms ease-out;
@@ -131,6 +130,7 @@
 }
 
 .coachMark h2 {
+  font-family: "42dot Sans", sans-serif;
   margin: 0;
   color: #172b3d;
   font-size: 19px;
