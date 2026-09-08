@@ -2,17 +2,23 @@
 
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Lock, LogOut, UserX } from "lucide-react";
+import { ChevronRight, Lock, LogOut, Pencil, UserX } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Toast from "@/shared/ui/Toast";
+import useToast from "@/shared/hooks/useToast";
 import { authRoutes } from "@/shared/lib/navigation/routes";
 import {
   AuthApiError,
   performLogout,
   performWithdraw,
 } from "@/features/auth/api/auth.api";
+import {
+  updateUserNameApi,
+  validateUserName,
+} from "@/features/user/api/user.api";
 import styles from "./MyPageScreen.module.css";
 
 function subscribeStorage(callback: () => void) {
@@ -64,6 +70,7 @@ function getWithdrawErrorMessage(error: unknown) {
 
 export default function MyPageScreen() {
   const router = useRouter();
+  const { message: toast, showToast } = useToast();
 
   // Storage synced user profile info
   const userName = useSyncExternalStore(
@@ -77,6 +84,13 @@ export default function MyPageScreen() {
     getStoredEmail,
     getServerEmailSnapshot,
   );
+
+  // Edit Name states
+  const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editNameError, setEditNameError] = useState("");
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const editNameInputRef = useRef<HTMLInputElement>(null);
 
   // Modal states
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -93,6 +107,47 @@ export default function MyPageScreen() {
 
   const handlePasswordChange = () => {
     router.push(authRoutes.changePassword());
+  };
+
+  const handleOpenEditNameModal = () => {
+    setEditName(userName);
+    setEditNameError("");
+    setIsEditNameModalOpen(true);
+  };
+
+  const handleEditNameChange = (value: string) => {
+    setEditName(value);
+    if (editNameError) setEditNameError("");
+  };
+
+  const handleConfirmUpdateName = async () => {
+    if (isUpdatingName) return;
+
+    const rawValue = editNameInputRef.current?.value ?? editName;
+    const trimmed = rawValue.trim();
+
+    const validationError = validateUserName(trimmed);
+    if (validationError) {
+      setEditNameError(validationError);
+      return;
+    }
+
+    setIsUpdatingName(true);
+    setEditNameError("");
+
+    try {
+      await updateUserNameApi(trimmed);
+      window.localStorage.setItem("userName", trimmed);
+      window.dispatchEvent(new Event("storage"));
+      setIsEditNameModalOpen(false);
+      showToast("이름이 변경되었습니다.");
+    } catch (error) {
+      setEditNameError(
+        error instanceof Error ? error.message : "이름 변경에 실패했습니다.",
+      );
+    } finally {
+      setIsUpdatingName(false);
+    }
   };
 
   const handleWithdrawPasswordChange = (value: string) => {
@@ -161,7 +216,17 @@ export default function MyPageScreen() {
           />
 
           <div className={styles.profileInfo}>
-            <h2 className={styles.profileName}>{userName}</h2>
+            <div className={styles.profileNameRow}>
+              <h2 className={styles.profileName}>{userName}</h2>
+              <button
+                type="button"
+                className={styles.editNameButton}
+                onClick={handleOpenEditNameModal}
+                aria-label="이름 수정"
+              >
+                <Pencil size={12} strokeWidth={2.2} aria-hidden="true" />
+              </button>
+            </div>
             <p className={styles.profileEmail}>{email}</p>
           </div>
         </section>
@@ -233,7 +298,100 @@ export default function MyPageScreen() {
         </section>
       </main>
 
-      {/* 3. 로그아웃 확인 바텀시트 모달 (기존 공통 모달 형식 일치) */}
+      {/* 3. 이름 수정 바텀시트 모달 */}
+      <BottomSheetDialog
+        open={isEditNameModalOpen}
+        titleId="edit-name-dialog-title"
+        descriptionId="edit-name-dialog-description"
+        scrimClassName={styles.modalScrim}
+        sheetClassName={styles.modalSheet}
+        onClose={() => {
+          if (isUpdatingName) return;
+          setIsEditNameModalOpen(false);
+          setEditNameError("");
+        }}
+        closeDisabled={isUpdatingName}
+      >
+        <div
+          className={`${styles.modalIcon} ${styles.modalIconPrimary}`}
+          aria-hidden="true"
+        >
+          <Pencil size={24} strokeWidth={2} />
+        </div>
+
+        <div className={styles.modalContent}>
+          <h2 id="edit-name-dialog-title" className={styles.modalTitle}>
+            이름 수정
+          </h2>
+          <p id="edit-name-dialog-description" className={styles.modalDescription}>
+            서비스에서 사용할 새로운 이름을 입력해주세요.
+          </p>
+
+          <div className={styles.inputWrapper}>
+            <input
+              type="text"
+              className={styles.nameInput}
+              ref={editNameInputRef}
+              id="edit-user-name"
+              name="userName"
+              value={editName}
+              placeholder="2~10자 이내 입력"
+              maxLength={10}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              onChange={(event) => {
+                handleEditNameChange(event.currentTarget.value);
+              }}
+              onInput={(event) => {
+                handleEditNameChange(event.currentTarget.value);
+              }}
+              disabled={isUpdatingName}
+            />
+            <div className={styles.inputMetaRow}>
+              {editNameError ? (
+                <p className={styles.inputErrorText} role="alert">
+                  {editNameError}
+                </p>
+              ) : (
+                <span />
+              )}
+              <span
+                className={styles.charCounter}
+                aria-label={`글자 수 ${editName.length}/10`}
+              >
+                {editName.length}/10
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.modalActions}>
+          <button
+            type="button"
+            className={styles.modalCancelButton}
+            onClick={() => {
+              setIsEditNameModalOpen(false);
+              setEditNameError("");
+            }}
+            disabled={isUpdatingName}
+          >
+            취소
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.modalConfirmButton} ${styles.modalPrimaryButton}`}
+            onClick={handleConfirmUpdateName}
+            disabled={isUpdatingName}
+          >
+            {isUpdatingName ? "변경 중..." : "저장"}
+          </button>
+        </div>
+      </BottomSheetDialog>
+
+      {/* 4. 로그아웃 확인 바텀시트 모달 */}
       <BottomSheetDialog
         open={isLogoutModalOpen}
         titleId="logout-modal-title"
@@ -277,6 +435,7 @@ export default function MyPageScreen() {
         </div>
       </BottomSheetDialog>
 
+      {/* 5. 회원탈퇴 확인 바텀시트 모달 */}
       <BottomSheetDialog
         open={isWithdrawModalOpen}
         titleId="withdraw-dialog-title"
@@ -354,6 +513,10 @@ export default function MyPageScreen() {
           </button>
         </div>
       </BottomSheetDialog>
+
+      {/* 6. 성공 토스트 */}
+      {toast && <Toast className={styles.toast}>{toast}</Toast>}
     </MobileFrame>
   );
 }
+

@@ -216,5 +216,93 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
       expect(screen.queryByText("로그인이 필요합니다.")).not.toBeInTheDocument();
       expect(mockPush).not.toHaveBeenCalledWith("/login");
     });
+
+    describe("이름 수정 (Edit Username)", () => {
+      it("이름 수정 버튼 클릭 시 모달이 열리고 현재 이름이 기본값으로 채워진다", () => {
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        const editButton = screen.getByRole("button", { name: "이름 수정" });
+        expect(editButton).toBeInTheDocument();
+
+        fireEvent.click(editButton);
+
+        expect(screen.getByText("이름 수정")).toBeInTheDocument();
+        const input = screen.getByPlaceholderText(
+          "2~10자 이내 입력",
+        ) as HTMLInputElement;
+        expect(input.value).toBe("홍길동");
+        expect(screen.getByText("3/10")).toBeInTheDocument();
+      });
+
+      it("이름을 2자 미만으로 입력하거나 공백만 입력 시 에러 메시지를 표시한다", async () => {
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: " " } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(
+          await screen.findByText("이름을 입력해주세요."),
+        ).toBeInTheDocument();
+
+        fireEvent.change(input, { target: { value: "김" } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(
+          await screen.findByText("이름은 2자 이상 10자 이하로 입력해주세요."),
+        ).toBeInTheDocument();
+      });
+
+      it("허용되지 않은 특수문자 입력 시 에러 메시지를 표시한다", async () => {
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: "홍길동!@" } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(
+          await screen.findByText(
+            "이름에는 한글, 영문, 숫자와 일부 기호만 사용할 수 있습니다.",
+          ),
+        ).toBeInTheDocument();
+      });
+
+      it("유효한 이름 입력 후 저장 시 updateUserNameApi가 호출되고 로컬스토리지 및 화면이 갱신되며 토스트가 노출된다", async () => {
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: "이몽룡" } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(await screen.findByText("이름이 변경되었습니다.")).toBeInTheDocument();
+        expect(window.localStorage.getItem("userName")).toBe("이몽룡");
+        expect(screen.getByText("이몽룡")).toBeInTheDocument();
+      });
+
+      it("수정 취소 버튼을 누르면 모달이 닫히고 기존 이름이 유지된다", () => {
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: "변학도" } });
+        fireEvent.click(screen.getByRole("button", { name: "취소" }));
+
+        expect(screen.queryByPlaceholderText("2~10자 이내 입력")).not.toBeInTheDocument();
+        expect(window.localStorage.getItem("userName")).toBe("홍길동");
+        expect(screen.getByText("홍길동")).toBeInTheDocument();
+      });
+    });
   });
 });
