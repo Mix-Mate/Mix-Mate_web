@@ -44,6 +44,7 @@
 }
 
 .introCard h2 {
+  font-family: "42dot Sans", sans-serif;
   margin-top: 8px;
   color: #252d36;
   font-size: 20px;
@@ -297,6 +298,7 @@
 }
 
 .attendanceQuestion h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #202a34;
   font-size: 19px;
   font-weight: 700;

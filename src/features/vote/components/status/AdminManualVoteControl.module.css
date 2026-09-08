@@ -22,7 +22,6 @@
   padding: 0;
   background: transparent;
   color: #52525b;
-  font-family: inherit;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -83,7 +82,6 @@
   padding: 0 8px;
   background: transparent;
   color: #52525b;
-  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -99,4 +97,3 @@
   margin-left: auto;
   color: #3b82c4;
 }
-

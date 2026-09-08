@@ -51,6 +51,7 @@
 }
 
 .progressCard h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #2a333d;
   font-size: 15px;
   font-weight: 700;
@@ -58,6 +59,7 @@
 }
 
 .statusListSection h2 {
+  font-family: "42dot Sans", sans-serif;
   color: #2a333d;
   font-size: 14px;
   font-weight: 700;
@@ -118,7 +120,6 @@
   gap: 4px;
   border: 1.5px solid transparent;
   border-radius: 10px;
-  font-family: inherit;
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease;
