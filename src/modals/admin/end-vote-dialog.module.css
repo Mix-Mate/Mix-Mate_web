@@ -47,6 +47,7 @@
 }
 
 .message h2 {
+  font-family: "42dot Sans", sans-serif;
   margin-top: 13px;
   color: #18181b;
   font-size: 23px;
@@ -92,6 +93,7 @@
 }
 
 .pendingSection h3 {
+  font-family: "42dot Sans", sans-serif;
   flex: 0 0 auto;
   margin: 20px 0 12px;
   color: #a1a1aa;
