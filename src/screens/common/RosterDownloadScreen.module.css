@@ -18,13 +18,22 @@
 ========================= */
 
 .intro h2 {
+  display: inline;
+  padding: 0 2px;
   margin: 0;
-  color: #111;
+  background: linear-gradient(
+    to bottom,
+    transparent 62%,
+    rgba(219, 231, 255, 0.9) 62%
+  );
+  color: #172b3d;
   font-family: "42dot Sans", sans-serif;
   font-size: 25px;
   font-weight: 700;
   line-height: 26px;
   letter-spacing: -0.25px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 .intro p {
@@ -32,10 +41,6 @@
   color: #6a6d76;
   font-size: 14px;
   line-height: 20px;
-}
-
-.intro .description {
-  margin-top: 9px;
 }
 
 /* =========================

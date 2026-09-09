@@ -140,18 +140,12 @@ export default function RosterDownloadScreen() {
       viewportClassName={styles.viewport}
       data-testid="roster-download-screen"
     >
-      <Header
-        title="명단 다운로드"
-        onBack={() => router.back()}
-        compact
-        smallTitle
-      />
+      <Header title="명단 다운로드" onBack={() => router.back()} />
 
       <main className={styles.content}>
         <section className={styles.intro} aria-labelledby="group-name">
           <h2 id="group-name">{group.groupName}</h2>
           <p>종료된 모임 · 총 {group.memberCount}명</p>
-          <p className={styles.description}></p>
         </section>
 
         <InfoBanner className={styles.infoBanner}>
