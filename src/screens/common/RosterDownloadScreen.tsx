@@ -21,6 +21,7 @@ import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
 import styles from "./RosterDownloadScreen.module.css";
+import { RosterDownloadCardSkeleton } from "./RosterDownloadSkeleton";
 
 type DownloadKind =
   "first-participants" | "second-participants" | "first-teams" | "second-teams";
@@ -161,6 +162,12 @@ export default function RosterDownloadScreen() {
           </p>
         </InfoBanner>
 
+        {hasSecondRound === null && (
+          <p className={styles.srOnly} role="status">
+            명단 정보를 불러오는 중입니다.
+          </p>
+        )}
+
         <DownloadSection title="참가자 명단">
           <DownloadItem
             round={1}
@@ -174,7 +181,9 @@ export default function RosterDownloadScreen() {
             loading={loading["first-participants"]}
             onDownload={() => downloadParticipants("first-participants", 1)}
           />
-          {hasSecondRound === true && (
+          {hasSecondRound === null ? (
+            <RosterDownloadCardSkeleton />
+          ) : hasSecondRound ? (
             <DownloadItem
               round={2}
               title="2차 술자리 참가자 명단"
@@ -187,7 +196,7 @@ export default function RosterDownloadScreen() {
               loading={loading["second-participants"]}
               onDownload={() => downloadParticipants("second-participants", 2)}
             />
-          )}
+          ) : null}
         </DownloadSection>
 
         <DownloadSection title="조 명단">
@@ -199,7 +208,9 @@ export default function RosterDownloadScreen() {
             loading={loading["first-teams"]}
             onDownload={() => downloadTeams("first-teams", 1)}
           />
-          {hasSecondRound === true && (
+          {hasSecondRound === null ? (
+            <RosterDownloadCardSkeleton />
+          ) : hasSecondRound ? (
             <DownloadItem
               round={2}
               title="2차 조 명단"
@@ -208,7 +219,7 @@ export default function RosterDownloadScreen() {
               loading={loading["second-teams"]}
               onDownload={() => downloadTeams("second-teams", 2)}
             />
-          )}
+          ) : null}
         </DownloadSection>
       </main>
 

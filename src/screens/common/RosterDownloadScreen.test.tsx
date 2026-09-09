@@ -56,6 +56,17 @@ describe("RosterDownloadScreen", () => {
     hasSecondRoundTeamsMock.mockResolvedValue(true);
   });
 
+  it("2차 진행 여부를 확인하는 동안 카드 스켈레톤을 표시한다", () => {
+    hasSecondRoundTeamsMock.mockReturnValue(new Promise(() => {}));
+
+    render(<RosterDownloadScreen />);
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "명단 정보를 불러오는 중입니다.",
+    );
+    expect(screen.getAllByTestId("roster-card-skeleton")).toHaveLength(2);
+  });
+
   it("2차 조 편성이 없으면 1차 카드만 표시한다", async () => {
     hasSecondRoundTeamsMock.mockResolvedValue(false);
 
