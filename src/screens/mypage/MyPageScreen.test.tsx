@@ -3,6 +3,8 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import MyPageScreen from "./MyPageScreen";
 import HomeScreen from "../common/HomeScreen";
 import * as authApi from "@/features/auth/api/auth.api";
+import { apiFetch } from "@/shared/api/apiFetch";
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 
 const mockPush = vi.fn();
 const mockBack = vi.fn();
@@ -16,11 +18,21 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+vi.mock("@/shared/api/apiFetch", () => ({
+  apiFetch: vi.fn(),
+}));
+
 describe("MyPageScreen & Home Header MyPage Navigation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
     window.localStorage.setItem("accessToken", "mock-token");
+    vi.mocked(apiFetch).mockResolvedValue(
+      new Response("수정 성공", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      }),
+    );
   });
 
   describe("HomeScreen Header MyPage Button", () => {
@@ -285,8 +297,75 @@ describe("MyPageScreen & Home Header MyPage Navigation", () => {
         fireEvent.click(screen.getByRole("button", { name: "저장" }));
 
         expect(await screen.findByText("이름이 변경되었습니다.")).toBeInTheDocument();
+        expect(apiFetch).toHaveBeenCalledWith(
+          `${API_BASE_URL}/api/v1/auth/name`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userName: "이몽룡" }),
+          },
+        );
         expect(window.localStorage.getItem("userName")).toBe("이몽룡");
         expect(screen.getByText("이몽룡")).toBeInTheDocument();
+      });
+
+      it("이름 수정 API가 400 에러를 반환하면 모달 내에 에러 메시지가 노출되고 모달이 유지된다", async () => {
+        vi.mocked(apiFetch).mockResolvedValue(
+          Response.json(
+            {
+              code: "INVALID_PARAMETER",
+              message: "유효하지 않은 요청입니다.",
+              errors: {
+                userName: "이미 사용 중인 이름입니다.",
+              },
+            },
+            { status: 400 },
+          ),
+        );
+
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: "중복이름" } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(
+          await screen.findByText("이미 사용 중인 이름입니다."),
+        ).toBeInTheDocument();
+        expect(window.localStorage.getItem("userName")).toBe("홍길동");
+        expect(screen.getByPlaceholderText("2~10자 이내 입력")).toBeInTheDocument();
+      });
+
+      it("이름 수정 API가 401 에러를 반환하면 인증 에러 메시지가 노출된다", async () => {
+        vi.mocked(apiFetch).mockResolvedValue(
+          Response.json(
+            {
+              code: "UNAUTHORIZED",
+              message: "로그인이 필요합니다.",
+            },
+            { status: 401 },
+          ),
+        );
+
+        window.localStorage.setItem("userName", "홍길동");
+        render(<MyPageScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "이름 수정" }));
+        const input = screen.getByPlaceholderText("2~10자 이내 입력");
+
+        fireEvent.change(input, { target: { value: "새이름" } });
+        fireEvent.click(screen.getByRole("button", { name: "저장" }));
+
+        expect(
+          await screen.findByText("로그인이 필요합니다."),
+        ).toBeInTheDocument();
+        expect(window.localStorage.getItem("userName")).toBe("홍길동");
+        expect(screen.getByPlaceholderText("2~10자 이내 입력")).toBeInTheDocument();
       });
 
       it("수정 취소 버튼을 누르면 모달이 닫히고 기존 이름이 유지된다", () => {

@@ -1,8 +1,47 @@
+import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
+import { apiFetch } from "@/shared/api/apiFetch";
 import { INPUT_VALIDATION_RULES } from "@/shared/lib/input-validation";
 
-export interface UpdateUserNameResponse {
-  userName: string;
+export type UpdateUserNameResponse =
+  | string
+  | {
+      userName?: string;
+      message?: string;
+      [key: string]: unknown;
+    };
+
+export interface UpdateUserNameErrorResponse {
+  code?: string;
   message?: string;
+  errors?: {
+    userName?: string;
+    [key: string]: string | undefined;
+  };
+}
+
+export class UserApiError extends Error {
+  status: number;
+  code?: string;
+  fieldErrors?: {
+    userName?: string;
+    [key: string]: string | undefined;
+  };
+
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    fieldErrors?: {
+      userName?: string;
+      [key: string]: string | undefined;
+    },
+  ) {
+    super(message);
+    this.name = "UserApiError";
+    this.status = status;
+    this.code = code;
+    this.fieldErrors = fieldErrors;
+  }
 }
 
 /**
@@ -24,10 +63,7 @@ export function validateUserName(name: string): string | null {
 
 /**
  * 사용자 이름(닉네임) 변경 API
- * 백엔드 배포 전 Mocking: 0.5초(500ms) 딜레이 후 성공 응답 반환
- *
- * 실제 연동 시:
- * 아래 주석 해제하여 PATCH /api/v1/users/me 호출로 전환
+ * PATCH /api/v1/auth/name
  */
 export async function updateUserNameApi(
   newName: string,
@@ -39,14 +75,7 @@ export async function updateUserNameApi(
 
   const trimmed = newName.trim();
 
-  // Mock delay: 500ms
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  /*
-  // [실제 백엔드 API 연동용 코드 - 배포 후 상단에 apiFetch, API_BASE_URL import 후 주석 해제]
-  // import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
-  // import { apiFetch } from "@/shared/api/apiFetch";
-  const response = await apiFetch(`${API_BASE_URL}/api/v1/users/me`, {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/auth/name`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -55,21 +84,38 @@ export async function updateUserNameApi(
   });
 
   if (!response.ok) {
-    let errorMessage = "이름 변경에 실패했습니다.";
+    let errorData: UpdateUserNameErrorResponse | null = null;
     try {
-      const errorData = (await response.json()) as { message?: string };
-      if (errorData?.message) errorMessage = errorData.message;
+      errorData = (await response.json()) as UpdateUserNameErrorResponse;
     } catch {
       // Non-JSON response fallback
     }
-    throw new Error(errorMessage);
+
+    const defaultMessage =
+      response.status === 400
+        ? "올바른 이름을 입력해주세요."
+        : response.status === 401
+          ? "인증이 필요합니다."
+          : response.status === 404
+            ? "사용자를 찾을 수 없습니다."
+            : "이름 변경에 실패했습니다.";
+
+    const message =
+      errorData?.errors?.userName ||
+      errorData?.message ||
+      defaultMessage;
+
+    throw new UserApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
   }
 
-  return (await response.json()) as UpdateUserNameResponse;
-  */
-
-  return {
-    userName: trimmed,
-    message: "이름이 성공적으로 변경되었습니다.",
-  };
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return (await response.json()) as UpdateUserNameResponse;
+  }
+  return await response.text();
 }
