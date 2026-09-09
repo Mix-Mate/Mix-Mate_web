@@ -206,6 +206,30 @@ describe("HomeScreen", () => {
   });
 
   describe("3. 그룹 진입 라우팅", () => {
+    it("완료된 모임의 명단 다운로드 버튼은 다운로드 화면으로 이동한다", async () => {
+      getMyGroupsApiMock.mockImplementation(async (params) => ({
+        groups:
+          params?.state === "finished"
+            ? [
+                {
+                  groupId: 44,
+                  groupName: "완료 모임",
+                  status: "FINISHED",
+                  role: "HOST",
+                  memberCount: 12,
+                },
+              ]
+            : [],
+      }));
+
+      render(<HomeScreen userName="테스터" initialTab="COMPLETED" />);
+
+      fireEvent.click(
+        await screen.findByRole("button", { name: "명단 다운로드 ›" }),
+      );
+      expect(push).toHaveBeenCalledWith("/groups/44/downloads");
+    });
+
     it.each([
       ["RECRUITING", "HOST", "/groups/31"],
       ["BEFORE_FIRST_ROUND", "HOST", "/groups/31"],

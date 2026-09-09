@@ -681,6 +681,15 @@ export default function HomeScreen({
                         종료됨 · {group.memberCount}명
                       </p>
                     </div>
+                    <button
+                      type="button"
+                      className={styles.rosterDownloadButton}
+                      onClick={() =>
+                        router.push(groupRoutes.rosterDownloads(group.id))
+                      }
+                    >
+                      명단 다운로드 ›
+                    </button>
                   </article>
                 ))}
               </div>
