@@ -23,6 +23,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.82.0",
     "tailwind-merge": "^3.6.0",
+    "write-excel-file": "^4.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

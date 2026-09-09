@@ -1,0 +1,345 @@
+.viewport {
+  background: var(--color-app-background);
+}
+
+.phone {
+  background: #fdfdff;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 16px 28px;
+}
+
+/* =========================
+   Intro
+========================= */
+
+.intro h2 {
+  display: inline;
+  padding: 0 2px;
+  margin: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 62%,
+    rgba(219, 231, 255, 0.9) 62%
+  );
+  color: #172b3d;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: -0.25px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.intro p {
+  margin: 4px 0 0;
+  color: #6a6d76;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* =========================
+   Info Banner
+========================= */
+
+.infoBanner {
+  margin-top: 10px;
+}
+
+/* =========================
+   Download Section
+========================= */
+
+.downloadSection {
+  margin-top: 16px;
+}
+
+.downloadSection + .downloadSection {
+  margin-top: 25px;
+}
+
+.downloadSection > h3 {
+  margin: 0 0 8px;
+  color: #1f2025;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.downloadList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* =========================
+   Download Item
+========================= */
+
+.downloadItem {
+  display: flex;
+  height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.skeletonItem {
+  pointer-events: none;
+}
+
+.skeletonBlock {
+  display: block;
+  overflow: hidden;
+  background: linear-gradient(90deg, #f1f2f5 25%, #fafbfc 50%, #f1f2f5 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonBadge {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 999px;
+}
+
+.skeletonFileInfo {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.skeletonTitle {
+  width: min(140px, 80%);
+  height: 14px;
+  border-radius: 5px;
+}
+
+.skeletonSubtitle {
+  width: 62px;
+  height: 11px;
+  border-radius: 4px;
+}
+
+.skeletonButton {
+  width: 66px;
+  height: 30px;
+  flex: 0 0 66px;
+  border-radius: 15px;
+}
+
+.skeletonIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonGroup {
+  width: 132px;
+  height: 24px;
+  border-radius: 7px;
+}
+
+.skeletonMeta {
+  width: 104px;
+  height: 14px;
+  border-radius: 5px;
+}
+
+.skeletonBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 12px 15px 11px;
+  border-radius: 16.5px;
+  background: #eff6ff;
+}
+
+.skeletonIcon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border-radius: 999px;
+}
+
+.skeletonBannerCopy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.skeletonBannerLine {
+  width: 100%;
+  max-width: 260px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeletonBannerLineShort {
+  width: 62%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.skeletonSectionHeading {
+  display: block;
+  width: 82px;
+  height: 18px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  margin: -1px;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes skeletonShimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* =========================
+   Round Badge
+========================= */
+
+.roundBadge {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 999px;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.participantBadge {
+  background: #eef4ff;
+  color: #2f6bff;
+  box-shadow: 0 0 0 4px #dbe7ff;
+}
+
+.teamBadge {
+  background: #f5f3ff;
+  color: #8b5cf6;
+  box-shadow: 0 0 0 4px #ece7ff;
+}
+
+/* =========================
+   File Info
+========================= */
+
+.fileInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.fileInfo h4,
+.fileInfo p {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileInfo h4 {
+  color: #2b2d33;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.fileInfo p {
+  margin-top: 4px;
+  color: #777a83;
+  font-size: 13px;
+  line-height: 17px;
+}
+
+/* =========================
+   Download Button
+========================= */
+
+.downloadButton {
+  width: 66px;
+  height: 30px;
+  flex: 0 0 66px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid #e4e6eb;
+  border-radius: 15px;
+  background: #f7f8fb;
+  color: #30323a;
+  font-size: 12px;
+  font-weight: 500;
+
+  transition:
+    background 120ms ease,
+    transform 100ms ease,
+    opacity 120ms ease;
+}
+
+.downloadButton:active:not(:disabled) {
+  transform: scale(0.96);
+  background: #eff1f5;
+}
+
+.downloadButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* =========================
+   Toast
+========================= */
+
+.toast {
+  --toast-bottom: 24px;
+}
+
+/* =========================
+   Small Screen
+========================= */
+
+@media (max-width: 360px) {
+  .downloadItem {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .fileInfo h4 {
+    font-size: 14px;
+  }
+}

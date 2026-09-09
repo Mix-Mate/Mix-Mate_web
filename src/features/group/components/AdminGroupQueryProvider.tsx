@@ -35,6 +35,7 @@ import {
 import Button from "@/shared/ui/Button";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import RosterDownloadSkeleton from "@/screens/common/RosterDownloadSkeleton";
 import styles from "@/features/session/components/admin-access-guard.module.css";
 
 interface AdminGroupQueryProviderProps {
@@ -496,6 +497,10 @@ export default function AdminGroupQueryProvider({
   );
 
   if (!currentData && !isExtraPage) {
+    if (currentIsLoading && pathname === groupRoutes.rosterDownloads(groupId)) {
+      return <RosterDownloadSkeleton />;
+    }
+
     const backHref =
       pathname === groupRoutes.mvpVote(groupId)
         ? appRoutes.home()

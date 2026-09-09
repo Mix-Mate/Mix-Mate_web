@@ -24,6 +24,7 @@ export const groupRoutes = {
   adminHome: (groupId: string) => `${groupBase(groupId)}`,
   userHome: (groupId: string) => `${groupBase(groupId)}`,
   completed: (groupId: string) => `${groupBase(groupId)}/completed`,
+  rosterDownloads: (groupId: string) => `${groupBase(groupId)}/downloads`,
   participants: (groupId: string, round?: AssignmentRound) => {
     void round;
     return `${groupBase(groupId)}/participants`;
