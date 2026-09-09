@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, User, ChevronRight } from "lucide-react";
+import { Ban, ChevronRight, FileText, User } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import { authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
+import { appRoutes, authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
 import {
   getMyGroupsApi,
   GroupApiError,
@@ -492,15 +492,27 @@ export default function HomeScreen({
           <h1 className={styles.brandTitle}>MixMate</h1>
         </div>
 
-        <button
-          type="button"
-          className={styles.myPageButton}
-          onClick={() => router.push(authRoutes.myPage())}
-          aria-label="마이페이지"
-        >
-          <User size={15} strokeWidth={2} aria-hidden="true" />
-          <span>마이페이지</span>
-        </button>
+        <div className={styles.headerActions}>
+          <button
+            type="button"
+            className={styles.myPageButton}
+            onClick={() => router.push(appRoutes.patchNotes())}
+            aria-label="패치노트"
+          >
+            <FileText size={15} strokeWidth={2} aria-hidden="true" />
+            <span>패치노트</span>
+          </button>
+
+          <button
+            type="button"
+            className={styles.myPageButton}
+            onClick={() => router.push(authRoutes.myPage())}
+            aria-label="마이페이지"
+          >
+            <User size={15} strokeWidth={2} aria-hidden="true" />
+            <span>마이페이지</span>
+          </button>
+        </div>
       </header>
 
       <main className={styles.main}>

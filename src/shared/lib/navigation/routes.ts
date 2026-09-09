@@ -5,6 +5,8 @@ const groupBase = (groupId: string) => `/groups/${groupId}`;
 
 export const appRoutes = {
   home: () => "/home",
+  patchNotes: () => "/patch-notes",
+  patchNoteDetail: (noteId: string) => `/patch-notes/${noteId}`,
 };
 
 export const authRoutes = {

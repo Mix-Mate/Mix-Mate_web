@@ -206,6 +206,16 @@ describe("HomeScreen", () => {
   });
 
   describe("3. 그룹 진입 라우팅", () => {
+    it("패치노트 버튼을 누르면 패치노트 화면으로 이동한다", async () => {
+      getMyGroupsApiMock.mockResolvedValue({ groups: [] });
+
+      render(<HomeScreen userName="테스터" />);
+
+      fireEvent.click(screen.getByRole("button", { name: "패치노트" }));
+
+      expect(push).toHaveBeenCalledWith("/patch-notes");
+    });
+
     it("완료된 모임의 명단 다운로드 버튼은 다운로드 화면으로 이동한다", async () => {
       getMyGroupsApiMock.mockImplementation(async (params) => ({
         groups:
