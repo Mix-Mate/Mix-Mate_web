@@ -1,0 +1,166 @@
+.viewport {
+  background: #fcfcff;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  background: #fcfcff;
+}
+
+.content {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  padding: 24px 16px 16px;
+  background: #fcfcff;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldGroup label {
+  color: #52525b;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 23px;
+}
+
+.fieldGroup label > span {
+  color: #ef4444;
+}
+
+.fieldGroup input,
+.fieldGroup textarea {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  border: 1.6px solid #c5c7cc;
+  border-radius: 16px;
+  background: #f9f9fa;
+  color: #27272a;
+  font: inherit;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 25px;
+  outline: none;
+  box-shadow: inset 5px 0 0 #c5c7cc;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.fieldGroup input {
+  height: 46px;
+  padding: 0 15px 0 21px;
+}
+
+.fieldGroup textarea {
+  height: 120px;
+  resize: none;
+  padding: 11px 15px 11px 21px;
+}
+
+.fieldGroup input::placeholder,
+.fieldGroup textarea::placeholder {
+  color: #a1a1aa;
+}
+
+.fieldGroup input:focus,
+.fieldGroup textarea:focus {
+  border-color: #60a5fa;
+  background: #fff;
+  box-shadow:
+    inset 5px 0 0 #3b82c4,
+    0 0 0 3px rgba(59, 130, 196, 0.13);
+}
+
+.fieldGroup input[aria-invalid="true"],
+.fieldGroup textarea[aria-invalid="true"] {
+  border-color: #fca5a5;
+  box-shadow: inset 5px 0 0 #ef4444;
+}
+
+.fieldError {
+  margin: 4px 2px 0;
+  color: #dc2626;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.submitError {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #dc2626;
+  font-size: 13px;
+}
+
+.deleteGroupRow {
+  display: flex;
+  width: 100%;
+  height: 56px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 17px;
+  border: 1px solid #fee2e2;
+  border-radius: 16px;
+  background: #fff;
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    transform 100ms ease;
+}
+
+.deleteGroupRow > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deleteGroupRow > svg {
+  color: #1f3950;
+}
+
+.deleteGroupRow:active:not(:disabled) {
+  background: #fff7f7;
+  transform: scale(0.99);
+}
+
+.deleteGroupRow:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.deleteGroupRow:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.saveButton {
+  height: 59px;
+  flex: 0 0 59px;
+  margin-top: 24px;
+}
