@@ -1,24 +1,26 @@
 "use client";
 
-import { BriefcaseBusiness, Clock3, Copy, Pencil } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  ChevronRight,
+  Clock3,
+  Copy,
+  SquarePen,
+} from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type RefObject,
 } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
-import { useDeleteGroupMutation } from "@/features/group/hooks/useDeleteGroupMutation";
 import { useInviteCodeRemainingTime } from "@/features/group/hooks/useInviteCodeRemainingTime";
-import { useUpdateGroupMutation } from "@/features/group/hooks/useUpdateGroupMutation";
 import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-expiration";
 import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
-import type { UpdateGroupInput } from "@/features/group/types/group.types";
 import RecruitmentTransitionScreen, {
   type RecruitmentTransitionPhase,
 } from "@/features/group/components/RecruitmentTransitionScreen";
@@ -33,8 +35,6 @@ import {
   type HostRecruitmentOnboardingStepId,
 } from "@/features/onboarding/model/host-recruitment-onboarding-steps";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
-import DeleteGroupDialog from "@/modals/admin/DeleteGroupDialog";
-import EditGroupDialog from "@/modals/admin/EditGroupDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
@@ -81,25 +81,8 @@ export default function AdminRecruitmentScreen() {
     isPending: isClosingRecruitment,
     error: closeRecruitmentError,
   } = useCloseRecruitingMutation();
-  const {
-    mutate: updateGroup,
-    isPending: isSavingGroup,
-    error: updateGroupError,
-    fieldErrors: updateGroupFieldErrors,
-  } = useUpdateGroupMutation();
-  const {
-    mutate: deleteGroup,
-    isPending: isDeletingGroup,
-    error: deleteGroupError,
-  } = useDeleteGroupMutation();
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
-  );
-  const [editDialogOpen, setEditDialogOpen] = useState(
-    searchParams.get("dialog") === "edit",
-  );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(
-    searchParams.get("dialog") === "delete",
   );
   const [transitionPhase, setTransitionPhase] =
     useState<RecruitmentTransitionPhase | null>(null);
@@ -115,13 +98,6 @@ export default function AdminRecruitmentScreen() {
   const isRecruiting = group?.status === "RECRUITING";
   const canCloseRecruitment =
     canEditGroup && group.memberCount >= FIRST_ROUND_MIN_PARTICIPANTS;
-  const editInitialValues = useMemo<UpdateGroupInput>(
-    () => ({
-      name: group?.groupName ?? "",
-      description: group?.description ?? "",
-    }),
-    [group?.description, group?.groupName],
-  );
   const onboardingTargetRefs: Record<
     HostRecruitmentOnboardingStepId,
     RefObject<HTMLElement | null>
@@ -138,11 +114,7 @@ export default function AdminRecruitmentScreen() {
   const { open: onboardingOpen, dismiss: dismissOnboarding } =
     useHostRecruitmentOnboarding(
       // 다이얼로그가 열린 채로 들어온 경우에는 온보딩을 띄우지 않는다.
-      canEditGroup &&
-        !transitionPhase &&
-        !closeDialogOpen &&
-        !editDialogOpen &&
-        !deleteDialogOpen,
+      canEditGroup && !transitionPhase && !closeDialogOpen,
     );
 
   useEffect(() => {
@@ -231,6 +203,12 @@ export default function AdminRecruitmentScreen() {
     );
   }, [params.groupId, router, searchParams]);
 
+  const goToGroupEdit = useCallback(() => {
+    router.push(
+      withSessionContext(groupRoutes.groupEdit(params.groupId), searchParams),
+    );
+  }, [params.groupId, router, searchParams]);
+
   const confirmCloseRecruitment = useCallback(async () => {
     if (!canCloseRecruitment || cancelTransitionRef.current) return;
 
@@ -291,43 +269,6 @@ export default function AdminRecruitmentScreen() {
     showToast,
   ]);
 
-  const handleUpdateGroup = useCallback(
-    async (input: UpdateGroupInput) => {
-      if (!canEditGroup) return;
-
-      const updated = await updateGroup(params.groupId, {
-        groupName: input.name,
-        description: input.description,
-      });
-      if (!updated) return;
-
-      const latestGroup = await refetch();
-      setEditDialogOpen(false);
-      showToast(
-        latestGroup
-          ? "그룹 정보가 수정되었습니다."
-          : "수정했지만 최신 그룹 정보를 불러오지 못했습니다.",
-      );
-    },
-    [canEditGroup, params.groupId, refetch, showToast, updateGroup],
-  );
-
-  const openDeleteDialog = useCallback(() => {
-    setEditDialogOpen(false);
-    setDeleteDialogOpen(true);
-  }, []);
-
-  const confirmDeleteGroup = useCallback(async () => {
-    if (!canEditGroup) return;
-
-    const deleted = await deleteGroup(params.groupId);
-    if (!deleted) return;
-
-    setDeleteDialogOpen(false);
-    router.replace("/home");
-    //TODO 그룹홈 라우팅
-  }, [canEditGroup, deleteGroup, params.groupId, router]);
-
   if (!group) return null;
 
   if (transitionPhase || group.status !== "RECRUITING") {
@@ -343,22 +284,7 @@ export default function AdminRecruitmentScreen() {
       data-testid="admin-recruitment"
       data-group-id={group.groupId}
     >
-      <GroupHomeHeader
-        title={group.groupName}
-        compact
-        rightAction={
-          canEditGroup ? (
-            <button
-              type="button"
-              className={styles.editGroupButton}
-              aria-label="그룹 정보 편집"
-              onClick={() => setEditDialogOpen(true)}
-            >
-              <Pencil aria-hidden="true" size={19} strokeWidth={1.8} />
-            </button>
-          ) : undefined
-        }
-      />
+      <GroupHomeHeader title={group.groupName} compact />
 
       <div className={styles.content}>
         <section
@@ -375,21 +301,35 @@ export default function AdminRecruitmentScreen() {
           </div>
 
           <div ref={inviteCodeCardRef} className={styles.inviteCodeCard}>
-            <span className={styles.inviteCodeIcon} aria-hidden="true">
-              <BriefcaseBusiness size={22} strokeWidth={1.7} />
-            </span>
-            <span className={styles.inviteCodeText}>
-              <small>그룹 코드</small>
-              <strong>{group.inviteCode}</strong>
-            </span>
+            <div className={styles.inviteCodeTop}>
+              <span className={styles.inviteCodeIcon} aria-hidden="true">
+                <BriefcaseBusiness size={18} strokeWidth={1.7} />
+              </span>
+              <span className={styles.inviteCodeText}>
+                <small>그룹 코드</small>
+                <strong>{group.inviteCode}</strong>
+              </span>
+              <button
+                type="button"
+                className={styles.copyButton}
+                aria-label={`그룹 코드 ${group.inviteCode} 복사`}
+                onClick={copyInviteCode}
+              >
+                <Copy aria-hidden="true" size={20} strokeWidth={1.8} />
+                복사
+              </button>
+            </div>
+
             <button
               type="button"
-              className={styles.copyButton}
-              aria-label={`그룹 코드 ${group.inviteCode} 복사`}
-              onClick={copyInviteCode}
+              className={styles.groupEditRow}
+              onClick={goToGroupEdit}
             >
-              <Copy aria-hidden="true" size={17} strokeWidth={1.8} />
-              복사
+              <span>
+                <SquarePen aria-hidden="true" size={18} strokeWidth={1.8} />
+                그룹 정보 수정
+              </span>
+              <ChevronRight aria-hidden="true" size={18} strokeWidth={2.2} />
             </button>
           </div>
         </section>
@@ -449,29 +389,6 @@ export default function AdminRecruitmentScreen() {
           if (!isClosingRecruitment) setCloseDialogOpen(false);
         }}
         onConfirm={confirmCloseRecruitment}
-      />
-
-      <EditGroupDialog
-        open={editDialogOpen && canEditGroup}
-        initialValues={editInitialValues}
-        isSaving={isSavingGroup}
-        error={updateGroupError}
-        fieldErrors={updateGroupFieldErrors}
-        onClose={() => {
-          if (!isSavingGroup) setEditDialogOpen(false);
-        }}
-        onDelete={openDeleteDialog}
-        onSubmit={handleUpdateGroup}
-      />
-
-      <DeleteGroupDialog
-        open={deleteDialogOpen && canEditGroup}
-        isDeleting={isDeletingGroup}
-        error={deleteGroupError}
-        onClose={() => {
-          if (!isDeletingGroup) setDeleteDialogOpen(false);
-        }}
-        onConfirm={confirmDeleteGroup}
       />
 
       {onboardingOpen && (

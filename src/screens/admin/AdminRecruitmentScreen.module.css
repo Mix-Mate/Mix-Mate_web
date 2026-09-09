@@ -12,10 +12,10 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   overflow-y: auto;
-  padding: 16px;
-  background: #ffffff;
+  padding: 16px 16px 3px;
+  background: #fcfcff;
   scrollbar-width: none;
 }
 
@@ -23,49 +23,23 @@
   display: none;
 }
 
-.editGroupButton {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  border-radius: 12px;
-  background: #e8f2ff;
-  color: #3b82c4;
-  transition:
-    background 120ms ease,
-    transform 100ms ease;
-}
-
-.editGroupButton:active {
-  transform: scale(0.94);
-}
-
-.editGroupButton:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-
 .statusCard {
   display: flex;
-  flex: 0 0 190px;
+  height: 233px;
+  flex: 0 0 233px;
   flex-direction: column;
-  gap: 15px;
-  padding: 17px 16px 16px;
-  border: 1.5px solid #bfdbfe;
+  padding: 16px;
   border-radius: 22px;
-  background: linear-gradient(163deg, #eff6ff 7.74%, #dbeafe 92.27%);
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.7),
-    0 2px 3px rgba(37, 99, 235, 0.08);
+  background: linear-gradient(159deg, #eff6ff 7.74%, #dbeafe 92.27%);
 }
 
 .statusSummary {
   display: flex;
+  height: 82px;
+  flex: 0 0 82px;
   align-items: center;
   gap: 14px;
+  padding: 0 13px;
 }
 
 .statusDot {
@@ -84,40 +58,48 @@
 
 .statusSummary p {
   color: #2563eb;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 23px;
+  line-height: 20px;
   letter-spacing: 0.7px;
 }
 
 .statusSummary h2 {
+  margin-top: 2px;
   color: #1e40af;
-  font-size: 27px;
+  font-size: 26px;
   font-weight: 700;
-  line-height: 39px;
+  line-height: 35px;
   letter-spacing: -0.4px;
 }
 
 .inviteCodeCard {
   display: flex;
-  min-height: 70px;
-  align-items: center;
-  gap: 11px;
-  margin-top: auto;
-  padding: 10px 11px;
+  height: 119px;
+  flex: 0 0 119px;
+  flex-direction: column;
+  padding: 0 15px;
   border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 17px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.inviteCodeTop {
+  display: flex;
+  height: 75px;
+  flex: 0 0 75px;
+  align-items: center;
+  gap: 12px;
 }
 
 .inviteCodeIcon {
   display: grid;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
   place-items: center;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.86);
+  border-radius: 12px;
+  background: #eff6ff;
   color: #2563eb;
 }
 
@@ -129,40 +111,79 @@
 }
 
 .inviteCodeText small {
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .inviteCodeText strong {
-  color: #1e3a8a;
-  font-size: 20px;
+  color: #1d4ed8;
+  font-size: 19px;
   font-weight: 700;
-  line-height: 28px;
-  letter-spacing: 0.6px;
+  line-height: 29px;
+  letter-spacing: 2.5px;
 }
 
 .copyButton {
   display: inline-flex;
-  height: 34px;
+  height: 44px;
+  min-width: 64px;
+  margin-left: auto;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 0 10px;
-  border: 1px solid #bfdbfe;
-  border-radius: 10px;
-  background: #ffffff;
+  gap: 6px;
+  padding: 0;
+  border-radius: 12px;
+  background: transparent;
   color: #2563eb;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 19px;
+  line-height: 23px;
   transition: transform 100ms ease;
 }
 
 .copyButton:active {
   transform: scale(0.96);
+}
+
+.copyButton:focus-visible,
+.groupEditRow:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.groupEditRow {
+  display: flex;
+  width: 100%;
+  height: 43px;
+  flex: 0 0 43px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  border-top: 1px solid #dbeafe;
+  background: transparent;
+  color: #7c8aa7;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  text-align: left;
+}
+
+.groupEditRow > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.groupEditRow > svg {
+  color: #1f3950;
+}
+
+.groupEditRow:active {
+  color: #2563eb;
 }
 
 .expirationNotice {
