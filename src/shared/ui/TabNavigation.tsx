@@ -23,6 +23,11 @@ export default function TabNavigation<TItem extends TabNavigationItem>({
   onSelect,
   className,
 }: TabNavigationProps<TItem>) {
+  const activeIndex = Math.max(
+    items.findIndex((item) => item.id === activeItemId),
+    0,
+  );
+
   return (
     <nav className={clsx(styles.tabs, className)} aria-label={ariaLabel}>
       {items.map((item) => {
@@ -45,6 +50,16 @@ export default function TabNavigation<TItem extends TabNavigationItem>({
           </button>
         );
       })}
+      {items.length > 0 && (
+        <span
+          className={styles.indicator}
+          aria-hidden="true"
+          style={{
+            width: `${100 / items.length}%`,
+            transform: `translate3d(${activeIndex * 100}%, 0, 0)`,
+          }}
+        />
+      )}
     </nav>
   );
 }
