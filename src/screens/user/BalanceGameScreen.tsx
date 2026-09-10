@@ -10,8 +10,9 @@ import PlayScreenLayout from "./PlayScreenLayout";
 
 export default function BalanceGameScreen() {
   const params = useParams<{ groupId: string }>();
-  const { data: topic, refetch } = useRandomTopicQuery("balance");
-  const choices = topic.choices ?? ["선택지 A", "선택지 B"];
+  const { data: topic, isLoading, refetch } =
+    useRandomTopicQuery("balance");
+  const choices = topic?.choices ?? ["선택지 A", "선택지 B"];
 
   return (
     <PlayScreenLayout
@@ -34,11 +35,56 @@ export default function BalanceGameScreen() {
         </header>
 
         <div className={styles.balanceContentCard}>
-          <article className={styles.balanceQuestion} aria-live="polite">
-            <div className={styles.choiceCard}>{choices[0]}</div>
-            <span className={styles.versusBadge}>VS</span>
-            <div className={styles.choiceCard}>{choices[1]}</div>
-          </article>
+          <div className={styles.balanceScrollArea}>
+            <article
+              className={styles.balanceQuestion}
+              aria-busy={isLoading}
+              aria-live="polite"
+            >
+              <div className={styles.balancePromptSlot}>
+                {isLoading ? (
+                  <span
+                    className={`${styles.skeleton} ${styles.promptSkeleton}`}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <h2
+                    className={`${styles.balancePrompt} ${styles.balanceText}`}
+                  >
+                    {topic?.prompt}
+                  </h2>
+                )}
+              </div>
+
+              <div className={styles.balanceChoices}>
+                <div className={styles.choiceCard}>
+                  {isLoading ? (
+                    <span
+                      className={`${styles.skeleton} ${styles.choiceSkeleton}`}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className={styles.balanceText}>{choices[0]}</span>
+                  )}
+                </div>
+
+                <span className={styles.versusBadge} aria-hidden="true">
+                  VS
+                </span>
+
+                <div className={styles.choiceCard}>
+                  {isLoading ? (
+                    <span
+                      className={`${styles.skeleton} ${styles.choiceSkeleton}`}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className={styles.balanceText}>{choices[1]}</span>
+                  )}
+                </div>
+              </div>
+            </article>
+          </div>
 
           <Button className={styles.primaryButton} onClick={refetch}>
             다른 주제 추천받기

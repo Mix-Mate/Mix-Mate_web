@@ -15,20 +15,17 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "@microsoft/fetch-event-source": "2.0.1",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.26.0",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.82.0",
-    "tailwind-merge": "^3.6.0",
     "write-excel-file": "^4.1.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
-    "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -41,8 +38,6 @@
     "eslint-config-next": "16.2.11",
     "jsdom": "^29.1.1",
     "prettier": "^3.9.6",
-    "prettier-plugin-tailwindcss": "^0.8.1",
-    "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"
   },

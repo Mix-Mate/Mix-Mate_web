@@ -17,8 +17,6 @@ const {
   closeRecruitingMock,
   useAdminGroupQueryMock,
   useCloseRecruitingMutationMock,
-  useDeleteGroupMutationMock,
-  useUpdateGroupMutationMock,
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
   pushMock: vi.fn(),
@@ -26,8 +24,6 @@ const {
   closeRecruitingMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useCloseRecruitingMutationMock: vi.fn(),
-  useDeleteGroupMutationMock: vi.fn(),
-  useUpdateGroupMutationMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -45,14 +41,6 @@ vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
 
 vi.mock("@/features/group/hooks/useCloseRecruitingMutation", () => ({
   useCloseRecruitingMutation: useCloseRecruitingMutationMock,
-}));
-
-vi.mock("@/features/group/hooks/useDeleteGroupMutation", () => ({
-  useDeleteGroupMutation: useDeleteGroupMutationMock,
-}));
-
-vi.mock("@/features/group/hooks/useUpdateGroupMutation", () => ({
-  useUpdateGroupMutation: useUpdateGroupMutationMock,
 }));
 
 vi.mock("@/features/group/hooks/useInviteCodeRemainingTime", () => ({
@@ -76,14 +64,6 @@ vi.mock("@/modals/admin/CloseRecruitmentDialog", () => ({
         모집 마감 확인
       </button>
     ) : null,
-}));
-
-vi.mock("@/modals/admin/DeleteGroupDialog", () => ({
-  default: () => null,
-}));
-
-vi.mock("@/modals/admin/EditGroupDialog", () => ({
-  default: () => null,
 }));
 
 const group: GroupDetail = {
@@ -116,16 +96,6 @@ describe("AdminRecruitmentScreen", () => {
       isPending: false,
       error: null,
     });
-    useDeleteGroupMutationMock.mockReturnValue({
-      mutate: vi.fn(),
-      isPending: false,
-      error: null,
-    });
-    useUpdateGroupMutationMock.mockReturnValue({
-      mutate: vi.fn(),
-      isPending: false,
-      error: null,
-    });
   });
 
   afterEach(() => {
@@ -146,6 +116,18 @@ describe("AdminRecruitmentScreen", () => {
     expect(minimumParticipantText.parentElement?.className).toContain(
       "minimumParticipantText",
     );
+  });
+
+  it("헤더 편집 버튼 대신 그룹 코드 카드의 수정 행으로 진입한다", () => {
+    render(<AdminRecruitmentScreen />);
+
+    expect(
+      screen.queryByRole("button", { name: "그룹 정보 편집" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "그룹 정보 수정" }));
+
+    expect(pushMock).toHaveBeenCalledExactlyOnceWith("/groups/7/edit");
   });
 
   it("모집 중인 그룹 홈에서 메인 홈으로 나가기 전에 확인 팝업을 보여준다", () => {
