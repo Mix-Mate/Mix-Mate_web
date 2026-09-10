@@ -412,9 +412,13 @@
   place-items: center;
   padding: 24px 14px;
   border: 1px solid #bfdbfe;
+  border-bottom-color: #9fc8fb;
   border-radius: 16px;
   background: #eff6ff;
-  box-shadow: 0 2px 7px rgba(37, 106, 211, 0.06);
+  box-shadow:
+    0 2px 3px rgba(37, 106, 211, 0.08),
+    0 8px 18px rgba(37, 106, 211, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   color: #16172b;
   font-size: 18px;
   font-weight: 600;
@@ -423,6 +427,7 @@
   word-break: keep-all;
   overflow-wrap: break-word;
   white-space: pre-line;
+  transform: translateY(-2px);
 }
 
 .versusBadge {
@@ -434,12 +439,14 @@
   width: 48px;
   height: 48px;
   place-items: center;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 50%;
-  background: #1d24c2;
+  background: rgba(29, 36, 194, 0.76);
   color: #fff;
   font-size: 13px;
   font-weight: 800;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, calc(-50% - 2px));
 }
 
 .balanceText {
