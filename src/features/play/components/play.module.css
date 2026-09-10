@@ -441,3 +441,53 @@
   font-weight: 800;
   transform: translate(-50%, -50%);
 }
+
+.balanceText {
+  animation: balance-text-fade-in 140ms ease-out both;
+}
+
+.skeleton {
+  display: block;
+  border-radius: 999px;
+  background: #dbeafe;
+  animation: balance-skeleton-pulse 900ms ease-in-out infinite alternate;
+}
+
+.promptSkeleton {
+  width: min(62%, 180px);
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.choiceSkeleton {
+  width: 82%;
+  height: 18px;
+}
+
+@keyframes balance-text-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes balance-skeleton-pulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balanceText,
+  .skeleton {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

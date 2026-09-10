@@ -10,8 +10,9 @@ import PlayScreenLayout from "./PlayScreenLayout";
 
 export default function BalanceGameScreen() {
   const params = useParams<{ groupId: string }>();
-  const { data: topic, refetch } = useRandomTopicQuery("balance");
-  const choices = topic.choices ?? ["선택지 A", "선택지 B"];
+  const { data: topic, isLoading, refetch } =
+    useRandomTopicQuery("balance");
+  const choices = topic?.choices ?? ["선택지 A", "선택지 B"];
 
   return (
     <PlayScreenLayout
@@ -35,14 +36,36 @@ export default function BalanceGameScreen() {
 
         <div className={styles.balanceContentCard}>
           <div className={styles.balanceScrollArea}>
-            <article className={styles.balanceQuestion} aria-live="polite">
+            <article
+              className={styles.balanceQuestion}
+              aria-busy={isLoading}
+              aria-live="polite"
+            >
               <div className={styles.balancePromptSlot}>
-                <h2 className={styles.balancePrompt}>{topic.prompt}</h2>
+                {isLoading ? (
+                  <span
+                    className={`${styles.skeleton} ${styles.promptSkeleton}`}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <h2
+                    className={`${styles.balancePrompt} ${styles.balanceText}`}
+                  >
+                    {topic?.prompt}
+                  </h2>
+                )}
               </div>
 
               <div className={styles.balanceChoices}>
                 <div className={styles.choiceCard}>
-                  <span>{choices[0]}</span>
+                  {isLoading ? (
+                    <span
+                      className={`${styles.skeleton} ${styles.choiceSkeleton}`}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className={styles.balanceText}>{choices[0]}</span>
+                  )}
                 </div>
 
                 <span className={styles.versusBadge} aria-hidden="true">
@@ -50,7 +73,14 @@ export default function BalanceGameScreen() {
                 </span>
 
                 <div className={styles.choiceCard}>
-                  <span>{choices[1]}</span>
+                  {isLoading ? (
+                    <span
+                      className={`${styles.skeleton} ${styles.choiceSkeleton}`}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className={styles.balanceText}>{choices[1]}</span>
+                  )}
                 </div>
               </div>
             </article>
