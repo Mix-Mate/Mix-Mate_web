@@ -345,42 +345,156 @@
 
 .balanceQuestion {
   display: flex;
-  min-height: 0;
-  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 13px;
+  gap: 24px;
   margin: 0;
+  padding: 18px 0 24px;
+}
+
+.balanceScreen {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.balanceContentCard {
+  overflow: hidden;
+}
+
+.balanceScrollArea {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.balancePromptSlot {
+  display: grid;
+  width: 100%;
+  min-height: 64px;
+  flex-shrink: 0;
+  place-items: center;
+}
+
+.balancePrompt {
+  margin: 0;
+  color: #16172b;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 32px;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.balanceChoices {
+  position: relative;
+  display: grid;
+  width: 100%;
+  flex-shrink: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
 }
 
 .choiceCard {
   display: grid;
   width: 100%;
-  height: 142px;
-  flex: 0 0 142px;
+  min-width: 0;
+  min-height: 180px;
+  box-sizing: border-box;
   place-items: center;
-  padding: 20px;
+  padding: 24px 14px;
   border: 1px solid #bfdbfe;
-  border-radius: 13px;
+  border-bottom-color: #9fc8fb;
+  border-radius: 16px;
   background: #eff6ff;
+  box-shadow:
+    0 2px 3px rgba(37, 106, 211, 0.08),
+    0 8px 18px rgba(37, 106, 211, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
   color: #16172b;
   font-size: 18px;
-  font-weight: 500;
-  line-height: 31px;
+  font-weight: 600;
+  line-height: 29px;
   text-align: center;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   white-space: pre-line;
+  transform: translateY(-2px);
 }
 
 .versusBadge {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
   display: grid;
   width: 48px;
   height: 48px;
-  flex: 0 0 48px;
   place-items: center;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.82);
   border-radius: 50%;
-  background: #1d24c2;
+  background: rgba(29, 36, 194, 0.76);
   color: #fff;
   font-size: 13px;
   font-weight: 800;
+  transform: translate(-50%, calc(-50% - 2px));
+}
+
+.balanceText {
+  animation: balance-text-fade-in 140ms ease-out both;
+}
+
+.skeleton {
+  display: block;
+  border-radius: 999px;
+  background: #dbeafe;
+  animation: balance-skeleton-pulse 900ms ease-in-out infinite alternate;
+}
+
+.promptSkeleton {
+  width: min(62%, 180px);
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.choiceSkeleton {
+  width: 82%;
+  height: 18px;
+}
+
+@keyframes balance-text-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes balance-skeleton-pulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balanceText,
+  .skeleton {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
 }
