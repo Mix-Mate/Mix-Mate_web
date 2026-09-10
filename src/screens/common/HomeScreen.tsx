@@ -567,9 +567,6 @@ export default function HomeScreen({
               onClick={() => setActiveTab("ACTIVE")}
             >
               진행 중인 모임
-              {activeTab === "ACTIVE" && (
-                <div className={styles.tabIndicator} aria-hidden="true" />
-              )}
             </button>
 
             <button
@@ -582,10 +579,16 @@ export default function HomeScreen({
               onClick={() => setActiveTab("COMPLETED")}
             >
               완료된 모임
-              {activeTab === "COMPLETED" && (
-                <div className={styles.tabIndicator} aria-hidden="true" />
-              )}
             </button>
+
+            <div
+              className={`${styles.tabIndicator} ${
+                activeTab === "COMPLETED"
+                  ? styles.tabIndicatorCompleted
+                  : ""
+              }`}
+              aria-hidden="true"
+            />
           </div>
 
           {/* 4. 탭별 컨텐츠 렌더링 */}
