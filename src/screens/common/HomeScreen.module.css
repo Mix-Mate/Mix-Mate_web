@@ -52,16 +52,24 @@
   font-family: "42dot Sans", sans-serif;
   font-size: 19px;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  letter-spacing: 0;
   color: #18181b;
   margin: 0;
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
 }
 
 .myPageButton {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
+  height: 32px;
+  padding: 0 10px;
   border: 1px solid #e4e4e7;
   border-radius: 10px;
   background: #ffffff;
