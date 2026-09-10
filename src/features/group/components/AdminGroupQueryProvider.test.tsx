@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import {
   act,
   cleanup,
@@ -86,7 +86,7 @@ let query: ReturnType<typeof useAdminGroupQuery>;
 
 function Probe() {
   const currentQuery = useAdminGroupQuery(route.groupId);
-  useEffect(() => {
+  useLayoutEffect(() => {
     query = currentQuery;
   }, [currentQuery]);
   return (
