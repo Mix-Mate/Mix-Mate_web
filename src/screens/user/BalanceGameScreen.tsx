@@ -34,11 +34,27 @@ export default function BalanceGameScreen() {
         </header>
 
         <div className={styles.balanceContentCard}>
-          <article className={styles.balanceQuestion} aria-live="polite">
-            <div className={styles.choiceCard}>{choices[0]}</div>
-            <span className={styles.versusBadge}>VS</span>
-            <div className={styles.choiceCard}>{choices[1]}</div>
-          </article>
+          <div className={styles.balanceScrollArea}>
+            <article className={styles.balanceQuestion} aria-live="polite">
+              <div className={styles.balancePromptSlot}>
+                <h2 className={styles.balancePrompt}>{topic.prompt}</h2>
+              </div>
+
+              <div className={styles.balanceChoices}>
+                <div className={styles.choiceCard}>
+                  <span>{choices[0]}</span>
+                </div>
+
+                <span className={styles.versusBadge} aria-hidden="true">
+                  VS
+                </span>
+
+                <div className={styles.choiceCard}>
+                  <span>{choices[1]}</span>
+                </div>
+              </div>
+            </article>
+          </div>
 
           <Button className={styles.primaryButton} onClick={refetch}>
             다른 주제 추천받기
