@@ -102,16 +102,6 @@ export type ParticipantListResponse = {
   participantList: ParticipantSummaryResponse[];
 };
 
-export type ParticipantExcelUploadFailure = {
-  row: number;
-  reason: string;
-};
-
-export type ParticipantExcelUploadResult = {
-  successCount: number;
-  failures: ParticipantExcelUploadFailure[];
-};
-
 export type ParticipantProfileResponse = {
   displayName: string;
   grade: ProfileGrade;
