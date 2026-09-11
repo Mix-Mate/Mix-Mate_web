@@ -1,7 +1,6 @@
 import type {
   AdminParticipant,
   AdminParticipantGroup,
-  ParticipantExcelUploadResult,
   ParticipantListResponse,
   ParticipantProfileRequest,
   ParticipantSummaryResponse,
@@ -163,30 +162,6 @@ export async function addParticipant(
   rememberAdminParticipantDraft(groupId, input);
 
   return { ok: true as const, source: "api" as const };
-}
-
-export async function uploadParticipantsExcel(
-  groupId: string,
-  file: File,
-): Promise<ParticipantExcelUploadResult> {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  // 엑셀 업로드 API 경로/응답 형식은 백엔드와 아직 확정 전이라 기존 참가자 API
-  // 컨벤션에 맞춰 임시로 잡아둔 값이다. 실제 계약이 정해지면 맞춰 수정한다.
-  const response = await apiFetch(
-    `${API_BASE_URL}/api/v1/groups/${groupId}/participants/excel`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  );
-
-  if (!response.ok) {
-    throw await createRequestError(response, "엑셀 업로드에 실패했습니다.");
-  }
-
-  return (await response.json()) as ParticipantExcelUploadResult;
 }
 
 export async function deleteParticipant(groupId: string, participantId: string) {
