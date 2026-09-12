@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import Header from "@/shared/ui/Header";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import { verifyInviteCodeApi } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
@@ -320,18 +321,8 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
       viewportClassName={styles.pageViewport}
       data-testid="group-join-screen"
     >
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backButton}
-          onClick={handleBack}
-          aria-label="이전 화면으로 이동"
-        >
-          <ChevronLeft size={24} aria-hidden="true" />
-        </button>
-
-        <h1 className={styles.headerTitle}>그룹 입장하기</h1>
-      </header>
+      {/* 1. 상단 헤더: 공통 Header 컴포넌트 적용 */}
+      <Header title="그룹 입장하기" onBack={handleBack} />
 
       <main className={styles.main}>
         <form id="join-group-form" onSubmit={handleSubmit} className={styles.form}>

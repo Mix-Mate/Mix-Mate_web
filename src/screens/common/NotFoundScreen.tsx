@@ -16,7 +16,7 @@ export default function NotFoundScreen() {
       viewportClassName={styles.viewport}
       data-testid="not-found-screen"
     >
-      <Header title="Not Found" onBack={() => router.back()} compact />
+      <Header title="Not Found" onBack={() => router.back()} />
 
       <main className={styles.content}>
         <NotFoundIllustration className={styles.illustration} />

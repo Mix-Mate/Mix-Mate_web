@@ -16,12 +16,12 @@
 }
 
 .phone > header {
-  flex: 0 0 64px;
+  flex: 0 0 72px;
 }
 
 .content {
   display: flex;
-  min-height: calc(var(--mobile-frame-height) - 64px);
+  min-height: calc(var(--mobile-frame-height) - 72px);
   flex-direction: column;
   gap: 14px;
   padding: 14px 14px 0;

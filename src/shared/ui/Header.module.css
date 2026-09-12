@@ -7,14 +7,17 @@
   grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  padding: 0 13px;
+  padding: 0 16px;
   border-bottom: 1px solid #e5e8ec;
   background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .compact {
-  height: 64px;
-  flex-basis: 64px;
+  height: 72px;
+  flex-basis: 72px;
 }
 
 .backButton {
