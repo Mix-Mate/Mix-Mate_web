@@ -1,4 +1,4 @@
-﻿export type ProfileGender = "MALE" | "FEMALE";
+export type ProfileGender = "MALE" | "FEMALE";
 export type ProfileVisibility = "PUBLIC" | "PRIVATE";
 export type ProfileGrade = "FIRST" | "SECOND" | "THIRD" | "FOURTH" | "OTHER";
 export type ProfilePosition = "STAFF" | "MEMBER";
@@ -48,3 +48,19 @@ export type MyProfileResponse = Partial<EditableGroupProfile> & {
   department?: string;
   instagramId?: string | null;
 };
+
+export interface RecentProfileResponse {
+  displayName: string;
+  studentId: string;
+  position: "STAFF" | string;
+  major: string;
+  isNew: boolean;
+  grade: "FIRST" | string;
+  gender: "MALE" | "FEMALE" | string;
+  mbti: string;
+  age: number;
+  instaId: string;
+  bio: string;
+  visibility: "PUBLIC" | "PRIVATE" | string;
+}
+

@@ -2,6 +2,7 @@ import type {
   MyGroupProfile,
   MyProfileResponse,
   ParticipantProfileRequest,
+  RecentProfileResponse,
 } from "../types/profile.types";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
@@ -143,3 +144,25 @@ export async function updateParticipantProfile(
 
   rememberMyGroupProfileDraft(groupId, profile);
 }
+
+export async function getRecentProfileApi(): Promise<RecentProfileResponse | null> {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/profiles/recent`, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw await createRequestError(
+      response,
+      "최근 프로필 정보를 불러오지 못했습니다.",
+    );
+  }
+
+  return (await response.json()) as RecentProfileResponse;
+}
+
