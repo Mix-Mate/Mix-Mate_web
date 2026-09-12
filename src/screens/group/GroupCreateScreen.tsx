@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import Header from "@/shared/ui/Header";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { validateInputField } from "@/shared/lib/input-validation";
 import styles from "./GroupCreateScreen.module.css";
@@ -85,19 +86,8 @@ export default function GroupCreateScreen({
       viewportClassName={styles.pageViewport}
       data-testid="group-create-screen"
     >
-      {/* 1. 상단 헤더: 뒤로가기(<) 버튼 + '새 그룹 생성하기' 타이틀 */}
-      <header className={styles.header}>
-        <button
-          type="button"
-          className={styles.backButton}
-          onClick={handleBack}
-          aria-label="이전 화면으로 이동"
-        >
-          <ChevronLeft size={24} aria-hidden="true" />
-        </button>
-
-        <h1 className={styles.headerTitle}>새 그룹 생성하기</h1>
-      </header>
+      {/* 1. 상단 헤더: 공통 Header 컴포넌트 적용 */}
+      <Header title="새 그룹 생성하기" onBack={handleBack} />
 
       {/* 2. 메인 폼 입력 영역 */}
       <main className={styles.main}>

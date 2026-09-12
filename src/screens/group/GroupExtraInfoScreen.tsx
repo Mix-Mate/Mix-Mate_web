@@ -747,7 +747,7 @@ export default function GroupExtraInfoScreen({
       data-testid="group-extra-info-screen"
     >
       {/* 1. 상단 헤더: 공통 Header 컴포넌트 적용 */}
-      <Header title="그룹별 추가 정보 입력" onBack={handleBack} smallTitle />
+      <Header title="그룹별 추가 정보 입력" onBack={handleBack} />
 
       {/* 2. 메인 폼 컨텐츠 (내부 스크롤) */}
       <form

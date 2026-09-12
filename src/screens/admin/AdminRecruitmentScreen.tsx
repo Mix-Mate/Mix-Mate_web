@@ -284,7 +284,7 @@ export default function AdminRecruitmentScreen() {
       data-testid="admin-recruitment"
       data-group-id={group.groupId}
     >
-      <GroupHomeHeader title={group.groupName} compact />
+      <GroupHomeHeader title={group.groupName} />
 
       <div className={styles.content}>
         <section

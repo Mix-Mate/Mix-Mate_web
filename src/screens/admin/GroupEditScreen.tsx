@@ -124,7 +124,7 @@ export default function GroupEditScreen() {
       viewportClassName={styles.viewport}
       data-testid="group-edit-screen"
     >
-      <Header title="그룹 정보 수정" onBack={goBack} compact />
+      <Header title="그룹 정보 수정" onBack={goBack} />
 
       <main className={styles.content}>
         <form

@@ -80,7 +80,7 @@ export default function AdminPreparationScreen() {
       data-group-id={group.groupId}
       data-round={round}
     >
-      <GroupHomeHeader title={group.groupName} compact />
+      <GroupHomeHeader title={group.groupName} />
 
       <div className={`${styles.content} ${styles.firstRoundContent}`}>
         <SessionStatusCard

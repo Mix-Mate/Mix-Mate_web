@@ -515,12 +515,11 @@ export default function AdminGroupQueryProvider({
       >
         {isGroupHomeRoute(pathname, groupId) ||
         backHref === appRoutes.home() ? (
-          <GroupHomeHeader title="그룹 정보" compact />
+          <GroupHomeHeader title="그룹 정보" />
         ) : (
           <Header
             title="그룹 정보"
             onBack={() => (backHref ? router.replace(backHref) : router.back())}
-            compact
           />
         )}
 

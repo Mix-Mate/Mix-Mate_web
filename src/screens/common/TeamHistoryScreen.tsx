@@ -70,7 +70,6 @@ export default function TeamHistoryScreen() {
     <MobileFrame data-testid="team-history-screen">
       <Header
         title="이전 조 기록"
-        compact
         onBack={() =>
           router.push(
             withSessionContext(groupRoutes.home(params.groupId), searchParams),

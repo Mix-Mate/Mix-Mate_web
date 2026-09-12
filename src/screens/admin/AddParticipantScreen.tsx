@@ -243,7 +243,7 @@ export default function AddParticipantScreen() {
       viewportClassName={styles.viewport}
       data-testid="add-participant-screen"
     >
-      <Header title="참가자 추가" onBack={goToParticipantList} smallTitle />
+      <Header title="참가자 추가" onBack={goToParticipantList} />
 
       <form className={styles.content} onSubmit={handleSubmit}>
         <InfoBanner className={styles.notice}>

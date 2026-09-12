@@ -21,7 +21,7 @@ export default function AdminAccessDeniedScreen({
       viewportClassName={styles.viewport}
       data-testid="admin-access-denied"
     >
-      <Header title="접근 불가" onBack={onBack} compact />
+      <Header title="접근 불가" onBack={onBack} />
 
       <main className={styles.content} aria-labelledby="access-denied-title">
         <div className={styles.lockBackground}>
