@@ -146,6 +146,29 @@
   cursor: not-allowed;
 }
 
+.kakaoButton {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #fee500;
+  color: #191919;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.kakaoButton:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
 .divider {
   width: 100%;
   height: 1px;

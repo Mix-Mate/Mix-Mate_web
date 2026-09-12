@@ -87,3 +87,80 @@ describe("withdrawApi", () => {
     );
   });
 });
+
+describe("loginWithKakaoApi", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+  const KAKAO_AUTH_URL = `${API_BASE_URL}/api/v1/auth/oauth/kakao`;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("200 성공 시 사용자 정보와 토큰을 반환한다", async () => {
+    const mockSuccessResponse = {
+      userId: 1,
+      email: "kakao@example.com",
+      userName: "카카오유저",
+      accessToken: "mock-access-token",
+      refreshToken: "mock-refresh-token",
+    };
+
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, mockSuccessResponse));
+
+    const { loginWithKakaoApi } = await importAuthApi();
+    const result = await loginWithKakaoApi("kakao-auth-code-123");
+
+    expect(result).toEqual(mockSuccessResponse);
+    expect(fetchMock).toHaveBeenCalledWith(
+      KAKAO_AUTH_URL,
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ code: "kakao-auth-code-123" }),
+      }),
+    );
+  });
+
+  it("409 충돌(EMAIL_CONFLICTED) 시 적절한 에러 메시지와 코드를 발생시킨다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(409, {
+        code: "EMAIL_CONFLICTED",
+        message: "이미 가입된 이메일입니다. 기존 방법으로 로그인해주세요.",
+      }),
+    );
+
+    const { loginWithKakaoApi } = await importAuthApi();
+
+    await expect(loginWithKakaoApi("kakao-auth-code-123")).rejects.toMatchObject(
+      {
+        status: 409,
+        code: "EMAIL_CONFLICTED",
+        message: "이미 가입된 이메일입니다. 기존 방법으로 로그인해주세요.",
+      },
+    );
+  });
+
+  it("400 에러 시 서버 에러 메시지를 포함한 AuthApiError를 발생시킨다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(400, {
+        code: "OAUTH_LOGIN_FAILED",
+        message: "인가 코드가 유효하지 않습니다.",
+      }),
+    );
+
+    const { loginWithKakaoApi } = await importAuthApi();
+
+    await expect(loginWithKakaoApi("invalid-code")).rejects.toMatchObject({
+      status: 400,
+      code: "OAUTH_LOGIN_FAILED",
+      message: "인가 코드가 유효하지 않습니다.",
+    });
+  });
+});
+

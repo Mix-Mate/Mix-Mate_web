@@ -7,10 +7,25 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/shared/ui/Button';
 import Toast from '@/shared/ui/Toast';
 import useToast from '@/shared/hooks/useToast';
-import { setAuthTokens } from '@/shared/api/authToken';
+import { saveAuthSession } from '../utils/auth-session';
+import { redirectToKakaoLogin } from '../utils/kakao-auth';
 import { loginApi, AuthApiError } from '../api/auth.api';
 import logoIcon from '../../../../public/icons/logo.png';
 import styles from './LoginForm.module.css';
+
+function KakaoSymbolIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 3C6.477 3 2 6.477 2 10.767c0 2.793 1.897 5.253 4.757 6.645-.21.782-.762 2.827-.872 3.268-.139.554.202.547.426.398.175-.116 2.784-1.895 3.905-2.66.57.08 1.155.122 1.748.122 5.523 0 10-3.477 10-7.773S17.523 3 12 3z" />
+    </svg>
+  );
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -74,23 +89,8 @@ export function LoginForm() {
         password,
       });
 
-      // 200 성공 시: accessToken과 refreshToken을 스토리지/쿠키에 저장하고 메인 홈(/home)으로 이동
-      setAuthTokens({
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      });
-
-      if (typeof window !== 'undefined') {
-        if (response.userName) {
-          window.localStorage.setItem('userName', response.userName);
-        }
-        if (response.userId) {
-          window.localStorage.setItem('userId', String(response.userId));
-        }
-        if (response.email) {
-          window.localStorage.setItem('email', response.email);
-        }
-      }
+      // 200 성공 시: accessToken과 refreshToken, 사용자 정보를 스토리지/쿠키에 저장하고 메인 홈(/home)으로 이동
+      saveAuthSession(response);
 
       router.push('/home');
     } catch (error: unknown) {
@@ -199,6 +199,17 @@ export function LoginForm() {
         >
           {isLoading ? '로그인 중...' : '로그인'}
         </Button>
+
+        {/* 카카오 로그인 버튼 */}
+        <button
+          type="button"
+          onClick={redirectToKakaoLogin}
+          className={styles.kakaoButton}
+          aria-label="카카오 로그인"
+        >
+          <KakaoSymbolIcon />
+          <span>카카오 로그인</span>
+        </button>
 
         {/* 구분선 */}
         <div className={styles.divider} />
