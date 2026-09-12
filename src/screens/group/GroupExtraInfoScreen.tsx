@@ -20,6 +20,7 @@ import {
   getKnownGroupName,
   isDummyGroupName,
 } from "@/features/blacklist/lib/blockedGroupsStorage";
+import { getRecentProfileApi } from "@/features/profile/api/profile.api";
 import { normalizeMajor } from "@/features/profile/lib/normalize-major";
 import {
   getValidationMessage,
@@ -72,6 +73,46 @@ const isNewOptions: NewStatusType[] = ["신입", "기존"];
 const positionOptions: RolePositionType[] = ["일반", "운영진"];
 const visibilityOptions: ProfilePublicType[] = ["전체 공개", "비공개"];
 
+const GRADE_CODE_TO_LABEL: Record<string, GradeType> = {
+  FIRST: "1학년",
+  SECOND: "2학년",
+  THIRD: "3학년",
+  FOURTH: "4학년",
+  OTHER: "기타",
+  "1학년": "1학년",
+  "2학년": "2학년",
+  "3학년": "3학년",
+  "4학년": "4학년",
+  기타: "기타",
+};
+
+const GENDER_CODE_TO_LABEL: Record<string, GenderType> = {
+  MALE: "남",
+  FEMALE: "여",
+  남: "남",
+  여: "여",
+};
+
+const POSITION_CODE_TO_LABEL: Record<string, RolePositionType> = {
+  STAFF: "운영진",
+  MEMBER: "일반",
+  운영진: "운영진",
+  일반: "일반",
+};
+
+const VISIBILITY_CODE_TO_LABEL: Record<string, ProfilePublicType> = {
+  PUBLIC: "전체 공개",
+  PRIVATE: "비공개",
+  "전체 공개": "전체 공개",
+  비공개: "비공개",
+};
+
+function mapRecentIsNew(isNew?: boolean | string): NewStatusType {
+  if (typeof isNew === "boolean") return isNew ? "신입" : "기존";
+  if (isNew === "신입" || isNew === "기존") return isNew;
+  return "";
+}
+
 export interface GroupExtraInfoData {
   name: string;
   grade: GradeType;
@@ -121,6 +162,112 @@ export default function GroupExtraInfoScreen({
     initialData?.isPublicProfile ?? "전체 공개",
   );
 
+  const userEditedRef = useRef<Record<string, boolean>>({});
+
+  const markEdited = (field: string) => {
+    userEditedRef.current[field] = true;
+  };
+
+  // 컴포넌트 마운트 시 최근 입력한 프로필 사전 채움 (prefill)
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadRecentProfile() {
+      try {
+        const recent = await getRecentProfileApi();
+        if (ignore || !recent) return;
+
+        if (!userEditedRef.current.displayName && !initialData?.name) {
+          setName((prev) => (prev ? prev : (recent.displayName ?? "")));
+        }
+
+        if (!userEditedRef.current.grade && !initialData?.grade) {
+          setGrade((prev) => {
+            if (prev) return prev;
+            const mapped = GRADE_CODE_TO_LABEL[recent.grade] ?? "";
+            return gradeOptions.includes(mapped) ? mapped : "";
+          });
+        }
+
+        if (!userEditedRef.current.gender && !initialData?.gender) {
+          setGender((prev) => {
+            if (prev) return prev;
+            const mapped = GENDER_CODE_TO_LABEL[recent.gender] ?? "";
+            return genderOptions.includes(mapped) ? mapped : "";
+          });
+        }
+
+        if (!userEditedRef.current.major && !initialData?.department) {
+          setDepartment((prev) => (prev ? prev : (recent.major ?? "")));
+        }
+
+        if (!userEditedRef.current.isNew && initialData?.isNew === undefined) {
+          setIsNew((prev) => {
+            if (prev) return prev;
+            return mapRecentIsNew(recent.isNew);
+          });
+        }
+
+        if (!userEditedRef.current.rolePosition && !initialData?.rolePosition) {
+          if (!isCreateFlow) {
+            setRolePosition((prev) => {
+              if (prev) return prev;
+              const mapped = POSITION_CODE_TO_LABEL[recent.position] ?? "";
+              return positionOptions.includes(mapped) ? mapped : "";
+            });
+          }
+        }
+
+        if (!userEditedRef.current.mbti && !initialData?.mbti) {
+          setMbti((prev) => {
+            if (prev) return prev;
+            const val = recent.mbti?.toUpperCase();
+            return MBTI_LIST.includes(val as (typeof MBTI_LIST)[number])
+              ? val
+              : "";
+          });
+        }
+
+        if (!userEditedRef.current.age && !initialData?.age) {
+          setAge((prev) => {
+            if (prev) return prev;
+            return recent.age != null ? String(recent.age) : "";
+          });
+        }
+
+        if (!userEditedRef.current.instaId && !initialData?.instagramId) {
+          setInstagramId((prev) => {
+            if (prev) return prev;
+            return recent.instaId
+              ? formatInstagramDisplay(recent.instaId)
+              : "";
+          });
+        }
+
+        if (!userEditedRef.current.bio && !initialData?.bio) {
+          setBio((prev) => (prev ? prev : (recent.bio ?? "")));
+        }
+
+        if (!userEditedRef.current.visibility && !initialData?.isPublicProfile) {
+          if (recent.visibility) {
+            const mapped = VISIBILITY_CODE_TO_LABEL[recent.visibility];
+            if (mapped) {
+              setIsPublicProfile(mapped);
+            }
+          }
+        }
+      } catch {
+        // 204, 401, 네트워크 오류 발생 시에는 사용자 흐름을 방해하지 않고 조용히 빈 기본 폼 상태 유지(Graceful handling)
+      }
+    }
+
+    loadRecentProfile();
+
+    return () => {
+      ignore = true;
+    };
+  }, [initialData, isCreateFlow]);
+
   const [isMbtiOpen, setIsMbtiOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -140,6 +287,7 @@ export default function GroupExtraInfoScreen({
     isBlocked: false,
     isClosed: false,
   });
+
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -298,6 +446,7 @@ export default function GroupExtraInfoScreen({
     field: "displayName" | "major" | "instaId" | "bio",
     value: string,
   ) => {
+    markEdited(field);
     if (field === "displayName") setName(value);
     if (field === "major") setDepartment(value);
     if (field === "instaId") setInstagramId(value);
@@ -643,7 +792,10 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={grade === item ? styles.activeChip : ""}
-                onClick={() => setGrade(grade === item ? "" : item)}
+                onClick={() => {
+                  markEdited("grade");
+                  setGrade(grade === item ? "" : item);
+                }}
               >
                 {item}
               </button>
@@ -660,7 +812,10 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={gender === item ? styles.activeChip : ""}
-                onClick={() => setGender(gender === item ? "" : item)}
+                onClick={() => {
+                  markEdited("gender");
+                  setGender(gender === item ? "" : item);
+                }}
               >
                 {item}
               </button>
@@ -700,7 +855,10 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={isNew === item ? styles.activeChip : ""}
-                onClick={() => setIsNew(isNew === item ? "" : item)}
+                onClick={() => {
+                  markEdited("isNew");
+                  setIsNew(isNew === item ? "" : item);
+                }}
               >
                 {item}
               </button>
@@ -717,9 +875,10 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={rolePosition === item ? styles.activeChip : ""}
-                onClick={() =>
-                  setRolePosition(rolePosition === item ? "" : item)
-                }
+                onClick={() => {
+                  markEdited("rolePosition");
+                  setRolePosition(rolePosition === item ? "" : item);
+                }}
               >
                 {item}
               </button>
@@ -762,6 +921,7 @@ export default function GroupExtraInfoScreen({
                     mbti === item ? styles.dropdownItemActive : ""
                   }`}
                   onClick={() => {
+                    markEdited("mbti");
                     setMbti(item);
                     setIsMbtiOpen(false);
                   }}
@@ -780,9 +940,10 @@ export default function GroupExtraInfoScreen({
             value={age}
             inputMode="numeric"
             maxLength={10}
-            onChange={(e) =>
-              setAge(e.target.value.replace(/[^0-9]/g, "").slice(0, 10))
-            }
+            onChange={(e) => {
+              markEdited("age");
+              setAge(e.target.value.replace(/[^0-9]/g, "").slice(0, 10));
+            }}
             placeholder="나이 입력"
           />
         </label>
@@ -847,7 +1008,10 @@ export default function GroupExtraInfoScreen({
                 key={item}
                 type="button"
                 className={isPublicProfile === item ? styles.activeChip : ""}
-                onClick={() => setIsPublicProfile(item)}
+                onClick={() => {
+                  markEdited("visibility");
+                  setIsPublicProfile(item);
+                }}
               >
                 {item}
               </button>

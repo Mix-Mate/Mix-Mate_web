@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getMyGroupProfile,
+  getRecentProfileApi,
   updateParticipantProfile,
 } from "./profile.api";
 import type { ParticipantProfileRequest } from "../types/profile.types";
@@ -101,4 +102,46 @@ describe("profile api", () => {
       },
     });
   });
+
+  describe("getRecentProfileApi", () => {
+    it("200 응답 시 최근 입력한 프로필 정보를 반환한다", async () => {
+      const mockProfile = {
+        displayName: "홍길동",
+        studentId: "20201234",
+        position: "STAFF",
+        major: "컴퓨터공학과",
+        isNew: false,
+        grade: "FIRST",
+        gender: "MALE",
+        mbti: "ENFP",
+        age: 23,
+        instaId: "hong_gildong",
+        bio: "안녕하세요",
+        visibility: "PUBLIC",
+      };
+
+      fetchMock.mockResolvedValueOnce(
+        Response.json(mockProfile, { status: 200 }),
+      );
+
+      const result = await getRecentProfileApi();
+      expect(result).toEqual(mockProfile);
+    });
+
+    it("204 No Content 응답 시 에러를 던지지 않고 null을 반환한다", async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+      const result = await getRecentProfileApi();
+      expect(result).toBeNull();
+    });
+
+    it("401 응답 시 ProfileApiError를 발생시킨다", async () => {
+      fetchMock.mockResolvedValueOnce(
+        Response.json({ message: "인증되지 않았습니다." }, { status: 401 }),
+      );
+
+      await expect(getRecentProfileApi()).rejects.toThrow("인증되지 않았습니다.");
+    });
+  });
 });
+
