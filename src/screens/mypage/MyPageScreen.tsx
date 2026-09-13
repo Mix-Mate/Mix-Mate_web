@@ -9,7 +9,7 @@ import GenderAvatar from "@/shared/ui/GenderAvatar";
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Toast from "@/shared/ui/Toast";
 import useToast from "@/shared/hooks/useToast";
-import { authRoutes } from "@/shared/lib/navigation/routes";
+import { appRoutes, authRoutes } from "@/shared/lib/navigation/routes";
 import {
   AuthApiError,
   performLogout,
@@ -107,6 +107,10 @@ export default function MyPageScreen() {
 
   const handlePasswordChange = () => {
     router.push(authRoutes.changePassword());
+  };
+
+  const handlePrivacyPolicy = () => {
+    router.push(appRoutes.privacy());
   };
 
   const handleOpenEditNameModal = () => {
@@ -295,6 +299,14 @@ export default function MyPageScreen() {
               </div>
             </button>
           </div>
+
+          <button
+            type="button"
+            className={styles.privacyLink}
+            onClick={handlePrivacyPolicy}
+          >
+            개인정보처리방침
+          </button>
         </section>
       </main>
 
@@ -519,4 +531,3 @@ export default function MyPageScreen() {
     </MobileFrame>
   );
 }
-
