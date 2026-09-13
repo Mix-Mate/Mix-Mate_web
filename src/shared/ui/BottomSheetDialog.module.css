@@ -41,7 +41,6 @@
   height: var(--bottom-sheet-handle-height, 4px);
   margin: var(--bottom-sheet-handle-margin, 0 auto 26px);
   border-radius: var(--bottom-sheet-handle-radius, 999px);
-  background: var(--bottom-sheet-handle-background, #d4d4d8);
 }
 
 @keyframes fadeIn {
