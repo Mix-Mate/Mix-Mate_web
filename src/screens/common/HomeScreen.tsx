@@ -40,7 +40,7 @@ export interface HomeScreenGroupItem {
   name: string;
   description?: string;
   status: GroupStatus;
-  role: GroupRole;
+  myRole: GroupRole;
   memberCount: number;
   date: string;
   time?: string;
@@ -328,7 +328,7 @@ export default function HomeScreen({
               id: String(g.groupId),
               name: g.groupName,
               status: mapStatus(g.status ?? ""),
-              role: mapRole(g.role),
+              myRole: mapRole(g.myRole ?? g.role),
               memberCount: g.memberCount || 0,
               date: g.date || "진행 중",
               time: g.time,
@@ -356,7 +356,7 @@ export default function HomeScreen({
                 id: String(g.groupId),
                 name: g.groupName,
                 status: "BEFORE_FIRST_ROUND",
-                role: "PARTICIPANT",
+                myRole: "PARTICIPANT",
                 memberCount: 0,
                 date: "차단됨",
                 createdAt: g.bannedAt,
@@ -380,7 +380,7 @@ export default function HomeScreen({
               id: String(g.groupId),
               name: g.groupName,
               status: "FINISHED",
-              role: mapRole(g.role),
+              myRole: mapRole(g.myRole ?? g.role),
               memberCount: g.memberCount || 0,
               date: g.date || "종료",
               time: g.time,
@@ -412,7 +412,7 @@ export default function HomeScreen({
   const handleGroupClick = async (group: HomeScreenGroupItem) => {
     if (group.isBlocked) {
       let currentReason = group.blockReason;
-      if (!currentReason && group.role !== "HOST") {
+      if (!currentReason && group.myRole !== "HOST") {
         const blocked = await checkUserBlockedInGroup(group.id, {
           name: userName,
         });
@@ -438,7 +438,7 @@ export default function HomeScreen({
     }
 
     // 관리자가 아닌 경우 차단 여부 먼저 확인
-    if (group.role !== "HOST") {
+    if (group.myRole !== "HOST") {
       const blocked = await checkUserBlockedInGroup(group.id, {
         name: userName,
       });
@@ -653,14 +653,14 @@ export default function HomeScreen({
                                 className={`${styles.roleTag} ${
                                   group.isBlocked
                                     ? styles.roleTagBlocked
-                                    : group.role === "HOST"
+                                    : group.myRole === "HOST"
                                       ? styles.roleTagAdmin
                                       : styles.roleTagUser
                                 }`}
                               >
                                 {group.isBlocked
                                   ? "차단됨"
-                                  : group.role === "HOST"
+                                  : group.myRole === "HOST"
                                     ? "관리자"
                                     : "사용자"}
                               </span>
@@ -696,15 +696,17 @@ export default function HomeScreen({
                         종료됨 · {group.memberCount}명
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      className={styles.rosterDownloadButton}
-                      onClick={() =>
-                        router.push(groupRoutes.rosterDownloads(group.id))
-                      }
-                    >
-                      명단 다운로드 ›
-                    </button>
+                    {group.myRole === "HOST" && (
+                      <button
+                        type="button"
+                        className={styles.rosterDownloadButton}
+                        onClick={() =>
+                          router.push(groupRoutes.rosterDownloads(group.id))
+                        }
+                      >
+                        명단 다운로드 ›
+                      </button>
+                    )}
                   </article>
                 ))}
               </div>
