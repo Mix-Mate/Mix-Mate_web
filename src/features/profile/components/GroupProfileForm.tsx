@@ -82,6 +82,7 @@ export default function GroupProfileForm({
 }: GroupProfileFormProps) {
   const [profile, setProfile] = useState<EditableGroupProfile>({
     displayName: initialProfile.displayName,
+    studentId: initialProfile.studentId,
     position: initialProfile.position,
     major: initialProfile.major,
     isNew: initialProfile.isNew,
@@ -107,7 +108,7 @@ export default function GroupProfileForm({
   const validateTextField = (
     field: Extract<
       ValidatedInputField,
-      "displayName" | "major" | "instaId" | "bio"
+      "displayName" | "studentId" | "major" | "instaId" | "bio"
     >,
     value: string | null,
   ) => {
@@ -120,6 +121,8 @@ export default function GroupProfileForm({
     const error =
       field === "displayName" && !normalizedValue
         ? "이름을 입력해주세요."
+        : field === "studentId" && !normalizedValue
+          ? "학번을 입력해주세요."
         : field === "major" && !normalizedValue
           ? "소속을 입력해주세요."
           : validateInputField(field, normalizedValue);
@@ -131,7 +134,7 @@ export default function GroupProfileForm({
   };
 
   const updateTextField = (
-    field: "displayName" | "major" | "instaId" | "bio",
+    field: "displayName" | "studentId" | "major" | "instaId" | "bio",
     value: string | null,
   ) => {
     updateField(field, value);
@@ -158,7 +161,9 @@ export default function GroupProfileForm({
           const firstField = String(result.error.issues[0]?.path[0] ?? "");
           if (
             onValidationError &&
-            !["displayName", "major", "instaId", "bio"].includes(firstField)
+            !["displayName", "studentId", "major", "instaId", "bio"].includes(
+              firstField,
+            )
           ) {
             onValidationError(getValidationMessage(result.error));
           }
@@ -191,6 +196,22 @@ export default function GroupProfileForm({
           onChange={(value) => updateTextField("displayName", value)}
           onBlur={() => validateTextField("displayName", profile.displayName)}
           error={fieldErrors.displayName}
+        />
+
+        <ProfileTextField
+          label="학번"
+          value={profile.studentId}
+          required
+          inputMode="numeric"
+          maxLength={20}
+          onChange={(value) =>
+            updateTextField(
+              "studentId",
+              value.replace(/[^0-9]/g, "").slice(0, 20),
+            )
+          }
+          onBlur={() => validateTextField("studentId", profile.studentId)}
+          error={fieldErrors.studentId}
         />
 
         <ProfileChipField

@@ -25,6 +25,7 @@ function toParticipantProfileRequest(
 ): ParticipantProfileRequest {
   return {
     displayName: profile.displayName,
+    studentId: profile.studentId,
     position: profile.position,
     major: profile.major,
     isNew: profile.isNew,

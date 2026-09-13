@@ -65,6 +65,7 @@ function toDefaultAdminParticipant(
   return {
     id: String(summary.participantId),
     name: summary.displayName,
+    studentId: summary.studentId ?? draft?.studentId,
     department: summary.major,
     visibility: toVisibility(summary.visibility),
     role: toRole(position),

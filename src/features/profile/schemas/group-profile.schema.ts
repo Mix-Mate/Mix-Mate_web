@@ -36,6 +36,9 @@ export const groupProfileSchema = z.object({
   displayName: validatedStringSchema("displayName")
     .trim()
     .min(1, "이름을 입력해주세요."),
+  studentId: validatedStringSchema("studentId")
+    .trim()
+    .min(1, "학번을 입력해주세요."),
   position: z.enum(profilePositionValues, "직급을 선택해주세요."),
   major: validatedStringSchema("major").trim().min(1, "소속을 입력해주세요."),
   isNew: z.boolean("신입 여부를 선택해주세요."),
@@ -57,6 +60,7 @@ export type GroupProfileFormValues = z.infer<typeof groupProfileSchema>;
 
 const validationFieldOrder = [
   "displayName",
+  "studentId",
   "grade",
   "gender",
   "major",

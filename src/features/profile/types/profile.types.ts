@@ -23,6 +23,7 @@ export type ProfileMbti =
 
 export type EditableGroupProfile = {
   displayName: string;
+  studentId: string;
   position: ProfilePosition;
   major: string;
   isNew: boolean;
@@ -63,4 +64,3 @@ export interface RecentProfileResponse {
   bio: string;
   visibility: "PUBLIC" | "PRIVATE" | string;
 }
-

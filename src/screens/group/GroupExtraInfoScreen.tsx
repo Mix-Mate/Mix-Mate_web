@@ -115,6 +115,7 @@ function mapRecentIsNew(isNew?: boolean | string): NewStatusType {
 
 export interface GroupExtraInfoData {
   name: string;
+  studentId: string;
   grade: GradeType;
   gender: GenderType;
   department: string;
@@ -145,6 +146,7 @@ export default function GroupExtraInfoScreen({
 
   // Form states
   const [name, setName] = useState(initialData?.name ?? "");
+  const [studentId, setStudentId] = useState(initialData?.studentId ?? "");
   const [grade, setGrade] = useState<GradeType>(initialData?.grade ?? "");
   const [gender, setGender] = useState<GenderType>(initialData?.gender ?? "");
   const [department, setDepartment] = useState(initialData?.department ?? "");
@@ -179,6 +181,10 @@ export default function GroupExtraInfoScreen({
 
         if (!userEditedRef.current.displayName && !initialData?.name) {
           setName((prev) => (prev ? prev : (recent.displayName ?? "")));
+        }
+
+        if (!userEditedRef.current.studentId && !initialData?.studentId) {
+          setStudentId((prev) => (prev ? prev : (recent.studentId ?? "")));
         }
 
         if (!userEditedRef.current.grade && !initialData?.grade) {
@@ -417,10 +423,13 @@ export default function GroupExtraInfoScreen({
     router.back();
   };
 
-  const isFormValid = name.trim().length > 0 && department.trim().length > 0;
+  const isFormValid =
+    name.trim().length > 0 &&
+    studentId.trim().length > 0 &&
+    department.trim().length > 0;
 
   const validateProfileField = (
-    field: "displayName" | "major" | "instaId" | "bio",
+    field: "displayName" | "studentId" | "major" | "instaId" | "bio",
     value: string,
   ) => {
     const normalizedValue =
@@ -432,6 +441,8 @@ export default function GroupExtraInfoScreen({
     const error =
       field === "displayName" && !normalizedValue
         ? "이름을 입력해주세요."
+        : field === "studentId" && !normalizedValue
+          ? "학번을 입력해주세요."
         : field === "major" && !normalizedValue
           ? "소속을 입력해주세요."
           : validateInputField(field, normalizedValue);
@@ -443,11 +454,12 @@ export default function GroupExtraInfoScreen({
   };
 
   const updateProfileField = (
-    field: "displayName" | "major" | "instaId" | "bio",
+    field: "displayName" | "studentId" | "major" | "instaId" | "bio",
     value: string,
   ) => {
     markEdited(field);
     if (field === "displayName") setName(value);
+    if (field === "studentId") setStudentId(value);
     if (field === "major") setDepartment(value);
     if (field === "instaId") setInstagramId(value);
     if (field === "bio") setBio(value);
@@ -464,6 +476,7 @@ export default function GroupExtraInfoScreen({
 
     const extraData: GroupExtraInfoData = {
       name: name.trim(),
+      studentId: studentId.trim(),
       grade,
       gender,
       department: department.trim(),
@@ -490,6 +503,7 @@ export default function GroupExtraInfoScreen({
 
     const profileFormData = {
       displayName: name.trim(),
+      studentId: studentId.trim(),
       position: rolePosition
         ? rolePosition === "운영진"
           ? "STAFF"
@@ -511,7 +525,11 @@ export default function GroupExtraInfoScreen({
       const nextErrors = getZodFieldErrors(validation.error);
       setFieldErrors(nextErrors);
       const firstField = String(validation.error.issues[0]?.path[0] ?? "");
-      if (!["displayName", "major", "instaId", "bio"].includes(firstField)) {
+      if (
+        !["displayName", "studentId", "major", "instaId", "bio"].includes(
+          firstField,
+        )
+      ) {
         alert(getValidationMessage(validation.error));
       }
       setIsSubmitting(false);
@@ -586,7 +604,9 @@ export default function GroupExtraInfoScreen({
         const mappedErrors = mapServerFieldErrors(error.fieldErrors);
         const profileErrors = Object.fromEntries(
           Object.entries(mappedErrors).filter(([field]) =>
-            ["displayName", "major", "instaId", "bio"].includes(field),
+            ["displayName", "studentId", "major", "instaId", "bio"].includes(
+              field,
+            ),
           ),
         );
         if (Object.keys(profileErrors).length > 0) {
@@ -783,7 +803,37 @@ export default function GroupExtraInfoScreen({
           )}
         </label>
 
-        {/* 2. 학년 (단일 선택 칩) */}
+        {/* 2. 학번 (필수*) */}
+        <label className={styles.field}>
+          <div className={styles.fieldHeader}>
+            <span>
+              학번 <strong className={styles.required}>*</strong>
+            </span>
+            <span className={styles.charCount}>{studentId.length}/20</span>
+          </div>
+          <input
+            value={studentId}
+            inputMode="numeric"
+            maxLength={20}
+            onChange={(e) =>
+              updateProfileField(
+                "studentId",
+                e.target.value.replace(/[^0-9]/g, "").slice(0, 20),
+              )
+            }
+            onBlur={() => validateProfileField("studentId", studentId)}
+            placeholder="학번 입력"
+            aria-invalid={Boolean(fieldErrors.studentId)}
+            required
+          />
+          {fieldErrors.studentId && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.studentId}
+            </small>
+          )}
+        </label>
+
+        {/* 3. 학년 (단일 선택 칩) */}
         <div className={styles.field}>
           <span>학년</span>
           <div className={styles.chipGroup}>
@@ -803,7 +853,7 @@ export default function GroupExtraInfoScreen({
           </div>
         </div>
 
-        {/* 3. 성별 (단일 선택 칩) */}
+        {/* 4. 성별 (단일 선택 칩) */}
         <div className={styles.field}>
           <span>성별</span>
           <div className={styles.chipGroup}>
@@ -823,7 +873,7 @@ export default function GroupExtraInfoScreen({
           </div>
         </div>
 
-        {/* 4. 소속 (필수) */}
+        {/* 5. 소속 (필수) */}
         <label className={styles.field}>
           <span>
             소속{" "}
@@ -846,7 +896,7 @@ export default function GroupExtraInfoScreen({
           )}
         </label>
 
-        {/* 5. 신입 여부 (단일 선택 칩) */}
+        {/* 6. 신입 여부 (단일 선택 칩) */}
         <div className={styles.field}>
           <span>신입 여부</span>
           <div className={styles.chipGroup}>
@@ -866,7 +916,7 @@ export default function GroupExtraInfoScreen({
           </div>
         </div>
 
-        {/* 6. 직급 (단일 선택 칩) */}
+        {/* 7. 직급 (단일 선택 칩) */}
         <div className={styles.field}>
           <span>직급</span>
           <div className={styles.chipGroup}>
@@ -886,7 +936,7 @@ export default function GroupExtraInfoScreen({
           </div>
         </div>
 
-        {/* 7. MBTI (커스텀 드롭다운) */}
+        {/* 8. MBTI (커스텀 드롭다운) */}
         <div
           className={styles.field}
           ref={dropdownRef}
@@ -933,7 +983,7 @@ export default function GroupExtraInfoScreen({
           )}
         </div>
 
-        {/* 8. 나이 (선택) */}
+        {/* 9. 나이 (선택) */}
         <label className={styles.field}>
           <span>나이 (선택)</span>
           <input
@@ -948,7 +998,7 @@ export default function GroupExtraInfoScreen({
           />
         </label>
 
-        {/* 9. 인스타 ID (선택) */}
+        {/* 10. 인스타 ID (선택) */}
         <label className={styles.field}>
           <span>인스타 ID (선택)</span>
           <input
@@ -979,7 +1029,7 @@ export default function GroupExtraInfoScreen({
           )}
         </label>
 
-        {/* 10. 자기소개 (선택) */}
+        {/* 11. 자기소개 (선택) */}
         <label className={styles.field}>
           <span>자기소개 (선택)</span>
           <textarea
@@ -997,7 +1047,7 @@ export default function GroupExtraInfoScreen({
           )}
         </label>
 
-        {/* 11. 프로필 공개 여부 (필수*) */}
+        {/* 12. 프로필 공개 여부 (필수*) */}
         <div className={styles.field}>
           <span>
             프로필 공개 여부 <strong className={styles.required}>*</strong>

@@ -68,6 +68,7 @@ function toMyGroupProfile(
   return {
     id: String(data.participantId ?? data.id ?? "me"),
     displayName: getValue(data, draft, "displayName") ?? data.name ?? "",
+    studentId: getValue(data, draft, "studentId") ?? "",
     position: getValue(data, draft, "position") ?? "MEMBER",
     major: getValue(data, draft, "major") ?? data.department ?? "",
     isNew: getValue(data, draft, "isNew") ?? false,
@@ -165,4 +166,3 @@ export async function getRecentProfileApi(): Promise<RecentProfileResponse | nul
 
   return (await response.json()) as RecentProfileResponse;
 }
-

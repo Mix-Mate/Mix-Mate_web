@@ -73,6 +73,7 @@ function toParticipant(
   return {
     id: String(summary.participantId),
     name: summary.displayName,
+    studentId: summary.studentId ?? draft?.studentId,
     department: summary.major || draft?.major || "",
     visibility: toVisibility(summary.visibility),
     role: toRole(position),
@@ -115,6 +116,7 @@ export function toParticipantProfile(
   return {
     id: participantId,
     name: profile.displayName,
+    studentId: profile.studentId,
     department: profile.major,
     visibility: profile.visibility
       ? toVisibility(profile.visibility)
@@ -207,6 +209,7 @@ function mergeHydratedParticipant<TParticipant extends Participant>(
     ...profile,
     name: profile.name || participant.name,
     department: profile.department || participant.department,
+    studentId: profile.studentId ?? participant.studentId,
     role:
       profile.role === "staff" || participant.role === "staff"
         ? "staff"

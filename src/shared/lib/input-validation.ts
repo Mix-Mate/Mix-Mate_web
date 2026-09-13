@@ -22,6 +22,12 @@ export const INPUT_VALIDATION_RULES = {
     characterMessage:
       "이름에는 한글, 영문, 숫자와 일부 기호만 사용할 수 있습니다.",
   },
+  studentId: {
+    maxLength: 20,
+    pattern: /^[0-9]*$/,
+    lengthMessage: "학번은 20자를 넘을 수 없습니다.",
+    characterMessage: "학번은 숫자만 사용할 수 있습니다.",
+  },
   major: {
     maxLength: 20,
     pattern: /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9 ._-]*$/,

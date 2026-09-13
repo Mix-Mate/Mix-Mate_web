@@ -72,6 +72,7 @@ describe("GroupExtraInfoScreen 프로필 prefill 연동", () => {
     });
 
     expect(screen.getByPlaceholderText("소속 입력")).toHaveValue("컴퓨터공학과");
+    expect(screen.getByPlaceholderText("학번 입력")).toHaveValue("20210001");
     expect(screen.getByPlaceholderText("나이 입력")).toHaveValue("24");
     expect(screen.getByPlaceholderText("@아이디 입력")).toHaveValue(
       "@hong_insta",
@@ -148,6 +149,7 @@ describe("GroupExtraInfoScreen 프로필 prefill 연동", () => {
     });
 
     expect(screen.getByPlaceholderText("이름 입력")).toHaveValue("");
+    expect(screen.getByPlaceholderText("학번 입력")).toHaveValue("");
     expect(screen.getByPlaceholderText("소속 입력")).toHaveValue("");
     expect(screen.getByPlaceholderText("나이 입력")).toHaveValue("");
     expect(screen.getByPlaceholderText("@아이디 입력")).toHaveValue("");
