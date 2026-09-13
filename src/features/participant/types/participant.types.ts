@@ -107,7 +107,7 @@ export type ParticipantListResponse = {
 
 export type ParticipantProfileResponse = {
   displayName: string;
-  studentId: string;
+  studentId?: string;
   grade: ProfileGrade;
   gender: ProfileGender;
   major: string;

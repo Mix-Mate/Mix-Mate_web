@@ -163,7 +163,7 @@ export default function AddParticipantScreen() {
         ? "이름을 입력해주세요."
         : field === "studentId"
           ? "학번을 입력해주세요."
-        : "소속을 입력해주세요."
+          : "소속을 입력해주세요."
       : validateInputField(field, normalizedValue);
     setFieldErrors((current) => ({
       ...current,
