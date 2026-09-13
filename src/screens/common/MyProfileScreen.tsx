@@ -107,6 +107,11 @@ export default function MyProfileScreen() {
           </div>
 
           <div>
+            <span>학번</span>
+            <strong>{profile.studentId ?? "등록된 학번이 없습니다."}</strong>
+          </div>
+
+          <div>
             <span>신입 여부</span>
             <strong>{profile.isNew ? "신입" : "기존"}</strong>
           </div>

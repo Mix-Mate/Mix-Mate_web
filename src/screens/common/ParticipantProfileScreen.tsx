@@ -38,6 +38,7 @@ function toProfileFromMyGroupProfile(
   return {
     id: participantId,
     name: profile.displayName,
+    studentId: profile.studentId ?? undefined,
     department: profile.major,
     visibility: profile.visibility === "PUBLIC" ? "public" : "private",
     role: profile.position === "STAFF" ? "staff" : "general",

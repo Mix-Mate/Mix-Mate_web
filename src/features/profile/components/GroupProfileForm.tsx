@@ -150,6 +150,7 @@ export default function GroupProfileForm({
         const normalizedProfile = {
           ...initialProfile,
           ...profile,
+          studentId: profile.studentId.trim(),
           major: normalizeMajor(profile.major),
           instaId: cleanInstagramForSubmit(profile.instaId),
         };
