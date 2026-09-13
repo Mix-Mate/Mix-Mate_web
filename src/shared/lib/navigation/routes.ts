@@ -7,6 +7,7 @@ export const appRoutes = {
   home: () => "/home",
   patchNotes: () => "/patch-notes",
   patchNoteDetail: (noteId: string) => `/patch-notes/${noteId}`,
+  privacy: () => "/privacy",
 };
 
 export const authRoutes = {
