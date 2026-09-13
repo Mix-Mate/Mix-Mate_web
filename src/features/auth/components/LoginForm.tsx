@@ -9,6 +9,7 @@ import Toast from '@/shared/ui/Toast';
 import useToast from '@/shared/hooks/useToast';
 import { saveAuthSession } from '../utils/auth-session';
 import { redirectToKakaoLogin } from '../utils/kakao-auth';
+import { redirectToGoogleLogin } from '../utils/google-auth';
 import { loginApi, AuthApiError } from '../api/auth.api';
 import logoIcon from '../../../../public/icons/logo.png';
 import styles from './LoginForm.module.css';
@@ -23,6 +24,29 @@ function KakaoSymbolIcon() {
       aria-hidden="true"
     >
       <path d="M12 3C6.477 3 2 6.477 2 10.767c0 2.793 1.897 5.253 4.757 6.645-.21.782-.762 2.827-.872 3.268-.139.554.202.547.426.398.175-.116 2.784-1.895 3.905-2.66.57.08 1.155.122 1.748.122 5.523 0 10-3.477 10-7.773S17.523 3 12 3z" />
+    </svg>
+  );
+}
+
+function GoogleSymbolIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.52 12.273c0-.851-.076-1.669-.218-2.455H12v4.645h6.458a5.52 5.52 0 0 1-2.396 3.622v3.01h3.878c2.269-2.09 3.58-5.166 3.58-8.822z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.956-1.075 7.94-2.905l-3.878-3.01c-1.075.72-2.45 1.146-4.062 1.146-3.125 0-5.77-2.11-6.715-4.946H1.28v3.107C3.253 21.31 7.31 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.285 14.285A7.19 7.19 0 0 1 4.909 12c0-.793.136-1.564.376-2.285V6.608H1.28A11.996 11.996 0 0 0 0 12c0 1.936.464 3.768 1.28 5.392l4.005-3.107z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.77c1.762 0 3.344.605 4.588 1.793l3.442-3.442C17.951 1.19 15.236 0 12 0 7.31 0 3.253 2.69 1.28 6.608l4.005 3.107C6.23 6.879 8.875 4.77 12 4.77z"
+      />
     </svg>
   );
 }
@@ -209,6 +233,17 @@ export function LoginForm() {
         >
           <KakaoSymbolIcon />
           <span>카카오 로그인</span>
+        </button>
+
+        {/* 구글 로그인 버튼 */}
+        <button
+          type="button"
+          onClick={redirectToGoogleLogin}
+          className={styles.googleButton}
+          aria-label="구글 로그인"
+        >
+          <GoogleSymbolIcon />
+          <span>구글 로그인</span>
         </button>
 
         {/* 구분선 */}

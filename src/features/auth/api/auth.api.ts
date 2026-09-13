@@ -245,6 +245,48 @@ export async function loginWithKakaoApi(code: string): Promise<LoginResponse> {
 
 
 /**
+ * 구글 소셜 로그인 API 호출
+ * POST /api/v1/auth/oauth/google
+ */
+export async function loginWithGoogleApi(code: string): Promise<LoginResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/oauth/google`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ code }),
+  });
+
+  if (!response.ok) {
+    let errorData: AuthErrorResponse | null = null;
+    try {
+      errorData = (await response.json()) as AuthErrorResponse;
+    } catch {
+      // Non-JSON response fallback
+    }
+
+    const defaultMessage =
+      response.status === 409
+        ? "이미 가입된 이메일입니다. 기존 방법으로 로그인해주세요."
+        : response.status === 400
+          ? "구글 로그인 처리에 실패했습니다."
+          : "구글 로그인에 실패했습니다.";
+
+    const message = errorData?.message || defaultMessage;
+
+    throw new AuthApiError(
+      message,
+      response.status,
+      errorData?.code,
+      errorData?.errors,
+    );
+  }
+
+  return (await response.json()) as LoginResponse;
+}
+
+/**
  * 회원가입 API 호출
  * POST /api/v1/auth/signup
  */
