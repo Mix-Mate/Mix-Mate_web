@@ -4,8 +4,13 @@ import { useState, useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Ban, ChevronRight, FileText, User } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import { appRoutes, authRoutes, groupRoutes } from "@/shared/lib/navigation/routes";
+import Button from "@/shared/ui/Button";
+import StandardDialog from "@/shared/ui/StandardDialog";
+import {
+  appRoutes,
+  authRoutes,
+  groupRoutes,
+} from "@/shared/lib/navigation/routes";
 import {
   getMyGroupsApi,
   GroupApiError,
@@ -595,9 +600,7 @@ export default function HomeScreen({
 
             <div
               className={`${styles.tabIndicator} ${
-                activeTab === "COMPLETED"
-                  ? styles.tabIndicatorCompleted
-                  : ""
+                activeTab === "COMPLETED" ? styles.tabIndicatorCompleted : ""
               }`}
               aria-hidden="true"
             />
@@ -720,40 +723,20 @@ export default function HomeScreen({
       </main>
 
       {/* 그룹 이용 제한 안내 모달 */}
-      <BottomSheetDialog
+      <StandardDialog
         open={isBlockedModalOpen}
         titleId="blocked-alert-modal-title"
         descriptionId="blocked-alert-modal-description"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={() => setIsBlockedModalOpen(false)}
-      >
-        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`}>
-          <Ban size={24} strokeWidth={2} aria-hidden="true" />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h3 id="blocked-alert-modal-title" className={styles.modalTitle}>
-            그룹 이용 제한 안내
-          </h3>
-          <p
-            id="blocked-alert-modal-description"
-            className={styles.modalDescription}
-          >
-            관리자에 의해 해당 그룹에서 차단되었습니다.
-          </p>
-        </div>
-
-        <div className={styles.modalSingleAction}>
-          <button
-            type="button"
-            className={`${styles.modalSingleActionButton} ${styles.modalDangerButton}`}
-            onClick={handleRemoveBlockedGroup}
-          >
+        icon={<Ban size={27} strokeWidth={2} />}
+        title="그룹 이용 제한 안내"
+        description="관리자에 의해 해당 그룹에서 차단되었습니다."
+        actions={
+          <Button variant="danger" onClick={handleRemoveBlockedGroup}>
             목록에서 삭제하기
-          </button>
-        </div>
-      </BottomSheetDialog>
+          </Button>
+        }
+      />
     </MobileFrame>
   );
 }

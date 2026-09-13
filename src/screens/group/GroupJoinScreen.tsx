@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Button from "@/shared/ui/Button";
+import StandardDialog from "@/shared/ui/StandardDialog";
 import { verifyInviteCodeApi } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import {
@@ -24,9 +25,13 @@ interface ErrorModalState {
   title: string;
   description: string;
   isBlocked?: boolean;
+  redirectToLogin?: boolean;
 }
 
-export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScreenProps) {
+export default function GroupJoinScreen({
+  onSuccess,
+  onJoinError,
+}: GroupJoinScreenProps) {
   const router = useRouter();
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -36,6 +41,7 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
     title: "",
     description: "",
     isBlocked: false,
+    redirectToLogin: false,
   });
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -56,6 +62,10 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
   };
 
   const handleCloseErrorModal = () => {
+    if (errorModal.redirectToLogin) {
+      router.push("/login");
+      return;
+    }
     setErrorModal((prev) => ({ ...prev, open: false }));
     if (!errorModal.isBlocked) {
       resetInputsAndFocus();
@@ -73,7 +83,11 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
 
     // Handle paste or multi-char input in a single box
     if (value.length > 1) {
-      const chars = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 6).split("");
+      const chars = value
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 6)
+        .split("");
       const newCode = [...code];
       chars.forEach((c, i) => {
         if (i < 6) newCode[i] = c;
@@ -96,7 +110,10 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
   };
 
   // Handle backspace navigation
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -169,7 +186,10 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         window.sessionStorage.setItem("pendingGroupId", String(result.groupId));
         if (result.groupName) {
           window.sessionStorage.setItem("pendingGroupName", result.groupName);
-          window.sessionStorage.setItem(`groupName_${result.groupId}`, result.groupName);
+          window.sessionStorage.setItem(
+            `groupName_${result.groupId}`,
+            result.groupName,
+          );
         }
       }
 
@@ -220,8 +240,13 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
 
       // 401 Unauthorized: 로그인 세션 만료 안내 후 로그인 화면(/login)으로 리다이렉트
       if (errorStatus === 401) {
-        alert("로그인 세션이 만료되었습니다. 다시 로그인해 주세요.");
-        router.push("/login");
+        setErrorModal({
+          open: true,
+          title: "로그인 세션이 만료되었습니다",
+          description: "다시 로그인한 후 그룹 참여를 진행해 주세요.",
+          isBlocked: false,
+          redirectToLogin: true,
+        });
         return;
       }
 
@@ -243,7 +268,8 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         }
 
         const description =
-          errorObj.message || "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.";
+          errorObj.message ||
+          "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.";
 
         setErrorModal({
           open: true,
@@ -325,7 +351,11 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
       <Header title="그룹 입장하기" onBack={handleBack} />
 
       <main className={styles.main}>
-        <form id="join-group-form" onSubmit={handleSubmit} className={styles.form}>
+        <form
+          id="join-group-form"
+          onSubmit={handleSubmit}
+          className={styles.form}
+        >
           <div className={styles.titleSection}>
             <h2 className={styles.mainTitle}>참여코드를 입력하세요</h2>
             <p className={styles.subTitle}>
@@ -380,37 +410,33 @@ export default function GroupJoinScreen({ onSuccess, onJoinError }: GroupJoinScr
         </button>
       </footer>
 
-      <BottomSheetDialog
+      <StandardDialog
         open={errorModal.open}
         titleId="error-dialog-title"
         descriptionId="error-dialog-desc"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={handleCloseErrorModal}
-      >
-        <div className={styles.modalIcon} aria-hidden="true">
-          <AlertCircle size={32} strokeWidth={2} />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h2 id="error-dialog-title" className={styles.modalTitle}>
-            {errorModal.title}
-          </h2>
-          <p id="error-dialog-desc" className={styles.modalDescription}>
-            {errorModal.description}
-          </p>
-        </div>
-
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.retryButton}
-            onClick={errorModal.isBlocked ? () => router.replace("/home") : handleRetry}
+        icon={<AlertCircle size={27} strokeWidth={2} />}
+        title={errorModal.title}
+        description={errorModal.description}
+        actions={
+          <Button
+            variant="danger"
+            onClick={
+              errorModal.redirectToLogin
+                ? () => router.push("/login")
+                : errorModal.isBlocked
+                  ? () => router.replace("/home")
+                  : handleRetry
+            }
           >
-            {errorModal.isBlocked ? "홈으로 이동" : "다시 입력하기"}
-          </button>
-        </div>
-      </BottomSheetDialog>
+            {errorModal.redirectToLogin
+              ? "로그인하기"
+              : errorModal.isBlocked
+                ? "홈으로 이동"
+                : "다시 입력하기"}
+          </Button>
+        }
+      />
     </MobileFrame>
   );
 }
