@@ -44,6 +44,7 @@ export function getGoogleAuthorizeUrl(state: string): string {
     redirect_uri: redirectUri,
     response_type: "code",
     scope: "openid email profile",
+    prompt: "select_account",
     state,
   });
 
