@@ -1,0 +1,120 @@
+.sheet {
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  place-items: center;
+  border: 1px solid;
+  border-radius: 16px;
+}
+
+.icon.danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #f63b3e;
+}
+
+.icon.primary {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #256ad3;
+}
+
+.icon.success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.message {
+  text-align: center;
+}
+
+.message h2 {
+  margin: 0;
+  color: #18181b;
+  font-family: "42dot Sans", sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 39px;
+  letter-spacing: -0.3px;
+  text-wrap: balance;
+  word-break: keep-all;
+}
+
+.message p {
+  margin: 12px 0 14px;
+  color: #71717a;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 28px;
+  text-wrap: pretty;
+  word-break: keep-all;
+}
+
+.message p strong {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.notice.danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #ef4444;
+}
+
+.notice.primary {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #256ad3;
+}
+
+.notice.success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.error {
+  display: block;
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-top: 34px;
+}
+
+.actions:has(> :only-child) {
+  grid-template-columns: 1fr;
+}
+
+.actions > button {
+  height: 58px;
+  min-width: 0;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
