@@ -28,6 +28,7 @@ export type ProfileMbti =
 export type Participant = {
   id: string;
   name: string;
+  studentId?: string;
   department: string;
   visibility: ParticipantVisibility;
   role: ParticipantRole;
@@ -69,6 +70,7 @@ export type AdminParticipantGroup = {
 
 export type ParticipantProfileRequest = {
   displayName: string;
+  studentId: string;
   position: ProfilePosition;
   major: string;
   isNew: boolean;
@@ -84,6 +86,7 @@ export type ParticipantProfileRequest = {
 export type ParticipantSummaryResponse = {
   participantId: number;
   displayName: string;
+  studentId?: string;
   major: string;
   gender: ProfileGender;
   visibility?: ProfileVisibility;
@@ -104,6 +107,7 @@ export type ParticipantListResponse = {
 
 export type ParticipantProfileResponse = {
   displayName: string;
+  studentId: string;
   grade: ProfileGrade;
   gender: ProfileGender;
   major: string;

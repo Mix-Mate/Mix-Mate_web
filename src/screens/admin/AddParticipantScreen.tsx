@@ -64,6 +64,7 @@ const visibilityOptions: { label: string; value: ProfileVisibility }[] = [
 
 type AddParticipantForm = {
   displayName: string;
+  studentId: string;
   position: ProfilePosition | null;
   major: string;
   isNew: boolean | null;
@@ -78,6 +79,7 @@ type AddParticipantForm = {
 
 function getMissingFieldMessage(form: AddParticipantForm) {
   if (!form.displayName.trim()) return "이름을 입력해주세요.";
+  if (!form.studentId.trim()) return "학번을 입력해주세요.";
   if (!form.grade) return "학년을 선택해주세요.";
   if (!form.gender) return "성별을 선택해주세요.";
   if (!form.major.trim()) return "소속을 입력해주세요.";
@@ -106,6 +108,7 @@ export default function AddParticipantScreen() {
   const { message: toast, showToast } = useToast();
   const [form, setForm] = useState<AddParticipantForm>({
     displayName: "",
+    studentId: "",
     position: null,
     major: "",
     isNew: null,
@@ -150,11 +153,16 @@ export default function AddParticipantScreen() {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
   };
 
-  const validateTextField = (field: "displayName" | "major", value: string) => {
+  const validateTextField = (
+    field: "displayName" | "studentId" | "major",
+    value: string,
+  ) => {
     const normalizedValue = value.trim();
     const error = !normalizedValue
       ? field === "displayName"
         ? "이름을 입력해주세요."
+        : field === "studentId"
+          ? "학번을 입력해주세요."
         : "소속을 입력해주세요."
       : validateInputField(field, normalizedValue);
     setFieldErrors((current) => ({
@@ -164,7 +172,10 @@ export default function AddParticipantScreen() {
     return error;
   };
 
-  const updateTextField = (field: "displayName" | "major", value: string) => {
+  const updateTextField = (
+    field: "displayName" | "studentId" | "major",
+    value: string,
+  ) => {
     updateField(field, value);
     if (fieldErrors[field]) validateTextField(field, value);
   };
@@ -183,18 +194,24 @@ export default function AddParticipantScreen() {
     const formData = {
       ...form,
       displayName: form.displayName.trim(),
+      studentId: form.studentId.trim(),
       major: form.major.trim(),
     };
     const textErrors = {
       displayName:
         validateInputField("displayName", formData.displayName) ??
         (!formData.displayName ? "이름을 입력해주세요." : undefined),
+      studentId:
+        validateInputField("studentId", formData.studentId) ??
+        (!formData.studentId ? "학번을 입력해주세요." : undefined),
       major:
         validateInputField("major", formData.major) ??
         (!formData.major ? "소속을 입력해주세요." : undefined),
     };
     setFieldErrors(textErrors);
-    if (textErrors.displayName || textErrors.major) return;
+    if (textErrors.displayName || textErrors.studentId || textErrors.major) {
+      return;
+    }
 
     const missingFieldMessage = getMissingFieldMessage(formData);
 
@@ -220,7 +237,9 @@ export default function AddParticipantScreen() {
         const mappedErrors = mapServerFieldErrors(result.fieldErrors);
         const profileErrors = Object.fromEntries(
           Object.entries(mappedErrors).filter(([field]) =>
-            ["displayName", "major", "instaId", "bio"].includes(field),
+            ["displayName", "studentId", "major", "instaId", "bio"].includes(
+              field,
+            ),
           ),
         );
         if (Object.keys(profileErrors).length > 0) {
@@ -269,6 +288,32 @@ export default function AddParticipantScreen() {
           {fieldErrors.displayName && (
             <small className={styles.fieldError} role="alert">
               {fieldErrors.displayName}
+            </small>
+          )}
+        </label>
+
+        <label className={styles.field}>
+          <div className={styles.fieldHeader}>
+            <span>학번</span>
+            <span className={styles.charCount}>{form.studentId.length}/20</span>
+          </div>
+          <input
+            value={form.studentId}
+            inputMode="numeric"
+            maxLength={20}
+            onChange={(event) =>
+              updateTextField(
+                "studentId",
+                event.target.value.replace(/[^0-9]/g, "").slice(0, 20),
+              )
+            }
+            onBlur={() => validateTextField("studentId", form.studentId)}
+            placeholder="학번 입력"
+            aria-invalid={Boolean(fieldErrors.studentId)}
+          />
+          {fieldErrors.studentId && (
+            <small className={styles.fieldError} role="alert">
+              {fieldErrors.studentId}
             </small>
           )}
         </label>

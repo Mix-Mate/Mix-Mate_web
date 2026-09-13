@@ -6,6 +6,7 @@ const fetchMock = vi.fn<typeof fetch>();
 
 const participant: ParticipantProfileRequest = {
   displayName: "다래",
+  studentId: "20210001",
   position: "MEMBER",
   major: "컴퓨터공학과",
   isNew: true,

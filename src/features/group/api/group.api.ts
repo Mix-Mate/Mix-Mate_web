@@ -18,6 +18,7 @@ async function getErrorMessage(response: Response, fallback: string) {
 
 export interface GroupProfileDto {
   displayName: string;
+  studentId: string;
   position: string; // 'STAFF' | 'MEMBER'
   major: string;
   isNew: boolean;
@@ -204,6 +205,7 @@ export async function createGroupApi(
 
   const defaultProfile: GroupProfileDto = {
     displayName: userName,
+    studentId: "00000000",
     position: "STAFF",
     major: "자유전공",
     isNew: false,
@@ -584,6 +586,7 @@ export async function joinGroupByCode(
 ): Promise<JoinGroupResponse> {
   const defaultProfile: GroupProfileDto = {
     displayName: "참가자",
+    studentId: "00000000",
     position: "MEMBER",
     major: "기타",
     isNew: false,

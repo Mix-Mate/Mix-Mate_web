@@ -10,6 +10,7 @@ const fetchMock = vi.fn<typeof fetch>();
 
 const fullProfile: ParticipantProfileRequest = {
   displayName: "수정한이름",
+  studentId: "20201234",
   position: "STAFF",
   major: "컴퓨터공학과",
   isNew: false,
@@ -49,6 +50,7 @@ describe("profile api", () => {
     await expect(getMyGroupProfile("10")).resolves.toMatchObject({
       id: "23",
       displayName: "수정한이름",
+      studentId: "20201234",
       position: "STAFF",
       major: "컴퓨터공학과",
       isNew: false,
@@ -144,4 +146,3 @@ describe("profile api", () => {
     });
   });
 });
-
