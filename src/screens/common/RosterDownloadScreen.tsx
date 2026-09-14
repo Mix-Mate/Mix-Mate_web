@@ -2,19 +2,20 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  getTeams,
-  hasSecondRoundTeams,
-} from "@/features/assignment/api/assignment.api";
+import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { getParticipants } from "@/features/participant/api/participant.api";
+import { getRoster } from "@/features/roster-download/api/roster.api";
 import {
   createParticipantRosterSheet,
   createTeamRosterSheet,
   downloadRosterExcel,
   sanitizeExcelFileBaseName,
 } from "@/features/roster-download/lib/roster-excel";
+import type {
+  RosterMember,
+  RosterResponse,
+} from "@/features/roster-download/types/roster.types";
 import useToast from "@/shared/hooks/useToast";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
@@ -39,6 +40,17 @@ function getErrorMessage(error: unknown): string {
     : "Excel 파일을 다운로드하지 못했습니다.";
 }
 
+function getRoundMembers(
+  roster: RosterResponse | null,
+  round: AssignmentRound,
+): RosterMember[] {
+  if (!roster) return [];
+  const backendRound = toBackendRound(round);
+  return (
+    roster.rounds.find((entry) => entry.round === backendRound)?.members ?? []
+  );
+}
+
 export default function RosterDownloadScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
@@ -48,23 +60,28 @@ export default function RosterDownloadScreen() {
   const [participantCounts, setParticipantCounts] = useState<
     Partial<Record<AssignmentRound, number>>
   >({});
-  const [hasSecondRound, setHasSecondRound] = useState<boolean | null>(null);
+  const [roster, setRoster] = useState<RosterResponse | null>(null);
+  const hasSecondRound = roster
+    ? roster.rounds.some((entry) => entry.round === "SECOND_ROUND")
+    : null;
 
   useEffect(() => {
     let ignore = false;
     const requestController = new AbortController();
 
-    void hasSecondRoundTeams(params.groupId, requestController.signal).then(
-      (result) => {
-        if (!ignore) setHasSecondRound(result);
-      },
-    );
+    getRoster(params.groupId, requestController.signal)
+      .then((data) => {
+        if (!ignore) setRoster(data);
+      })
+      .catch((error) => {
+        if (!ignore) showToast(getErrorMessage(error));
+      });
 
     return () => {
       ignore = true;
       requestController.abort();
     };
-  }, [params.groupId]);
+  }, [params.groupId, showToast]);
 
   if (!group) return null;
 
@@ -79,25 +96,22 @@ export default function RosterDownloadScreen() {
     setButtonLoading(kind, true);
 
     try {
-      const { participants } = await getParticipants(params.groupId, round, {
-        hydrateProfiles: false,
-        includeTeams: false,
-      });
+      const members = getRoundMembers(roster, round);
 
-      if (participants.length === 0) {
+      if (members.length === 0) {
         showToast(`${round}차 참가자 명단에 데이터가 없습니다.`);
         return;
       }
 
       await downloadRosterExcel({
-        data: createParticipantRosterSheet(participants),
+        data: createParticipantRosterSheet(members),
         fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_참가자명단.xlsx`,
         sheetName: `${round}차 참가자`,
-        columnWidths: [18, 24, 12],
+        columnWidths: [14, 18, 24, 12],
       });
       setParticipantCounts((previous) => ({
         ...previous,
-        [round]: participants.length,
+        [round]: members.length,
       }));
     } catch (error) {
       showToast(getErrorMessage(error));
@@ -110,22 +124,20 @@ export default function RosterDownloadScreen() {
     setButtonLoading(kind, true);
 
     try {
-      const teams = await getTeams(params.groupId, round);
-      const memberCount = teams.reduce(
-        (count, team) => count + team.members.length,
-        0,
+      const teamMembers = getRoundMembers(roster, round).filter(
+        (member) => member.teamNumber !== null,
       );
 
-      if (memberCount === 0) {
+      if (teamMembers.length === 0) {
         showToast(`${round}차 조 명단에 데이터가 없습니다.`);
         return;
       }
 
       await downloadRosterExcel({
-        data: createTeamRosterSheet(teams),
+        data: createTeamRosterSheet(teamMembers),
         fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_조명단.xlsx`,
         sheetName: `${round}차 조 명단`,
-        columnWidths: [10, 18, 24],
+        columnWidths: [10, 14, 18, 24],
       });
     } catch (error) {
       showToast(getErrorMessage(error));
@@ -151,8 +163,8 @@ export default function RosterDownloadScreen() {
         <InfoBanner className={styles.infoBanner}>
           <p>
             필요한 명단을 각각 Excel 파일로 받을 수 있습니다. <br />
-            참가자 명단은 이름·학과·성별, 조 명단은 조번호·이름·학과 정보로
-            구성됩니다.
+            참가자 명단은 학번·이름·학과·성별, 조 명단은 조번호·학번·이름·학과
+            정보로 구성됩니다.
           </p>
         </InfoBanner>
 
@@ -173,6 +185,7 @@ export default function RosterDownloadScreen() {
             }
             tone="participant"
             loading={loading["first-participants"]}
+            disabled={roster === null}
             onDownload={() => downloadParticipants("first-participants", 1)}
           />
           {hasSecondRound === null ? (
@@ -200,6 +213,7 @@ export default function RosterDownloadScreen() {
             subtitle="조 편성 파일"
             tone="team"
             loading={loading["first-teams"]}
+            disabled={roster === null}
             onDownload={() => downloadTeams("first-teams", 1)}
           />
           {hasSecondRound === null ? (
@@ -243,6 +257,7 @@ function DownloadItem({
   subtitle,
   tone,
   loading,
+  disabled,
   onDownload,
 }: {
   round: AssignmentRound;
@@ -250,6 +265,7 @@ function DownloadItem({
   subtitle: string;
   tone: "participant" | "team";
   loading: boolean;
+  disabled?: boolean;
   onDownload: () => void;
 }) {
   return (
@@ -269,7 +285,7 @@ function DownloadItem({
       <button
         type="button"
         className={styles.downloadButton}
-        disabled={loading}
+        disabled={loading || disabled}
         aria-busy={loading}
         aria-label={`${title} Excel 다운로드`}
         onClick={onDownload}

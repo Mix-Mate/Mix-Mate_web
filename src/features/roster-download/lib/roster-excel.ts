@@ -1,6 +1,5 @@
-import type { AssignmentTeam } from "@/features/assignment/types/assignment.types";
-import type { Participant } from "@/features/participant/types/participant.types";
 import type { SheetData } from "write-excel-file/universal";
+import type { RosterMember } from "../types/roster.types";
 
 const INVALID_FILE_NAME_CHARACTERS = /[<>:"/\\|?*\u0000-\u001f]/g;
 const TRAILING_FILE_NAME_CHARACTERS = /[. ]+$/g;
@@ -25,28 +24,42 @@ export function sanitizeExcelFileBaseName(groupName: string): string {
 }
 
 export function createParticipantRosterSheet(
-  participants: Participant[],
+  members: RosterMember[],
 ): SheetData {
   return [
-    [headerCell("이름"), headerCell("학과"), headerCell("성별")],
-    ...participants.map((participant) => [
-      participant.name,
-      participant.department,
-      participant.gender === "male" ? "남성" : "여성",
+    [
+      headerCell("학번"),
+      headerCell("이름"),
+      headerCell("학과"),
+      headerCell("성별"),
+    ],
+    ...members.map((member) => [
+      member.studentId,
+      member.displayName,
+      member.major,
+      member.gender === "MALE" ? "남성" : "여성",
     ]),
   ];
 }
 
-export function createTeamRosterSheet(teams: AssignmentTeam[]): SheetData {
+export function createTeamRosterSheet(members: RosterMember[]): SheetData {
+  const sortedMembers = [...members].sort(
+    (a, b) => (a.teamNumber ?? 0) - (b.teamNumber ?? 0),
+  );
+
   return [
-    [headerCell("조번호"), headerCell("이름"), headerCell("학과")],
-    ...teams.flatMap((team) =>
-      team.members.map((member) => [
-        team.teamNumber,
-        member.displayName,
-        member.major,
-      ]),
-    ),
+    [
+      headerCell("조번호"),
+      headerCell("학번"),
+      headerCell("이름"),
+      headerCell("학과"),
+    ],
+    ...sortedMembers.map((member) => [
+      member.teamNumber,
+      member.studentId,
+      member.displayName,
+      member.major,
+    ]),
   ];
 }
 
