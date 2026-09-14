@@ -23,28 +23,11 @@ export function sanitizeExcelFileBaseName(groupName: string): string {
   return sanitized || "MixMate";
 }
 
-export function createParticipantRosterSheet(
-  members: RosterMember[],
-): SheetData {
-  return [
-    [
-      headerCell("학번"),
-      headerCell("이름"),
-      headerCell("학과"),
-      headerCell("성별"),
-    ],
-    ...members.map((member) => [
-      member.studentId,
-      member.displayName,
-      member.major,
-      member.gender === "MALE" ? "남성" : "여성",
-    ]),
-  ];
-}
-
-export function createTeamRosterSheet(members: RosterMember[]): SheetData {
+export function createRosterSheet(members: RosterMember[]): SheetData {
   const sortedMembers = [...members].sort(
-    (a, b) => (a.teamNumber ?? 0) - (b.teamNumber ?? 0),
+    (a, b) =>
+      (a.teamNumber ?? Number.MAX_SAFE_INTEGER) -
+      (b.teamNumber ?? Number.MAX_SAFE_INTEGER),
   );
 
   return [
@@ -56,7 +39,7 @@ export function createTeamRosterSheet(members: RosterMember[]): SheetData {
       headerCell("성별"),
     ],
     ...sortedMembers.map((member) => [
-      member.teamNumber,
+      member.teamNumber ?? "",
       member.studentId,
       member.displayName,
       member.major,
