@@ -17,5 +17,8 @@ export function saveAuthSession(response: LoginResponse): void {
     if (response.email) {
       window.localStorage.setItem("email", response.email);
     }
+    if (response.provider) {
+      window.localStorage.setItem("provider", response.provider);
+    }
   }
 }

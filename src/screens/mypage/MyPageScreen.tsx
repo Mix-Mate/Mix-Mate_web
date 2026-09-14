@@ -41,6 +41,11 @@ function getStoredEmail(): string {
   return window.localStorage.getItem("email") || "user@mixmate.kr";
 }
 
+function getStoredProvider(): string {
+  if (typeof window === "undefined") return "local";
+  return window.localStorage.getItem("provider") || "local";
+}
+
 function getServerUserNameSnapshot(): string {
   return "사용자";
 }
@@ -49,9 +54,17 @@ function getServerEmailSnapshot(): string {
   return "user@mixmate.kr";
 }
 
-function getWithdrawErrorMessage(error: unknown) {
+function getServerProviderSnapshot(): string {
+  return "local";
+}
+
+function getWithdrawErrorMessage(error: unknown, isSocialAccount: boolean) {
   if (!(error instanceof Error)) {
     return "회원탈퇴에 실패했습니다.";
+  }
+
+  if (isSocialAccount) {
+    return error.message || "회원탈퇴에 실패했습니다.";
   }
 
   if (error.message === "이메일 또는 비밀번호가 일치하지 않습니다.") {
@@ -84,6 +97,13 @@ export default function MyPageScreen() {
     getStoredEmail,
     getServerEmailSnapshot,
   );
+
+  const provider = useSyncExternalStore(
+    subscribeStorage,
+    getStoredProvider,
+    getServerProviderSnapshot,
+  );
+  const isSocialAccount = provider !== "local";
 
   // Edit Name states
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
@@ -175,13 +195,17 @@ export default function MyPageScreen() {
   const handleConfirmWithdraw = async () => {
     if (isWithdrawing) return;
 
-    const password = (
-      withdrawPasswordInputRef.current?.value ?? withdrawPassword
-    ).trim();
+    let password: string | undefined;
 
-    if (!password) {
-      setWithdrawError("비밀번호를 입력해주세요.");
-      return;
+    if (!isSocialAccount) {
+      password = (
+        withdrawPasswordInputRef.current?.value ?? withdrawPassword
+      ).trim();
+
+      if (!password) {
+        setWithdrawError("비밀번호를 입력해주세요.");
+        return;
+      }
     }
 
     setIsWithdrawing(true);
@@ -193,7 +217,7 @@ export default function MyPageScreen() {
       setWithdrawPassword("");
       router.push(authRoutes.login());
     } catch (error) {
-      setWithdrawError(getWithdrawErrorMessage(error));
+      setWithdrawError(getWithdrawErrorMessage(error, isSocialAccount));
     } finally {
       setIsWithdrawing(false);
     }
@@ -472,28 +496,30 @@ export default function MyPageScreen() {
           <p id="withdraw-dialog-description" className={styles.modalDescription}>
             회원 탈퇴 시 계정이 비활성화되며 현재 계정으로 다시 로그인할 수 없습니다.
           </p>
-          <div className={styles.inputWrapper}>
-            <input
-              type="password"
-              className={styles.nameInput}
-              ref={withdrawPasswordInputRef}
-              id="withdraw-password"
-              name="password"
-              value={withdrawPassword}
-              placeholder="비밀번호 입력"
-              autoComplete="current-password"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              onChange={(event) => {
-                handleWithdrawPasswordChange(event.currentTarget.value);
-              }}
-              onInput={(event) => {
-                handleWithdrawPasswordChange(event.currentTarget.value);
-              }}
-              disabled={isWithdrawing}
-            />
-          </div>
+          {!isSocialAccount && (
+            <div className={styles.inputWrapper}>
+              <input
+                type="password"
+                className={styles.nameInput}
+                ref={withdrawPasswordInputRef}
+                id="withdraw-password"
+                name="password"
+                value={withdrawPassword}
+                placeholder="비밀번호 입력"
+                autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                onChange={(event) => {
+                  handleWithdrawPasswordChange(event.currentTarget.value);
+                }}
+                onInput={(event) => {
+                  handleWithdrawPasswordChange(event.currentTarget.value);
+                }}
+                disabled={isWithdrawing}
+              />
+            </div>
+          )}
           {withdrawError && (
             <p className={styles.modalErrorText} role="alert">
               {withdrawError}

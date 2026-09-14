@@ -12,6 +12,7 @@ export interface LoginResponse {
   userName: string;
   accessToken: string;
   refreshToken: string;
+  provider?: string;
 }
 
 export interface SignupRequest {
@@ -27,7 +28,7 @@ export type LogoutResponse = string | { message?: string; [key: string]: unknown
 export type WithdrawResponse = string | { message?: string; [key: string]: unknown };
 
 export interface WithdrawRequest {
-  password: string;
+  password?: string;
 }
 
 export interface SendVerificationCodeParams {
@@ -381,9 +382,9 @@ export async function withdrawApi(
     headers: withAuthHeaders({
       "Content-Type": "application/json",
     }),
-    body: JSON.stringify({
-      password: data.password,
-    }),
+    body: JSON.stringify(
+      data.password ? { password: data.password } : {},
+    ),
   });
 
   if (!response.ok) {
@@ -426,8 +427,9 @@ export async function performLogout(): Promise<void> {
 
 /**
  * 클라이언트 회원탈퇴 통합 핸들러
+ * - OAuth(소셜) 계정은 비밀번호가 없으므로 password를 생략하고 호출
  */
-export async function performWithdraw(password: string): Promise<void> {
+export async function performWithdraw(password?: string): Promise<void> {
   await withdrawApi({ password });
   clearAuthTokens();
 }
