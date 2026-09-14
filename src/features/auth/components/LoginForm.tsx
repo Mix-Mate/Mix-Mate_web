@@ -173,7 +173,9 @@ export function LoginForm() {
             type="email"
             value={email}
             onChange={handleEmailChange}
+            placeholder="이메일 입력"
             required
+            aria-invalid={Boolean(fieldErrors.email)}
             className={`${styles.inputEmail} ${
               fieldErrors.email ? styles.inputError : ''
             }`}
@@ -195,7 +197,9 @@ export function LoginForm() {
             type="password"
             value={password}
             onChange={handlePasswordChange}
+            placeholder="비밀번호 입력"
             required
+            aria-invalid={Boolean(fieldErrors.password)}
             className={`${styles.inputPassword} ${
               fieldErrors.password ? styles.inputError : ''
             }`}

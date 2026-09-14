@@ -58,58 +58,50 @@
 }
 
 .label {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
   color: #52525b;
-  padding-left: 4px;
 }
 
-.inputEmail {
-  width: 100%;
-  height: 56px;
-  padding: 0 24px;
-  font-size: 16px;
-  color: #18181b;
-  background-color: #f7f9fc;
-  border-style: solid;
-  border-color: #b8c6d8;
-  border-top-width: 2.57px;
-  border-right-width: 2.57px;
-  border-bottom-width: 2.57px;
-  border-left-width: 7.7px;
-  border-radius: 18px;
-  outline: none;
-  box-sizing: border-box;
-}
-
+.inputEmail,
 .inputPassword {
   width: 100%;
-  height: 56px;
-  padding: 0 24px;
-  font-size: 16px;
-  color: #18181b;
-  background-color: #fbf8fc;
-  border-style: solid;
-  border-color: #c8bdd6;
-  border-top-width: 2.57px;
-  border-right-width: 2.57px;
-  border-bottom-width: 2.57px;
-  border-left-width: 7.7px;
-  border-radius: 18px;
-  outline: none;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #27272a;
+  background-color: #ffffff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 14px;
+  outline: 0;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
+.inputEmail::placeholder,
+.inputPassword::placeholder {
+  color: #a1a1aa;
+  font-weight: 400;
+}
+
+.inputEmail:focus,
+.inputPassword:focus {
+  border-color: #2f80d1;
+}
+
+.inputEmail[aria-invalid="true"],
+.inputPassword[aria-invalid="true"],
 .inputError {
   border-color: #ef4444 !important;
 }
 
 .fieldError {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
+  line-height: 18px;
   color: #ef4444;
-  padding-left: 6px;
-  margin-top: -2px;
 }
 
 .generalError {

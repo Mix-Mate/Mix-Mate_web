@@ -418,6 +418,7 @@ export function SignupForm() {
           value={name}
           onChange={handleNameChange}
           onBlur={handleNameBlur}
+          placeholder="이름 입력"
           required
           aria-invalid={Boolean(fieldErrors.userName || fieldErrors.name)}
           className={`${styles.inputBase} ${
@@ -438,15 +439,17 @@ export function SignupForm() {
         </label>
 
         {/* 이메일 입력 + 발송/재발송 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="email"
             type="email"
             value={email}
             onChange={handleEmailChange}
+            placeholder="이메일 입력"
             disabled={verificationStatus === 'VERIFIED'}
             required
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.email)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'VERIFIED' ? styles.inputDisabled : ''
             } ${fieldErrors.email ? styles.inputError : ''}`}
           />
@@ -454,7 +457,7 @@ export function SignupForm() {
             type="button"
             onClick={handleSendCode}
             disabled={isSendDisabled}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               verificationStatus === 'VERIFIED' ? styles.sideButtonSuccess : ''
             }`}
           >
@@ -476,18 +479,20 @@ export function SignupForm() {
         )}
 
         {/* 인증번호 입력 + 확인 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="authCode"
             type="text"
             value={authCode}
             onChange={handleAuthCodeChange}
+            placeholder="인증번호 입력"
             disabled={
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
             }
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.authCode)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
@@ -499,7 +504,7 @@ export function SignupForm() {
             type="button"
             onClick={handleVerifyCode}
             disabled={isVerifyDisabled || !authCode.trim()}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               isVerifyDisabled ? styles.sideButtonDisabled : ''
             }`}
           >
@@ -557,8 +562,10 @@ export function SignupForm() {
           type="password"
           value={password}
           onChange={handlePasswordChange}
+          placeholder="8자 이상 영문, 숫자 조합"
           required
-          className={`${styles.inputBase} ${styles.inputPassword} ${
+          aria-invalid={Boolean(fieldErrors.password)}
+          className={`${styles.inputBase} ${
             fieldErrors.password ? styles.inputError : ''
           }`}
         />
@@ -579,8 +586,10 @@ export function SignupForm() {
           type="password"
           value={passwordConfirm}
           onChange={handlePasswordConfirmChange}
+          placeholder="비밀번호 재입력"
           required
-          className={`${styles.inputBase} ${styles.inputPassword} ${
+          aria-invalid={Boolean(fieldErrors.passwordConfirm)}
+          className={`${styles.inputBase} ${
             fieldErrors.passwordConfirm ? styles.inputError : ''
           }`}
         />
