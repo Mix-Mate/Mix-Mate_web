@@ -23,7 +23,7 @@
 
 .actionIconButton {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   top: 92px;
   right: 28px;
   display: grid;
@@ -124,8 +124,8 @@
 
 .privateContent {
   min-height: var(--mobile-frame-height);
-  padding: 18px 14px 14px;
-  border-radius: 24px 24px 0 0;
+  padding: 18px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-radius: var(--radius-bottom-sheet) var(--radius-bottom-sheet) 0 0;
   background: #ffffff;
 }
 
@@ -274,9 +274,10 @@
 }
 
 .deleteSheet {
-  --bottom-sheet-padding: 16px 20px
-    calc(24px + env(safe-area-inset-bottom, 0px));
-  --bottom-sheet-border-radius: 24px 24px 0 0;
+  --bottom-sheet-padding-top: 16px;
+  --bottom-sheet-padding-right: 20px;
+  --bottom-sheet-padding-bottom: 24px;
+  --bottom-sheet-padding-left: 20px;
   --bottom-sheet-handle-margin: 0 auto 10px;
   width: 100%;
   max-width: 100%;
@@ -338,5 +339,5 @@
   right: 20px;
   bottom: 24px;
   left: 20px;
-  z-index: 50;
+  z-index: var(--z-popover);
 }

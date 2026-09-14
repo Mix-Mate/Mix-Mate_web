@@ -1,6 +1,6 @@
 .overlay {
   position: absolute;
-  z-index: 100;
+  z-index: var(--z-dialog);
   inset: 0;
   display: grid;
   padding: 24px;
@@ -15,7 +15,7 @@
   max-width: 332px;
   padding: 28px 20px 20px;
   border: 1px solid rgba(228, 228, 231, 0.9);
-  border-radius: 24px;
+  border-radius: var(--radius-dialog);
   background: #fff;
   box-shadow: 0 20px 48px rgba(24, 24, 27, 0.24);
   text-align: center;
@@ -87,7 +87,7 @@
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 28px;
+  border-radius: var(--radius-dialog);
   box-shadow:
     0 28px 70px rgba(24, 24, 27, 0.24),
     0 8px 24px rgba(24, 24, 27, 0.14);
@@ -109,7 +109,7 @@
 
 .partyBadge {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   display: grid;
   width: 64px;
   height: 64px;
@@ -123,7 +123,7 @@
 
 .celebrationLabel {
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   margin-bottom: 8px;
   padding: 5px 12px;
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -138,7 +138,7 @@
 .celebrationBanner h2 {
   font-family: "42dot Sans", sans-serif;
   position: relative;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   max-width: 280px;
   margin: 0;
   color: #fff;
@@ -225,7 +225,7 @@
 
 .confetti {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-local-raised);
   inset: 0;
   pointer-events: none;
 }

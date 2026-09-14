@@ -268,20 +268,23 @@
    4. Modal / Bottom Sheet Content
    ========================================================================== */
 .modalScrim {
-  z-index: 1000;
+  z-index: var(--z-dialog);
 }
 
 .modalSheet {
+  --bottom-sheet-padding-top: 24px;
+  --bottom-sheet-padding-right: 20px;
+  --bottom-sheet-padding-bottom: 28px;
+  --bottom-sheet-padding-left: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 24px 20px 28px;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+  border-top-left-radius: var(--radius-bottom-sheet);
+  border-top-right-radius: var(--radius-bottom-sheet);
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
   gap: 16px;
 }
@@ -399,7 +402,6 @@
   right: 20px;
   bottom: 24px;
   left: 20px;
-  --toast-z-index: 30;
   --toast-padding: 12px 16px;
   --toast-border-radius: 14px;
   animation: toastSlideUp 180ms ease-out;
