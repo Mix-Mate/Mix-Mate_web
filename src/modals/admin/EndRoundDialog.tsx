@@ -2,8 +2,8 @@
 
 import { CircleAlert, Power } from "lucide-react";
 import type { GroupRound } from "@/features/session/types/session.types";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
-import styles from "./end-round-dialog.module.css";
+import Button from "@/shared/ui/Button";
+import StandardDialog from "@/shared/ui/StandardDialog";
 
 interface EndRoundDialogProps {
   open: boolean;
@@ -23,64 +23,46 @@ export default function EndRoundDialog({
   onConfirm,
 }: EndRoundDialogProps) {
   return (
-    <BottomSheetDialog
+    <StandardDialog
       open={open}
       titleId="end-round-title"
       descriptionId="end-round-description"
-      sheetClassName={styles.bottomSheet}
       onClose={onClose}
       closeDisabled={isEnding}
-    >
-      <span className={styles.endIcon} aria-hidden="true">
-        <Power size={27} strokeWidth={1.9} />
-      </span>
-
-      <div className={styles.message}>
-        <h2 id="end-round-title">{round}차 술자리를 종료할까요?</h2>
-        <p id="end-round-description">
-          {round === 1 ? (
-            <>
-              현재 진행 중인 술자리를 마감하고
-              <br />
-              다음 단계로 이동합니다.
-            </>
-          ) : (
-            <>
-              현재 진행 중인 2차 술자리를 마감하고
-              <br />
-              모임을 최종 종료합니다.
-            </>
-          )}
-        </p>
-        <strong className={styles.warning}>
+      icon={<Power size={27} strokeWidth={1.9} />}
+      title={`${round}차 술자리를 종료할까요?`}
+      description={
+        round === 1 ? (
+          <>
+            현재 진행 중인 술자리를 마감하고
+            <br />
+            다음 단계로 이동합니다.
+          </>
+        ) : (
+          <>
+            현재 진행 중인 2차 술자리를 마감하고
+            <br />
+            모임을 최종 종료합니다.
+          </>
+        )
+      }
+      notice={
+        <>
           <CircleAlert aria-hidden="true" size={18} strokeWidth={1.8} />
           종료 후에는 이전 상태로 되돌릴 수 없습니다.
-        </strong>
-        {error && (
-          <span className={styles.error} role="alert">
-            {error}
-          </span>
-        )}
-      </div>
-
-      <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.cancelButton}
-          onClick={onClose}
-          disabled={isEnding}
-        >
-          취소
-        </button>
-        <button
-          type="button"
-          className={styles.endButton}
-          onClick={onConfirm}
-          disabled={isEnding}
-        >
-          {isEnding ? "종료 중..." : "종료하기"}
-        </button>
-      </div>
-    </BottomSheetDialog>
+        </>
+      }
+      error={error}
+      actions={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={isEnding}>
+            취소
+          </Button>
+          <Button variant="danger" onClick={onConfirm} disabled={isEnding}>
+            {isEnding ? "종료 중..." : "종료하기"}
+          </Button>
+        </>
+      }
+    />
   );
 }

@@ -18,8 +18,8 @@ import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import { toAssignmentRound } from "@/shared/lib/navigation/validate-round";
 import { withSessionContext } from "@/features/session/utils/session-navigation";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
+import StandardDialog from "@/shared/ui/StandardDialog";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -406,61 +406,25 @@ export default function ParticipantProfileScreen({
       </main>
 
       {/* 참가자 차단 모달 */}
-      <BottomSheetDialog
+      <StandardDialog
         open={blockDialogOpen}
         titleId="block-participant-title"
         descriptionId="block-participant-description"
-        sheetClassName={styles.deleteSheet}
         onClose={() => setBlockDialogOpen(false)}
         closeDisabled={isBlocking}
-      >
-        <div className={styles.deleteDialogContent}>
-          <span className={styles.warningIcon} aria-hidden="true">
-            <Ban size={22} strokeWidth={1.8} />
-          </span>
-
-          <h2 id="block-participant-title">
-            참가자를 그룹에서 차단하시겠습니까?
-          </h2>
-          <p id="block-participant-description">
+        icon={<Ban size={27} strokeWidth={1.8} />}
+        title="참가자를 그룹에서 차단하시겠습니까?"
+        description={
+          <>
             {profile.name}님을 그룹에서 차단합니다.
             <br />
             차단된 사용자는 차단 목록에서 관리할 수 있습니다.
-          </p>
-
-          <div className={styles.reasonInputWrapper}>
-            <div className={styles.reasonLabelRow}>
-              <label htmlFor="block-reason" className={styles.reasonLabel}>
-                차단 사유 (최대 30자)
-              </label>
-              <span className={styles.charCounter}>
-                {blockReason.length}/30
-              </span>
-            </div>
-            <textarea
-              id="block-reason"
-              value={blockReason}
-              maxLength={30}
-              onChange={(e) => {
-                const nextVal = e.target.value.slice(0, 30);
-                setBlockReason(nextVal);
-                if (blockReasonError) setBlockReasonError("");
-              }}
-              placeholder="차단 사유를 입력해주세요 (최대 30자)"
-              className={styles.reasonTextarea}
-              disabled={isBlocking}
-            />
-            {blockReasonError && (
-              <span className={styles.reasonError} role="alert">
-                {blockReasonError}
-              </span>
-            )}
-          </div>
-
-          <div className={styles.deleteActions}>
+          </>
+        }
+        actions={
+          <>
             <Button
               variant="secondary"
-              className={styles.dialogButton}
               disabled={isBlocking}
               onClick={() => setBlockDialogOpen(false)}
             >
@@ -468,15 +432,40 @@ export default function ParticipantProfileScreen({
             </Button>
             <Button
               variant="danger"
-              className={styles.dialogButton}
               disabled={isBlocking}
               onClick={handleBlock}
             >
               {isBlocking ? "차단 처리 중..." : "차단하기"}
             </Button>
+          </>
+        }
+      >
+        <div className={styles.reasonInputWrapper}>
+          <div className={styles.reasonLabelRow}>
+            <label htmlFor="block-reason" className={styles.reasonLabel}>
+              차단 사유 (최대 30자)
+            </label>
+            <span className={styles.charCounter}>{blockReason.length}/30</span>
           </div>
+          <textarea
+            id="block-reason"
+            value={blockReason}
+            maxLength={30}
+            onChange={(e) => {
+              setBlockReason(e.target.value.slice(0, 30));
+              if (blockReasonError) setBlockReasonError("");
+            }}
+            placeholder="차단 사유를 입력해주세요 (최대 30자)"
+            className={styles.reasonTextarea}
+            disabled={isBlocking}
+          />
+          {blockReasonError && (
+            <span className={styles.reasonError} role="alert">
+              {blockReasonError}
+            </span>
+          )}
         </div>
-      </BottomSheetDialog>
+      </StandardDialog>
 
       {toastMessage && <Toast className={styles.toast}>{toastMessage}</Toast>}
     </MobileFrame>

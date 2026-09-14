@@ -18,6 +18,7 @@ interface BottomSheetDialogProps {
   titleId: string;
   descriptionId?: string;
   children: ReactNode;
+  presentation?: "bottom-sheet" | "popup";
   scrimClassName?: string;
   sheetClassName: string;
   handleClassName?: string;
@@ -30,6 +31,7 @@ export default function BottomSheetDialog({
   titleId,
   descriptionId,
   children,
+  presentation = "bottom-sheet",
   scrimClassName,
   sheetClassName,
   handleClassName,
@@ -136,7 +138,11 @@ export default function BottomSheetDialog({
 
   return (
     <div
-      className={clsx(styles.scrim, scrimClassName)}
+      className={clsx(
+        styles.scrim,
+        presentation === "popup" && styles.popupScrim,
+        scrimClassName,
+      )}
       role="presentation"
       onMouseDown={(event) => {
         if (onClose && !closeDisabled && event.target === event.currentTarget) {
@@ -146,7 +152,11 @@ export default function BottomSheetDialog({
     >
       <section
         ref={dialogRef}
-        className={clsx(styles.sheet, sheetClassName)}
+        className={clsx(
+          styles.sheet,
+          presentation === "popup" && styles.popup,
+          sheetClassName,
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

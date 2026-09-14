@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 import Button from '@/shared/ui/Button';
 import InfoBanner from '@/shared/ui/InfoBanner';
+import StandardDialog from '@/shared/ui/StandardDialog';
 import {
   sendVerificationCodeApi,
   verifyCodeApi,
@@ -40,6 +42,7 @@ export function SignupForm() {
   const [authCode, setAuthCode] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [signupComplete, setSignupComplete] = useState(false);
   const [verificationStatus, setVerificationStatus] =
     useState<VerificationStatus>('IDLE');
   const [timeLeft, setTimeLeft] = useState(0);
@@ -334,9 +337,7 @@ export function SignupForm() {
         userName: name.trim(),
       });
 
-      // 200 성공 시: "회원가입이 완료되었습니다." 알림 후 로그인 화면(/login)으로 라우팅
-      alert('회원가입이 완료되었습니다.');
-      router.push('/login');
+      setSignupComplete(true);
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
         if (
@@ -621,6 +622,20 @@ export function SignupForm() {
           {isSubmitting ? '가입 처리 중...' : '가입하기'}
         </Button>
       </div>
+
+      <StandardDialog
+        open={signupComplete}
+        titleId="signup-complete-title"
+        descriptionId="signup-complete-description"
+        tone="success"
+        icon={<CheckCircle2 size={27} strokeWidth={2} />}
+        title="회원가입이 완료되었습니다"
+        description="로그인 화면에서 새 계정으로 로그인해 주세요."
+        onClose={() => router.push('/login')}
+        actions={
+          <Button onClick={() => router.push('/login')}>로그인하기</Button>
+        }
+      />
     </form>
   );
 }

@@ -6,7 +6,7 @@ import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Button from "@/shared/ui/Button";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import StandardDialog from "@/shared/ui/StandardDialog";
 import { AlertCircle } from "lucide-react";
 import {
   createGroupApi,
@@ -530,7 +530,13 @@ export default function GroupExtraInfoScreen({
           firstField,
         )
       ) {
-        alert(getValidationMessage(validation.error));
+        setErrorModal({
+          open: true,
+          title: "입력 정보를 확인해 주세요",
+          description: getValidationMessage(validation.error),
+          isBlocked: false,
+          isClosed: false,
+        });
       }
       setIsSubmitting(false);
       return;
@@ -1081,12 +1087,10 @@ export default function GroupExtraInfoScreen({
         </Button>
       </div>
 
-      <BottomSheetDialog
+      <StandardDialog
         open={errorModal.open}
         titleId="extra-error-dialog-title"
         descriptionId="extra-error-dialog-desc"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={() => {
           if (errorModal.isBlocked || errorModal.isClosed) {
             router.replace("/home");
@@ -1094,24 +1098,12 @@ export default function GroupExtraInfoScreen({
             setErrorModal((prev) => ({ ...prev, open: false }));
           }
         }}
-      >
-        <div className={styles.modalIcon} aria-hidden="true">
-          <AlertCircle size={32} strokeWidth={2} />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h2 id="extra-error-dialog-title" className={styles.modalTitle}>
-            {errorModal.title}
-          </h2>
-          <p id="extra-error-dialog-desc" className={styles.modalDescription}>
-            {errorModal.description}
-          </p>
-        </div>
-
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalActionButton}
+        icon={<AlertCircle size={27} strokeWidth={2} />}
+        title={errorModal.title}
+        description={errorModal.description}
+        actions={
+          <Button
+            variant="danger"
             onClick={() => {
               if (errorModal.isBlocked || errorModal.isClosed) {
                 router.replace("/home");
@@ -1121,9 +1113,9 @@ export default function GroupExtraInfoScreen({
             }}
           >
             {errorModal.isBlocked ? "홈으로 이동" : "확인"}
-          </button>
-        </div>
-      </BottomSheetDialog>
+          </Button>
+        }
+      />
     </MobileFrame>
   );
 }
