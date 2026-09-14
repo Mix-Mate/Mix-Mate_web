@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { CheckCircle2 } from 'lucide-react';
 import Button from '@/shared/ui/Button';
 import InfoBanner from '@/shared/ui/InfoBanner';
+import StandardDialog from '@/shared/ui/StandardDialog';
 import {
   sendVerificationCodeApi,
   verifyCodeApi,
@@ -40,6 +42,7 @@ export function SignupForm() {
   const [authCode, setAuthCode] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [signupComplete, setSignupComplete] = useState(false);
   const [verificationStatus, setVerificationStatus] =
     useState<VerificationStatus>('IDLE');
   const [timeLeft, setTimeLeft] = useState(0);
@@ -334,9 +337,7 @@ export function SignupForm() {
         userName: name.trim(),
       });
 
-      // 200 성공 시: "회원가입이 완료되었습니다." 알림 후 로그인 화면(/login)으로 라우팅
-      alert('회원가입이 완료되었습니다.');
-      router.push('/login');
+      setSignupComplete(true);
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
         if (
@@ -403,8 +404,7 @@ export function SignupForm() {
       {/* 팀 공통 InfoBanner 적용 */}
       <InfoBanner>
         <p>이름과 이메일만으로 간단하게 가입합니다.</p>
-        <p>그룹별 상세 정보는 그룹 입장 후 입력합니다.</p>
-        <p>인증 메일이 오지 않았다면 스팸 메일함을 확인해주세요.</p>
+        <p>인증 메일이 보이지 않는다면 스팸 메일함을 확인해주세요.</p>
       </InfoBanner>
 
       {/* 1. 이름 필드 */}
@@ -418,6 +418,7 @@ export function SignupForm() {
           value={name}
           onChange={handleNameChange}
           onBlur={handleNameBlur}
+          placeholder="이름 입력"
           required
           aria-invalid={Boolean(fieldErrors.userName || fieldErrors.name)}
           className={`${styles.inputBase} ${
@@ -438,15 +439,17 @@ export function SignupForm() {
         </label>
 
         {/* 이메일 입력 + 발송/재발송 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="email"
             type="email"
             value={email}
             onChange={handleEmailChange}
+            placeholder="이메일 입력"
             disabled={verificationStatus === 'VERIFIED'}
             required
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.email)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'VERIFIED' ? styles.inputDisabled : ''
             } ${fieldErrors.email ? styles.inputError : ''}`}
           />
@@ -454,7 +457,7 @@ export function SignupForm() {
             type="button"
             onClick={handleSendCode}
             disabled={isSendDisabled}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               verificationStatus === 'VERIFIED' ? styles.sideButtonSuccess : ''
             }`}
           >
@@ -476,18 +479,20 @@ export function SignupForm() {
         )}
 
         {/* 인증번호 입력 + 확인 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="authCode"
             type="text"
             value={authCode}
             onChange={handleAuthCodeChange}
+            placeholder="인증번호 입력"
             disabled={
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
             }
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.authCode)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
@@ -499,7 +504,7 @@ export function SignupForm() {
             type="button"
             onClick={handleVerifyCode}
             disabled={isVerifyDisabled || !authCode.trim()}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               isVerifyDisabled ? styles.sideButtonDisabled : ''
             }`}
           >
@@ -557,8 +562,10 @@ export function SignupForm() {
           type="password"
           value={password}
           onChange={handlePasswordChange}
+          placeholder="8자 이상 영문, 숫자 조합"
           required
-          className={`${styles.inputBase} ${styles.inputPassword} ${
+          aria-invalid={Boolean(fieldErrors.password)}
+          className={`${styles.inputBase} ${
             fieldErrors.password ? styles.inputError : ''
           }`}
         />
@@ -579,8 +586,10 @@ export function SignupForm() {
           type="password"
           value={passwordConfirm}
           onChange={handlePasswordConfirmChange}
+          placeholder="비밀번호 재입력"
           required
-          className={`${styles.inputBase} ${styles.inputPassword} ${
+          aria-invalid={Boolean(fieldErrors.passwordConfirm)}
+          className={`${styles.inputBase} ${
             fieldErrors.passwordConfirm ? styles.inputError : ''
           }`}
         />
@@ -613,6 +622,20 @@ export function SignupForm() {
           {isSubmitting ? '가입 처리 중...' : '가입하기'}
         </Button>
       </div>
+
+      <StandardDialog
+        open={signupComplete}
+        titleId="signup-complete-title"
+        descriptionId="signup-complete-description"
+        tone="success"
+        icon={<CheckCircle2 size={27} strokeWidth={2} />}
+        title="회원가입이 완료되었습니다"
+        description="로그인 화면에서 새 계정으로 로그인해 주세요."
+        onClose={() => router.push('/login')}
+        actions={
+          <Button onClick={() => router.push('/login')}>로그인하기</Button>
+        }
+      />
     </form>
   );
 }

@@ -11,7 +11,6 @@
   flex-direction: column;
   overflow: visible;
   border: 1px solid #e4e4e7;
-  border-radius: 26px;
   background: #fbfbfd;
 }
 
@@ -59,10 +58,10 @@
   line-height: 18px;
 }
 
-.charCount {
-  color: #71717a !important;
+.fieldHeader .charCount {
+  color: #71717a;
   font-size: 12px;
-  font-weight: 500 !important;
+  font-weight: 500;
 }
 
 .field input,
@@ -139,5 +138,4 @@
   right: 20px;
   bottom: 88px;
   left: 20px;
-  --toast-z-index: 30;
 }

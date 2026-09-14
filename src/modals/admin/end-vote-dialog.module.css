@@ -1,10 +1,4 @@
-.scrim {
-  --bottom-sheet-scrim-background: rgba(9, 9, 11, 0.55);
-}
-
 .bottomSheet {
-  --bottom-sheet-padding: 0 26px calc(26px + var(--safe-area-bottom));
-  --bottom-sheet-border-radius: 36px 36px 0 0;
   --pending-row-height: 64px;
   --pending-row-gap: 11px;
 
@@ -20,59 +14,11 @@
   box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
 }
 
-.sheetHandle {
-  --bottom-sheet-handle-width: 46px;
-  --bottom-sheet-handle-height: 5px;
-  --bottom-sheet-handle-margin: 16px auto;
-
-  flex: 0 0 5px;
-}
-
-.endIcon {
-  display: grid;
-  width: 71px;
-  height: 71px;
-  flex: 0 0 71px;
-  margin: 0 auto;
-  place-items: center;
-  border: 1px solid #fecaca;
-  border-radius: 23px;
-  background: #fff1f2;
-  color: #ef4444;
-}
-
-.message h2,
-.message p {
-  margin: 0;
-}
-
-.message h2 {
-  font-family: "42dot Sans", sans-serif;
-  margin-top: 13px;
-  color: #18181b;
-  font-size: 23px;
-  font-weight: 700;
-  line-height: 34px;
-  letter-spacing: -0.25px;
-}
-
-.message p {
-  margin-top: 6px;
-  color: #71717a;
-  font-size: 14px;
-  line-height: 23px;
-}
-
 .descriptionNote {
   display: inline-block;
   margin-top: 2px;
   font-size: 12px;
   line-height: 18px;
-}
-
-.message p strong {
-  color: #ef4444;
-  font-weight: 600;
 }
 
 .divider {
@@ -172,44 +118,4 @@
   font-size: 12px;
   font-weight: 600;
   line-height: 18px;
-}
-
-.error {
-  display: block;
-  margin: 7px 0 -14px;
-  color: #dc2626;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.actions {
-  display: grid;
-  flex: 0 0 auto;
-  grid-template-columns: 1fr 1fr;
-  gap: 11px;
-  margin-top: 40px;
-}
-
-.cancelButton,
-.endButton {
-  border-radius: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 27px;
-}
-
-.cancelButton {
-  --button-background: #f4f4f5;
-  --button-active: #e4e4e7;
-  --button-border: var(--color-border);
-  --button-color: #52525b;
-  --button-focus: #60a5fa;
-}
-
-.endButton {
-  --button-background: var(--color-danger);
-  --button-active: #dc2626;
-  --button-border: transparent;
-  --button-color: #fff;
-  --button-focus: #60a5fa;
 }

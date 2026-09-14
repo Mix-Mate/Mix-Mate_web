@@ -162,5 +162,5 @@
   right: 20px;
   bottom: 24px;
   left: 20px;
-  z-index: 50;
+  z-index: var(--z-popover);
 }

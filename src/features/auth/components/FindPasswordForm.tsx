@@ -298,7 +298,14 @@ export function FindPasswordForm() {
       );
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
-        if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {
+        if (error.code === 'NOT_LOCAL_ACCOUNT') {
+          setGeneralError(
+            '소셜 로그인(카카오/구글)으로 가입된 계정이에요. 소셜 로그인을 이용해주세요.',
+          );
+        } else if (
+          error.fieldErrors &&
+          Object.keys(error.fieldErrors).length > 0
+        ) {
           setFieldErrors(error.fieldErrors);
         } else {
           setGeneralError(error.message);
@@ -346,15 +353,17 @@ export function FindPasswordForm() {
         </label>
 
         {/* 이메일 입력 + 발송/재발송 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="email"
             type="email"
             value={email}
             onChange={handleEmailChange}
+            placeholder="이메일 입력"
             disabled={verificationStatus === 'VERIFIED'}
             required
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.email)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'VERIFIED' ? styles.inputDisabled : ''
             } ${fieldErrors.email ? styles.inputError : ''}`}
           />
@@ -362,7 +371,7 @@ export function FindPasswordForm() {
             type="button"
             onClick={handleSendCode}
             disabled={isSendDisabled}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               verificationStatus === 'VERIFIED' ? styles.sideButtonSuccess : ''
             }`}
           >
@@ -384,18 +393,20 @@ export function FindPasswordForm() {
         )}
 
         {/* 인증번호 입력 + 확인 버튼 */}
-        <div className={`${styles.inputRow} flex w-full items-center gap-2`}>
+        <div className={styles.inputRow}>
           <input
             id="authCode"
             type="text"
             value={authCode}
             onChange={handleAuthCodeChange}
+            placeholder="인증번호 입력"
             disabled={
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
             }
-            className={`${styles.inputBase} flex-1 min-w-0 ${
+            aria-invalid={Boolean(fieldErrors.authCode)}
+            className={`${styles.inputBase} ${
               verificationStatus === 'IDLE' ||
               verificationStatus === 'SENDING' ||
               verificationStatus === 'VERIFIED'
@@ -407,7 +418,7 @@ export function FindPasswordForm() {
             type="button"
             onClick={handleVerifyCode}
             disabled={isVerifyDisabled || !authCode.trim()}
-            className={`${styles.sideButton} w-32 shrink-0 whitespace-nowrap ${
+            className={`${styles.sideButton} ${
               isVerifyDisabled ? styles.sideButtonDisabled : ''
             }`}
           >
@@ -465,7 +476,9 @@ export function FindPasswordForm() {
           type="password"
           value={newPassword}
           onChange={handleNewPasswordChange}
+          placeholder="8자 이상 영문, 숫자 조합"
           required
+          aria-invalid={Boolean(fieldErrors.newPassword)}
           className={`${styles.inputBase} ${styles.inputPassword} ${
             fieldErrors.newPassword ? styles.inputError : ''
           }`}
@@ -487,7 +500,9 @@ export function FindPasswordForm() {
           type="password"
           value={confirmPassword}
           onChange={handleConfirmPasswordChange}
+          placeholder="비밀번호 재입력"
           required
+          aria-invalid={Boolean(fieldErrors.confirmPassword)}
           className={`${styles.inputBase} ${styles.inputPassword} ${
             fieldErrors.confirmPassword ? styles.inputError : ''
           }`}

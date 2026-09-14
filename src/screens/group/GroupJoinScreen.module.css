@@ -15,7 +15,6 @@
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
   border: 1px solid #e4e4e7;
-  border-radius: 18px;
   box-sizing: border-box;
 }
 
@@ -36,9 +35,7 @@
   background: #ffffff;
   position: sticky;
   top: 0;
-  z-index: 10;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
+  z-index: var(--z-sticky);
 }
 
 .backButton {
@@ -176,8 +173,8 @@
 }
 
 .otpInputError {
-  border-color: #ef4444 !important;
-  background-color: #fef2f2 !important;
+  border-color: #ef4444;
+  background-color: #fef2f2;
 }
 
 .errorMessage {
@@ -197,9 +194,7 @@
   border-top: 1px solid #e4e4e7;
   position: sticky;
   bottom: 0;
-  z-index: 10;
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
+  z-index: var(--z-sticky);
 }
 
 .submitButton {
@@ -235,12 +230,14 @@
    5. Warning / Error Modal (BottomSheet)
    ========================================================================== */
 .modalScrim {
-  z-index: 100 !important;
-  border-radius: inherit;
+  z-index: var(--z-dialog);
 }
 
 .modalSheet {
-  --bottom-sheet-border-radius: 28px 28px 0 0;
+  --bottom-sheet-padding-top: 12px;
+  --bottom-sheet-padding-right: 20px;
+  --bottom-sheet-padding-bottom: 24px;
+  --bottom-sheet-padding-left: 20px;
   --bottom-sheet-handle-margin: 0 auto 16px;
   display: flex;
   flex-direction: column;
@@ -248,12 +245,9 @@
   text-align: center;
   height: auto;
   max-height: 85%;
-  padding: 12px 20px 24px;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
 }
 

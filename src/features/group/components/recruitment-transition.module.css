@@ -104,7 +104,7 @@
 
 .avatar {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   display: block;
   width: 45px;
   height: 45px;

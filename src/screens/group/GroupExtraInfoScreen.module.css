@@ -12,7 +12,6 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  border-radius: 20px;
   border: 2px solid #e4e4e7;
   background: #ffffff;
   box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.10);
@@ -90,7 +89,7 @@
 
 .helperTextRed,
 .field > span .helperTextRed {
-  color: #ef4444 !important;
+  color: #ef4444;
   font-size: 12px;
   font-weight: 600;
   margin-left: 6px;
@@ -178,7 +177,7 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  z-index: 40;
+  z-index: var(--z-popover);
   border-radius: 20px;
   border: 2px solid #e4e4e7;
   background: #ffffff;
@@ -225,10 +224,10 @@
   transform: scale(0.96);
 }
 
-.dropdownItemActive {
-  border-color: #3b82c4 !important;
-  background: #eff6ff !important;
-  color: #3b82c4 !important;
+.dropdownItem.dropdownItemActive {
+  border-color: #3b82c4;
+  background: #eff6ff;
+  color: #3b82c4;
   font-weight: 800;
 }
 
@@ -282,10 +281,10 @@
   transform: scale(0.96);
 }
 
-.chipGroup .activeChip {
-  border-color: #3b82c4 !important;
-  background: #eff6ff !important;
-  color: #3b82c4 !important;
+.chipGroup button.activeChip {
+  border-color: #3b82c4;
+  background: #eff6ff;
+  color: #3b82c4;
 }
 
 /* 하단 저장 버튼 영역 */
@@ -326,12 +325,14 @@
    Modals & Dialogs
    ========================================================================== */
 .modalScrim {
-  z-index: 100 !important;
-  border-radius: inherit;
+  z-index: var(--z-dialog);
 }
 
 .modalSheet {
-  --bottom-sheet-border-radius: 28px 28px 0 0;
+  --bottom-sheet-padding-top: 12px;
+  --bottom-sheet-padding-right: 20px;
+  --bottom-sheet-padding-bottom: 24px;
+  --bottom-sheet-padding-left: 20px;
   --bottom-sheet-handle-margin: 0 auto 16px;
   display: flex;
   flex-direction: column;
@@ -339,12 +340,9 @@
   text-align: center;
   height: auto;
   max-height: 85%;
-  padding: 12px 20px 24px;
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
 }
 

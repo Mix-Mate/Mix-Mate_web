@@ -6,7 +6,8 @@ import { ChevronRight, Lock, LogOut, Pencil, UserX } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
-import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
+import Button from "@/shared/ui/Button";
+import StandardDialog from "@/shared/ui/StandardDialog";
 import Toast from "@/shared/ui/Toast";
 import useToast from "@/shared/hooks/useToast";
 import { appRoutes, authRoutes } from "@/shared/lib/navigation/routes";
@@ -41,6 +42,11 @@ function getStoredEmail(): string {
   return window.localStorage.getItem("email") || "user@mixmate.kr";
 }
 
+function getStoredProvider(): string {
+  if (typeof window === "undefined") return "local";
+  return (window.localStorage.getItem("provider") || "local").toLowerCase();
+}
+
 function getServerUserNameSnapshot(): string {
   return "사용자";
 }
@@ -49,9 +55,17 @@ function getServerEmailSnapshot(): string {
   return "user@mixmate.kr";
 }
 
-function getWithdrawErrorMessage(error: unknown) {
+function getServerProviderSnapshot(): string {
+  return "local";
+}
+
+function getWithdrawErrorMessage(error: unknown, isSocialAccount: boolean) {
   if (!(error instanceof Error)) {
     return "회원탈퇴에 실패했습니다.";
+  }
+
+  if (isSocialAccount) {
+    return error.message || "회원탈퇴에 실패했습니다.";
   }
 
   if (error.message === "이메일 또는 비밀번호가 일치하지 않습니다.") {
@@ -84,6 +98,13 @@ export default function MyPageScreen() {
     getStoredEmail,
     getServerEmailSnapshot,
   );
+
+  const provider = useSyncExternalStore(
+    subscribeStorage,
+    getStoredProvider,
+    getServerProviderSnapshot,
+  );
+  const isSocialAccount = provider !== "local";
 
   // Edit Name states
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
@@ -175,13 +196,17 @@ export default function MyPageScreen() {
   const handleConfirmWithdraw = async () => {
     if (isWithdrawing) return;
 
-    const password = (
-      withdrawPasswordInputRef.current?.value ?? withdrawPassword
-    ).trim();
+    let password: string | undefined;
 
-    if (!password) {
-      setWithdrawError("비밀번호를 입력해주세요.");
-      return;
+    if (!isSocialAccount) {
+      password = (
+        withdrawPasswordInputRef.current?.value ?? withdrawPassword
+      ).trim();
+
+      if (!password) {
+        setWithdrawError("비밀번호를 입력해주세요.");
+        return;
+      }
     }
 
     setIsWithdrawing(true);
@@ -193,7 +218,7 @@ export default function MyPageScreen() {
       setWithdrawPassword("");
       router.push(authRoutes.login());
     } catch (error) {
-      setWithdrawError(getWithdrawErrorMessage(error));
+      setWithdrawError(getWithdrawErrorMessage(error, isSocialAccount));
     } finally {
       setIsWithdrawing(false);
     }
@@ -289,7 +314,9 @@ export default function MyPageScreen() {
               }}
             >
               <div className={styles.menuItemLeft}>
-                <span className={`${styles.menuItemIcon} ${styles.withdrawLabel}`}>
+                <span
+                  className={`${styles.menuItemIcon} ${styles.withdrawLabel}`}
+                >
                   <UserX size={18} aria-hidden="true" />
                 </span>
                 <span className={styles.withdrawLabel}>회원탈퇴</span>
@@ -310,168 +337,148 @@ export default function MyPageScreen() {
         </section>
       </main>
 
-      {/* 3. 이름 수정 바텀시트 모달 */}
-      <BottomSheetDialog
+      {/* 3. 이름 수정 팝업 */}
+      <StandardDialog
         open={isEditNameModalOpen}
+        presentation="popup"
         titleId="edit-name-dialog-title"
         descriptionId="edit-name-dialog-description"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={() => {
           if (isUpdatingName) return;
           setIsEditNameModalOpen(false);
           setEditNameError("");
         }}
         closeDisabled={isUpdatingName}
-      >
-        <div
-          className={`${styles.modalIcon} ${styles.modalIconPrimary}`}
-          aria-hidden="true"
-        >
-          <Pencil size={24} strokeWidth={2} />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h2 id="edit-name-dialog-title" className={styles.modalTitle}>
-            이름 수정
-          </h2>
-          <p id="edit-name-dialog-description" className={styles.modalDescription}>
-            서비스에서 사용할 새로운 이름을 입력해주세요.
-          </p>
-
-          <div className={styles.inputWrapper}>
-            <input
-              type="text"
-              className={styles.nameInput}
-              ref={editNameInputRef}
-              id="edit-user-name"
-              name="userName"
-              value={editName}
-              placeholder="2~10자 이내 입력"
-              maxLength={10}
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              onChange={(event) => {
-                handleEditNameChange(event.currentTarget.value);
-              }}
-              onInput={(event) => {
-                handleEditNameChange(event.currentTarget.value);
+        tone="primary"
+        icon={<Pencil size={27} strokeWidth={2} />}
+        title="이름 수정"
+        description="서비스에서 사용할 새로운 이름을 입력해주세요."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsEditNameModalOpen(false);
+                setEditNameError("");
               }}
               disabled={isUpdatingName}
-            />
-            <div className={styles.inputMetaRow}>
-              {editNameError ? (
-                <p className={styles.inputErrorText} role="alert">
-                  {editNameError}
-                </p>
-              ) : (
-                <span />
-              )}
-              <span
-                className={styles.charCounter}
-                aria-label={`글자 수 ${editName.length}/10`}
-              >
-                {editName.length}/10
-              </span>
-            </div>
+            >
+              취소
+            </Button>
+            <Button onClick={handleConfirmUpdateName} disabled={isUpdatingName}>
+              {isUpdatingName ? "변경 중..." : "저장"}
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.inputWrapper}>
+          <input
+            type="text"
+            className={styles.nameInput}
+            ref={editNameInputRef}
+            id="edit-user-name"
+            name="userName"
+            value={editName}
+            placeholder="2~10자 이내 입력"
+            maxLength={10}
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            onChange={(event) =>
+              handleEditNameChange(event.currentTarget.value)
+            }
+            onInput={(event) => handleEditNameChange(event.currentTarget.value)}
+            disabled={isUpdatingName}
+          />
+          <div className={styles.inputMetaRow}>
+            {editNameError ? (
+              <p className={styles.inputErrorText} role="alert">
+                {editNameError}
+              </p>
+            ) : (
+              <span />
+            )}
+            <span
+              className={styles.charCounter}
+              aria-label={`글자 수 ${editName.length}/10`}
+            >
+              {editName.length}/10
+            </span>
           </div>
         </div>
+      </StandardDialog>
 
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalCancelButton}
-            onClick={() => {
-              setIsEditNameModalOpen(false);
-              setEditNameError("");
-            }}
-            disabled={isUpdatingName}
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.modalConfirmButton} ${styles.modalPrimaryButton}`}
-            onClick={handleConfirmUpdateName}
-            disabled={isUpdatingName}
-          >
-            {isUpdatingName ? "변경 중..." : "저장"}
-          </button>
-        </div>
-      </BottomSheetDialog>
-
-      {/* 4. 로그아웃 확인 바텀시트 모달 */}
-      <BottomSheetDialog
+      {/* 4. 로그아웃 확인 팝업 */}
+      <StandardDialog
         open={isLogoutModalOpen}
+        presentation="popup"
         titleId="logout-modal-title"
         descriptionId="logout-modal-description"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={() => setIsLogoutModalOpen(false)}
         closeDisabled={isLoggingOut}
-      >
-        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`}>
-          <LogOut size={24} strokeWidth={2} aria-hidden="true" />
-        </div>
+        icon={<LogOut size={27} strokeWidth={2} />}
+        title="로그아웃할까요?"
+        description="언제든지 다시 로그인하여 서비스를 이용하실 수 있습니다."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsLogoutModalOpen(false)}
+              disabled={isLoggingOut}
+            >
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+            </Button>
+          </>
+        }
+      />
 
-        <div className={styles.modalContent}>
-          <h3 id="logout-modal-title" className={styles.modalTitle}>
-            로그아웃할까요?
-          </h3>
-          <p id="logout-modal-description" className={styles.modalDescription}>
-            언제든지 다시 로그인하여 서비스를 이용하실 수 있습니다.
-          </p>
-        </div>
-
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalCancelButton}
-            onClick={() => setIsLogoutModalOpen(false)}
-            disabled={isLoggingOut}
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
-            onClick={handleConfirmLogout}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
-          </button>
-        </div>
-      </BottomSheetDialog>
-
-      {/* 5. 회원탈퇴 확인 바텀시트 모달 */}
-      <BottomSheetDialog
+      {/* 5. 회원탈퇴 확인 팝업 */}
+      <StandardDialog
         open={isWithdrawModalOpen}
+        presentation="popup"
         titleId="withdraw-dialog-title"
         descriptionId="withdraw-dialog-description"
-        scrimClassName={styles.modalScrim}
-        sheetClassName={styles.modalSheet}
         onClose={() => {
           setWithdrawPassword("");
           setWithdrawError("");
           setIsWithdrawModalOpen(false);
         }}
         closeDisabled={isWithdrawing}
+        icon={<UserX size={27} strokeWidth={2} />}
+        title="정말 탈퇴하시겠습니까?"
+        description="회원 탈퇴 시 계정이 비활성화되며 현재 계정으로 다시 로그인할 수 없습니다."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setWithdrawPassword("");
+                setWithdrawError("");
+                setIsWithdrawModalOpen(false);
+              }}
+              disabled={isWithdrawing}
+            >
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmWithdraw}
+              disabled={isWithdrawing}
+            >
+              {isWithdrawing ? "탈퇴 처리 중..." : "탈퇴하기"}
+            </Button>
+          </>
+        }
       >
-        <div className={`${styles.modalIcon} ${styles.modalIconDanger}`} aria-hidden="true">
-          <UserX size={24} strokeWidth={2} />
-        </div>
-
-        <div className={styles.modalContent}>
-          <h2 id="withdraw-dialog-title" className={styles.modalTitle}>
-            정말 탈퇴하시겠습니까?
-          </h2>
-          <p id="withdraw-dialog-description" className={styles.modalDescription}>
-            회원 탈퇴 시 계정이 비활성화되며 현재 계정으로 다시 로그인할 수 없습니다.
-          </p>
+        {!isSocialAccount && (
           <div className={styles.inputWrapper}>
             <input
               type="password"
@@ -485,46 +492,22 @@ export default function MyPageScreen() {
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
-              onChange={(event) => {
-                handleWithdrawPasswordChange(event.currentTarget.value);
-              }}
-              onInput={(event) => {
-                handleWithdrawPasswordChange(event.currentTarget.value);
-              }}
+              onChange={(event) =>
+                handleWithdrawPasswordChange(event.currentTarget.value)
+              }
+              onInput={(event) =>
+                handleWithdrawPasswordChange(event.currentTarget.value)
+              }
               disabled={isWithdrawing}
             />
           </div>
-          {withdrawError && (
-            <p className={styles.modalErrorText} role="alert">
-              {withdrawError}
-            </p>
-          )}
-        </div>
-
-        <div className={styles.modalActions}>
-          <button
-            type="button"
-            className={styles.modalCancelButton}
-            onClick={() => {
-              setWithdrawPassword("");
-              setWithdrawError("");
-              setIsWithdrawModalOpen(false);
-            }}
-            disabled={isWithdrawing}
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.modalConfirmButton} ${styles.modalDangerButton}`}
-            onClick={handleConfirmWithdraw}
-            disabled={isWithdrawing}
-          >
-            {isWithdrawing ? "탈퇴 처리 중..." : "탈퇴하기"}
-          </button>
-        </div>
-      </BottomSheetDialog>
+        )}
+        {withdrawError && (
+          <p className={styles.modalErrorText} role="alert">
+            {withdrawError}
+          </p>
+        )}
+      </StandardDialog>
 
       {/* 6. 성공 토스트 */}
       {toast && <Toast className={styles.toast}>{toast}</Toast>}

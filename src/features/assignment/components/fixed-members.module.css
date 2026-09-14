@@ -285,7 +285,7 @@
 
 .footer {
   position: sticky;
-  z-index: 10;
+  z-index: var(--z-sticky);
   bottom: 0;
   display: flex;
   flex: 0 0 auto;

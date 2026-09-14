@@ -7,6 +7,7 @@ import { useUnblockParticipantMutation } from "../hooks/useUnblockParticipantMut
 import BottomSheetDialog from "@/shared/ui/BottomSheetDialog";
 import Button from "@/shared/ui/Button";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
+import StandardDialog from "@/shared/ui/StandardDialog";
 import styles from "./BlockedUserProfileModal.module.css";
 
 interface BlockedUserProfileModalProps {
@@ -111,50 +112,43 @@ export default function BlockedUserProfileModal({
           {/* 액션 버튼 */}
           <div className={styles.actions}>
             <Button
-              className={styles.unblockButton}
-              onClick={() => setConfirmOpen(true)}
-            >
-              그룹 차단 해제
-            </Button>
-            <Button
               variant="secondary"
               className={styles.closeButton}
               onClick={onClose}
             >
               닫기
             </Button>
+            <Button
+              className={styles.unblockButton}
+              onClick={() => setConfirmOpen(true)}
+            >
+              그룹 차단 해제
+            </Button>
           </div>
         </div>
       </BottomSheetDialog>
 
       {/* 차단 해제 확인 모달 */}
-      <BottomSheetDialog
+      <StandardDialog
         open={confirmOpen}
+        presentation="popup"
         titleId="unblock-confirm-title"
         descriptionId="unblock-confirm-description"
-        sheetClassName={styles.confirmDialogSheet}
         onClose={() => setConfirmOpen(false)}
         closeDisabled={isPending}
-      >
-        <div className={styles.confirmContent}>
-          <span className={styles.warningIcon} aria-hidden="true">
-            <CheckCircle2 size={24} strokeWidth={2} />
-          </span>
-
-          <h2 id="unblock-confirm-title">그룹 차단을 해제하시겠습니까?</h2>
-          <p id="unblock-confirm-description">
+        tone="primary"
+        icon={<CheckCircle2 size={27} strokeWidth={2} />}
+        title="그룹 차단을 해제하시겠습니까?"
+        description={
+          <>
             {displayName}님의 그룹 차단을 해제합니다.
             <br />
-            차단이 해제되면 참가자가 다시 그룹 활동에 참여할 수 있습니다.
-          </p>
-
-          {unblockError && (
-            <p className={styles.unblockError} role="alert">
-              {unblockError}
-            </p>
-          )}
-
-          <div className={styles.confirmActions}>
+            차단이 해제되면 참가자가 다시 그룹 활동에 <br />참여할 수 있습니다.
+          </>
+        }
+        error={unblockError}
+        actions={
+          <>
             <Button
               variant="secondary"
               disabled={isPending}
@@ -162,16 +156,12 @@ export default function BlockedUserProfileModal({
             >
               취소
             </Button>
-            <Button
-              variant="primary"
-              disabled={isPending}
-              onClick={handleConfirmUnblock}
-            >
+            <Button disabled={isPending} onClick={handleConfirmUnblock}>
               {isPending ? "해제 중..." : "해제하기"}
             </Button>
-          </div>
-        </div>
-      </BottomSheetDialog>
+          </>
+        }
+      />
     </>
   );
 }

@@ -279,7 +279,8 @@ export interface MyGroupItem {
   groupName: string;
   status?: string; // 'RECRUITING' | 'PROGRESS' | 'FINISHED' | 'FIRST_ROUND' | 'VOTING' | 'SECOND_ROUND'
   memberCount?: number;
-  role?: string; // 'HOST' | 'MEMBER' | 'PARTICIPANT'
+  myRole?: string; // 'HOST' | 'PARTICIPANT'
+  role?: string; // 이전 API 응답 호환용
   reason?: string;
   bannedAt?: string;
   date?: string;

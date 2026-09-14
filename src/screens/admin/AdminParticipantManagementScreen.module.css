@@ -185,7 +185,7 @@
 }
 
 .footer {
-  z-index: 10;
+  z-index: var(--z-sticky);
   flex: 0 0 auto;
   margin-top: auto;
   padding: 14px 18px 20px;
@@ -218,7 +218,7 @@
 .menuBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: var(--z-popover-backdrop);
   background: transparent;
 }
 
@@ -226,7 +226,7 @@
   position: absolute;
   top: 48px;
   right: 0;
-  z-index: 50;
+  z-index: var(--z-popover);
   min-width: 170px;
   padding: 6px;
   background: #ffffff;
@@ -262,5 +262,5 @@
   bottom: 24px;
   left: 20px;
   right: 20px;
-  z-index: 50;
+  z-index: var(--z-popover);
 }

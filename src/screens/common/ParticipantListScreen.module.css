@@ -1,7 +1,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-sticky);
   display: grid;
   box-sizing: border-box;
   width: 100%;
@@ -36,7 +36,7 @@
 .menuBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: var(--z-popover-backdrop);
   background: transparent;
 }
 
@@ -44,7 +44,7 @@
   position: absolute;
   top: 64px;
   right: 14px;
-  z-index: 50;
+  z-index: var(--z-popover);
   min-width: 180px;
   padding: 6px;
   background: #ffffff;
@@ -72,11 +72,16 @@
 
 .menuItem:hover,
 .menuItem:active {
-  background-color: #fef2f2;
-  color: #ef4444;
+  background-color: #f3f4f6;
 }
 
 .menuItemDanger {
+  color: #ef4444;
+}
+
+.menuItemDanger:hover,
+.menuItemDanger:active {
+  background-color: #fef2f2;
   color: #ef4444;
 }
 
@@ -444,10 +449,7 @@
 }
 
 .privateProfileSheet {
-  --bottom-sheet-padding: 16px 14px 14px;
-  --bottom-sheet-border-radius: 24px 24px 0 0;
-  --bottom-sheet-handle-width: 38px;
-  --bottom-sheet-handle-margin: 0 auto 22px;
+  text-align: center;
 }
 
 .privateProfileContent {
