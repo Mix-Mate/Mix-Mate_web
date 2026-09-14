@@ -53,12 +53,14 @@ export function createTeamRosterSheet(members: RosterMember[]): SheetData {
       headerCell("학번"),
       headerCell("이름"),
       headerCell("학과"),
+      headerCell("성별"),
     ],
     ...sortedMembers.map((member) => [
       member.teamNumber,
       member.studentId,
       member.displayName,
       member.major,
+      member.gender === "MALE" ? "남성" : "여성",
     ]),
   ];
 }

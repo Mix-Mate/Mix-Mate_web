@@ -137,7 +137,7 @@ export default function RosterDownloadScreen() {
         data: createTeamRosterSheet(teamMembers),
         fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_조명단.xlsx`,
         sheetName: `${round}차 조 명단`,
-        columnWidths: [10, 14, 18, 24],
+        columnWidths: [10, 14, 18, 24, 12],
       });
     } catch (error) {
       showToast(getErrorMessage(error));
@@ -163,7 +163,7 @@ export default function RosterDownloadScreen() {
         <InfoBanner className={styles.infoBanner}>
           <p>
             필요한 명단을 각각 Excel 파일로 받을 수 있습니다. <br />
-            참가자 명단은 학번·이름·학과·성별, 조 명단은 조번호·학번·이름·학과
+            참가자 명단은 학번·이름·학과·성별, 조 명단은 조번호·학번·이름·학과·성별
             정보로 구성됩니다.
           </p>
         </InfoBanner>

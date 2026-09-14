@@ -47,7 +47,7 @@ describe("roster-excel", () => {
     ]);
   });
 
-  it("조 명단은 조번호 순으로 정렬되고 학번을 포함한다", () => {
+  it("조 명단은 조번호 순으로 정렬되고 학번·성별을 포함한다", () => {
     const unordered: RosterMember[] = [
       { ...members[1], teamNumber: 2 },
       { ...members[0], teamNumber: 1 },
@@ -55,10 +55,10 @@ describe("roster-excel", () => {
     const sheet = createTeamRosterSheet(unordered);
     const values = toValues(sheet);
 
-    expect(values[0]).toEqual(["조번호", "학번", "이름", "학과"]);
+    expect(values[0]).toEqual(["조번호", "학번", "이름", "학과", "성별"]);
     expect(values.slice(1)).toEqual([
-      [1, "20210001", "김민준", "컴퓨터공학과"],
-      [2, "20220002", "이서연", "경영학과"],
+      [1, "20210001", "김민준", "컴퓨터공학과", "남성"],
+      [2, "20220002", "이서연", "경영학과", "여성"],
     ]);
   });
 
