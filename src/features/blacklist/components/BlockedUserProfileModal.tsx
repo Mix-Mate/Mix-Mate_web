@@ -112,17 +112,17 @@ export default function BlockedUserProfileModal({
           {/* 액션 버튼 */}
           <div className={styles.actions}>
             <Button
-              className={styles.unblockButton}
-              onClick={() => setConfirmOpen(true)}
-            >
-              그룹 차단 해제
-            </Button>
-            <Button
               variant="secondary"
               className={styles.closeButton}
               onClick={onClose}
             >
               닫기
+            </Button>
+            <Button
+              className={styles.unblockButton}
+              onClick={() => setConfirmOpen(true)}
+            >
+              그룹 차단 해제
             </Button>
           </div>
         </div>
@@ -131,6 +131,7 @@ export default function BlockedUserProfileModal({
       {/* 차단 해제 확인 모달 */}
       <StandardDialog
         open={confirmOpen}
+        presentation="popup"
         titleId="unblock-confirm-title"
         descriptionId="unblock-confirm-description"
         onClose={() => setConfirmOpen(false)}

@@ -108,26 +108,30 @@
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
   width: 100%;
 }
 
 .unblockButton.unblockButton {
-  height: 44px;
+  min-width: 0;
+  height: 52px;
   background: #256ad3;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .closeButton.closeButton {
-  height: 40px;
-  border-radius: 12px;
-  font-size: 13.5px;
+  min-width: 0;
+  height: 52px;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .confirmContent {
