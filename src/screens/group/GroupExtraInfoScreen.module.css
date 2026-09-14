@@ -326,6 +326,7 @@
    ========================================================================== */
 .modalScrim {
   z-index: var(--z-dialog);
+  border-radius: inherit;
 }
 
 .modalSheet {
@@ -343,6 +344,8 @@
   background: #ffffff;
   box-sizing: border-box;
   width: 100%;
+  border-top-left-radius: var(--radius-bottom-sheet);
+  border-top-right-radius: var(--radius-bottom-sheet);
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
 }
 

@@ -7,6 +7,10 @@
   --mobile-frame-width: 390px;
   --mobile-frame-height: 844px;
 
+  /* Surface geometry */
+  --radius-bottom-sheet: 28px;
+  --radius-dialog: 24px;
+
   /* Local stacking contexts */
   --z-local-behind: -1;
   --z-local-base: 0;

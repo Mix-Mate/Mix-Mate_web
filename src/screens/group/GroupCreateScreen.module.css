@@ -38,6 +38,8 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
 .backButton {
@@ -246,6 +248,8 @@
   position: sticky;
   bottom: 0;
   z-index: var(--z-sticky);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
 }
 
 .submitButton {
