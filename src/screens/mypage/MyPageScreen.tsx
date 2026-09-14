@@ -313,9 +313,10 @@ export default function MyPageScreen() {
         </section>
       </main>
 
-      {/* 3. 이름 수정 바텀시트 모달 */}
+      {/* 3. 이름 수정 팝업 */}
       <StandardDialog
         open={isEditNameModalOpen}
+        presentation="popup"
         titleId="edit-name-dialog-title"
         descriptionId="edit-name-dialog-description"
         onClose={() => {
@@ -384,9 +385,10 @@ export default function MyPageScreen() {
         </div>
       </StandardDialog>
 
-      {/* 4. 로그아웃 확인 바텀시트 모달 */}
+      {/* 4. 로그아웃 확인 팝업 */}
       <StandardDialog
         open={isLogoutModalOpen}
+        presentation="popup"
         titleId="logout-modal-title"
         descriptionId="logout-modal-description"
         onClose={() => setIsLogoutModalOpen(false)}
@@ -414,9 +416,10 @@ export default function MyPageScreen() {
         }
       />
 
-      {/* 5. 회원탈퇴 확인 바텀시트 모달 */}
+      {/* 5. 회원탈퇴 확인 팝업 */}
       <StandardDialog
         open={isWithdrawModalOpen}
+        presentation="popup"
         titleId="withdraw-dialog-title"
         descriptionId="withdraw-dialog-description"
         onClose={() => {

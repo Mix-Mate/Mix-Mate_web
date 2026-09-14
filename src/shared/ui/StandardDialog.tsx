@@ -5,6 +5,7 @@ import BottomSheetDialog from "./BottomSheetDialog";
 import styles from "./StandardDialog.module.css";
 
 type StandardDialogTone = "danger" | "primary" | "success";
+type StandardDialogPresentation = "bottom-sheet" | "popup";
 
 interface StandardDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface StandardDialogProps {
   children?: ReactNode;
   actions: ReactNode;
   tone?: StandardDialogTone;
+  presentation?: StandardDialogPresentation;
   scrimClassName?: string;
   sheetClassName?: string;
   handleClassName?: string;
@@ -37,6 +39,7 @@ export default function StandardDialog({
   children,
   actions,
   tone = "danger",
+  presentation = "bottom-sheet",
   scrimClassName,
   sheetClassName,
   handleClassName,
@@ -48,8 +51,11 @@ export default function StandardDialog({
       open={open}
       titleId={titleId}
       descriptionId={descriptionId}
+      presentation={presentation}
       scrimClassName={scrimClassName}
-      sheetClassName={`${styles.sheet} ${sheetClassName ?? ""}`.trim()}
+      sheetClassName={`${styles.sheet} ${
+        presentation === "popup" ? styles.popup : ""
+      } ${sheetClassName ?? ""}`.trim()}
       handleClassName={handleClassName}
       onClose={onClose}
       closeDisabled={closeDisabled}

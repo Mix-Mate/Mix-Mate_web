@@ -118,3 +118,41 @@
   font-size: 16px;
   font-weight: 700;
 }
+
+/* MainHomeExitPopup / DeleteGroupDialog popup scale */
+.popup .icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+  border-radius: 20px;
+}
+
+.popup .message h2 {
+  font-size: 22px;
+  line-height: 32px;
+  letter-spacing: -0.35px;
+}
+
+.popup .message p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.popup .actions {
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.popup .actions > button {
+  height: 52px;
+  border-radius: 14px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@media (max-width: 360px) {
+  .popup .actions {
+    gap: 8px;
+  }
+}
