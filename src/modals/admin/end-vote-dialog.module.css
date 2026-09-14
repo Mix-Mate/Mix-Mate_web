@@ -163,6 +163,17 @@
   white-space: nowrap;
 }
 
+.pendingBadge {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f1f2f4;
+  color: #848c95;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
 .error {
   display: block;
   margin: 7px 0 -14px;
