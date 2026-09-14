@@ -41,7 +41,29 @@
   height: var(--bottom-sheet-handle-height, 4px);
   margin: var(--bottom-sheet-handle-margin, 0 auto 26px);
   border-radius: var(--bottom-sheet-handle-radius, 999px);
-  background: var(--bottom-sheet-handle-background, #d4d4d8);
+}
+
+.popupScrim {
+  padding: 24px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.popup {
+  width: 100%;
+  max-width: 342px;
+  max-height: calc(100% - 48px);
+  padding: 28px 20px 20px;
+  border: 1px solid rgba(228, 228, 231, 0.92);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(24, 24, 27, 0.28);
+  transform: none;
+  transform-origin: center;
+  animation: popIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.popup .handle {
+  display: none;
 }
 
 @keyframes fadeIn {
@@ -58,6 +80,24 @@
   to {
     transform: translate3d(0, 0, 0);
     opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .popupScrim {
+    padding: 18px;
+  }
+
+  .popup {
+    max-height: calc(100% - 36px);
+    padding: 24px 16px 18px;
   }
 }
 

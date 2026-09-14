@@ -8,8 +8,7 @@ import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import { getRoster } from "@/features/roster-download/api/roster.api";
 import {
-  createParticipantRosterSheet,
-  createTeamRosterSheet,
+  createRosterSheet,
   downloadRosterExcel,
   sanitizeExcelFileBaseName,
 } from "@/features/roster-download/lib/roster-excel";
@@ -25,14 +24,11 @@ import Toast from "@/shared/ui/Toast";
 import styles from "./RosterDownloadScreen.module.css";
 import { RosterDownloadCardSkeleton } from "./RosterDownloadSkeleton";
 
-type DownloadKind =
-  "first-participants" | "second-participants" | "first-teams" | "second-teams";
+type DownloadKind = "first" | "second";
 
 const INITIAL_LOADING_STATE: Record<DownloadKind, boolean> = {
-  "first-participants": false,
-  "second-participants": false,
-  "first-teams": false,
-  "second-teams": false,
+  first: false,
+  second: false,
 };
 
 function getErrorMessage(error: unknown): string {
@@ -52,12 +48,8 @@ function getRoundMembers(
   );
 }
 
-function participantKind(round: AssignmentRound): DownloadKind {
-  return round === 1 ? "first-participants" : "second-participants";
-}
-
-function teamKind(round: AssignmentRound): DownloadKind {
-  return round === 1 ? "first-teams" : "second-teams";
+function rosterKind(round: AssignmentRound): DownloadKind {
+  return round === 1 ? "first" : "second";
 }
 
 function getFocusedRound(roundParam: string | null): AssignmentRound | null {
@@ -106,56 +98,27 @@ export default function RosterDownloadScreen() {
     setLoading((previous) => ({ ...previous, [kind]: value }));
   };
 
-  const downloadParticipants = async (
-    kind: DownloadKind,
-    round: AssignmentRound,
-  ) => {
+  const downloadRoster = async (kind: DownloadKind, round: AssignmentRound) => {
     setButtonLoading(kind, true);
 
     try {
       const members = getRoundMembers(roster, round);
 
       if (members.length === 0) {
-        showToast(`${round}차 참가자 명단에 데이터가 없습니다.`);
+        showToast(`${round}차 명단에 데이터가 없습니다.`);
         return;
       }
 
       await downloadRosterExcel({
-        data: createParticipantRosterSheet(members),
-        fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_참가자명단.xlsx`,
-        sheetName: `${round}차 참가자`,
-        columnWidths: [14, 18, 24, 12],
+        data: createRosterSheet(members),
+        fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_명단.xlsx`,
+        sheetName: `${round}차 명단`,
+        columnWidths: [10, 14, 18, 24, 12],
       });
       setParticipantCounts((previous) => ({
         ...previous,
         [round]: members.length,
       }));
-    } catch (error) {
-      showToast(getErrorMessage(error));
-    } finally {
-      setButtonLoading(kind, false);
-    }
-  };
-
-  const downloadTeams = async (kind: DownloadKind, round: AssignmentRound) => {
-    setButtonLoading(kind, true);
-
-    try {
-      const teamMembers = getRoundMembers(roster, round).filter(
-        (member) => member.teamNumber !== null,
-      );
-
-      if (teamMembers.length === 0) {
-        showToast(`${round}차 조 명단에 데이터가 없습니다.`);
-        return;
-      }
-
-      await downloadRosterExcel({
-        data: createTeamRosterSheet(teamMembers),
-        fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_조명단.xlsx`,
-        sheetName: `${round}차 조 명단`,
-        columnWidths: [10, 14, 18, 24, 12],
-      });
     } catch (error) {
       showToast(getErrorMessage(error));
     } finally {
@@ -184,9 +147,8 @@ export default function RosterDownloadScreen() {
 
         <InfoBanner className={styles.infoBanner}>
           <p>
-            필요한 명단을 각각 Excel 파일로 받을 수 있습니다. <br />
-            참가자 명단은 학번·이름·학과·성별, 조 명단은 조번호·학번·이름·학과·성별
-            정보로 구성됩니다.
+            명단을 Excel 파일로 받을 수 있습니다. <br />
+            조번호·학번·이름·학과·성별 정보로 구성됩니다.
           </p>
         </InfoBanner>
 
@@ -197,102 +159,52 @@ export default function RosterDownloadScreen() {
         )}
 
         {focusedRound ? (
-          <>
-            <DownloadSection title="참가자 명단">
-              <DownloadItem
-                round={focusedRound}
-                title={`${focusedRound}차 술자리 참가자 명단`}
-                subtitle={
-                  participantCounts[focusedRound] === undefined
-                    ? "참가자 명단"
-                    : `${participantCounts[focusedRound]}명`
-                }
-                tone="participant"
-                loading={loading[participantKind(focusedRound)]}
-                disabled={roster === null}
-                onDownload={() =>
-                  downloadParticipants(
-                    participantKind(focusedRound),
-                    focusedRound,
-                  )
-                }
-              />
-            </DownloadSection>
-
-            <DownloadSection title="조 명단">
-              <DownloadItem
-                round={focusedRound}
-                title={`${focusedRound}차 조 명단`}
-                subtitle="조 편성 파일"
-                tone="team"
-                loading={loading[teamKind(focusedRound)]}
-                disabled={roster === null}
-                onDownload={() =>
-                  downloadTeams(teamKind(focusedRound), focusedRound)
-                }
-              />
-            </DownloadSection>
-          </>
+          <DownloadSection title="명단">
+            <DownloadItem
+              round={focusedRound}
+              title={`${focusedRound}차 술자리 명단`}
+              subtitle={
+                participantCounts[focusedRound] === undefined
+                  ? "전체 명단"
+                  : `${participantCounts[focusedRound]}명`
+              }
+              loading={loading[rosterKind(focusedRound)]}
+              disabled={roster === null}
+              onDownload={() =>
+                downloadRoster(rosterKind(focusedRound), focusedRound)
+              }
+            />
+          </DownloadSection>
         ) : (
-          <>
-            <DownloadSection title="참가자 명단">
+          <DownloadSection title="명단">
+            <DownloadItem
+              round={1}
+              title="1차 술자리 명단"
+              subtitle={
+                participantCounts[1] === undefined
+                  ? "전체 명단"
+                  : `${participantCounts[1]}명`
+              }
+              loading={loading.first}
+              disabled={roster === null}
+              onDownload={() => downloadRoster("first", 1)}
+            />
+            {hasSecondRound === null ? (
+              <RosterDownloadCardSkeleton />
+            ) : hasSecondRound ? (
               <DownloadItem
-                round={1}
-                title="1차 술자리 참가자 명단"
+                round={2}
+                title="2차 술자리 명단"
                 subtitle={
-                  participantCounts[1] === undefined
-                    ? "참가자 명단"
-                    : `${participantCounts[1]}명`
+                  participantCounts[2] === undefined
+                    ? "전체 명단"
+                    : `${participantCounts[2]}명`
                 }
-                tone="participant"
-                loading={loading["first-participants"]}
-                disabled={roster === null}
-                onDownload={() => downloadParticipants("first-participants", 1)}
+                loading={loading.second}
+                onDownload={() => downloadRoster("second", 2)}
               />
-              {hasSecondRound === null ? (
-                <RosterDownloadCardSkeleton />
-              ) : hasSecondRound ? (
-                <DownloadItem
-                  round={2}
-                  title="2차 술자리 참가자 명단"
-                  subtitle={
-                    participantCounts[2] === undefined
-                      ? "참가자 명단"
-                      : `${participantCounts[2]}명`
-                  }
-                  tone="participant"
-                  loading={loading["second-participants"]}
-                  onDownload={() =>
-                    downloadParticipants("second-participants", 2)
-                  }
-                />
-              ) : null}
-            </DownloadSection>
-
-            <DownloadSection title="조 명단">
-              <DownloadItem
-                round={1}
-                title="1차 조 명단"
-                subtitle="조 편성 파일"
-                tone="team"
-                loading={loading["first-teams"]}
-                disabled={roster === null}
-                onDownload={() => downloadTeams("first-teams", 1)}
-              />
-              {hasSecondRound === null ? (
-                <RosterDownloadCardSkeleton />
-              ) : hasSecondRound ? (
-                <DownloadItem
-                  round={2}
-                  title="2차 조 명단"
-                  subtitle="조 편성 파일"
-                  tone="team"
-                  loading={loading["second-teams"]}
-                  onDownload={() => downloadTeams("second-teams", 2)}
-                />
-              ) : null}
-            </DownloadSection>
-          </>
+            ) : null}
+          </DownloadSection>
         )}
       </main>
 
@@ -320,7 +232,6 @@ function DownloadItem({
   round,
   title,
   subtitle,
-  tone,
   loading,
   disabled,
   onDownload,
@@ -328,7 +239,6 @@ function DownloadItem({
   round: AssignmentRound;
   title: string;
   subtitle: string;
-  tone: "participant" | "team";
   loading: boolean;
   disabled?: boolean;
   onDownload: () => void;
@@ -336,9 +246,7 @@ function DownloadItem({
   return (
     <article className={styles.downloadItem}>
       <span
-        className={`${styles.roundBadge} ${
-          tone === "participant" ? styles.participantBadge : styles.teamBadge
-        }`}
+        className={`${styles.roundBadge} ${styles.participantBadge}`}
         aria-hidden="true"
       >
         {round}차

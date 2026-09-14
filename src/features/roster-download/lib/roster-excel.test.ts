@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RosterMember } from "../types/roster.types";
-import {
-  createParticipantRosterSheet,
-  createTeamRosterSheet,
-  sanitizeExcelFileBaseName,
-} from "./roster-excel";
+import { createRosterSheet, sanitizeExcelFileBaseName } from "./roster-excel";
 
 const members: RosterMember[] = [
   {
@@ -25,7 +21,7 @@ const members: RosterMember[] = [
   },
 ];
 
-function toValues(sheet: ReturnType<typeof createParticipantRosterSheet>) {
+function toValues(sheet: ReturnType<typeof createRosterSheet>) {
   return sheet.map((row) =>
     row.map((cell) =>
       typeof cell === "object" && cell !== null && "value" in cell
@@ -36,29 +32,29 @@ function toValues(sheet: ReturnType<typeof createParticipantRosterSheet>) {
 }
 
 describe("roster-excel", () => {
-  it("참가자 명단 컬럼 순서(학번/이름/학과/성별)와 성별 표시값을 변환한다", () => {
-    const sheet = createParticipantRosterSheet(members);
-    const values = toValues(sheet);
-
-    expect(values[0]).toEqual(["학번", "이름", "학과", "성별"]);
-    expect(values.slice(1)).toEqual([
-      ["20210001", "김민준", "컴퓨터공학과", "남성"],
-      ["20220002", "이서연", "경영학과", "여성"],
-    ]);
-  });
-
-  it("조 명단은 조번호 순으로 정렬되고 학번·성별을 포함한다", () => {
+  it("명단은 조번호를 가장 앞에 두고 조번호 순으로 정렬된다", () => {
     const unordered: RosterMember[] = [
       { ...members[1], teamNumber: 2 },
       { ...members[0], teamNumber: 1 },
     ];
-    const sheet = createTeamRosterSheet(unordered);
+    const sheet = createRosterSheet(unordered);
     const values = toValues(sheet);
 
     expect(values[0]).toEqual(["조번호", "학번", "이름", "학과", "성별"]);
     expect(values.slice(1)).toEqual([
       [1, "20210001", "김민준", "컴퓨터공학과", "남성"],
       [2, "20220002", "이서연", "경영학과", "여성"],
+    ]);
+  });
+
+  it("조가 배정되지 않은 참가자는 조번호를 빈 값으로 표시하고 목록의 뒤로 정렬한다", () => {
+    const noTeam: RosterMember = { ...members[0], teamNumber: null };
+    const sheet = createRosterSheet([noTeam, { ...members[1], teamNumber: 1 }]);
+    const values = toValues(sheet);
+
+    expect(values.slice(1)).toEqual([
+      [1, "20220002", "이서연", "경영학과", "여성"],
+      ["", "20210001", "김민준", "컴퓨터공학과", "남성"],
     ]);
   });
 
