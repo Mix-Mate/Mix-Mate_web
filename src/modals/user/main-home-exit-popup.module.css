@@ -5,7 +5,6 @@
   display: grid;
   padding: 24px;
   place-items: center;
-  border-radius: inherit;
   background: rgba(24, 24, 27, 0.62);
   animation: fadeIn 160ms ease-out;
 }
@@ -15,7 +14,6 @@
   max-width: 332px;
   padding: 28px 20px 20px;
   border: 1px solid rgba(228, 228, 231, 0.9);
-  border-radius: var(--radius-dialog);
   background: #fff;
   box-shadow: 0 20px 48px rgba(24, 24, 27, 0.24);
   text-align: center;
@@ -87,7 +85,6 @@
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: var(--radius-dialog);
   box-shadow:
     0 28px 70px rgba(24, 24, 27, 0.24),
     0 8px 24px rgba(24, 24, 27, 0.14);

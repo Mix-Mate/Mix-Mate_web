@@ -14,7 +14,6 @@
   justify-content: center;
   background: var(--bottom-sheet-scrim-background, rgba(24, 24, 27, 0.62));
   animation: fadeIn 180ms ease-out both;
-  border-radius: inherit;
   overflow: hidden;
 }
 
@@ -32,7 +31,6 @@
         env(safe-area-inset-bottom, 0px)
     )
     var(--bottom-sheet-padding-left, 20px);
-  border-radius: var(--radius-bottom-sheet) var(--radius-bottom-sheet) 0 0;
   background: #fff;
   transform: translate3d(0, 100%, 0);
   transform-origin: bottom center;
@@ -61,7 +59,6 @@
   max-height: calc(100% - 48px);
   padding: 28px 20px 20px;
   border: 1px solid rgba(228, 228, 231, 0.92);
-  border-radius: var(--radius-dialog);
   box-shadow: 0 24px 60px rgba(24, 24, 27, 0.28);
   transform: none;
   transform-origin: center;

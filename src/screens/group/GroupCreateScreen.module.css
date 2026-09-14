@@ -15,7 +15,6 @@
   background: var(--color-surface, #fcfcff);
   color: var(--color-text, #18181b);
   border: 1px solid #e4e4e7;
-  border-radius: 18px;
   max-width: 600px;
   margin: 0 auto;
   box-sizing: border-box;
@@ -39,8 +38,6 @@
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
 }
 
 .backButton {
@@ -249,8 +246,6 @@
   position: sticky;
   bottom: 0;
   z-index: var(--z-sticky);
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
 }
 
 .submitButton {
