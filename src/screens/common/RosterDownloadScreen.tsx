@@ -1,10 +1,11 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toBackendRound } from "@/features/assignment/model/assignment.mapper";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getGroupStatusLabel } from "@/features/group/model/group-status";
 import { getRoster } from "@/features/roster-download/api/roster.api";
 import {
   createParticipantRosterSheet,
@@ -51,9 +52,25 @@ function getRoundMembers(
   );
 }
 
+function participantKind(round: AssignmentRound): DownloadKind {
+  return round === 1 ? "first-participants" : "second-participants";
+}
+
+function teamKind(round: AssignmentRound): DownloadKind {
+  return round === 1 ? "first-teams" : "second-teams";
+}
+
+function getFocusedRound(roundParam: string | null): AssignmentRound | null {
+  if (roundParam === "1") return 1;
+  if (roundParam === "2") return 2;
+  return null;
+}
+
 export default function RosterDownloadScreen() {
   const params = useParams<{ groupId: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const focusedRound = getFocusedRound(searchParams.get("round"));
   const { data: group } = useAdminGroupQuery(params.groupId);
   const { message: toastMessage, showToast } = useToast();
   const [loading, setLoading] = useState(INITIAL_LOADING_STATE);
@@ -152,12 +169,17 @@ export default function RosterDownloadScreen() {
       viewportClassName={styles.viewport}
       data-testid="roster-download-screen"
     >
-      <Header title="명단 다운로드" onBack={() => router.back()} />
+      <Header
+        title={focusedRound ? `${focusedRound}차 명단 다운로드` : "명단 다운로드"}
+        onBack={() => router.back()}
+      />
 
       <main className={styles.content}>
         <section className={styles.intro} aria-labelledby="group-name">
           <h2 id="group-name">{group.groupName}</h2>
-          <p>종료된 모임 · 총 {group.memberCount}명</p>
+          <p>
+            {getGroupStatusLabel(group.status)} · 총 {group.memberCount}명
+          </p>
         </section>
 
         <InfoBanner className={styles.infoBanner}>
@@ -168,67 +190,110 @@ export default function RosterDownloadScreen() {
           </p>
         </InfoBanner>
 
-        {hasSecondRound === null && (
+        {roster === null && (
           <p className={styles.srOnly} role="status">
             명단 정보를 불러오는 중입니다.
           </p>
         )}
 
-        <DownloadSection title="참가자 명단">
-          <DownloadItem
-            round={1}
-            title="1차 술자리 참가자 명단"
-            subtitle={
-              participantCounts[1] === undefined
-                ? "참가자 명단"
-                : `${participantCounts[1]}명`
-            }
-            tone="participant"
-            loading={loading["first-participants"]}
-            disabled={roster === null}
-            onDownload={() => downloadParticipants("first-participants", 1)}
-          />
-          {hasSecondRound === null ? (
-            <RosterDownloadCardSkeleton />
-          ) : hasSecondRound ? (
-            <DownloadItem
-              round={2}
-              title="2차 술자리 참가자 명단"
-              subtitle={
-                participantCounts[2] === undefined
-                  ? "참가자 명단"
-                  : `${participantCounts[2]}명`
-              }
-              tone="participant"
-              loading={loading["second-participants"]}
-              onDownload={() => downloadParticipants("second-participants", 2)}
-            />
-          ) : null}
-        </DownloadSection>
+        {focusedRound ? (
+          <>
+            <DownloadSection title="참가자 명단">
+              <DownloadItem
+                round={focusedRound}
+                title={`${focusedRound}차 술자리 참가자 명단`}
+                subtitle={
+                  participantCounts[focusedRound] === undefined
+                    ? "참가자 명단"
+                    : `${participantCounts[focusedRound]}명`
+                }
+                tone="participant"
+                loading={loading[participantKind(focusedRound)]}
+                disabled={roster === null}
+                onDownload={() =>
+                  downloadParticipants(
+                    participantKind(focusedRound),
+                    focusedRound,
+                  )
+                }
+              />
+            </DownloadSection>
 
-        <DownloadSection title="조 명단">
-          <DownloadItem
-            round={1}
-            title="1차 조 명단"
-            subtitle="조 편성 파일"
-            tone="team"
-            loading={loading["first-teams"]}
-            disabled={roster === null}
-            onDownload={() => downloadTeams("first-teams", 1)}
-          />
-          {hasSecondRound === null ? (
-            <RosterDownloadCardSkeleton />
-          ) : hasSecondRound ? (
-            <DownloadItem
-              round={2}
-              title="2차 조 명단"
-              subtitle="조 편성 파일"
-              tone="team"
-              loading={loading["second-teams"]}
-              onDownload={() => downloadTeams("second-teams", 2)}
-            />
-          ) : null}
-        </DownloadSection>
+            <DownloadSection title="조 명단">
+              <DownloadItem
+                round={focusedRound}
+                title={`${focusedRound}차 조 명단`}
+                subtitle="조 편성 파일"
+                tone="team"
+                loading={loading[teamKind(focusedRound)]}
+                disabled={roster === null}
+                onDownload={() =>
+                  downloadTeams(teamKind(focusedRound), focusedRound)
+                }
+              />
+            </DownloadSection>
+          </>
+        ) : (
+          <>
+            <DownloadSection title="참가자 명단">
+              <DownloadItem
+                round={1}
+                title="1차 술자리 참가자 명단"
+                subtitle={
+                  participantCounts[1] === undefined
+                    ? "참가자 명단"
+                    : `${participantCounts[1]}명`
+                }
+                tone="participant"
+                loading={loading["first-participants"]}
+                disabled={roster === null}
+                onDownload={() => downloadParticipants("first-participants", 1)}
+              />
+              {hasSecondRound === null ? (
+                <RosterDownloadCardSkeleton />
+              ) : hasSecondRound ? (
+                <DownloadItem
+                  round={2}
+                  title="2차 술자리 참가자 명단"
+                  subtitle={
+                    participantCounts[2] === undefined
+                      ? "참가자 명단"
+                      : `${participantCounts[2]}명`
+                  }
+                  tone="participant"
+                  loading={loading["second-participants"]}
+                  onDownload={() =>
+                    downloadParticipants("second-participants", 2)
+                  }
+                />
+              ) : null}
+            </DownloadSection>
+
+            <DownloadSection title="조 명단">
+              <DownloadItem
+                round={1}
+                title="1차 조 명단"
+                subtitle="조 편성 파일"
+                tone="team"
+                loading={loading["first-teams"]}
+                disabled={roster === null}
+                onDownload={() => downloadTeams("first-teams", 1)}
+              />
+              {hasSecondRound === null ? (
+                <RosterDownloadCardSkeleton />
+              ) : hasSecondRound ? (
+                <DownloadItem
+                  round={2}
+                  title="2차 조 명단"
+                  subtitle="조 편성 파일"
+                  tone="team"
+                  loading={loading["second-teams"]}
+                  onDownload={() => downloadTeams("second-teams", 2)}
+                />
+              ) : null}
+            </DownloadSection>
+          </>
+        )}
       </main>
 
       {toastMessage && <Toast className={styles.toast}>{toastMessage}</Toast>}
