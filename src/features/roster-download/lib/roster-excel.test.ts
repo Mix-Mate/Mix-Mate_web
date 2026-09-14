@@ -8,24 +8,24 @@ import {
 
 const members: RosterMember[] = [
   {
-    studentId: "20260001",
-    displayName: "김민준",
+    studentId: "TEST-001",
+    displayName: "테스트사용자A",
     major: "컴퓨터공학과",
     grade: "FIRST",
     gender: "MALE",
     teamNumber: 2,
   },
   {
-    studentId: "20250002",
-    displayName: "이서연",
+    studentId: "TEST-002",
+    displayName: "테스트사용자B",
     major: "경영학과",
     grade: "SECOND",
     gender: "FEMALE",
     teamNumber: 1,
   },
   {
-    studentId: "20240003",
-    displayName: "박다래",
+    studentId: "TEST-003",
+    displayName: "테스트사용자C",
     major: "컴퓨터공학과",
     grade: "THIRD",
     gender: "FEMALE",
@@ -45,9 +45,9 @@ describe("roster-excel", () => {
       ),
     ).toEqual(["학번", "이름", "학과", "학년", "성별"]);
     expect(sheet.slice(1)).toEqual([
-      ["20260001", "김민준", "컴퓨터공학과", "1학년", "남성"],
-      ["20250002", "이서연", "경영학과", "2학년", "여성"],
-      ["20240003", "박다래", "컴퓨터공학과", "3학년", "여성"],
+      ["TEST-001", "테스트사용자A", "컴퓨터공학과", "1학년", "남성"],
+      ["TEST-002", "테스트사용자B", "경영학과", "2학년", "여성"],
+      ["TEST-003", "테스트사용자C", "컴퓨터공학과", "3학년", "여성"],
     ]);
   });
 
@@ -62,9 +62,9 @@ describe("roster-excel", () => {
       ),
     ).toEqual(["조번호", "학번", "이름", "학과", "학년", "성별"]);
     expect(sheet.slice(1)).toEqual([
-      [1, "20250002", "이서연", "경영학과", "2학년", "여성"],
-      [2, "20260001", "김민준", "컴퓨터공학과", "1학년", "남성"],
-      ["-", "20240003", "박다래", "컴퓨터공학과", "3학년", "여성"],
+      [1, "TEST-002", "테스트사용자B", "경영학과", "2학년", "여성"],
+      [2, "TEST-001", "테스트사용자A", "컴퓨터공학과", "1학년", "남성"],
+      ["-", "TEST-003", "테스트사용자C", "컴퓨터공학과", "3학년", "여성"],
     ]);
   });
 
@@ -75,4 +75,3 @@ describe("roster-excel", () => {
     expect(sanitizeExcelFileBaseName("  ...  ")).toBe("MixMate");
   });
 });
-

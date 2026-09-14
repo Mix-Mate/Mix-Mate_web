@@ -169,6 +169,29 @@
   opacity: 0.9;
 }
 
+.googleButton {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #ffffff;
+  color: #191919;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 16px;
+  border: 1px solid #e4e4e7;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.googleButton:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
 .divider {
   width: 100%;
   height: 1px;
