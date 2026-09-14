@@ -93,8 +93,9 @@
 
 .inputEmail[aria-invalid="true"],
 .inputPassword[aria-invalid="true"],
-.inputError {
-  border-color: #ef4444 !important;
+.inputEmail.inputError,
+.inputPassword.inputError {
+  border-color: #ef4444;
 }
 
 .fieldError {
@@ -239,5 +240,5 @@
   bottom: 28px;
   left: 20px;
   right: 20px;
-  z-index: 50;
+  z-index: var(--z-popover);
 }

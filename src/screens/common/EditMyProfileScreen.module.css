@@ -217,7 +217,6 @@
   right: 20px;
   bottom: 24px;
   left: 20px;
-  --toast-z-index: 30;
   --toast-padding: 12px 16px;
   --toast-border-radius: 14px;
   animation: toastSlideUp 180ms ease-out;

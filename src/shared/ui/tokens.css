@@ -6,6 +6,26 @@
   --color-danger: #ef4444;
   --mobile-frame-width: 390px;
   --mobile-frame-height: 844px;
+
+  /* Surface geometry */
+  --radius-bottom-sheet: 28px;
+  --radius-dialog: 24px;
+
+  /* Local stacking contexts */
+  --z-local-behind: -1;
+  --z-local-base: 0;
+  --z-local-raised: 1;
+  --z-local-foreground: 2;
+  --z-local-overlay: 3;
+  --z-local-top: 4;
+
+  /* App-level stacking contexts */
+  --z-sticky: 10;
+  --z-toast: 30;
+  --z-popover-backdrop: 40;
+  --z-popover: 50;
+  --z-dialog: 100;
+  --z-onboarding: 200;
 }
 
 /* 실기기(좁은 뷰포트)에서는 데스크톱 목업 크기(390x844) 대신

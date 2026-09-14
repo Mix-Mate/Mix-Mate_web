@@ -17,7 +17,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-sticky);
   display: grid;
   box-sizing: border-box;
   width: 100%;
@@ -248,5 +248,5 @@
   bottom: 24px;
   left: 20px;
   right: 20px;
-  z-index: 50;
+  z-index: var(--z-popover);
 }
