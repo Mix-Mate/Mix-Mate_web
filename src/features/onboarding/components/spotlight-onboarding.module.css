@@ -8,6 +8,7 @@
   margin: 0 auto;
   cursor: pointer;
   overflow: hidden;
+  border-radius: inherit;
   animation: onboardingFadeIn 180ms ease-out;
 }
 

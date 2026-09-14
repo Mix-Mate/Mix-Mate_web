@@ -125,6 +125,7 @@
 .privateContent {
   min-height: var(--mobile-frame-height);
   padding: 18px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-radius: var(--radius-bottom-sheet) var(--radius-bottom-sheet) 0 0;
   background: #ffffff;
 }
 
