@@ -1,4 +1,3 @@
-import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import type { SheetData } from "write-excel-file/universal";
 import type { RosterMember } from "../types/roster.types";
 
@@ -24,51 +23,28 @@ export function sanitizeExcelFileBaseName(groupName: string): string {
   return sanitized || "MixMate";
 }
 
-export function createParticipantRosterSheet(
-  members: RosterMember[],
-): SheetData {
-  return [
-    [
-      headerCell("학번"),
-      headerCell("이름"),
-      headerCell("학과"),
-      headerCell("학년"),
-      headerCell("성별"),
-    ],
-    ...members.map((member) => [
-      member.studentId,
-      member.displayName,
-      member.major,
-      getProfileGradeLabel(member.grade) ?? member.grade,
-      member.gender === "MALE" ? "남성" : "여성",
-    ]),
-  ];
-}
+export function createRosterSheet(members: RosterMember[]): SheetData {
+  const sortedMembers = [...members].sort(
+    (a, b) =>
+      (a.teamNumber ?? Number.MAX_SAFE_INTEGER) -
+      (b.teamNumber ?? Number.MAX_SAFE_INTEGER),
+  );
 
-export function createTeamRosterSheet(members: RosterMember[]): SheetData {
   return [
     [
       headerCell("조번호"),
       headerCell("학번"),
       headerCell("이름"),
       headerCell("학과"),
-      headerCell("학년"),
       headerCell("성별"),
     ],
-    ...[...members]
-      .sort(
-        (left, right) =>
-          (left.teamNumber ?? Number.MAX_SAFE_INTEGER) -
-          (right.teamNumber ?? Number.MAX_SAFE_INTEGER),
-      )
-      .map((member) => [
-        member.teamNumber ?? "-",
-        member.studentId,
-        member.displayName,
-        member.major,
-        getProfileGradeLabel(member.grade) ?? member.grade,
-        member.gender === "MALE" ? "남성" : "여성",
-      ]),
+    ...sortedMembers.map((member) => [
+      member.teamNumber ?? "",
+      member.studentId,
+      member.displayName,
+      member.major,
+      member.gender === "MALE" ? "남성" : "여성",
+    ]),
   ];
 }
 
@@ -101,4 +77,3 @@ export async function downloadRosterExcel({
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 }
-

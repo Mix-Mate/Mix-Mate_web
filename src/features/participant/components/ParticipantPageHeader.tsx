@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Ban, ChevronLeft, Menu } from "lucide-react";
+import { Ban, ChevronLeft, Download, Menu } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
+import { getCurrentGroupRound } from "@/features/group/model/group-status";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import styles from "@/screens/common/ParticipantListScreen.module.css";
 
@@ -35,6 +36,12 @@ export default function ParticipantPageHeader({
   const handleNavigateBlacklist = () => {
     setMenuOpen(false);
     router.push(groupRoutes.blacklist(params.groupId));
+  };
+
+  const handleNavigateRosterDownload = () => {
+    setMenuOpen(false);
+    const round = group ? getCurrentGroupRound(group.status) : undefined;
+    router.push(groupRoutes.rosterDownloads(params.groupId, round));
   };
 
   return (
@@ -77,6 +84,15 @@ export default function ParticipantPageHeader({
                 aria-hidden="true"
               />
               <div className={styles.menuDropdown} role="menu">
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={handleNavigateRosterDownload}
+                >
+                  <Download size={18} strokeWidth={2} />
+                  <span>명단 다운로드</span>
+                </button>
                 <button
                   type="button"
                   className={`${styles.menuItem} ${styles.menuItemDanger}`}

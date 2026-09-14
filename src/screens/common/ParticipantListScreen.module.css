@@ -72,11 +72,16 @@
 
 .menuItem:hover,
 .menuItem:active {
-  background-color: #fef2f2;
-  color: #ef4444;
+  background-color: #f3f4f6;
 }
 
 .menuItemDanger {
+  color: #ef4444;
+}
+
+.menuItemDanger:hover,
+.menuItemDanger:active {
+  background-color: #fef2f2;
   color: #ef4444;
 }
 

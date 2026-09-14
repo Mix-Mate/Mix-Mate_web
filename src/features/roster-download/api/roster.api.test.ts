@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { apiFetch } from "@/shared/api/apiFetch";
-import { getGroupRoster } from "./roster.api";
+import { getRoster } from "./roster.api";
 
 vi.mock("@/shared/api/apiFetch", () => ({
   apiFetch: vi.fn(),
@@ -9,7 +9,7 @@ vi.mock("@/shared/api/apiFetch", () => ({
 
 const mockedApiFetch = vi.mocked(apiFetch);
 
-describe("getGroupRoster", () => {
+describe("getRoster", () => {
   beforeEach(() => {
     mockedApiFetch.mockReset();
   });
@@ -30,13 +30,10 @@ describe("getGroupRoster", () => {
       new Response(JSON.stringify(roster), { status: 200 }),
     );
 
-    await expect(getGroupRoster("12", signal)).resolves.toEqual(roster);
+    await expect(getRoster("12", signal)).resolves.toEqual(roster);
     expect(mockedApiFetch).toHaveBeenCalledWith(
       `${API_BASE_URL}/api/v1/groups/12/roster`,
-      {
-        headers: { Accept: "application/json" },
-        signal,
-      },
+      { signal },
     );
   });
 
@@ -51,7 +48,7 @@ describe("getGroupRoster", () => {
       ),
     );
 
-    await expect(getGroupRoster("12")).rejects.toThrow(
+    await expect(getRoster("12")).rejects.toThrow(
       "이 그룹의 관리자가 아닙니다.",
     );
   });
