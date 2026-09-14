@@ -1,6 +1,6 @@
 const ACCESS_TOKEN_KEYS = ["accessToken", "access_token", "token"];
 const REFRESH_TOKEN_KEYS = ["refreshToken", "refresh_token"];
-const USER_INFO_KEYS = ["userName", "userId", "email", "user"];
+const USER_INFO_KEYS = ["userName", "userId", "email", "user", "provider"];
 const AUTH_TOKEN_CHANGE_EVENT = "mixmate:auth-token-change";
 
 export function subscribeAccessToken(onChange: () => void): () => void {
