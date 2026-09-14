@@ -143,7 +143,7 @@ export default function BlockedUserProfileModal({
           <>
             {displayName}님의 그룹 차단을 해제합니다.
             <br />
-            차단이 해제되면 참가자가 다시 그룹 활동에 참여할 수 있습니다.
+            차단이 해제되면 참가자가 다시 그룹 활동에 <br />참여할 수 있습니다.
           </>
         }
         error={unblockError}
