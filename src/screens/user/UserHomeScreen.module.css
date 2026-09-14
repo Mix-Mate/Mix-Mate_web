@@ -1,6 +1,5 @@
 .toast {
   --toast-bottom: 84px;
-  --toast-z-index: 5;
   --toast-padding: 14px 18px;
   --toast-border-radius: 16px;
 }

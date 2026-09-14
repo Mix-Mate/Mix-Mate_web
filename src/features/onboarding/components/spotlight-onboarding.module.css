@@ -2,7 +2,7 @@
    데스크톱 목업 밖으로 퍼지지 않도록 폭만 목업 크기로 묶는다. */
 .overlay {
   position: fixed;
-  z-index: 200;
+  z-index: var(--z-onboarding);
   inset: 0;
   width: var(--mobile-frame-width);
   margin: 0 auto;

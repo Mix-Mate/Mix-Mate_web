@@ -170,9 +170,9 @@ button.resultPill {
   text-align: center;
 }
 
-.emptyMvp {
-  font-size: 23px !important;
-  line-height: 32px !important;
+.mvpHalo strong.emptyMvp {
+  font-size: 23px;
+  line-height: 32px;
 }
 
 .introCaption {
@@ -215,7 +215,7 @@ button.resultPill {
 
 .rankEntry {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   display: flex;
   width: 86px;
   flex-direction: column;
@@ -286,7 +286,7 @@ button.resultPill {
 .armsUp,
 .martiniGlass {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-local-raised);
 }
 
 .armsUp {
@@ -304,7 +304,7 @@ button.resultPill {
 }
 
 .clinkGlass {
-  z-index: 5;
+  z-index: var(--z-local-overlay);
   transform-origin: 50% 22%;
   animation-duration: 1.3s;
   animation-fill-mode: both;
@@ -331,7 +331,7 @@ button.resultPill {
 
 .clinkImpact {
   position: absolute;
-  z-index: 6;
+  z-index: var(--z-local-top);
   top: 104px;
   left: 50%;
   width: 0;
@@ -510,7 +510,7 @@ button.resultPill {
 
 .teamBadge {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-local-foreground);
   top: 0;
   display: inline-flex;
   min-width: 33px;

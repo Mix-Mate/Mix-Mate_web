@@ -77,9 +77,9 @@
   word-break: break-all;
 }
 
-.emailText {
-  color: #3b82f6 !important;
-  font-weight: 700 !important;
+.infoCard strong.emailText {
+  color: #3b82f6;
+  font-weight: 700;
 }
 
 .reasonCard {

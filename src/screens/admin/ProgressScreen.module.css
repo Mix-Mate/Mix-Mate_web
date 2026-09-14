@@ -67,7 +67,7 @@
 
 .footer {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-local-raised);
   /* 사파리 주소창 등에 버튼이 가려지지 않도록, 기존 높이에
      하단 안전영역만큼 여유 공간을 추가로 확보한다. */
   flex: 0 0 calc(88.906px + env(safe-area-inset-bottom));

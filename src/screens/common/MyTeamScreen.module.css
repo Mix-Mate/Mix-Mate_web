@@ -71,7 +71,7 @@
 .assignmentRevealed::before,
 .assignmentRevealed::after {
   position: absolute;
-  z-index: -1;
+  z-index: var(--z-local-behind);
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
