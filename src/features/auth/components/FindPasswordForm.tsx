@@ -298,7 +298,14 @@ export function FindPasswordForm() {
       );
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
-        if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {
+        if (error.code === 'NOT_LOCAL_ACCOUNT') {
+          setGeneralError(
+            '소셜 로그인(카카오/구글)으로 가입된 계정이에요. 소셜 로그인을 이용해주세요.',
+          );
+        } else if (
+          error.fieldErrors &&
+          Object.keys(error.fieldErrors).length > 0
+        ) {
           setFieldErrors(error.fieldErrors);
         } else {
           setGeneralError(error.message);
