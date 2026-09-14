@@ -1,6 +1,6 @@
-import type { AssignmentTeam } from "@/features/assignment/types/assignment.types";
-import type { Participant } from "@/features/participant/types/participant.types";
+import { getProfileGradeLabel } from "@/shared/lib/profile-labels";
 import type { SheetData } from "write-excel-file/universal";
+import type { RosterMember } from "../types/roster.types";
 
 const INVALID_FILE_NAME_CHARACTERS = /[<>:"/\\|?*\u0000-\u001f]/g;
 const TRAILING_FILE_NAME_CHARACTERS = /[. ]+$/g;
@@ -25,28 +25,50 @@ export function sanitizeExcelFileBaseName(groupName: string): string {
 }
 
 export function createParticipantRosterSheet(
-  participants: Participant[],
+  members: RosterMember[],
 ): SheetData {
   return [
-    [headerCell("이름"), headerCell("학과"), headerCell("성별")],
-    ...participants.map((participant) => [
-      participant.name,
-      participant.department,
-      participant.gender === "male" ? "남성" : "여성",
+    [
+      headerCell("학번"),
+      headerCell("이름"),
+      headerCell("학과"),
+      headerCell("학년"),
+      headerCell("성별"),
+    ],
+    ...members.map((member) => [
+      member.studentId,
+      member.displayName,
+      member.major,
+      getProfileGradeLabel(member.grade) ?? member.grade,
+      member.gender === "MALE" ? "남성" : "여성",
     ]),
   ];
 }
 
-export function createTeamRosterSheet(teams: AssignmentTeam[]): SheetData {
+export function createTeamRosterSheet(members: RosterMember[]): SheetData {
   return [
-    [headerCell("조번호"), headerCell("이름"), headerCell("학과")],
-    ...teams.flatMap((team) =>
-      team.members.map((member) => [
-        team.teamNumber,
+    [
+      headerCell("조번호"),
+      headerCell("학번"),
+      headerCell("이름"),
+      headerCell("학과"),
+      headerCell("학년"),
+      headerCell("성별"),
+    ],
+    ...[...members]
+      .sort(
+        (left, right) =>
+          (left.teamNumber ?? Number.MAX_SAFE_INTEGER) -
+          (right.teamNumber ?? Number.MAX_SAFE_INTEGER),
+      )
+      .map((member) => [
+        member.teamNumber ?? "-",
+        member.studentId,
         member.displayName,
         member.major,
+        getProfileGradeLabel(member.grade) ?? member.grade,
+        member.gender === "MALE" ? "남성" : "여성",
       ]),
-    ),
   ];
 }
 
@@ -79,3 +101,4 @@ export async function downloadRosterExcel({
   link.remove();
   window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
 }
+

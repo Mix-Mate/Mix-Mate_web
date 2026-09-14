@@ -2,19 +2,19 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  getTeams,
-  hasSecondRoundTeams,
-} from "@/features/assignment/api/assignment.api";
 import type { AssignmentRound } from "@/features/assignment/types/assignment.types";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
-import { getParticipants } from "@/features/participant/api/participant.api";
+import { getGroupRoster } from "@/features/roster-download/api/roster.api";
 import {
   createParticipantRosterSheet,
   createTeamRosterSheet,
   downloadRosterExcel,
   sanitizeExcelFileBaseName,
 } from "@/features/roster-download/lib/roster-excel";
+import type {
+  GroupRoster,
+  RosterRound,
+} from "@/features/roster-download/types/roster.types";
 import useToast from "@/shared/hooks/useToast";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
@@ -33,10 +33,24 @@ const INITIAL_LOADING_STATE: Record<DownloadKind, boolean> = {
   "second-teams": false,
 };
 
+interface RosterQueryState {
+  groupId: string;
+  data: GroupRoster | null;
+  isLoading: boolean;
+}
+
 function getErrorMessage(error: unknown): string {
   return error instanceof Error
     ? error.message
     : "Excel 파일을 다운로드하지 못했습니다.";
+}
+
+function getRosterRound(
+  roster: GroupRoster,
+  round: AssignmentRound,
+): RosterRound | undefined {
+  const roundType = round === 1 ? "FIRST_ROUND" : "SECOND_ROUND";
+  return roster.rounds.find((item) => item.round === roundType);
 }
 
 export default function RosterDownloadScreen() {
@@ -45,31 +59,65 @@ export default function RosterDownloadScreen() {
   const { data: group } = useAdminGroupQuery(params.groupId);
   const { message: toastMessage, showToast } = useToast();
   const [loading, setLoading] = useState(INITIAL_LOADING_STATE);
-  const [participantCounts, setParticipantCounts] = useState<
-    Partial<Record<AssignmentRound, number>>
-  >({});
-  const [hasSecondRound, setHasSecondRound] = useState<boolean | null>(null);
+  const [rosterQuery, setRosterQuery] = useState<RosterQueryState>(() => ({
+    groupId: params.groupId,
+    data: null,
+    isLoading: true,
+  }));
+  const isCurrentRoster = rosterQuery.groupId === params.groupId;
+  const roster = isCurrentRoster ? rosterQuery.data : null;
+  const isRosterLoading = !isCurrentRoster || rosterQuery.isLoading;
 
   useEffect(() => {
     let ignore = false;
     const requestController = new AbortController();
 
-    void hasSecondRoundTeams(params.groupId, requestController.signal).then(
-      (result) => {
-        if (!ignore) setHasSecondRound(result);
-      },
-    );
+    void getGroupRoster(params.groupId, requestController.signal)
+      .then((result) => {
+        if (!ignore) {
+          setRosterQuery({
+            groupId: params.groupId,
+            data: result,
+            isLoading: false,
+          });
+        }
+      })
+      .catch((error: unknown) => {
+        if (
+          !ignore &&
+          !(error instanceof DOMException && error.name === "AbortError")
+        ) {
+          showToast(getErrorMessage(error));
+          setRosterQuery({
+            groupId: params.groupId,
+            data: null,
+            isLoading: false,
+          });
+        }
+      });
 
     return () => {
       ignore = true;
       requestController.abort();
     };
-  }, [params.groupId]);
+  }, [params.groupId, showToast]);
 
   if (!group) return null;
 
   const setButtonLoading = (kind: DownloadKind, value: boolean) => {
     setLoading((previous) => ({ ...previous, [kind]: value }));
+  };
+
+  const loadRoster = async () => {
+    if (roster) return roster;
+
+    const result = await getGroupRoster(params.groupId);
+    setRosterQuery({
+      groupId: params.groupId,
+      data: result,
+      isLoading: false,
+    });
+    return result;
   };
 
   const downloadParticipants = async (
@@ -79,26 +127,21 @@ export default function RosterDownloadScreen() {
     setButtonLoading(kind, true);
 
     try {
-      const { participants } = await getParticipants(params.groupId, round, {
-        hydrateProfiles: false,
-        includeTeams: false,
-      });
+      const rosterData = await loadRoster();
+      const roundRoster = getRosterRound(rosterData, round);
+      const members = roundRoster?.members ?? [];
 
-      if (participants.length === 0) {
+      if (members.length === 0) {
         showToast(`${round}차 참가자 명단에 데이터가 없습니다.`);
         return;
       }
 
       await downloadRosterExcel({
-        data: createParticipantRosterSheet(participants),
-        fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_참가자명단.xlsx`,
+        data: createParticipantRosterSheet(members),
+        fileName: `${sanitizeExcelFileBaseName(rosterData.groupName)}_${round}차_참가자명단.xlsx`,
         sheetName: `${round}차 참가자`,
-        columnWidths: [18, 24, 12],
+        columnWidths: [16, 18, 24, 12, 12],
       });
-      setParticipantCounts((previous) => ({
-        ...previous,
-        [round]: participants.length,
-      }));
     } catch (error) {
       showToast(getErrorMessage(error));
     } finally {
@@ -110,22 +153,20 @@ export default function RosterDownloadScreen() {
     setButtonLoading(kind, true);
 
     try {
-      const teams = await getTeams(params.groupId, round);
-      const memberCount = teams.reduce(
-        (count, team) => count + team.members.length,
-        0,
-      );
+      const rosterData = await loadRoster();
+      const roundRoster = getRosterRound(rosterData, round);
+      const members = roundRoster?.members ?? [];
 
-      if (memberCount === 0) {
+      if (members.length === 0) {
         showToast(`${round}차 조 명단에 데이터가 없습니다.`);
         return;
       }
 
       await downloadRosterExcel({
-        data: createTeamRosterSheet(teams),
-        fileName: `${sanitizeExcelFileBaseName(group.groupName)}_${round}차_조명단.xlsx`,
+        data: createTeamRosterSheet(members),
+        fileName: `${sanitizeExcelFileBaseName(rosterData.groupName)}_${round}차_조명단.xlsx`,
         sheetName: `${round}차 조 명단`,
-        columnWidths: [10, 18, 24],
+        columnWidths: [10, 16, 18, 24, 12, 12],
       });
     } catch (error) {
       showToast(getErrorMessage(error));
@@ -133,6 +174,9 @@ export default function RosterDownloadScreen() {
       setButtonLoading(kind, false);
     }
   };
+
+  const firstRoundRoster = roster ? getRosterRound(roster, 1) : undefined;
+  const secondRoundRoster = roster ? getRosterRound(roster, 2) : undefined;
 
   return (
     <MobileFrame
@@ -151,12 +195,12 @@ export default function RosterDownloadScreen() {
         <InfoBanner className={styles.infoBanner}>
           <p>
             필요한 명단을 각각 Excel 파일로 받을 수 있습니다. <br />
-            참가자 명단은 이름·학과·성별, 조 명단은 조번호·이름·학과 정보로
-            구성됩니다.
+            참가자 명단은 학번·이름·학과·학년·성별, 조 명단은 조번호를 포함한
+            동일 정보로 구성됩니다.
           </p>
         </InfoBanner>
 
-        {hasSecondRound === null && (
+        {isRosterLoading && (
           <p className={styles.srOnly} role="status">
             명단 정보를 불러오는 중입니다.
           </p>
@@ -167,25 +211,21 @@ export default function RosterDownloadScreen() {
             round={1}
             title="1차 술자리 참가자 명단"
             subtitle={
-              participantCounts[1] === undefined
+              firstRoundRoster === undefined
                 ? "참가자 명단"
-                : `${participantCounts[1]}명`
+                : `${firstRoundRoster.members.length}명`
             }
             tone="participant"
-            loading={loading["first-participants"]}
+            loading={isRosterLoading || loading["first-participants"]}
             onDownload={() => downloadParticipants("first-participants", 1)}
           />
-          {hasSecondRound === null ? (
+          {isRosterLoading ? (
             <RosterDownloadCardSkeleton />
-          ) : hasSecondRound ? (
+          ) : secondRoundRoster ? (
             <DownloadItem
               round={2}
               title="2차 술자리 참가자 명단"
-              subtitle={
-                participantCounts[2] === undefined
-                  ? "참가자 명단"
-                  : `${participantCounts[2]}명`
-              }
+              subtitle={`${secondRoundRoster.members.length}명`}
               tone="participant"
               loading={loading["second-participants"]}
               onDownload={() => downloadParticipants("second-participants", 2)}
@@ -199,12 +239,12 @@ export default function RosterDownloadScreen() {
             title="1차 조 명단"
             subtitle="조 편성 파일"
             tone="team"
-            loading={loading["first-teams"]}
+            loading={isRosterLoading || loading["first-teams"]}
             onDownload={() => downloadTeams("first-teams", 1)}
           />
-          {hasSecondRound === null ? (
+          {isRosterLoading ? (
             <RosterDownloadCardSkeleton />
-          ) : hasSecondRound ? (
+          ) : secondRoundRoster ? (
             <DownloadItem
               round={2}
               title="2차 조 명단"
@@ -279,3 +319,4 @@ function DownloadItem({
     </article>
   );
 }
+

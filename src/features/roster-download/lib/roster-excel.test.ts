@@ -1,34 +1,41 @@
 import { describe, expect, it } from "vitest";
-import type { AssignmentTeam } from "@/features/assignment/types/assignment.types";
-import type { Participant } from "@/features/participant/types/participant.types";
+import type { RosterMember } from "../types/roster.types";
 import {
   createParticipantRosterSheet,
   createTeamRosterSheet,
   sanitizeExcelFileBaseName,
 } from "./roster-excel";
 
-const participants: Participant[] = [
+const members: RosterMember[] = [
   {
-    id: "1",
-    name: "김민준",
-    department: "컴퓨터공학과",
-    gender: "male",
-    role: "general",
-    visibility: "public",
+    studentId: "20260001",
+    displayName: "김민준",
+    major: "컴퓨터공학과",
+    grade: "FIRST",
+    gender: "MALE",
+    teamNumber: 2,
   },
   {
-    id: "2",
-    name: "이서연",
-    department: "경영학과",
-    gender: "female",
-    role: "general",
-    visibility: "public",
+    studentId: "20250002",
+    displayName: "이서연",
+    major: "경영학과",
+    grade: "SECOND",
+    gender: "FEMALE",
+    teamNumber: 1,
+  },
+  {
+    studentId: "20240003",
+    displayName: "박다래",
+    major: "컴퓨터공학과",
+    grade: "THIRD",
+    gender: "FEMALE",
+    teamNumber: null,
   },
 ];
 
 describe("roster-excel", () => {
-  it("참가자 명단 컬럼 순서와 성별 표시값을 변환한다", () => {
-    const sheet = createParticipantRosterSheet(participants);
+  it("참가자 명단에 학번과 학년을 포함하고 표시값을 변환한다", () => {
+    const sheet = createParticipantRosterSheet(members);
 
     expect(
       sheet[0].map((cell) =>
@@ -36,52 +43,16 @@ describe("roster-excel", () => {
           ? cell.value
           : cell,
       ),
-    ).toEqual(["이름", "학과", "성별"]);
+    ).toEqual(["학번", "이름", "학과", "학년", "성별"]);
     expect(sheet.slice(1)).toEqual([
-      ["김민준", "컴퓨터공학과", "남성"],
-      ["이서연", "경영학과", "여성"],
+      ["20260001", "김민준", "컴퓨터공학과", "1학년", "남성"],
+      ["20250002", "이서연", "경영학과", "2학년", "여성"],
+      ["20240003", "박다래", "컴퓨터공학과", "3학년", "여성"],
     ]);
   });
 
-  it("모든 조의 멤버를 하나의 시트 데이터로 flatten한다", () => {
-    const teams: AssignmentTeam[] = [
-      {
-        teamNumber: 1,
-        members: [
-          {
-            participantId: 1,
-            displayName: "김민준",
-            major: "컴퓨터공학과",
-            gender: "MALE",
-            visibility: "PUBLIC",
-            fixed: false,
-          },
-          {
-            participantId: 2,
-            displayName: "박다래",
-            major: "컴퓨터공학과",
-            gender: "FEMALE",
-            visibility: "PUBLIC",
-            fixed: false,
-          },
-        ],
-      },
-      {
-        teamNumber: 2,
-        members: [
-          {
-            participantId: 3,
-            displayName: "이서연",
-            major: "경영학과",
-            gender: "FEMALE",
-            visibility: "PUBLIC",
-            fixed: false,
-          },
-        ],
-      },
-    ];
-
-    const sheet = createTeamRosterSheet(teams);
+  it("조 번호순으로 정렬하고 미배정 인원은 마지막에 표시한다", () => {
+    const sheet = createTeamRosterSheet(members);
 
     expect(
       sheet[0].map((cell) =>
@@ -89,11 +60,11 @@ describe("roster-excel", () => {
           ? cell.value
           : cell,
       ),
-    ).toEqual(["조번호", "이름", "학과"]);
+    ).toEqual(["조번호", "학번", "이름", "학과", "학년", "성별"]);
     expect(sheet.slice(1)).toEqual([
-      [1, "김민준", "컴퓨터공학과"],
-      [1, "박다래", "컴퓨터공학과"],
-      [2, "이서연", "경영학과"],
+      [1, "20250002", "이서연", "경영학과", "2학년", "여성"],
+      [2, "20260001", "김민준", "컴퓨터공학과", "1학년", "남성"],
+      ["-", "20240003", "박다래", "컴퓨터공학과", "3학년", "여성"],
     ]);
   });
 
@@ -104,3 +75,4 @@ describe("roster-excel", () => {
     expect(sanitizeExcelFileBaseName("  ...  ")).toBe("MixMate");
   });
 });
+
