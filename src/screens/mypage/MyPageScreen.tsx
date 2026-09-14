@@ -44,7 +44,7 @@ function getStoredEmail(): string {
 
 function getStoredProvider(): string {
   if (typeof window === "undefined") return "local";
-  return window.localStorage.getItem("provider") || "local";
+  return (window.localStorage.getItem("provider") || "local").toLowerCase();
 }
 
 function getServerUserNameSnapshot(): string {
