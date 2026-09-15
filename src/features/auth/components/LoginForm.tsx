@@ -10,6 +10,11 @@ import useToast from '@/shared/hooks/useToast';
 import { saveAuthSession } from '../utils/auth-session';
 import { redirectToKakaoLogin } from '../utils/kakao-auth';
 import { redirectToGoogleLogin } from '../utils/google-auth';
+import {
+  consumePostLoginRedirect,
+  normalizePostLoginRedirect,
+  rememberPostLoginRedirect,
+} from '../utils/post-login-redirect';
 import { loginApi, AuthApiError } from '../api/auth.api';
 import logoIcon from '../../../../public/icons/logo.png';
 import styles from './LoginForm.module.css';
@@ -61,6 +66,14 @@ export function LoginForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const requestedRedirect = searchParams.get('next');
+  const postLoginRedirect = normalizePostLoginRedirect(requestedRedirect);
+
+  useEffect(() => {
+    if (requestedRedirect !== null) {
+      rememberPostLoginRedirect(requestedRedirect);
+    }
+  }, [requestedRedirect]);
 
   useEffect(() => {
     const toastParam = searchParams.get('toast');
@@ -113,10 +126,13 @@ export function LoginForm() {
         password,
       });
 
-      // 200 성공 시: accessToken과 refreshToken, 사용자 정보를 스토리지/쿠키에 저장하고 메인 홈(/home)으로 이동
+      // 초대 링크 등 로그인 전 목적지가 있으면 해당 경로로 복귀하고,
+      // 일반 로그인 진입이라면 기존처럼 메인 홈으로 이동한다.
       saveAuthSession(response);
 
-      router.push('/home');
+      router.replace(
+        consumePostLoginRedirect(requestedRedirect) ?? '/home',
+      );
     } catch (error: unknown) {
       if (error instanceof AuthApiError) {
         if (
@@ -141,6 +157,24 @@ export function LoginForm() {
       setIsLoading(false);
     }
   };
+
+  const handleKakaoLogin = () => {
+    if (postLoginRedirect) {
+      rememberPostLoginRedirect(postLoginRedirect);
+    }
+    redirectToKakaoLogin();
+  };
+
+  const handleGoogleLogin = () => {
+    if (postLoginRedirect) {
+      rememberPostLoginRedirect(postLoginRedirect);
+    }
+    redirectToGoogleLogin();
+  };
+
+  const signupHref = postLoginRedirect
+    ? `/signup?next=${encodeURIComponent(postLoginRedirect)}`
+    : '/signup';
 
   return (
     <div className={styles.container}>
@@ -231,7 +265,7 @@ export function LoginForm() {
         {/* 카카오 로그인 버튼 */}
         <button
           type="button"
-          onClick={redirectToKakaoLogin}
+          onClick={handleKakaoLogin}
           className={styles.kakaoButton}
           aria-label="카카오 로그인"
         >
@@ -242,7 +276,7 @@ export function LoginForm() {
         {/* 구글 로그인 버튼 */}
         <button
           type="button"
-          onClick={redirectToGoogleLogin}
+          onClick={handleGoogleLogin}
           className={styles.googleButton}
           aria-label="구글 로그인"
         >
@@ -258,7 +292,7 @@ export function LoginForm() {
           <Link href="/find-password" className={styles.findPasswordLink}>
             비밀번호 찾기
           </Link>
-          <Link href="/signup" className={styles.signupLink}>
+          <Link href={signupHref} className={styles.signupLink}>
             회원가입
           </Link>
         </div>
