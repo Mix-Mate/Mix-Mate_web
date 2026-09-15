@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import GroupExtraInfoScreen from "./GroupExtraInfoScreen";
 import { getRecentProfileApi } from "@/features/profile/api/profile.api";
-import { verifyInviteCodeApi } from "@/features/group/api/group.api";
+import {
+  getGroupDetail,
+  verifyInviteCodeApi,
+} from "@/features/group/api/group.api";
 
 const mockBack = vi.fn();
 const mockReplace = vi.fn();
@@ -30,6 +33,17 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => {
         groupId: 10,
         groupName: "테스트 모임",
       }),
+    getGroupDetail: vi.fn().mockResolvedValue({
+      groupId: 10,
+      groupName: "테스트 모임",
+      description: null,
+      status: "RECRUITING",
+      inviteCode: "ABCDEF",
+      createdAt: "2026-09-02T00:00:00.000Z",
+      memberCount: 1,
+      myRole: "PARTICIPANT",
+      myParticipantId: null,
+    }),
     createGroupApi: vi.fn(),
     joinGroupWithProfileApi: vi.fn(),
   };
@@ -58,6 +72,17 @@ describe("GroupExtraInfoScreen 프로필 prefill 연동", () => {
       status: "RECRUITING",
       groupId: 10,
       groupName: "테스트 모임",
+    });
+    vi.mocked(getGroupDetail).mockResolvedValue({
+      groupId: 10,
+      groupName: "테스트 모임",
+      description: null,
+      status: "RECRUITING",
+      inviteCode: "ABCDEF",
+      createdAt: "2026-09-02T00:00:00.000Z",
+      memberCount: 1,
+      myRole: "PARTICIPANT",
+      myParticipantId: null,
     });
   });
 
