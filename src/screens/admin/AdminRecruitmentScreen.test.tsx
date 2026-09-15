@@ -19,6 +19,10 @@ const {
   useCloseRecruitingMutationMock,
   useParticipantListQueryMock,
   participantRefetchMock,
+  clipboardWriteTextMock,
+  useGroupInvitationQueryMock,
+  useReissueGroupInvitationMutationMock,
+  reissueInvitationMock,
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
   pushMock: vi.fn(),
@@ -28,6 +32,10 @@ const {
   useCloseRecruitingMutationMock: vi.fn(),
   useParticipantListQueryMock: vi.fn(),
   participantRefetchMock: vi.fn(),
+  clipboardWriteTextMock: vi.fn(),
+  useGroupInvitationQueryMock: vi.fn(),
+  useReissueGroupInvitationMutationMock: vi.fn(),
+  reissueInvitationMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -45,6 +53,14 @@ vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
 
 vi.mock("@/features/group/hooks/useCloseRecruitingMutation", () => ({
   useCloseRecruitingMutation: useCloseRecruitingMutationMock,
+}));
+
+vi.mock("@/features/group/hooks/useGroupInvitationQuery", () => ({
+  useGroupInvitationQuery: useGroupInvitationQueryMock,
+}));
+
+vi.mock("@/features/group/hooks/useReissueGroupInvitationMutation", () => ({
+  useReissueGroupInvitationMutation: useReissueGroupInvitationMutationMock,
 }));
 
 vi.mock("@/features/participant/hooks/useParticipantListQuery", () => ({
@@ -95,12 +111,30 @@ describe("AdminRecruitmentScreen", () => {
       HOST_RECRUITMENT_ONBOARDING_STORAGE_KEY,
       "true",
     );
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: clipboardWriteTextMock },
+    });
     useAdminGroupQueryMock.mockReturnValue({
       data: group,
       refetch: refetchMock,
     });
     useCloseRecruitingMutationMock.mockReturnValue({
       mutate: closeRecruitingMock,
+      isPending: false,
+      error: null,
+    });
+    useGroupInvitationQueryMock.mockReturnValue({
+      data: {
+        inviteCode: "ABC123",
+        expiresAt: "2026-09-22T00:00:00.000Z",
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    useReissueGroupInvitationMutationMock.mockReturnValue({
+      mutate: reissueInvitationMock,
       isPending: false,
       error: null,
     });
@@ -142,6 +176,57 @@ describe("AdminRecruitmentScreen", () => {
     fireEvent.click(screen.getByRole("button", { name: "그룹 정보 수정" }));
 
     expect(pushMock).toHaveBeenCalledExactlyOnceWith("/groups/7/edit");
+  });
+
+  it("참여 코드로 만든 초대 링크와 계산된 남은 시간을 표시한다", async () => {
+    render(<AdminRecruitmentScreen />);
+
+    expect(screen.getByText("참여 코드")).toBeInTheDocument();
+    expect(screen.getByText("MixMate.invite")).toBeInTheDocument();
+    expect(screen.getByText("0일 1시간 0분").parentElement).toHaveTextContent(
+      "참여코드 만료까지 0일 1시간 0분",
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "초대 링크 복사" }));
+    });
+
+    expect(clipboardWriteTextMock).toHaveBeenCalledExactlyOnceWith(
+      "http://localhost:3000/groups/join?inviteCode=ABC123",
+    );
+  });
+
+  it("재발급 버튼을 누르면 7일 정책이 반영된 확인 모달을 보여준다", () => {
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "재발급" }));
+
+    const dialog = screen.getByRole("dialog", {
+      name: /참여 코드와 초대 링크를\s*새로 발급할까요/,
+    });
+    expect(dialog).toHaveTextContent(
+      "기존 참여 코드와 초대 링크는즉시 사용할 수 없게 됩니다.새 참여 코드는 7일간 유효해요.",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("재발급 확인 시 API 응답의 새 참여 코드로 화면을 갱신한다", async () => {
+    reissueInvitationMock.mockResolvedValue({
+      inviteCode: "NEW789",
+      expiresAt: "2026-09-23T00:00:00.000Z",
+    });
+    render(<AdminRecruitmentScreen />);
+
+    fireEvent.click(screen.getByRole("button", { name: "재발급" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "재발급하기" }));
+    });
+
+    expect(reissueInvitationMock).toHaveBeenCalledExactlyOnceWith("7");
+    expect(screen.getByText("NEW789")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("모집 중인 그룹 홈에서 메인 홈으로 나가기 전에 확인 팝업을 보여준다", () => {
