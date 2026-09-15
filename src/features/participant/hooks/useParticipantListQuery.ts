@@ -137,9 +137,15 @@ export function useParticipantListQuery(
     };
   }, [enabled, fetchParticipants, polling]);
 
+  const refetch = useCallback(
+    () => fetchParticipants(false),
+    [fetchParticipants],
+  );
+
   return {
     data,
     isLoading: enabled ? isLoading : false,
     isError: enabled ? isError : false,
+    refetch,
   };
 }

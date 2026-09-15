@@ -3,7 +3,6 @@
 import {
   BriefcaseBusiness,
   ChevronRight,
-  Clock3,
   Copy,
   SquarePen,
 } from "lucide-react";
@@ -18,6 +17,8 @@ import {
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
 import { useInviteCodeRemainingTime } from "@/features/group/hooks/useInviteCodeRemainingTime";
+import RecruitmentParticipantCard from "@/features/participant/components/RecruitmentParticipantCard";
+import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-expiration";
 import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 import { getGroupStatusLabel } from "@/features/group/model/group-status";
@@ -90,9 +91,18 @@ export default function AdminRecruitmentScreen() {
   const statusCardRef = useRef<HTMLElement>(null);
   const inviteCodeCardRef = useRef<HTMLDivElement>(null);
   const recruitingCardRef = useRef<HTMLElement>(null);
-  const participantCountRef = useRef<HTMLButtonElement>(null);
+  const participantCountRef = useRef<HTMLDivElement>(null);
   const closeRecruitmentRef = useRef<HTMLButtonElement>(null);
   const { message: toast, showToast } = useToast();
+  const {
+    data: participantData,
+    isLoading: isParticipantListLoading,
+    refetch: refetchParticipants,
+  } = useParticipantListQuery(params.groupId, {
+    detailRole: "admin",
+    hydrateProfiles: true,
+    includeTeams: false,
+  });
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
   const isRecruiting = group?.status === "RECRUITING";
@@ -140,13 +150,13 @@ export default function AdminRecruitmentScreen() {
     }
 
     const intervalId = window.setInterval(() => {
-      void refetch();
+      void Promise.all([refetch(), refetchParticipants()]);
     }, RECRUITMENT_POLLING_INTERVAL_MS);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isRecruiting, refetch, transitionPhase]);
+  }, [isRecruiting, refetch, refetchParticipants, transitionPhase]);
 
   const copyInviteCode = useCallback(async () => {
     if (!group) return;
@@ -336,38 +346,17 @@ export default function AdminRecruitmentScreen() {
 
         <InviteCodeExpirationNotice createdAt={group.createdAt} />
 
-        <section ref={recruitingCardRef} className={styles.recruitingCard}>
-          <span className={styles.clockIcon} aria-hidden="true">
-            <Clock3 size={25} strokeWidth={1.8} />
-          </span>
-          <h2>그룹을 모집하고 있습니다.</h2>
-          <p className={styles.minimumParticipantText}>
-            참가자가 <strong>{FIRST_ROUND_MIN_PARTICIPANTS}명</strong> 이상
-            모이면 1차 술자리를 시작할 수 있어요.
-          </p>
-        </section>
-
-        <button
-          ref={participantCountRef}
-          type="button"
-          className={styles.participantCountCard}
-          aria-label={`현재 모집된 인원 ${group.memberCount}명, 참가자 목록 보기`}
-          onClick={goToParticipants}
-        >
-          <span className={styles.participantCountInfo}>
-            <span className={styles.liveBadge}>
-              <span className={styles.liveDot} aria-hidden="true" />
-              실시간 집계
-            </span>
-            <span className={styles.participantCountLabel}>
-              현재 모집된 인원
-            </span>
-          </span>
-          <span className={styles.participantCountValue}>
-            <strong>{group.memberCount}</strong>
-            <span>명</span>
-          </span>
-        </button>
+        <RecruitmentParticipantCard
+          key={params.groupId}
+          ref={(element) => {
+            recruitingCardRef.current = element;
+            participantCountRef.current = element;
+          }}
+          count={group.memberCount}
+          isLoading={isParticipantListLoading}
+          participants={participantData.participants}
+          onNavigate={goToParticipants}
+        />
 
         <Button
           ref={closeRecruitmentRef}
