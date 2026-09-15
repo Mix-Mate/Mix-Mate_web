@@ -129,6 +129,7 @@ export function toParticipantProfile(
     instagramId: profile.instaId ?? undefined,
     bio: profile.bio ?? undefined,
     isNew: profile.isNew,
+    mvpCount: profile.mvpCount,
   };
 }
 
@@ -220,6 +221,7 @@ function mergeHydratedParticipant<TParticipant extends Participant>(
     instagramId: profile.instagramId ?? participant.instagramId,
     bio: profile.bio ?? participant.bio,
     isNew: profile.isNew ?? participant.isNew,
+    mvpCount: profile.mvpCount ?? participant.mvpCount,
   };
 }
 

@@ -2,12 +2,14 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import { useMyPageUserProfileQuery } from "@/features/user/hooks/useMyPageUserProfileQuery";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
 import Header from "@/shared/ui/Header";
 import InfoBanner from "@/shared/ui/InfoBanner";
 import MobileFrame from "@/shared/ui/MobileFrame";
+import MvpMedalPopover from "@/features/profile/components/MvpMedalPopover";
 import Toast from "@/shared/ui/Toast";
 import styles from "./MyProfileScreen.module.css";
 
@@ -33,7 +35,9 @@ export default function MyProfileScreen() {
   const router = useRouter();
   const params = useParams<{ groupId: string }>();
   const { data: profile } = useMyGroupProfileQuery(params.groupId);
+  const { data: myInfo } = useMyPageUserProfileQuery();
   const { message: toastMessage, showToast } = useToast();
+  const mvpCount = myInfo?.mvpCount ?? 0;
 
   if (!profile) {
     return (
@@ -87,6 +91,7 @@ export default function MyProfileScreen() {
           <div className={styles.badges}>
             {profile.isNew && <span>신입</span>}
             <span>{positionLabelMap[profile.position]}</span>
+            <MvpMedalPopover mvpCount={mvpCount} />
           </div>
         </section>
 
@@ -152,6 +157,11 @@ export default function MyProfileScreen() {
             <strong>
               {profile.visibility === "PUBLIC" ? "전체 공개" : "비공개"}
             </strong>
+          </div>
+
+          <div>
+            <span>MVP 횟수</span>
+            <strong>{mvpCount}회</strong>
           </div>
         </section>
 

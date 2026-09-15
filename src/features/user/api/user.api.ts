@@ -15,6 +15,7 @@ export interface MyPageUserProfile {
   email: string;
   userName: string;
   provider: string;
+  mvpCount: number;
 }
 
 type MyPageUserProfilePayload =
@@ -139,6 +140,7 @@ function normalizeMyPageUserProfile(
     provider:
       getStringValue(user, ["provider", "loginProvider", "authProvider"]) ||
       "local",
+    mvpCount: getNumberValue(user, ["mvpCount"]) ?? 0,
   };
 }
 

@@ -62,14 +62,17 @@
 
 .badges {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 8px;
   margin-top: 10px;
 }
 
-.badges span {
-  min-width: 52px;
+.badges > span {
+  width: 68px;
   height: 28px;
+  flex-shrink: 0;
   border: 1.5px solid #e5e7eb;
   border-radius: 999px;
   padding: 0 12px;
@@ -78,9 +81,11 @@
   font-size: 12px;
   font-weight: 700;
   line-height: 26px;
+  white-space: nowrap;
+  text-align: center;
 }
 
-.badges span:first-child {
+.badges > span:first-child {
   border-color: #2f80d1;
   background: #eff6ff;
   color: #2f80d1;

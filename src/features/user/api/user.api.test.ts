@@ -217,6 +217,7 @@ describe("user.api", () => {
             email: "mixmate@example.com",
             name: "믹스메이트",
             loginProvider: "GOOGLE",
+            mvpCount: 3,
           },
         }),
       );
@@ -226,6 +227,7 @@ describe("user.api", () => {
         email: "mixmate@example.com",
         userName: "믹스메이트",
         provider: "GOOGLE",
+        mvpCount: 3,
       });
       expect(apiFetch).toHaveBeenCalledExactlyOnceWith(
         `${API_BASE_URL}/api/v1/auth/me`,
