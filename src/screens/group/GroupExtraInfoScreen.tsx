@@ -28,7 +28,6 @@ import {
   groupProfileSchema,
 } from "@/features/profile/schemas/group-profile.schema";
 import { getGroupEntryRoute } from "@/features/group/lib/group-entry-route";
-import { groupRoutes } from "@/shared/lib/navigation/routes";
 import {
   getZodFieldErrors,
   mapServerFieldErrors,
@@ -317,10 +316,7 @@ export default function GroupExtraInfoScreen({
 
   // 화면 진입 즉시 참여코드 유효성, 차단 여부 및 그룹 마감 여부 사전 검사
   useEffect(() => {
-    if (isCreateFlow) {
-      setIsVerifying(false);
-      return;
-    }
+    if (isCreateFlow) return;
 
     const inviteCodeParam =
       searchParams.get("inviteCode") ||
@@ -333,7 +329,7 @@ export default function GroupExtraInfoScreen({
     async function checkGroupStatus() {
       try {
         let isUserBlocked = false;
-        let blockedMessage = "해당 그룹에서 차단되어 참여할 수 없습니다.";
+        const blockedMessage = "해당 그룹에서 차단되어 참여할 수 없습니다.";
         let isGroupClosed = false;
         let closedMessage = "참가자 모집이 완료되어 그룹에 참여할 수 없습니다.";
 
