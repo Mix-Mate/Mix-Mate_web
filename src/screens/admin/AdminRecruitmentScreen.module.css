@@ -48,6 +48,30 @@
   flex: 0 0 15px;
   border-radius: 50%;
   background: #2563eb;
+  animation: statusDotPulse 1.8s ease-out infinite;
+}
+
+@keyframes statusDotPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statusDot {
+    animation: none;
+  }
 }
 
 .statusSummary p,
@@ -97,6 +121,8 @@
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
+  /* 라벨+값 두 줄 블록의 중심이 아니라, 굵은 값(참여코드) 줄과 눈높이를 맞춘다. */
+  margin-top: 20px;
   place-items: center;
   border-radius: 12px;
   background: #eff6ff;
@@ -129,6 +155,7 @@
   display: inline-flex;
   height: 44px;
   min-width: 64px;
+  margin-top: 20px;
   margin-left: auto;
   cursor: pointer;
   align-items: center;
@@ -179,6 +206,7 @@
   width: 36px;
   height: 36px;
   flex: 0 0 36px;
+  margin-top: 20px;
   place-items: center;
   border-radius: 12px;
   background: #eff6ff;
@@ -227,6 +255,9 @@
 
 .groupEditRow > span {
   display: inline-flex;
+  /* 위 두 행의 아이콘은 36px 박스 안에 있어 9px 안쪽에서 시작하므로, 아이콘 칸이
+     없는 이 행도 같은 9px만큼 밀어서 왼쪽 아이콘 열을 맞춘다. */
+  margin-left: 9px;
   align-items: center;
   gap: 8px;
 }

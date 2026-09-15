@@ -12,6 +12,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type RefObject,
@@ -77,12 +78,12 @@ function InviteCodeExpirationNotice({
           {error ? (
             error
           ) : isLoading && !expiresAt ? (
-            "참여코드 만료 시간을 확인하는 중입니다."
+            "참여코드/초대링크 만료 시간을 확인하는 중입니다."
           ) : remainingTime.remainingMs === 0 ? (
-            "참여코드가 만료되었습니다."
+            "참여코드/초대링크가 만료되었습니다."
           ) : (
             <>
-              참여코드 만료까지{" "}
+              참여코드/초대링크 만료까지{" "}
               <strong>{formatInviteCodeRemainingTime(remainingTime)}</strong>
             </>
           )}
@@ -137,6 +138,14 @@ export default function AdminRecruitmentScreen() {
     hydrateProfiles: true,
     includeTeams: false,
   });
+  const recentParticipants = useMemo(() => {
+    if (group?.myParticipantId == null) return participantData.participants;
+
+    const myParticipantId = String(group.myParticipantId);
+    return participantData.participants.filter(
+      (participant) => participant.id !== myParticipantId,
+    );
+  }, [participantData.participants, group?.myParticipantId]);
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
   const isRecruiting = group?.status === "RECRUITING";
@@ -463,7 +472,7 @@ export default function AdminRecruitmentScreen() {
           }}
           count={group.memberCount}
           isLoading={isParticipantListLoading}
-          participants={participantData.participants}
+          participants={recentParticipants}
           onNavigate={goToParticipants}
         />
 
