@@ -36,17 +36,19 @@
 }
 
 .card {
+  --mvp-popover-shift: 0px;
   position: absolute;
   z-index: var(--z-popover);
   top: calc(100% + 10px);
   left: 50%;
   width: 272px;
+  max-width: calc(100dvw - 24px);
   overflow: hidden;
   border: 1px solid #e4e4e7;
   border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 16px 40px rgba(24, 24, 27, 0.18);
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% + var(--mvp-popover-shift)));
   animation: popIn 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
   text-align: left;
 }
@@ -197,7 +199,8 @@
 @keyframes popIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-4px) scale(0.96);
+    transform: translateX(calc(-50% + var(--mvp-popover-shift))) translateY(-4px)
+      scale(0.96);
   }
 }
 
