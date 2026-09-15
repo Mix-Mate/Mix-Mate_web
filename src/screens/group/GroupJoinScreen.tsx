@@ -7,7 +7,11 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
 import Button from "@/shared/ui/Button";
 import StandardDialog from "@/shared/ui/StandardDialog";
-import { verifyInviteCodeApi, GroupApiError } from "@/features/group/api/group.api";
+import {
+  GroupApiError,
+  isExplicitGroupBlockError,
+  verifyInviteCodeApi,
+} from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import {
   recordBlockedGroup,
@@ -265,16 +269,8 @@ export default function GroupJoinScreen() {
         return;
       }
 
-      // 403 Forbidden / 차단 상태 (403 또는 BLOCKED)
-      const isBlockedError =
-        errorStatus === 403 ||
-        errorCode === "USER_BLOCKED" ||
-        errorCode === "BANNED_USER" ||
-        errorCode === "FORBIDDEN" ||
-        errorCode === "BLOCKED" ||
-        errorObj.message.includes("차단");
-
-      if (isBlockedError) {
+      // 범용 403/FORBIDDEN은 제외하고 명시적인 차단 응답만 처리한다.
+      if (isExplicitGroupBlockError(err)) {
         if (errGroupId) {
           recordBlockedGroup({
             groupId: String(errGroupId),

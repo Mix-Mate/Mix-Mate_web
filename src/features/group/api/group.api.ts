@@ -71,6 +71,43 @@ export class GroupApiError extends Error {
   }
 }
 
+const EXPLICIT_GROUP_BLOCK_CODES = new Set([
+  "USER_BLOCKED",
+  "BANNED_USER",
+  "BLOCKED",
+]);
+
+const EXPLICIT_GROUP_BLOCK_MESSAGES = [
+  "관리자에 의해 해당 그룹에서 차단되었습니다",
+  "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다",
+  "차단되어 입장할 수 없습니다",
+];
+
+/** 범용 403/FORBIDDEN과 실제 그룹 차단 응답을 구분한다. */
+export function isExplicitGroupBlockError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const candidate = error as { code?: unknown; message?: unknown };
+  const code =
+    typeof candidate.code === "string"
+      ? candidate.code.trim().toUpperCase()
+      : "";
+  if (EXPLICIT_GROUP_BLOCK_CODES.has(code)) return true;
+
+  if (typeof candidate.message !== "string") return false;
+  const message = candidate.message.trim();
+
+  // 참여 여부와 차단 여부를 합쳐 표현한 과거의 403 기본 문구는 차단 근거가 아니다.
+  if (message === "이 그룹에 참여하고 있지 않거나 차단되었습니다.") {
+    return false;
+  }
+
+  const normalizedMessage = message.replace(/[.!?]+$/, "").trim();
+  return EXPLICIT_GROUP_BLOCK_MESSAGES.some((blockedMessage) =>
+    normalizedMessage.includes(blockedMessage),
+  );
+}
+
 export function extractErrorGroupName(errorData: unknown): string | undefined {
   if (!errorData || typeof errorData !== "object") return undefined;
   const dataObj = errorData as Record<string, unknown>;
@@ -367,7 +404,7 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
     const message =
       errorData?.message ||
       (response.status === 403
-        ? "이 그룹에 참여하고 있지 않거나 차단되었습니다."
+        ? "이 그룹에 참여하고 있지 않습니다."
         : response.status === 404
           ? "존재하지 않는 그룹입니다."
           : "그룹 정보를 불러오지 못했습니다.");
