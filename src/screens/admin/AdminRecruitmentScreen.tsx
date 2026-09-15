@@ -4,6 +4,8 @@ import {
   BriefcaseBusiness,
   ChevronRight,
   Copy,
+  Link2,
+  RefreshCw,
   SquarePen,
 } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -16,7 +18,10 @@ import {
 } from "react";
 import { useAdminGroupQuery } from "@/features/group/hooks/useAdminGroupQuery";
 import { useCloseRecruitingMutation } from "@/features/group/hooks/useCloseRecruitingMutation";
+import { useGroupInvitationQuery } from "@/features/group/hooks/useGroupInvitationQuery";
 import { useInviteCodeRemainingTime } from "@/features/group/hooks/useInviteCodeRemainingTime";
+import { useReissueGroupInvitationMutation } from "@/features/group/hooks/useReissueGroupInvitationMutation";
+import type { GroupInvitationResponse } from "@/features/group/api/group.api";
 import RecruitmentParticipantCard from "@/features/participant/components/RecruitmentParticipantCard";
 import { useParticipantListQuery } from "@/features/participant/hooks/useParticipantListQuery";
 import { formatInviteCodeRemainingTime } from "@/features/group/lib/invite-code-expiration";
@@ -36,6 +41,7 @@ import {
   type HostRecruitmentOnboardingStepId,
 } from "@/features/onboarding/model/host-recruitment-onboarding-steps";
 import CloseRecruitmentDialog from "@/modals/admin/CloseRecruitmentDialog";
+import ReissueInvitationDialog from "@/modals/admin/ReissueInvitationDialog";
 import useToast from "@/shared/hooks/useToast";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import Button from "@/shared/ui/Button";
@@ -49,25 +55,47 @@ const MIN_RECRUITMENT_TRANSITION_MS = 3000;
 
 interface InviteCodeExpirationNoticeProps {
   createdAt: string;
+  expiresAt?: string;
+  isLoading?: boolean;
+  error?: string | null;
+  onRequestReissue: () => void;
 }
 
 function InviteCodeExpirationNotice({
   createdAt,
+  expiresAt,
+  isLoading = false,
+  error,
+  onRequestReissue,
 }: InviteCodeExpirationNoticeProps) {
-  const remainingTime = useInviteCodeRemainingTime(createdAt);
+  const remainingTime = useInviteCodeRemainingTime(createdAt, expiresAt);
 
   return (
     <InfoBanner className={styles.expirationNotice}>
-      <p>
-        {remainingTime.remainingMs === 0 ? (
-          "참여코드가 만료되었습니다."
-        ) : (
-          <>
-            참여코드 만료까지{" "}
-            <strong>{formatInviteCodeRemainingTime(remainingTime)}</strong>
-          </>
-        )}
-      </p>
+      <div className={styles.expirationNoticeContent}>
+        <p>
+          {error ? (
+            error
+          ) : isLoading && !expiresAt ? (
+            "참여코드 만료 시간을 확인하는 중입니다."
+          ) : remainingTime.remainingMs === 0 ? (
+            "참여코드가 만료되었습니다."
+          ) : (
+            <>
+              참여코드 만료까지{" "}
+              <strong>{formatInviteCodeRemainingTime(remainingTime)}</strong>
+            </>
+          )}
+        </p>
+        <button
+          type="button"
+          className={styles.reissueButton}
+          onClick={onRequestReissue}
+        >
+          <RefreshCw aria-hidden="true" size={14} strokeWidth={2} />
+          재발급
+        </button>
+      </div>
     </InfoBanner>
   );
 }
@@ -85,6 +113,9 @@ export default function AdminRecruitmentScreen() {
   const [closeDialogOpen, setCloseDialogOpen] = useState(
     searchParams.get("dialog") === "close-recruitment",
   );
+  const [reissueDialogOpen, setReissueDialogOpen] = useState(false);
+  const [reissuedInvitation, setReissuedInvitation] =
+    useState<GroupInvitationResponse | null>(null);
   const [transitionPhase, setTransitionPhase] =
     useState<RecruitmentTransitionPhase | null>(null);
   const cancelTransitionRef = useRef<(() => void) | null>(null);
@@ -106,6 +137,19 @@ export default function AdminRecruitmentScreen() {
   const canEditGroup =
     group?.myRole === "HOST" && group.status === "RECRUITING";
   const isRecruiting = group?.status === "RECRUITING";
+  const {
+    data: invitation,
+    isLoading: isInvitationLoading,
+    error: invitationError,
+  } = useGroupInvitationQuery(params.groupId, { enabled: canEditGroup });
+  const {
+    mutate: reissueInvitation,
+    isPending: isReissuingInvitation,
+    error: reissueInvitationError,
+  } = useReissueGroupInvitationMutation();
+  const currentInvitation = reissuedInvitation ?? invitation;
+  const displayedInviteCode =
+    currentInvitation?.inviteCode ?? group?.inviteCode ?? "";
   const canCloseRecruitment =
     canEditGroup && group.memberCount >= FIRST_ROUND_MIN_PARTICIPANTS;
   const onboardingTargetRefs: Record<
@@ -124,7 +168,10 @@ export default function AdminRecruitmentScreen() {
   const { open: onboardingOpen, dismiss: dismissOnboarding } =
     useHostRecruitmentOnboarding(
       // 다이얼로그가 열린 채로 들어온 경우에는 온보딩을 띄우지 않는다.
-      canEditGroup && !transitionPhase && !closeDialogOpen,
+      canEditGroup &&
+        !transitionPhase &&
+        !closeDialogOpen &&
+        !reissueDialogOpen,
     );
 
   useEffect(() => {
@@ -159,15 +206,48 @@ export default function AdminRecruitmentScreen() {
   }, [isRecruiting, refetch, refetchParticipants, transitionPhase]);
 
   const copyInviteCode = useCallback(async () => {
-    if (!group) return;
+    if (!displayedInviteCode) return;
 
     try {
-      await navigator.clipboard.writeText(group.inviteCode);
-      showToast("그룹 코드가 복사되었습니다.");
+      await navigator.clipboard.writeText(displayedInviteCode);
+      showToast("참여 코드가 복사되었습니다.");
     } catch {
-      showToast(`그룹 코드: ${group.inviteCode}`);
+      showToast(`참여 코드: ${displayedInviteCode}`);
     }
-  }, [group, showToast]);
+  }, [displayedInviteCode, showToast]);
+
+  const copyInviteLink = useCallback(async () => {
+    if (!displayedInviteCode) return;
+
+    const invitePath = `${groupRoutes.join()}?inviteCode=${encodeURIComponent(
+      displayedInviteCode,
+    )}`;
+    const inviteUrl = new URL(invitePath, window.location.origin).toString();
+
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      showToast("초대 링크가 복사되었습니다.");
+    } catch {
+      showToast(inviteUrl);
+    }
+  }, [displayedInviteCode, showToast]);
+
+  const confirmReissueInvitation = useCallback(async () => {
+    if (!canEditGroup || isReissuingInvitation) return;
+
+    const result = await reissueInvitation(params.groupId);
+    if (!result) return;
+
+    setReissuedInvitation(result);
+    setReissueDialogOpen(false);
+    showToast("참여 코드가 재발급되었습니다.");
+  }, [
+    canEditGroup,
+    isReissuingInvitation,
+    params.groupId,
+    reissueInvitation,
+    showToast,
+  ]);
 
   useEffect(() => {
     if (!group || transitionPhase) return;
@@ -316,19 +396,34 @@ export default function AdminRecruitmentScreen() {
                 <BriefcaseBusiness size={18} strokeWidth={1.7} />
               </span>
               <span className={styles.inviteCodeText}>
-                <small>그룹 코드</small>
-                <strong>{group.inviteCode}</strong>
+                <small>참여 코드</small>
+                <strong>{displayedInviteCode}</strong>
               </span>
               <button
                 type="button"
                 className={styles.copyButton}
-                aria-label={`그룹 코드 ${group.inviteCode} 복사`}
+                aria-label={`참여 코드 ${displayedInviteCode} 복사`}
                 onClick={copyInviteCode}
               >
                 <Copy aria-hidden="true" size={20} strokeWidth={1.8} />
                 복사
               </button>
             </div>
+
+            <button
+              type="button"
+              className={styles.inviteLinkRow}
+              onClick={copyInviteLink}
+              aria-label="초대 링크 복사"
+            >
+              <span className={styles.inviteLinkIcon} aria-hidden="true">
+                <Link2 size={18} strokeWidth={1.8} />
+              </span>
+              <span className={styles.inviteLinkText}>
+                <small>초대 링크 (클릭)</small>
+                <strong>MixMate.invite</strong>
+              </span>
+            </button>
 
             <button
               type="button"
@@ -344,7 +439,13 @@ export default function AdminRecruitmentScreen() {
           </div>
         </section>
 
-        <InviteCodeExpirationNotice createdAt={group.createdAt} />
+        <InviteCodeExpirationNotice
+          createdAt={group.createdAt}
+          expiresAt={currentInvitation?.expiresAt}
+          isLoading={isInvitationLoading}
+          error={currentInvitation ? null : invitationError}
+          onRequestReissue={() => setReissueDialogOpen(true)}
+        />
 
         <RecruitmentParticipantCard
           key={params.groupId}
@@ -378,6 +479,16 @@ export default function AdminRecruitmentScreen() {
           if (!isClosingRecruitment) setCloseDialogOpen(false);
         }}
         onConfirm={confirmCloseRecruitment}
+      />
+
+      <ReissueInvitationDialog
+        open={reissueDialogOpen}
+        isReissuing={isReissuingInvitation}
+        error={reissueInvitationError}
+        onClose={() => {
+          if (!isReissuingInvitation) setReissueDialogOpen(false);
+        }}
+        onConfirm={confirmReissueInvitation}
       />
 
       {onboardingOpen && (

@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { updateGroup, verifyInviteCodeApi } from "./group.api";
+import {
+  getGroupInvitation,
+  reissueGroupInvitation,
+  updateGroup,
+  verifyInviteCodeApi,
+} from "./group.api";
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -73,6 +78,60 @@ describe("group validation response", () => {
       status: 404,
       code: "INVALID_INVITE_CODE",
       message: "유효하지 않은 초대코드입니다.",
+    });
+  });
+
+  it("그룹 초대 정보를 조회한다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        inviteCode: "ABC123",
+        expiresAt: "2026-09-22T15:03:57.658426",
+      }),
+    );
+
+    await expect(getGroupInvitation("7")).resolves.toEqual({
+      inviteCode: "ABC123",
+      expiresAt: "2026-09-22T15:03:57.658426",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v1/groups/7/invitation"),
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it("참여 코드를 재발급하고 새 초대 정보를 반환한다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        inviteCode: "NEW789",
+        expiresAt: "2026-09-23T15:03:57.658426",
+      }),
+    );
+
+    await expect(reissueGroupInvitation("7")).resolves.toEqual({
+      inviteCode: "NEW789",
+      expiresAt: "2026-09-23T15:03:57.658426",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v1/groups/7/invitation/reissue"),
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("재발급 409 응답의 에러 코드와 메시지를 보존한다", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json(
+        {
+          code: "INVALID_GROUP_STATUS",
+          message: "참가자 모집 중에만 초대 코드를 관리할 수 있습니다.",
+        },
+        { status: 409 },
+      ),
+    );
+
+    await expect(reissueGroupInvitation("7")).rejects.toMatchObject({
+      status: 409,
+      code: "INVALID_GROUP_STATUS",
+      message: "참가자 모집 중에만 초대 코드를 관리할 수 있습니다.",
     });
   });
 });

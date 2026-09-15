@@ -9,6 +9,7 @@ import {
 
 export function useInviteCodeRemainingTime(
   createdAt: string,
+  expiresAt?: string,
 ): InviteCodeRemainingTime {
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -22,5 +23,5 @@ export function useInviteCodeRemainingTime(
     };
   }, []);
 
-  return calculateInviteCodeRemainingTime(createdAt, nowMs);
+  return calculateInviteCodeRemainingTime(createdAt, nowMs, expiresAt);
 }
