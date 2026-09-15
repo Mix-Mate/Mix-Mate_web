@@ -164,14 +164,11 @@ export default function GroupJoinScreen({
           statusUpper === "RECRUITMENT_CLOSED" ||
           statusUpper === "CLOSED";
 
-        setErrorModal({
-          open: true,
-          title: isRecruitmentClosed
-            ? "모집이 마감된 모임입니다"
-            : "이미 시작된 그룹입니다",
-          description: "모집이 완료되었거나 이미 시작되어 참여할 수 없습니다.",
-          isBlocked: false,
-        });
+        setErrorMessage(
+          isRecruitmentClosed
+            ? "참가자 모집이 마감된 그룹입니다."
+            : "이미 시작된 그룹입니다.",
+        );
         return;
       }
 
@@ -280,13 +277,37 @@ export default function GroupJoinScreen({
         return;
       }
 
+      // 409 Conflict: 마감된 그룹 (INVALID_GROUP_STATUS 등)
+      // 요구사항:
+      // - 409 에러(INVALID_GROUP_STATUS)가 발생하면:
+      //   * 2단계(그룹 정보 입력)로 넘어가지 않고 즉시 중단
+      //   * 초대 코드 입력창 아래에 "참가자 모집이 마감된 그룹입니다." 헬퍼 에러 메시지 노출
+      //   * 인풋 테두리를 에러 스타일(#ef4444)로 표시
+      if (
+        errorCode === "INVALID_GROUP_STATUS" ||
+        (errorStatus === 409 &&
+          (errorCode === "RECRUITMENT_CLOSED" ||
+            errorCode === "CLOSED" ||
+            errorCode === "GROUP_FULL" ||
+            errorCode === "MAX_CAPACITY" ||
+            errorObj.message.includes("마감") ||
+            errorObj.message.includes("정원") ||
+            errorObj.message.includes("초과") ||
+            (!errorCode && !errorObj.message.includes("만료"))))
+      ) {
+        setErrorMessage(
+          errorObj.message || "참가자 모집이 마감된 그룹입니다.",
+        );
+        return;
+      }
+
       // 404 Not Found: 인풋 하단에 "유효하지 않은 초대코드입니다." 빨간색 텍스트 렌더링
       if (errorStatus === 404 || errorCode === "INVALID_INVITE_CODE") {
         setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
         return;
       }
 
-      // 상황별 에러 모달 멘트 분기 처리 (409 등)
+      // 상황별 에러 모달 멘트 분기 처리 (참여코드 만료 등 409)
       if (
         errorStatus === 409 &&
         (errorCode === "EXPIRED" || errorObj.message.includes("만료"))
@@ -300,34 +321,15 @@ export default function GroupJoinScreen({
         return;
       }
 
-      // 마감 / 시작 / 정원초과 관련 에러 검사
-      const isClosedOrStarted =
-        errorStatus === 409 ||
+      // 이미 시작된 그룹 등
+      if (
         errorCode === "ALREADY_STARTED" ||
-        errorCode === "RECRUITMENT_CLOSED" ||
-        errorCode === "CLOSED" ||
-        errorCode === "GROUP_FULL" ||
-        errorCode === "MAX_CAPACITY" ||
-        errorObj.message.includes("마감") ||
-        errorObj.message.includes("정원") ||
-        errorObj.message.includes("초과") ||
-        errorObj.message.includes("종료") ||
-        errorObj.message.includes("시작");
-
-      if (isClosedOrStarted) {
-        const isRecruitmentClosed =
-          errorCode === "RECRUITMENT_CLOSED" ||
-          errorCode === "GROUP_FULL" ||
-          errorCode === "MAX_CAPACITY" ||
-          errorObj.message.includes("마감") ||
-          errorObj.message.includes("정원") ||
-          errorObj.message.includes("초과");
-
+        errorObj.message.includes("시작") ||
+        errorObj.message.includes("종료")
+      ) {
         setErrorModal({
           open: true,
-          title: isRecruitmentClosed
-            ? "모집이 마감된 모임입니다"
-            : "이미 시작된 그룹입니다",
+          title: "이미 시작된 그룹입니다",
           description: "모집이 완료되었거나 이미 시작되어 참여할 수 없습니다.",
           isBlocked: false,
         });

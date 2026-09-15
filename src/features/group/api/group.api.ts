@@ -558,7 +558,7 @@ export async function joinGroupWithProfileApi(
           : response.status === 404
             ? "참여코드가 존재하지 않습니다."
             : response.status === 409
-              ? "이미 마감되었거나 시작된 모임입니다."
+              ? "참가자 모집이 마감된 그룹입니다."
               : "그룹 입장에 실패했습니다.");
 
     const reason = extractErrorReason(errorData);
@@ -652,7 +652,7 @@ export async function verifyInviteCodeApi(
           : response.status === 404
             ? "유효하지 않은 초대코드입니다."
             : response.status === 409
-              ? "이미 마감되었거나 시작된 모임입니다."
+              ? "참가자 모집이 마감된 그룹입니다."
               : "참여코드 검증에 실패했습니다.";
 
     const message = errorData?.message || defaultMessage;

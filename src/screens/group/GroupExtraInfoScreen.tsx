@@ -358,6 +358,7 @@ export default function GroupExtraInfoScreen({
 
         const isClosedOrStarted =
           errStatus === 409 ||
+          errCode === "INVALID_GROUP_STATUS" ||
           errCode === "ALREADY_STARTED" ||
           errCode === "RECRUITMENT_CLOSED" ||
           errCode === "CLOSED" ||
@@ -731,6 +732,7 @@ export default function GroupExtraInfoScreen({
 
       const isClosedOrStarted =
         errorStatus === 409 ||
+        errorCode === "INVALID_GROUP_STATUS" ||
         errorCode === "ALREADY_STARTED" ||
         errorCode === "RECRUITMENT_CLOSED" ||
         errorCode === "CLOSED" ||
