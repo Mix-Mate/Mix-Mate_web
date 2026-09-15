@@ -62,7 +62,7 @@ export default function MvpMedalPopover({ mvpCount }: MvpMedalPopoverProps) {
     const maxLeft = boundary.right - EDGE_GAP - cardWidth;
     const clampedLeft = Math.min(Math.max(naturalLeft, minLeft), maxLeft);
 
-    card.style.transform = `translateX(calc(-50% + ${clampedLeft - naturalLeft}px))`;
+    card.style.setProperty("--mvp-popover-shift", `${clampedLeft - naturalLeft}px`);
   }, [open]);
 
   if (!tier) return null;
