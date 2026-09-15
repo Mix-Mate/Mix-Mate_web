@@ -22,16 +22,22 @@ interface RecruitmentParticipantCardProps {
 
 type IncomingPhase = "space" | "skeleton" | "participant";
 
+const MAX_VISIBLE_PARTICIPANTS = 3;
+
 function ParticipantRow({
   participant,
   isNewest = false,
+  isExiting = false,
 }: {
   participant: Participant;
   isNewest?: boolean;
+  isExiting?: boolean;
 }) {
   return (
     <div
-      className={`${styles.participantRow} ${isNewest ? styles.newestRow : ""}`}
+      className={`${styles.participantRow} ${isNewest ? styles.newestRow : ""} ${
+        isExiting ? styles.exitingRow : ""
+      }`}
     >
       <GenderAvatar
         className={isNewest ? styles.newestAvatar : styles.avatar}
@@ -94,6 +100,9 @@ const RecruitmentParticipantCard = forwardRef<
   const seenIdsRef = useRef(new Set<string>());
   const pendingIdsRef = useRef(new Set<string>());
   const latestParticipantsRef = useRef(participants);
+  // 참가자를 화면에 표시하는 순서(항상 최근 참여 순). 서버 응답의 배열 순서와
+  // 무관하게, 한 번 정해진 순서는 새 참가자가 맨 앞에 들어올 때만 바뀐다.
+  const displayOrderRef = useRef<string[]>([]);
   const listRef = useRef<HTMLDivElement>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const pointerMovedRef = useRef(false);
@@ -103,21 +112,27 @@ const RecruitmentParticipantCard = forwardRef<
   const [incomingQueue, setIncomingQueue] = useState<Participant[]>([]);
   const [incomingParticipant, setIncomingParticipant] =
     useState<Participant | null>(null);
-  const [incomingPhase, setIncomingPhase] =
-    useState<IncomingPhase>("space");
-  const [newestParticipantId, setNewestParticipantId] = useState<
-    string | null
-  >(null);
+  const [incomingPhase, setIncomingPhase] = useState<IncomingPhase>("space");
+  const [newestParticipantId, setNewestParticipantId] = useState<string | null>(
+    null,
+  );
+  const [exitingParticipant, setExitingParticipant] =
+    useState<Participant | null>(null);
 
   useEffect(() => {
     latestParticipantsRef.current = participants;
 
     if (isLoading) return;
 
+    const participantsById = new Map(
+      participants.map((participant) => [participant.id, participant]),
+    );
+
     if (!initializedRef.current) {
       initializedRef.current = true;
-      seenIdsRef.current = new Set(
-        participants.map((participant) => participant.id),
+      seenIdsRef.current = new Set(participantsById.keys());
+      displayOrderRef.current = participants.map(
+        (participant) => participant.id,
       );
       setRenderedParticipants(participants);
       return;
@@ -132,10 +147,18 @@ const RecruitmentParticipantCard = forwardRef<
       pendingIdsRef.current.add(participant.id);
     });
 
+    // 순서는 새 참가자가 맨 앞에 합류할 때만 바뀐다. 더 이상 응답에 없는
+    // 참가자는 순서에서 빼고, 아직 공개 전인(pending) 참가자는 잠시 숨긴다.
+    displayOrderRef.current = displayOrderRef.current.filter(
+      (id) => participantsById.has(id) && !pendingIdsRef.current.has(id),
+    );
+
     setRenderedParticipants(
-      participants.filter(
-        (participant) => !pendingIdsRef.current.has(participant.id),
-      ),
+      displayOrderRef.current
+        .map((id) => participantsById.get(id))
+        .filter((participant): participant is Participant =>
+          Boolean(participant),
+        ),
     );
 
     if (addedParticipants.length > 0) {
@@ -182,13 +205,36 @@ const RecruitmentParticipantCard = forwardRef<
         ) ?? incomingParticipant;
 
       pendingIdsRef.current.delete(participant.id);
-      setRenderedParticipants((current) => [
-        participant,
-        ...current.filter((candidate) => candidate.id !== participant.id),
-      ]);
+
+      // 새 참가자를 맨 앞으로 – 기존 참가자들의 상대 순서는 그대로 유지된다.
+      displayOrderRef.current = [
+        participant.id,
+        ...displayOrderRef.current.filter((id) => id !== participant.id),
+      ];
+
+      const participantsById = new Map(
+        latestParticipantsRef.current.map((candidate) => [
+          candidate.id,
+          candidate,
+        ]),
+      );
+      participantsById.set(participant.id, participant);
+
+      const next = displayOrderRef.current
+        .map((id) => participantsById.get(id))
+        .filter((candidate): candidate is Participant => Boolean(candidate));
+
+      // 상위 N명만 보여주므로, 새로 들어온 자리만큼 밀려나는 참가자는
+      // 즉시 사라지지 않고 아래로 내려가며 사라지는 애니메이션을 거친다.
+      const overflowParticipant = next[MAX_VISIBLE_PARTICIPANTS] ?? null;
+
+      setRenderedParticipants(next);
       setNewestParticipantId(participant.id);
       setIncomingParticipant(null);
       setIncomingPhase("space");
+      if (overflowParticipant) {
+        setExitingParticipant(overflowParticipant);
+      }
     }, commitDelay);
 
     return () => {
@@ -197,6 +243,22 @@ const RecruitmentParticipantCard = forwardRef<
       window.clearTimeout(commitTimer);
     };
   }, [count, incomingParticipant]);
+
+  useEffect(() => {
+    if (!exitingParticipant) return;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const exitTimer = window.setTimeout(
+      () => {
+        setExitingParticipant(null);
+      },
+      reducedMotion ? 60 : 260,
+    );
+
+    return () => window.clearTimeout(exitTimer);
+  }, [exitingParticipant]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -223,8 +285,7 @@ const RecruitmentParticipantCard = forwardRef<
   };
 
   const isEmpty =
-    count <= 1 ||
-    (renderedParticipants.length === 0 && !incomingParticipant);
+    count <= 1 || (renderedParticipants.length === 0 && !incomingParticipant);
 
   return (
     <div
@@ -315,13 +376,23 @@ const RecruitmentParticipantCard = forwardRef<
             </div>
           )}
 
-          {renderedParticipants.map((participant) => (
+          {renderedParticipants
+            .slice(0, MAX_VISIBLE_PARTICIPANTS)
+            .map((participant) => (
+              <ParticipantRow
+                key={participant.id}
+                participant={participant}
+                isNewest={participant.id === newestParticipantId}
+              />
+            ))}
+
+          {exitingParticipant && (
             <ParticipantRow
-              key={participant.id}
-              participant={participant}
-              isNewest={participant.id === newestParticipantId}
+              key={exitingParticipant.id}
+              participant={exitingParticipant}
+              isExiting
             />
-          ))}
+          )}
         </div>
       )}
     </div>

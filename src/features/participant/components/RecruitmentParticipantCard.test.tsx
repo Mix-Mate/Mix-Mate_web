@@ -129,7 +129,9 @@ describe("RecruitmentParticipantCard", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(200);
     });
-    expect(screen.queryByTestId("incoming-participant")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("incoming-participant"),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("방금 참여")).toBeInTheDocument();
 
     rerender(
@@ -140,8 +142,59 @@ describe("RecruitmentParticipantCard", () => {
         onNavigate={vi.fn()}
       />,
     );
-    expect(screen.queryByTestId("incoming-participant")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("incoming-participant"),
+    ).not.toBeInTheDocument();
     expect(screen.getAllByText("C")).toHaveLength(1);
+  });
+
+  it("서버 응답 순서가 매번 바뀌어도(최신순이 아니어도) 화면에 정한 순서는 유지한다", async () => {
+    const a = participant("1", "A");
+    const b = participant("2", "B");
+    const c = participant("3", "C");
+    const { rerender } = render(
+      <RecruitmentParticipantCard
+        count={2}
+        isLoading={false}
+        participants={[a, b]}
+        onNavigate={vi.fn()}
+      />,
+    );
+
+    // 서버가 최신순이 아니라 예를 들어 가입순(오래된 순)으로 C를 맨 뒤에 얹어 응답해도
+    rerender(
+      <RecruitmentParticipantCard
+        count={3}
+        isLoading={false}
+        participants={[a, b, c]}
+        onNavigate={vi.fn()}
+      />,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(720);
+    });
+
+    // C가 새로 참여했으므로 맨 위로 온다
+    expect(
+      screen.getByText("방금 참여").parentElement?.parentElement,
+    ).toHaveTextContent("C");
+
+    // 다음 폴링에서 서버가 순서를 뒤섞어 응답해도(B, A, C) 화면 순서는 C, A, B를 유지한다
+    rerender(
+      <RecruitmentParticipantCard
+        count={3}
+        isLoading={false}
+        participants={[b, a, c]}
+        onNavigate={vi.fn()}
+      />,
+    );
+
+    const rows = screen.getAllByText(/^[ABC]$/).map((el) => el.textContent);
+    expect(rows).toEqual(["C", "A", "B"]);
   });
 
   it("짧은 시간에 여러 명이 들어오면 한 명씩 처리해 최종 최신순을 만든다", async () => {
@@ -177,9 +230,75 @@ describe("RecruitmentParticipantCard", () => {
 
     expect(screen.getAllByText("D")).toHaveLength(1);
     expect(screen.getAllByText("C")).toHaveLength(1);
-    expect(screen.getByText("방금 참여").parentElement?.parentElement).toHaveTextContent(
-      "D",
+    expect(
+      screen.getByText("방금 참여").parentElement?.parentElement,
+    ).toHaveTextContent("D");
+  });
+
+  it("참가자가 3명을 넘어도 최근 참여자 3명만 보여준다", () => {
+    const participants = [
+      participant("4", "D"),
+      participant("3", "C"),
+      participant("2", "B"),
+      participant("1", "A"),
+    ];
+    render(
+      <RecruitmentParticipantCard
+        count={4}
+        isLoading={false}
+        participants={participants}
+        onNavigate={vi.fn()}
+      />,
     );
+
+    expect(screen.getByText("D")).toBeInTheDocument();
+    expect(screen.getByText("C")).toBeInTheDocument();
+    expect(screen.getByText("B")).toBeInTheDocument();
+    expect(screen.queryByText("A")).not.toBeInTheDocument();
+  });
+
+  it("3명이 표시된 상태에서 새 참가자가 들어오면 밀려나는 참가자가 서서히 사라진다", async () => {
+    const a = participant("1", "A");
+    const b = participant("2", "B");
+    const c = participant("3", "C");
+    const d = participant("4", "D");
+    const { rerender } = render(
+      <RecruitmentParticipantCard
+        count={3}
+        isLoading={false}
+        participants={[c, b, a]}
+        onNavigate={vi.fn()}
+      />,
+    );
+
+    rerender(
+      <RecruitmentParticipantCard
+        count={4}
+        isLoading={false}
+        participants={[d, c, b, a]}
+        onNavigate={vi.fn()}
+      />,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(720);
+    });
+
+    // 커밋 직후: A는 사라지는 애니메이션 중이라 DOM에는 아직 남아있다
+    expect(screen.getByText("A")).toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(260);
+    });
+
+    // 애니메이션이 끝나면 완전히 제거된다
+    expect(screen.queryByText("A")).not.toBeInTheDocument();
+    expect(screen.getByText("D")).toBeInTheDocument();
+    expect(screen.getByText("C")).toBeInTheDocument();
+    expect(screen.getByText("B")).toBeInTheDocument();
   });
 
   it("tap과 키보드는 이동하고 스크롤 제스처 뒤 click은 이동하지 않는다", () => {

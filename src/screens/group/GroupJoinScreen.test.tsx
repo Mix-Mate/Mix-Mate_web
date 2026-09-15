@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import GroupJoinScreen from "./GroupJoinScreen";
 import {
   GroupApiError,
+  getGroupDetail,
   verifyInviteCodeApi,
 } from "@/features/group/api/group.api";
 
 const mockBack = vi.fn();
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -16,6 +18,7 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
     replace: mockReplace,
   }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/group/api/group.api", async (importOriginal) => {
@@ -24,12 +27,16 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => {
   return {
     ...actual,
     verifyInviteCodeApi: vi.fn(),
+    getGroupDetail: vi.fn().mockRejectedValue(
+      new actual.GroupApiError("이 그룹에 참여하고 있지 않습니다.", 403),
+    ),
   };
 });
 
 describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로우", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
@@ -133,6 +140,119 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     expect(
       screen.queryByText("참가자 모집이 마감된 그룹입니다."),
     ).not.toBeInTheDocument();
+  });
+
+  it("초대 링크(inviteCode 쿼리)로 들어오면 코드 입력 없이 바로 검증하고 2단계로 이동한다", async () => {
+    mockSearchParams = new URLSearchParams({ inviteCode: "link99" });
+    vi.mocked(verifyInviteCodeApi).mockResolvedValueOnce({
+      groupId: 99,
+      groupName: "환상의 모임",
+      status: "RECRUITING",
+    });
+
+    render(<GroupJoinScreen />);
+
+    expect(
+      screen.getByText("초대 링크를 확인하고 있어요..."),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+    expect(
+      screen.queryByRole("button", { name: "입장하기" }),
+    ).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(verifyInviteCodeApi).toHaveBeenCalledExactlyOnceWith("LINK99");
+    });
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.stringContaining("/groups/99/extra"),
+      );
+    });
+  });
+
+  it("호스트 본인이 초대 링크로 재입장하면 참여 플로우 대신 모집 관리 화면으로 보낸다", async () => {
+    mockSearchParams = new URLSearchParams({ inviteCode: "host99" });
+    vi.mocked(verifyInviteCodeApi).mockResolvedValueOnce({
+      groupId: 99,
+      groupName: "내가 만든 모임",
+      status: "RECRUITING",
+    });
+    vi.mocked(getGroupDetail).mockResolvedValueOnce({
+      groupId: 99,
+      groupName: "내가 만든 모임",
+      description: null,
+      status: "RECRUITING",
+      inviteCode: "HOST99",
+      createdAt: "2026-09-01T00:00:00.000Z",
+      memberCount: 3,
+      myRole: "HOST",
+      myParticipantId: 1,
+    });
+
+    render(<GroupJoinScreen />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledExactlyOnceWith(
+        "/groups/99/recruitment",
+      );
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("이미 참여한 참가자가 초대 코드를 다시 입력하면 프로필 재입력 없이 그룹 화면으로 보낸다", async () => {
+    vi.mocked(verifyInviteCodeApi).mockResolvedValueOnce({
+      groupId: 42,
+      groupName: "이미 참여한 모임",
+      status: "FIRST_ROUND",
+    });
+    vi.mocked(getGroupDetail).mockResolvedValueOnce({
+      groupId: 42,
+      groupName: "이미 참여한 모임",
+      description: null,
+      status: "FIRST_ROUND",
+      inviteCode: "ABC420",
+      createdAt: "2026-09-01T00:00:00.000Z",
+      memberCount: 6,
+      myRole: "PARTICIPANT",
+      myParticipantId: 5,
+    });
+
+    render(<GroupJoinScreen />);
+
+    enterCode("ABC420");
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledExactlyOnceWith("/groups/42");
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText("이미 시작된 그룹입니다."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("초대 링크 검증에 실패하면 직접 입력 화면으로 돌아간다", async () => {
+    mockSearchParams = new URLSearchParams({ inviteCode: "BADCOD" });
+    vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
+      new GroupApiError(
+        "유효하지 않은 초대코드입니다.",
+        404,
+        "INVALID_INVITE_CODE",
+      ),
+    );
+
+    render(<GroupJoinScreen />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("유효하지 않은 초대코드입니다."),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByRole("textbox")).toHaveLength(6);
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("200 OK 응답이지만 status가 RECRUITMENT_CLOSED인 경우 2단계로 이동하지 않고 마감 헬퍼 에러를 표시한다", async () => {

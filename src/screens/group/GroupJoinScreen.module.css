@@ -192,6 +192,47 @@
   font-weight: 500;
 }
 
+.linkVerifying {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.linkVerifyingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e4e4e7;
+  border-top-color: #256ad3;
+  border-radius: 50%;
+  animation: linkVerifyingSpin 0.8s linear infinite;
+}
+
+.linkVerifyingText {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #71717a;
+  text-align: center;
+  word-break: keep-all;
+  margin: 0;
+}
+
+@keyframes linkVerifyingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linkVerifyingSpinner {
+    animation-duration: 1.6s;
+  }
+}
+
 /* ==========================================================================
    4. Footer & Action Button
    ========================================================================== */

@@ -72,6 +72,24 @@
   flex: 0 0 8px;
   border-radius: 50%;
   background: #2563eb;
+  animation: statusDotPulse 1.8s ease-out infinite;
+}
+
+@keyframes statusDotPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
 }
 
 .participantCountLabel {
@@ -229,7 +247,13 @@
   align-items: center;
   gap: 12px;
   padding: 11.5px 13px;
+  overflow: hidden;
   border-bottom: 1px solid #f0f1f4;
+  transition:
+    height 220ms ease,
+    padding 220ms ease,
+    opacity 200ms ease,
+    border-color 200ms ease;
 }
 
 .participantRow:last-child {
@@ -238,6 +262,14 @@
 
 .newestRow {
   background: #f4f8ff;
+}
+
+.exitingRow {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom-color: transparent;
+  opacity: 0;
 }
 
 .avatar,
@@ -412,8 +444,13 @@
   .card,
   .incomingItem,
   .incomingSkeleton,
-  .incomingProfile {
+  .incomingProfile,
+  .participantRow {
     transition-duration: 1ms;
+  }
+
+  .liveDot {
+    animation: none;
   }
 
   .skeletonAvatar,
