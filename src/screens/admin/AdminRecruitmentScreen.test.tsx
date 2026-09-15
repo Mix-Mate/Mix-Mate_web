@@ -17,6 +17,8 @@ const {
   closeRecruitingMock,
   useAdminGroupQueryMock,
   useCloseRecruitingMutationMock,
+  useParticipantListQueryMock,
+  participantRefetchMock,
 } = vi.hoisted(() => ({
   refetchMock: vi.fn(),
   pushMock: vi.fn(),
@@ -24,6 +26,8 @@ const {
   closeRecruitingMock: vi.fn(),
   useAdminGroupQueryMock: vi.fn(),
   useCloseRecruitingMutationMock: vi.fn(),
+  useParticipantListQueryMock: vi.fn(),
+  participantRefetchMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -41,6 +45,10 @@ vi.mock("@/features/group/hooks/useAdminGroupQuery", () => ({
 
 vi.mock("@/features/group/hooks/useCloseRecruitingMutation", () => ({
   useCloseRecruitingMutation: useCloseRecruitingMutationMock,
+}));
+
+vi.mock("@/features/participant/hooks/useParticipantListQuery", () => ({
+  useParticipantListQuery: useParticipantListQueryMock,
 }));
 
 vi.mock("@/features/group/hooks/useInviteCodeRemainingTime", () => ({
@@ -95,6 +103,12 @@ describe("AdminRecruitmentScreen", () => {
       mutate: closeRecruitingMock,
       isPending: false,
       error: null,
+    });
+    useParticipantListQueryMock.mockReturnValue({
+      data: { participants: [], teams: [] },
+      isLoading: false,
+      isError: false,
+      refetch: participantRefetchMock,
     });
   });
 
