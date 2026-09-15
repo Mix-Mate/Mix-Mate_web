@@ -49,6 +49,7 @@ export class GroupApiError extends Error {
   fieldErrors?: Record<string, string>;
   reason?: string;
   groupName?: string;
+  groupId?: number;
 
   constructor(
     message: string,
@@ -57,6 +58,7 @@ export class GroupApiError extends Error {
     fieldErrors?: Record<string, string>,
     reason?: string,
     groupName?: string,
+    groupId?: number,
   ) {
     super(message);
     this.name = "GroupApiError";
@@ -65,6 +67,7 @@ export class GroupApiError extends Error {
     this.fieldErrors = fieldErrors;
     this.reason = reason;
     this.groupName = groupName;
+    this.groupId = groupId;
   }
 }
 
@@ -608,10 +611,15 @@ export interface VerifyInviteCodeRequest {
   inviteCode: string;
 }
 
+export type VerifyInviteCodeParam = VerifyInviteCodeRequest | string;
+
 export interface VerifyInviteCodeResponse {
   groupId: number;
   groupName: string;
   status?: GroupStatus | string;
+  isBlocked?: boolean;
+  blocked?: boolean;
+  userStatus?: string;
 }
 
 /**
@@ -619,29 +627,44 @@ export interface VerifyInviteCodeResponse {
  * POST /api/v1/groups/invitations/verify
  */
 export async function verifyInviteCodeApi(
-  request: VerifyInviteCodeRequest,
+  request: VerifyInviteCodeParam,
 ): Promise<VerifyInviteCodeResponse> {
+  const code = typeof request === "string" ? request : request?.inviteCode;
+
+  if (!code || !code.trim()) {
+    throw new GroupApiError("참여코드를 입력해 주세요.", 400);
+  }
+
   const response = await apiFetch(
     `${API_BASE_URL}/api/v1/groups/invitations/verify`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        inviteCode: request.inviteCode.trim().toUpperCase(),
+        inviteCode: code.trim().toUpperCase(),
       }),
     },
   );
 
   if (!response.ok) {
-    let errorData: { code?: string; message?: string; reason?: string } | null = null;
+    let errorData: {
+      message?: string;
+      code?: string;
+      reason?: string;
+      groupId?: number;
+      groupName?: string;
+    } | null = null;
+
     try {
-      errorData = (await response.clone().json()) as {
-        code?: string;
+      errorData = (await response.json()) as {
         message?: string;
+        code?: string;
         reason?: string;
+        groupId?: number;
+        groupName?: string;
       };
     } catch {
-      // Non-JSON response fallback
+      // JSON 파싱 실패 시 기본 에러 메시지 매핑
     }
 
     const defaultMessage =
@@ -649,15 +672,18 @@ export async function verifyInviteCodeApi(
         ? "참여코드를 입력해 주세요."
         : response.status === 401
           ? "토큰이 없거나 만료되었습니다."
-          : response.status === 404
-            ? "유효하지 않은 초대코드입니다."
-            : response.status === 409
-              ? "참가자 모집이 마감된 그룹입니다."
-              : "참여코드 검증에 실패했습니다.";
+          : response.status === 403
+            ? "해당 그룹에서 차단되어 참여할 수 없습니다."
+            : response.status === 404
+              ? "유효하지 않은 초대코드입니다."
+              : response.status === 409
+                ? "참가자 모집이 마감된 그룹입니다."
+                : "참여코드 검증에 실패했습니다.";
 
     const message = errorData?.message || defaultMessage;
     const reason = extractErrorReason(errorData);
-    const groupName = extractErrorGroupName(errorData);
+    const errGroupId = errorData?.groupId;
+    const errGroupName = extractErrorGroupName(errorData);
 
     throw new GroupApiError(
       message,
@@ -665,11 +691,23 @@ export async function verifyInviteCodeApi(
       errorData?.code,
       undefined,
       reason,
-      groupName,
+      errGroupName,
+      errGroupId,
     );
   }
 
-  const verified = (await response.json()) as VerifyInviteCodeResponse;
+  const rawData = (await response.json()) as Record<string, unknown>;
+  const nestedData = (rawData?.data ?? rawData?.result ?? {}) as Record<string, unknown>;
+
+  const verified: VerifyInviteCodeResponse = {
+    groupId: (rawData?.groupId ?? nestedData?.groupId) as number,
+    groupName: (rawData?.groupName ?? nestedData?.groupName) as string,
+    status: (rawData?.status ?? nestedData?.status) as GroupStatus | string | undefined,
+    isBlocked: (rawData?.isBlocked ?? nestedData?.isBlocked) as boolean | undefined,
+    blocked: (rawData?.blocked ?? nestedData?.blocked) as boolean | undefined,
+    userStatus: (rawData?.userStatus ?? nestedData?.userStatus) as string | undefined,
+  };
+
   if (verified?.groupId && verified?.groupName) {
     saveKnownGroupName(verified.groupId, verified.groupName);
   }

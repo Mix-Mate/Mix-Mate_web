@@ -194,4 +194,55 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     ).not.toBeInTheDocument();
     expect(inputs[0].className).not.toMatch(/otpInputError/);
   });
+
+  it("403 또는 BLOCKED 발생 시 2단계로 이동하지 않고 '해당 그룹에서 차단되어 참여할 수 없습니다.' 모달을 표시한다", async () => {
+    vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
+      new GroupApiError(
+        "해당 그룹에서 차단되어 참여할 수 없습니다.",
+        403,
+        "BLOCKED",
+      ),
+    );
+
+    render(<GroupJoinScreen />);
+
+    enterCode("BLCK99");
+
+    const submitBtn = screen.getByRole("button", { name: "입장하기" });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("해당 그룹에서 차단되어 참여할 수 없습니다."),
+      ).toBeInTheDocument();
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("400 Bad Request 발생 시 2단계로 이동하지 않고 에러 메시지를 표시한다", async () => {
+    vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
+      new GroupApiError(
+        "참여코드를 입력해 주세요.",
+        400,
+      ),
+    );
+
+    render(<GroupJoinScreen />);
+
+    enterCode("BAD123");
+
+    const submitBtn = screen.getByRole("button", { name: "입장하기" });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("참여코드를 입력해 주세요."),
+      ).toBeInTheDocument();
+    });
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });

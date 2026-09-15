@@ -7,18 +7,13 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import Header from "@/shared/ui/Header";
 import Button from "@/shared/ui/Button";
 import StandardDialog from "@/shared/ui/StandardDialog";
-import { verifyInviteCodeApi } from "@/features/group/api/group.api";
+import { verifyInviteCodeApi, GroupApiError } from "@/features/group/api/group.api";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
 import {
   recordBlockedGroup,
   saveKnownGroupName,
 } from "@/features/blacklist/lib/blockedGroupsStorage";
 import styles from "./GroupJoinScreen.module.css";
-
-interface GroupJoinScreenProps {
-  onSuccess?: (inviteCode: string) => void;
-  onJoinError?: (errorCode: string) => void;
-}
 
 interface ErrorModalState {
   open: boolean;
@@ -28,10 +23,7 @@ interface ErrorModalState {
   redirectToLogin?: boolean;
 }
 
-export default function GroupJoinScreen({
-  onSuccess,
-  onJoinError,
-}: GroupJoinScreenProps) {
+export default function GroupJoinScreen() {
   const router = useRouter();
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -66,10 +58,12 @@ export default function GroupJoinScreen({
       router.push("/login");
       return;
     }
-    setErrorModal((prev) => ({ ...prev, open: false }));
-    if (!errorModal.isBlocked) {
-      resetInputsAndFocus();
+    if (errorModal.isBlocked) {
+      router.replace("/home");
+      return;
     }
+    setErrorModal((prev) => ({ ...prev, open: false }));
+    resetInputsAndFocus();
   };
 
   const handleRetry = () => {
@@ -144,8 +138,10 @@ export default function GroupJoinScreen({
   };
 
   // Submit flow
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     const fullCode = code.join("");
     if (fullCode.length !== 6 || isSubmitting) return;
 
@@ -153,8 +149,38 @@ export default function GroupJoinScreen({
     setIsSubmitting(true);
 
     try {
-      // 1. 실제 참여코드 검증 API 호출
-      const result = await verifyInviteCodeApi({ inviteCode: fullCode });
+      // 1. 코드 입력 후 다음 단계로 이동하기 전에 반드시 verifyInviteCodeApi(code)를 await로 호출
+      const result = await verifyInviteCodeApi(fullCode);
+
+      // 응답 검증: API 결과 및 groupId가 유효해야 함
+      if (!result || !result.groupId) {
+        throw new GroupApiError("유효하지 않은 초대코드입니다.", 404, "INVALID_INVITE_CODE");
+      }
+
+      // 1단계 200 OK 응답 본문 차단 필드 점검 (isBlocked, blocked, userStatus, status 등)
+      const isUserBlocked =
+        result.isBlocked === true ||
+        result.blocked === true ||
+        result.userStatus?.toUpperCase() === "BLOCKED" ||
+        result.userStatus?.toUpperCase() === "BANNED" ||
+        result.status?.toUpperCase() === "BLOCKED" ||
+        result.status?.toUpperCase() === "BANNED";
+
+      if (isUserBlocked) {
+        if (result.groupId) {
+          recordBlockedGroup({
+            groupId: String(result.groupId),
+            groupName: result.groupName || "그룹",
+          });
+        }
+        setErrorModal({
+          open: true,
+          title: "그룹 참여가 제한되었습니다",
+          description: "해당 그룹에서 차단되어 참여할 수 없습니다.",
+          isBlocked: true,
+        });
+        return;
+      }
 
       // 응답에 status가 있고 RECRUITING이 아닌 경우 추가 정보 입력 화면으로 넘어가지 않고 즉시 차단
       const statusUpper = result.status?.trim().toUpperCase();
@@ -169,11 +195,6 @@ export default function GroupJoinScreen({
             ? "참가자 모집이 마감된 그룹입니다."
             : "이미 시작된 그룹입니다.",
         );
-        return;
-      }
-
-      if (onSuccess) {
-        onSuccess(fullCode);
         return;
       }
 
@@ -202,6 +223,7 @@ export default function GroupJoinScreen({
         queryParams.set("groupName", result.groupName);
       }
 
+      // API 응답이 성공(200 OK)이고 에러가 없을 때만 router.push() 실행
       router.push(
         `${groupRoutes.extra(String(result.groupId))}?${queryParams.toString()}`,
       );
@@ -231,10 +253,6 @@ export default function GroupJoinScreen({
           ? (err as { groupName?: string }).groupName
           : undefined;
 
-      if (onJoinError) {
-        onJoinError(errorCode || errorObj.message);
-      }
-
       // 401 Unauthorized: 로그인 세션 만료 안내 후 로그인 화면(/login)으로 리다이렉트
       if (errorStatus === 401) {
         setErrorModal({
@@ -247,15 +265,16 @@ export default function GroupJoinScreen({
         return;
       }
 
-      // 403 Forbidden / 차단 상태
-      if (
+      // 403 Forbidden / 차단 상태 (403 또는 BLOCKED)
+      const isBlockedError =
         errorStatus === 403 ||
         errorCode === "USER_BLOCKED" ||
         errorCode === "BANNED_USER" ||
         errorCode === "FORBIDDEN" ||
         errorCode === "BLOCKED" ||
-        errorObj.message.includes("차단")
-      ) {
+        errorObj.message.includes("차단");
+
+      if (isBlockedError) {
         if (errGroupId) {
           recordBlockedGroup({
             groupId: String(errGroupId),
@@ -264,26 +283,17 @@ export default function GroupJoinScreen({
           });
         }
 
-        const description =
-          errorObj.message ||
-          "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.";
-
         setErrorModal({
           open: true,
           title: "그룹 참여가 제한되었습니다",
-          description,
+          description: "해당 그룹에서 차단되어 참여할 수 없습니다.",
           isBlocked: true,
         });
         return;
       }
 
       // 409 Conflict: 마감된 그룹 (INVALID_GROUP_STATUS 등)
-      // 요구사항:
-      // - 409 에러(INVALID_GROUP_STATUS)가 발생하면:
-      //   * 2단계(그룹 정보 입력)로 넘어가지 않고 즉시 중단
-      //   * 초대 코드 입력창 아래에 "참가자 모집이 마감된 그룹입니다." 헬퍼 에러 메시지 노출
-      //   * 인풋 테두리를 에러 스타일(#ef4444)로 표시
-      if (
+      const isClosedError =
         errorCode === "INVALID_GROUP_STATUS" ||
         (errorStatus === 409 &&
           (errorCode === "RECRUITMENT_CLOSED" ||
@@ -293,17 +303,21 @@ export default function GroupJoinScreen({
             errorObj.message.includes("마감") ||
             errorObj.message.includes("정원") ||
             errorObj.message.includes("초과") ||
-            (!errorCode && !errorObj.message.includes("만료"))))
-      ) {
-        setErrorMessage(
-          errorObj.message || "참가자 모집이 마감된 그룹입니다.",
-        );
+            (!errorCode && !errorObj.message.includes("만료"))));
+
+      if (isClosedError) {
+        setErrorMessage("참가자 모집이 마감된 그룹입니다.");
         return;
       }
 
       // 404 Not Found: 인풋 하단에 "유효하지 않은 초대코드입니다." 빨간색 텍스트 렌더링
-      if (errorStatus === 404 || errorCode === "INVALID_INVITE_CODE") {
-        setErrorMessage(errorObj.message || "유효하지 않은 초대코드입니다.");
+      const isInvalidCodeError =
+        errorStatus === 404 ||
+        errorCode === "INVALID_INVITE_CODE" ||
+        errorCode === "INVALID_CODE";
+
+      if (isInvalidCodeError) {
+        setErrorMessage("유효하지 않은 초대코드입니다.");
         return;
       }
 
@@ -405,6 +419,7 @@ export default function GroupJoinScreen({
         <button
           type="submit"
           form="join-group-form"
+          onClick={handleSubmit}
           className={styles.submitButton}
           disabled={code.join("").length !== 6 || isSubmitting}
         >
