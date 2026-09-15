@@ -121,6 +121,9 @@ export default function AdminRecruitmentScreen() {
   const cancelTransitionRef = useRef<(() => void) | null>(null);
   const statusCardRef = useRef<HTMLElement>(null);
   const inviteCodeCardRef = useRef<HTMLDivElement>(null);
+  const inviteCodeRowRef = useRef<HTMLDivElement>(null);
+  const inviteLinkRowRef = useRef<HTMLButtonElement>(null);
+  const invitationNoticeRef = useRef<HTMLDivElement>(null);
   const recruitingCardRef = useRef<HTMLElement>(null);
   const participantCountRef = useRef<HTMLDivElement>(null);
   const closeRecruitmentRef = useRef<HTMLButtonElement>(null);
@@ -157,7 +160,9 @@ export default function AdminRecruitmentScreen() {
     RefObject<HTMLElement | null>
   > = {
     status: statusCardRef,
-    inviteCode: inviteCodeCardRef,
+    inviteCode: inviteCodeRowRef,
+    inviteLink: inviteLinkRowRef,
+    inviteLinkRenewal: invitationNoticeRef,
     recruiting: recruitingCardRef,
     participantCount: participantCountRef,
     closeRecruitment: closeRecruitmentRef,
@@ -391,7 +396,7 @@ export default function AdminRecruitmentScreen() {
           </div>
 
           <div ref={inviteCodeCardRef} className={styles.inviteCodeCard}>
-            <div className={styles.inviteCodeTop}>
+            <div ref={inviteCodeRowRef} className={styles.inviteCodeTop}>
               <span className={styles.inviteCodeIcon} aria-hidden="true">
                 <BriefcaseBusiness size={18} strokeWidth={1.7} />
               </span>
@@ -411,6 +416,7 @@ export default function AdminRecruitmentScreen() {
             </div>
 
             <button
+              ref={inviteLinkRowRef}
               type="button"
               className={styles.inviteLinkRow}
               onClick={copyInviteLink}
@@ -439,13 +445,15 @@ export default function AdminRecruitmentScreen() {
           </div>
         </section>
 
-        <InviteCodeExpirationNotice
-          createdAt={group.createdAt}
-          expiresAt={currentInvitation?.expiresAt}
-          isLoading={isInvitationLoading}
-          error={currentInvitation ? null : invitationError}
-          onRequestReissue={() => setReissueDialogOpen(true)}
-        />
+        <div ref={invitationNoticeRef}>
+          <InviteCodeExpirationNotice
+            createdAt={group.createdAt}
+            expiresAt={currentInvitation?.expiresAt}
+            isLoading={isInvitationLoading}
+            error={currentInvitation ? null : invitationError}
+            onRequestReissue={() => setReissueDialogOpen(true)}
+          />
+        </div>
 
         <RecruitmentParticipantCard
           key={params.groupId}

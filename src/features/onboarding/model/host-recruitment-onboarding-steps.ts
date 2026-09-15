@@ -3,6 +3,8 @@ import { FIRST_ROUND_MIN_PARTICIPANTS } from "@/features/group/lib/recruitment";
 export type HostRecruitmentOnboardingStepId =
   | "status"
   | "inviteCode"
+  | "inviteLink"
+  | "inviteLinkRenewal"
   | "recruiting"
   | "participantCount"
   | "closeRecruitment";
@@ -26,6 +28,18 @@ export const hostRecruitmentOnboardingSteps: readonly HostRecruitmentOnboardingS
       title: "참가자를 초대해요",
       description:
         "그룹 코드를 복사해 공유하면 참가자가 모임에 참여할 수 있어요.",
+    },
+    {
+      id: "inviteLink",
+      title: "초대 링크로 바로 참여해요",
+      description:
+        "참가자는 초대 링크만 열면 코드를 입력하지 않고 바로 모임 참여를 시작할 수 있어요.",
+    },
+    {
+      id: "inviteLinkRenewal",
+      title: "필요하면 초대를 다시 발급해요",
+      description:
+        "참여 코드나 링크가 외부에 공유됐거나 유효기간이 지났다면 새 초대를 발급해 다시 공유할 수 있어요.",
     },
     {
       id: "recruiting",
