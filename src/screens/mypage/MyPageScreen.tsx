@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Lock, LogOut, Pencil, UserX } from "lucide-react";
 import MobileFrame from "@/shared/ui/MobileFrame";
@@ -16,47 +16,66 @@ import {
   performLogout,
   performWithdraw,
 } from "@/features/auth/api/auth.api";
+import { clearAuthTokens } from "@/shared/api/authToken";
 import {
+  getMyPageUserProfileApi,
+  UserApiError,
+  type MyPageUserProfile,
   updateUserNameApi,
   validateUserName,
 } from "@/features/user/api/user.api";
 import styles from "./MyPageScreen.module.css";
 
-function subscribeStorage(callback: () => void) {
-  if (typeof window === "undefined") return () => {};
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
+type MyPageProfile = Pick<MyPageUserProfile, "email" | "provider" | "userName">;
+
+const defaultProfile: MyPageProfile = {
+  userName: "사용자",
+  email: "user@mixmate.kr",
+  provider: "local",
+};
+
+function getStoredProfile(): MyPageProfile {
+  if (typeof window === "undefined") return defaultProfile;
+
+  return {
+    userName:
+      window.localStorage.getItem("userName") ||
+      window.localStorage.getItem("displayName") ||
+      defaultProfile.userName,
+    email: window.localStorage.getItem("email") || defaultProfile.email,
+    provider: (
+      window.localStorage.getItem("provider") || defaultProfile.provider
+    ).toLowerCase(),
+  };
 }
 
-function getStoredUserName(): string {
-  if (typeof window === "undefined") return "사용자";
-  return (
-    window.localStorage.getItem("userName") ||
-    window.localStorage.getItem("displayName") ||
-    "사용자"
-  );
+function rememberProfile(profile: Partial<MyPageUserProfile>) {
+  if (typeof window === "undefined") return;
+
+  if (profile.userId) {
+    window.localStorage.setItem("userId", String(profile.userId));
+  }
+  if (profile.userName) {
+    window.localStorage.setItem("userName", profile.userName);
+  }
+  if (profile.email) {
+    window.localStorage.setItem("email", profile.email);
+  }
+  if (profile.provider) {
+    window.localStorage.setItem("provider", profile.provider.toLowerCase());
+  }
+
+  window.dispatchEvent(new Event("storage"));
 }
 
-function getStoredEmail(): string {
-  if (typeof window === "undefined") return "user@mixmate.kr";
-  return window.localStorage.getItem("email") || "user@mixmate.kr";
-}
-
-function getStoredProvider(): string {
-  if (typeof window === "undefined") return "local";
-  return (window.localStorage.getItem("provider") || "local").toLowerCase();
-}
-
-function getServerUserNameSnapshot(): string {
-  return "사용자";
-}
-
-function getServerEmailSnapshot(): string {
-  return "user@mixmate.kr";
-}
-
-function getServerProviderSnapshot(): string {
-  return "local";
+function getUpdatedUserName(
+  response: Awaited<ReturnType<typeof updateUserNameApi>>,
+  fallback: string,
+) {
+  if (typeof response === "object" && response?.userName) {
+    return response.userName;
+  }
+  return fallback;
 }
 
 function getWithdrawErrorMessage(error: unknown, isSocialAccount: boolean) {
@@ -85,26 +104,10 @@ function getWithdrawErrorMessage(error: unknown, isSocialAccount: boolean) {
 export default function MyPageScreen() {
   const router = useRouter();
   const { message: toast, showToast } = useToast();
-
-  // Storage synced user profile info
-  const userName = useSyncExternalStore(
-    subscribeStorage,
-    getStoredUserName,
-    getServerUserNameSnapshot,
-  );
-
-  const email = useSyncExternalStore(
-    subscribeStorage,
-    getStoredEmail,
-    getServerEmailSnapshot,
-  );
-
-  const provider = useSyncExternalStore(
-    subscribeStorage,
-    getStoredProvider,
-    getServerProviderSnapshot,
-  );
-  const isSocialAccount = provider !== "local";
+  const [profile, setProfile] = useState<MyPageProfile>(defaultProfile);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState("");
+  const isSocialAccount = profile.provider.toLowerCase() !== "local";
 
   // Edit Name states
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
@@ -122,6 +125,50 @@ export default function MyPageScreen() {
   const [withdrawError, setWithdrawError] = useState("");
   const withdrawPasswordInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function fetchMyPageProfile() {
+      setIsProfileLoading(true);
+      setProfileError("");
+
+      try {
+        setProfile(getStoredProfile());
+        const nextProfile = await getMyPageUserProfileApi();
+        if (ignore) return;
+
+        setProfile({
+          userName: nextProfile.userName,
+          email: nextProfile.email || defaultProfile.email,
+          provider: nextProfile.provider.toLowerCase(),
+        });
+        rememberProfile(nextProfile);
+      } catch (error) {
+        if (ignore) return;
+
+        if (error instanceof UserApiError && error.status === 401) {
+          clearAuthTokens();
+          router.replace(authRoutes.login());
+          return;
+        }
+
+        setProfileError(
+          error instanceof Error
+            ? error.message
+            : "계정 정보를 불러오지 못했습니다.",
+        );
+      } finally {
+        if (!ignore) setIsProfileLoading(false);
+      }
+    }
+
+    void fetchMyPageProfile();
+
+    return () => {
+      ignore = true;
+    };
+  }, [router]);
+
   const handleBack = () => {
     router.back();
   };
@@ -135,7 +182,7 @@ export default function MyPageScreen() {
   };
 
   const handleOpenEditNameModal = () => {
-    setEditName(userName);
+    setEditName(profile.userName);
     setEditNameError("");
     setIsEditNameModalOpen(true);
   };
@@ -161,9 +208,10 @@ export default function MyPageScreen() {
     setEditNameError("");
 
     try {
-      await updateUserNameApi(trimmed);
-      window.localStorage.setItem("userName", trimmed);
-      window.dispatchEvent(new Event("storage"));
+      const response = await updateUserNameApi(trimmed);
+      const nextUserName = getUpdatedUserName(response, trimmed);
+      setProfile((current) => ({ ...current, userName: nextUserName }));
+      rememberProfile({ userName: nextUserName });
       setIsEditNameModalOpen(false);
       showToast("이름이 변경되었습니다.");
     } catch (error) {
@@ -239,24 +287,37 @@ export default function MyPageScreen() {
         <section className={styles.profileCard} aria-label="프로필 요약">
           <GenderAvatar
             gender="male"
-            name={userName}
+            name={profile.userName}
             size={60}
             className={styles.profileAvatar}
           />
 
           <div className={styles.profileInfo}>
             <div className={styles.profileNameRow}>
-              <h2 className={styles.profileName}>{userName}</h2>
+              <h2 className={styles.profileName}>{profile.userName}</h2>
               <button
                 type="button"
                 className={styles.editNameButton}
                 onClick={handleOpenEditNameModal}
                 aria-label="이름 수정"
+                disabled={isProfileLoading}
               >
                 <Pencil size={12} strokeWidth={2.2} aria-hidden="true" />
               </button>
             </div>
-            <p className={styles.profileEmail}>{email}</p>
+            <p className={styles.profileEmail}>{profile.email}</p>
+            {(isProfileLoading || profileError) && (
+              <p
+                className={
+                  profileError
+                    ? styles.profileErrorText
+                    : styles.profileStatusText
+                }
+                role={profileError ? "alert" : undefined}
+              >
+                {profileError || "계정 정보를 불러오는 중..."}
+              </p>
+            )}
           </div>
         </section>
 

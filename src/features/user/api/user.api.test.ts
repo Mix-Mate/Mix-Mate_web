@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
 import { apiFetch } from "@/shared/api/apiFetch";
 import {
+  getMyPageUserProfileApi,
   updateUserNameApi,
   UserApiError,
   validateUserName,
@@ -204,6 +205,58 @@ describe("user.api", () => {
       await expect(updateUserNameApi("새이름")).rejects.toThrow(
         "이름 변경에 실패했습니다.",
       );
+    });
+  });
+
+  describe("getMyPageUserProfileApi", () => {
+    it("GET /api/v1/auth/me로 내 계정 정보를 조회하고 정규화한다", async () => {
+      vi.mocked(apiFetch).mockResolvedValue(
+        Response.json({
+          data: {
+            id: "7",
+            email: "mixmate@example.com",
+            name: "믹스메이트",
+            loginProvider: "GOOGLE",
+          },
+        }),
+      );
+
+      await expect(getMyPageUserProfileApi()).resolves.toEqual({
+        userId: 7,
+        email: "mixmate@example.com",
+        userName: "믹스메이트",
+        provider: "GOOGLE",
+      });
+      expect(apiFetch).toHaveBeenCalledExactlyOnceWith(
+        `${API_BASE_URL}/api/v1/auth/me`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+    });
+
+    it("계정 조회 실패 시 UserApiError를 발생시킨다", async () => {
+      vi.mocked(apiFetch).mockResolvedValue(
+        Response.json(
+          {
+            code: "UNAUTHORIZED",
+            message: "인증 토큰이 유효하지 않습니다.",
+          },
+          { status: 401 },
+        ),
+      );
+
+      const request = getMyPageUserProfileApi();
+
+      await expect(request).rejects.toMatchObject({
+        status: 401,
+        code: "UNAUTHORIZED",
+        message: "인증 토큰이 유효하지 않습니다.",
+      });
+      await expect(request).rejects.toBeInstanceOf(UserApiError);
     });
   });
 });

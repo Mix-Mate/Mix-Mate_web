@@ -10,6 +10,22 @@ export type UpdateUserNameResponse =
       [key: string]: unknown;
     };
 
+export interface MyPageUserProfile {
+  userId?: number;
+  email: string;
+  userName: string;
+  provider: string;
+}
+
+type MyPageUserProfilePayload =
+  | Record<string, unknown>
+  | {
+      data?: Record<string, unknown>;
+      result?: Record<string, unknown>;
+      user?: Record<string, unknown>;
+      member?: Record<string, unknown>;
+    };
+
 export interface UpdateUserNameErrorResponse {
   code?: string;
   message?: string;
@@ -42,6 +58,116 @@ export class UserApiError extends Error {
     this.code = code;
     this.fieldErrors = fieldErrors;
   }
+}
+
+function getNestedPayload(payload: MyPageUserProfilePayload) {
+  if (!payload || typeof payload !== "object") return {};
+
+  const candidate = payload as {
+    data?: Record<string, unknown>;
+    result?: Record<string, unknown>;
+    user?: Record<string, unknown>;
+    member?: Record<string, unknown>;
+  };
+
+  return (
+    candidate.data ||
+    candidate.result ||
+    candidate.user ||
+    candidate.member ||
+    payload
+  );
+}
+
+function getStringValue(
+  payload: Record<string, unknown>,
+  keys: string[],
+): string | undefined {
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
+function getNumberValue(
+  payload: Record<string, unknown>,
+  keys: string[],
+): number | undefined {
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+
+  return undefined;
+}
+
+async function createUserApiError(response: Response, fallbackMessage: string) {
+  let errorData: UpdateUserNameErrorResponse | null = null;
+  try {
+    errorData = (await response.json()) as UpdateUserNameErrorResponse;
+  } catch {
+    // Non-JSON response fallback
+  }
+
+  return new UserApiError(
+    errorData?.message || fallbackMessage,
+    response.status,
+    errorData?.code,
+    errorData?.errors,
+  );
+}
+
+function normalizeMyPageUserProfile(
+  payload: MyPageUserProfilePayload,
+): MyPageUserProfile {
+  const user = getNestedPayload(payload);
+
+  return {
+    userId: getNumberValue(user, ["userId", "id", "memberId"]),
+    email: getStringValue(user, ["email", "userEmail"]) || "",
+    userName:
+      getStringValue(user, ["userName", "name", "displayName", "nickname"]) ||
+      "사용자",
+    provider:
+      getStringValue(user, ["provider", "loginProvider", "authProvider"]) ||
+      "local",
+  };
+}
+
+/**
+ * 내 계정 정보 조회 API
+ * GET /api/v1/auth/me
+ */
+export async function getMyPageUserProfileApi(): Promise<MyPageUserProfile> {
+  const response = await apiFetch(`${API_BASE_URL}/api/v1/auth/me`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const defaultMessage =
+      response.status === 401
+        ? "인증이 필요합니다."
+        : response.status === 404
+          ? "사용자를 찾을 수 없습니다."
+          : "계정 정보를 불러오지 못했습니다.";
+
+    throw await createUserApiError(response, defaultMessage);
+  }
+
+  return normalizeMyPageUserProfile(
+    (await response.json()) as MyPageUserProfilePayload,
+  );
 }
 
 /**
@@ -84,13 +210,6 @@ export async function updateUserNameApi(
   });
 
   if (!response.ok) {
-    let errorData: UpdateUserNameErrorResponse | null = null;
-    try {
-      errorData = (await response.json()) as UpdateUserNameErrorResponse;
-    } catch {
-      // Non-JSON response fallback
-    }
-
     const defaultMessage =
       response.status === 400
         ? "올바른 이름을 입력해주세요."
@@ -100,17 +219,11 @@ export async function updateUserNameApi(
             ? "사용자를 찾을 수 없습니다."
             : "이름 변경에 실패했습니다.";
 
-    const message =
-      errorData?.errors?.userName ||
-      errorData?.message ||
-      defaultMessage;
-
-    throw new UserApiError(
-      message,
-      response.status,
-      errorData?.code,
-      errorData?.errors,
-    );
+    const error = await createUserApiError(response, defaultMessage);
+    if (error.fieldErrors?.userName) {
+      error.message = error.fieldErrors.userName;
+    }
+    throw error;
   }
 
   const contentType = response.headers.get("content-type");
