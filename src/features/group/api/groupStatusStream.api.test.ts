@@ -153,6 +153,35 @@ describe("group status SSE transport", () => {
     },
   );
 
+  it("명시적 차단 응답의 코드와 사유를 보존해 전달한다", async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          code: "USER_BLOCKED",
+          message: "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          reason: "운영 정책 위반",
+          groupName: "테스트 그룹",
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    await connect();
+
+    expect(onError).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        status: 403,
+        code: "USER_BLOCKED",
+        message: "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+        reason: "운영 정책 위반",
+        groupName: "테스트 그룹",
+      }),
+    );
+  });
+
   it("HTTP 401이면 accessToken을 재발급받아 새 토큰으로 다시 연결한다", async () => {
     fetchMock.mockImplementation(async (input, init) => {
       if (String(input).endsWith("/api/v1/auth/reissue")) {
