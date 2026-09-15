@@ -161,17 +161,24 @@
 
 .badges {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-top: 4px;
 }
 
-.badges span {
+.badges > span {
+  width: 68px;
+  flex-shrink: 0;
   border: 1.5px solid #2f80d1;
   border-radius: 999px;
   padding: 4px 12px;
   color: #2f80d1;
   font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .infoCard {

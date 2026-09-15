@@ -1,0 +1,208 @@
+.root {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  transition: transform 120ms ease;
+}
+
+.trigger:active {
+  transform: scale(0.94);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid #2f80d1;
+  outline-offset: 2px;
+}
+
+.caret {
+  position: absolute;
+  z-index: calc(var(--z-popover) + 1);
+  top: calc(100% + 5px);
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid #e4e4e7;
+  border-left: 1px solid #e4e4e7;
+  background: var(--mvp-popover-hero-top, #ffffff);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.card {
+  position: absolute;
+  z-index: var(--z-popover);
+  top: calc(100% + 10px);
+  left: 50%;
+  width: 272px;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(24, 24, 27, 0.18);
+  transform: translateX(-50%);
+  animation: popIn 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  text-align: left;
+}
+
+.root[data-tier="1"] {
+  --mvp-popover-hero-top: #f9ebde;
+  --mvp-popover-hero-bottom: #dfa878;
+}
+
+.root[data-tier="2"] {
+  --mvp-popover-hero-top: #f4f6f9;
+  --mvp-popover-hero-bottom: #bfc8d3;
+}
+
+.root[data-tier="3"] {
+  --mvp-popover-hero-top: #fff6d1;
+  --mvp-popover-hero-bottom: #f1c85a;
+}
+
+.root[data-tier="4"] {
+  --mvp-popover-hero-top: #dcf5fa;
+  --mvp-popover-hero-bottom: #6cd3e9;
+}
+
+.root[data-tier="5"] {
+  --mvp-popover-hero-top: #ede1ff;
+  --mvp-popover-hero-bottom: #ab78f6;
+}
+
+.hero {
+  display: grid;
+  height: 118px;
+  place-items: center;
+  background: linear-gradient(
+    180deg,
+    var(--mvp-popover-hero-top) 0%,
+    var(--mvp-popover-hero-bottom) 100%
+  );
+}
+
+.heroRing {
+  display: grid;
+  width: 88px;
+  height: 88px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 6px 16px rgba(24, 24, 27, 0.14);
+}
+
+.body {
+  padding: 16px 18px 18px;
+}
+
+.title {
+  font-family: "42dot Sans", sans-serif;
+  margin: 0;
+  color: #18181b;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 24px;
+}
+
+.description {
+  margin: 4px 0 0;
+  color: #52525b;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.divider {
+  height: 1px;
+  margin: 14px 0 12px;
+  background: #eeeeee;
+}
+
+.sectionLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tierList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 4px 6px;
+  color: #a1a1aa;
+  font-size: 12.5px;
+}
+
+.tierMarker {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f4f4f5;
+  color: #a1a1aa;
+}
+
+.tierName {
+  flex: 1;
+  font-weight: 600;
+}
+
+.tierMeta {
+  font-size: 12px;
+}
+
+.tierUnlocked {
+  color: #3f3f46;
+}
+
+.tierUnlocked .tierMarker {
+  background: #e6f2fc;
+  color: #2f80d1;
+}
+
+.tierCurrent {
+  background: #f4f8fd;
+  color: #18181b;
+}
+
+.tierCurrent .tierName {
+  font-weight: 800;
+}
+
+.tierCurrent .tierMarker {
+  background: #2f80d1;
+  color: #ffffff;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+}

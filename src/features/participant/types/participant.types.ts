@@ -40,6 +40,7 @@ export type Participant = {
   instagramId?: string;
   bio?: string;
   manualEntry?: boolean;
+  mvpCount?: number;
 };
 
 export type ParticipantTeam = {
@@ -118,4 +119,5 @@ export type ParticipantProfileResponse = {
   age?: number | null;
   instaId?: string | null;
   bio?: string | null;
+  mvpCount: number;
 };

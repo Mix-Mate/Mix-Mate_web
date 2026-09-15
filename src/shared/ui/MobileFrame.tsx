@@ -29,6 +29,7 @@ export default function MobileFrame({
           fitViewport && styles.fitPhone,
           className,
         )}
+        data-mobile-frame=""
         {...props}
       >
         {children}

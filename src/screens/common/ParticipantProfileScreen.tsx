@@ -10,6 +10,7 @@ import { useParticipantListQuery } from "@/features/participant/hooks/usePartici
 import { useParticipantProfileQuery } from "@/features/participant/hooks/useParticipantProfileQuery";
 import type { ParticipantProfile } from "@/features/participant/types/participant.types";
 import { useMyGroupProfileQuery } from "@/features/profile/hooks/useMyGroupProfileQuery";
+import { useMyPageUserProfileQuery } from "@/features/user/hooks/useMyPageUserProfileQuery";
 import type { MyGroupProfile } from "@/features/profile/types/profile.types";
 import { formatInstagramDisplay } from "@/features/profile/lib/instagram";
 import useToast from "@/shared/hooks/useToast";
@@ -21,6 +22,7 @@ import { withSessionContext } from "@/features/session/utils/session-navigation"
 import Button from "@/shared/ui/Button";
 import StandardDialog from "@/shared/ui/StandardDialog";
 import GenderAvatar from "@/shared/ui/GenderAvatar";
+import MvpMedalPopover from "@/features/profile/components/MvpMedalPopover";
 import Header from "@/shared/ui/Header";
 import MobileFrame from "@/shared/ui/MobileFrame";
 import Toast from "@/shared/ui/Toast";
@@ -92,6 +94,9 @@ export default function ParticipantProfileScreen({
       enabled: isSelfProfile,
     },
   );
+  const { data: myInfo } = useMyPageUserProfileQuery({
+    enabled: isSelfProfile,
+  });
   const shouldFetchProfileDetail =
     Boolean(group) && (!isSelfProfile || isMyProfileError);
   const { data: profileDetail, isError: isProfileDetailError } =
@@ -137,6 +142,7 @@ export default function ParticipantProfileScreen({
       age: participant.age,
       instagramId: participant.instagramId,
       bio: participant.bio,
+      mvpCount: participant.mvpCount,
     };
   }, [
     adminParticipantGroup.participants,
@@ -166,6 +172,7 @@ export default function ParticipantProfileScreen({
   if (!group || !profile) return null;
 
   const isSelf = isSelfProfile;
+  const mvpCount = (isSelf ? myInfo?.mvpCount : undefined) ?? profile.mvpCount ?? 0;
 
   const canManageParticipant =
     group.status === "RECRUITING" ||
@@ -332,6 +339,7 @@ export default function ParticipantProfileScreen({
               {profile.role === "general" && !profile.isNew && (
                 <span>일반</span>
               )}
+              <MvpMedalPopover mvpCount={mvpCount} />
             </div>
           )}
         </section>
@@ -394,6 +402,11 @@ export default function ParticipantProfileScreen({
                 ) : (
                   <strong>{instagramText}</strong>
                 )}
+              </div>
+
+              <div>
+                <span>MVP 횟수</span>
+                <strong>{mvpCount}회</strong>
               </div>
             </section>
 

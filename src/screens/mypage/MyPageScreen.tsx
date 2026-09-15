@@ -24,14 +24,19 @@ import {
   updateUserNameApi,
   validateUserName,
 } from "@/features/user/api/user.api";
+import MvpMedalPopover from "@/features/profile/components/MvpMedalPopover";
 import styles from "./MyPageScreen.module.css";
 
-type MyPageProfile = Pick<MyPageUserProfile, "email" | "provider" | "userName">;
+type MyPageProfile = Pick<
+  MyPageUserProfile,
+  "email" | "provider" | "userName" | "mvpCount"
+>;
 
 const defaultProfile: MyPageProfile = {
   userName: "사용자",
   email: "user@mixmate.kr",
   provider: "local",
+  mvpCount: 0,
 };
 
 function getStoredProfile(): MyPageProfile {
@@ -46,6 +51,7 @@ function getStoredProfile(): MyPageProfile {
     provider: (
       window.localStorage.getItem("provider") || defaultProfile.provider
     ).toLowerCase(),
+    mvpCount: defaultProfile.mvpCount,
   };
 }
 
@@ -141,6 +147,7 @@ export default function MyPageScreen() {
           userName: nextProfile.userName,
           email: nextProfile.email || defaultProfile.email,
           provider: nextProfile.provider.toLowerCase(),
+          mvpCount: nextProfile.mvpCount,
         });
         rememberProfile(nextProfile);
       } catch (error) {
@@ -319,6 +326,8 @@ export default function MyPageScreen() {
               </p>
             )}
           </div>
+
+          <MvpMedalPopover mvpCount={profile.mvpCount} />
         </section>
 
         {/* 계정 관리 섹션 (비밀번호 변경) */}
