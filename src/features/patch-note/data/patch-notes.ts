@@ -35,6 +35,82 @@ export interface PatchNoteItem {
 
 export const PATCH_NOTES: PatchNoteItem[] = [
 definePatchNote({
+  id: "release-1-2-0",
+  version: "v.1.2.0",
+  title: "v.1.2.0 업데이트",
+  summary:
+    "초대 링크, 모집 현황, MVP 메달 배지와 명단 다운로드 사용성을 개선했습니다.",
+  date: "2026.09.16",
+  changes: [
+    {
+      type: "New",
+      title: "초대 링크",
+      description:
+        "초대 링크를 통해 참여 코드를 직접 입력하지 않고 그룹에 참여할 수 있습니다.",
+    },
+    {
+      type: "New",
+      title: "초대 재발급",
+      description:
+        "참여 코드나 초대 링크가 유출되었거나 만료된 경우 새 초대를 재발급할 수 있습니다.",
+    },
+    {
+      type: "New",
+      title: "모집 현황",
+      description:
+        "모집 화면에서 현재 모집 인원과 최근 참여자를 바로 확인할 수 있습니다.",
+    },
+    {
+      type: "New",
+      title: "MVP 메달 배지",
+      description:
+        "MVP 누적 횟수에 따라 프로필에 메달 배지가 표시됩니다.",
+    },
+    {
+      type: "Changed",
+      title: "명단 다운로드",
+      description:
+        "다운로드한 명단에서 학번, 성별, 조번호 정보를 함께 확인할 수 있도록 변경했습니다.",
+    },
+    {
+      type: "Changed",
+      title: "라운드별 명단 다운로드",
+      description:
+        "조가 확정된 이후 참가자 목록에서 라운드별 명단을 다운로드할 수 있도록 변경했습니다.",
+    },
+    {
+      type: "Fixed",
+      title: "그룹 참여 오류",
+      description:
+        "모집이 마감되었거나 차단된 그룹에 잘못 진입되던 문제를 수정했습니다.",
+    },
+    {
+      type: "Fixed",
+      title: "투표 현황 표시 오류",
+      description:
+        "관리자가 수동으로 투표 처리한 참가자가 미투표 목록에 남아있던 문제를 수정했습니다.",
+    },
+    {
+      type: "Fixed",
+      title: "소셜 계정 회원탈퇴",
+      description:
+        "소셜 로그인 계정에서 회원탈퇴가 정상적으로 처리되지 않던 문제를 수정했습니다.",
+    },
+    {
+      type: "Improved",
+      title: "마이페이지 정보 표시",
+      description:
+        "마이페이지의 계정 정보가 최신 정보로 표시되도록 개선했습니다.",
+    },
+    {
+      type: "Improved",
+      title: "모집 화면 사용성",
+      description:
+        "최근 참여자 목록이 최신 참여순으로 안정적으로 표시되도록 개선했습니다.",
+    },
+  ],
+}),
+definePatchNote({
   id: "release-1-1-0",
   version: "v.1.1.0",
   title: "v.1.1.0 업데이트",
