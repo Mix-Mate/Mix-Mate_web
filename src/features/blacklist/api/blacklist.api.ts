@@ -1,4 +1,7 @@
-import { getGroupDetail, GroupApiError } from "@/features/group/api/group.api";
+import {
+  getGroupDetail,
+  isExplicitGroupBlockError,
+} from "@/features/group/api/group.api";
 import { getKnownGroupName } from "../lib/blockedGroupsStorage";
 import { apiFetch } from "@/shared/api/apiFetch";
 import { API_BASE_URL } from "@/shared/api/apiBaseUrl";
@@ -348,26 +351,21 @@ export async function checkUserBlockedInGroup(
   try {
     await getGroupDetail(groupId);
   } catch (err: unknown) {
-    if (err instanceof GroupApiError) {
-      if (
-        err.status === 403 ||
-        err.code === "USER_BLOCKED" ||
-        err.code === "BANNED_USER" ||
-        err.code === "FORBIDDEN" ||
-        err.code === "BLOCKED" ||
-        err.message.includes("차단")
-      ) {
-        return {
-          id: String(currentId || "0"),
-          userId: Number(currentId) || 0,
-          name: currentName || "사용자",
-          displayName: currentName || "사용자",
-          email: currentEmail || "",
-          reason: err.reason || localFound?.reason || "",
-          blockedAt: new Date().toISOString(),
-          bannedAt: new Date().toISOString(),
-        };
-      }
+    if (isExplicitGroupBlockError(err)) {
+      const reason =
+        err && typeof err === "object" && "reason" in err
+          ? (err as { reason?: string }).reason
+          : undefined;
+      return {
+        id: String(currentId || "0"),
+        userId: Number(currentId) || 0,
+        name: currentName || "사용자",
+        displayName: currentName || "사용자",
+        email: currentEmail || "",
+        reason: reason || localFound?.reason || "",
+        blockedAt: new Date().toISOString(),
+        bannedAt: new Date().toISOString(),
+      };
     }
   }
 

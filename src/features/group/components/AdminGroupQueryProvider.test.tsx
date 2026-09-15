@@ -453,7 +453,11 @@ describe("공통 그룹 SSE 동기화", () => {
     await waitFor(() => expect(subscribe).toHaveBeenCalledTimes(2));
   });
 
-  it("403/차단 수신 시 다시 시도 버튼을 숨기고 홈으로 이동 단일 액션을 제공한다", async () => {
+  it("차단 코드가 없는 403은 차단으로 기록하지 않고 다시 시도할 수 있다", async () => {
+    const { readBlockedGroups } = await import(
+      "@/features/blacklist/lib/blockedGroupsStorage"
+    );
+
     render(<App />);
     await screen.findByTestId("group-state");
     await waitFor(() => expect(subscribe).toHaveBeenCalledOnce());
@@ -465,12 +469,12 @@ describe("공통 그룹 SSE 동기화", () => {
       new GroupStatusStreamError(403).message,
     );
     expect(
-      screen.queryByRole("button", { name: "다시 시도" }),
+      screen.getByRole("button", { name: "다시 시도" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "홈으로 이동" }),
     ).not.toBeInTheDocument();
-    const homeBtn = screen.getByRole("button", { name: "홈으로 이동" });
-    expect(homeBtn).toBeInTheDocument();
-    fireEvent.click(homeBtn);
-    expect(router.replace).toHaveBeenCalledWith("/home");
+    expect(readBlockedGroups()).toEqual([]);
   });
 
   it("getGroupDetail 403 차단 및 사유 반환 시 화면에 차단 사유가 포맷팅되어 표시된다", async () => {
@@ -518,7 +522,7 @@ describe("공통 그룹 SSE 동기화", () => {
     });
   });
 
-  it("그룹 홈 진입 후 스트림 403 차단 에러 발생 시 원래 그룹명을 로컬 스토리지에 기록하고 홈 이동 버튼이 동작한다", async () => {
+  it("그룹 홈 진입 후 명시적 차단 에러 발생 시 원래 그룹명과 사유를 기록한다", async () => {
     const { readBlockedGroups } = await import(
       "@/features/blacklist/lib/blockedGroupsStorage"
     );
@@ -532,19 +536,28 @@ describe("공통 그룹 SSE 동기화", () => {
 
     await screen.findByTestId("group-state");
 
-    // 스트림 연결 완료 후 403 차단 에러 발생
+    // 스트림 연결 완료 후 명시적 차단 코드가 담긴 403 에러 발생
     await act(async () => {
-      subscriptions[0].options.onError(new GroupStatusStreamError(403));
+      subscriptions[0].options.onError(
+        new GroupStatusStreamError(403, {
+          code: "USER_BLOCKED",
+          message: "해당 그룹 관리자에 의해 참여가 차단된 사용자입니다.",
+          reason: "실시간 차단 사유",
+        }),
+      );
     });
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
-        "이 그룹에 참여하고 있지 않습니다.",
+        /그룹에서 차단되었습니다\.\s*차단 사유: 실시간 차단 사유/,
       );
       const blocked = readBlockedGroups();
       expect(
         blocked.some(
-          (b) => b.groupId === "6" && b.groupName === "실시간 스터디 모임",
+          (b) =>
+            b.groupId === "6" &&
+            b.groupName === "실시간 스터디 모임" &&
+            b.reason === "실시간 차단 사유",
         ),
       ).toBe(true);
     });

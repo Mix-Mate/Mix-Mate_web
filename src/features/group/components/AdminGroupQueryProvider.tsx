@@ -9,7 +9,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getGroupDetail, GroupApiError } from "../api/group.api";
+import {
+  getGroupDetail,
+  GroupApiError,
+  isExplicitGroupBlockError,
+} from "../api/group.api";
 import {
   AdminGroupQueryContext,
   type AdminGroupQueryResult,
@@ -119,18 +123,7 @@ export default function AdminGroupQueryProvider({
   const error = errorInfo?.message ?? null;
 
   const isBlocked = useMemo(() => {
-    if (!errorInfo) return false;
-    if (errorInfo.status === 403) return true;
-    if (
-      errorInfo.code === "USER_BLOCKED" ||
-      errorInfo.code === "BANNED_USER" ||
-      errorInfo.code === "FORBIDDEN" ||
-      errorInfo.code === "BLOCKED"
-    ) {
-      return true;
-    }
-    const msg = errorInfo.message || "";
-    return msg.includes("차단") || msg.includes("참여하고 있지 않습니다");
+    return isExplicitGroupBlockError(errorInfo);
   }, [errorInfo]);
 
   const refetch = useCallback(async () => {
@@ -160,15 +153,7 @@ export default function AdminGroupQueryProvider({
             code: fetchError.code,
             reason: fetchError.reason,
           });
-          if (
-            fetchError.status === 403 ||
-            fetchError.code === "USER_BLOCKED" ||
-            fetchError.code === "BANNED_USER" ||
-            fetchError.code === "FORBIDDEN" ||
-            fetchError.code === "BLOCKED" ||
-            fetchError.message.includes("차단") ||
-            fetchError.message.includes("참여하고 있지 않습니다")
-          ) {
+          if (isExplicitGroupBlockError(fetchError)) {
             undismissBlockedGroup(groupId);
             recordBlockedGroup({
               groupId: String(groupId),
@@ -191,15 +176,7 @@ export default function AdminGroupQueryProvider({
             code,
             reason,
           });
-          if (
-            status === 403 ||
-            code === "USER_BLOCKED" ||
-            code === "BANNED_USER" ||
-            code === "FORBIDDEN" ||
-            code === "BLOCKED" ||
-            fetchError.message.includes("차단") ||
-            fetchError.message.includes("참여하고 있지 않습니다")
-          ) {
+          if (isExplicitGroupBlockError(fetchError)) {
             undismissBlockedGroup(groupId);
             recordBlockedGroup({
               groupId: String(groupId),
@@ -257,15 +234,7 @@ export default function AdminGroupQueryProvider({
               code: fetchError.code,
               reason: fetchError.reason,
             });
-            if (
-              fetchError.status === 403 ||
-              fetchError.code === "USER_BLOCKED" ||
-              fetchError.code === "BANNED_USER" ||
-              fetchError.code === "FORBIDDEN" ||
-              fetchError.code === "BLOCKED" ||
-              fetchError.message.includes("차단") ||
-              fetchError.message.includes("참여하고 있지 않습니다")
-            ) {
+            if (isExplicitGroupBlockError(fetchError)) {
               undismissBlockedGroup(groupId);
               recordBlockedGroup({
                 groupId: String(groupId),
@@ -288,15 +257,7 @@ export default function AdminGroupQueryProvider({
               code,
               reason,
             });
-            if (
-              status === 403 ||
-              code === "USER_BLOCKED" ||
-              code === "BANNED_USER" ||
-              code === "FORBIDDEN" ||
-              code === "BLOCKED" ||
-              fetchError.message.includes("차단") ||
-              fetchError.message.includes("참여하고 있지 않습니다")
-            ) {
+            if (isExplicitGroupBlockError(fetchError)) {
               undismissBlockedGroup(groupId);
               recordBlockedGroup({
                 groupId: String(groupId),
@@ -356,6 +317,8 @@ export default function AdminGroupQueryProvider({
       setErrorInfo({
         message: streamError.message,
         status: streamError.status,
+        code: streamError.code,
+        reason: streamError.reason,
       });
 
       if (streamError.status === 401) {
@@ -365,19 +328,17 @@ export default function AdminGroupQueryProvider({
         return;
       }
 
-      if (
-        streamError.status === 403 ||
-        streamError.message.includes("차단") ||
-        streamError.message.includes("참여하고 있지 않습니다")
-      ) {
+      if (isExplicitGroupBlockError(streamError)) {
         undismissBlockedGroup(groupId);
         const resolvedName = getResolvedBlockedGroupName(
           groupId,
           currentGroupName,
+          streamError.groupName,
         );
         recordBlockedGroup({
           groupId: String(groupId),
           groupName: resolvedName,
+          reason: streamError.reason,
         });
 
         void checkUserBlockedInGroup(groupId).then((blocked) => {

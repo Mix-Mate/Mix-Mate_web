@@ -30,6 +30,7 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => {
 describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로우", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
     window.sessionStorage.clear();
   });
 
@@ -63,16 +64,13 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
       ).toBeInTheDocument();
     });
 
-    // 2단계로 라우팅되지 않아야 함
     expect(mockPush).not.toHaveBeenCalled();
 
-    // 입력창에 에러 클래스가 적용되어 테두리가 #ef4444 스타일이 되는지 확인
     const inputs = screen.getAllByRole("textbox");
     inputs.forEach((input) => {
       expect(input.className).toMatch(/otpInputError/);
     });
 
-    // 다이얼로그 모달이 뜨지 않아야 함
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -88,9 +86,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     render(<GroupJoinScreen />);
 
     enterCode("WRONG1");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
       expect(
@@ -118,9 +114,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     render(<GroupJoinScreen />);
 
     enterCode("PASS99");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith(
@@ -132,7 +126,9 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
       expect.stringContaining("inviteCode=PASS99"),
     );
     expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("groupName=%ED%99%98%EC%83%81%EC%9D%98+%EB%AA%A8%EC%9E%84"),
+      expect.stringContaining(
+        "groupName=%ED%99%98%EC%83%81%EC%9D%98+%EB%AA%A8%EC%9E%84",
+      ),
     );
     expect(
       screen.queryByText("참가자 모집이 마감된 그룹입니다."),
@@ -149,9 +145,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     render(<GroupJoinScreen />);
 
     enterCode("CLSD99");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
       expect(
@@ -175,9 +169,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     render(<GroupJoinScreen />);
 
     enterCode("ABC123");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
       expect(
@@ -185,7 +177,6 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
       ).toBeInTheDocument();
     });
 
-    // 첫 번째 input 값 변경
     const inputs = screen.getAllByRole("textbox");
     fireEvent.change(inputs[0], { target: { value: "Z" } });
 
@@ -195,7 +186,25 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     expect(inputs[0].className).not.toMatch(/otpInputError/);
   });
 
-  it("403 또는 BLOCKED 발생 시 2단계로 이동하지 않고 '해당 그룹에서 차단되어 참여할 수 없습니다.' 모달을 표시한다", async () => {
+  it("일반 403/FORBIDDEN은 차단 모달과 차단 저장을 만들지 않는다", async () => {
+    vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
+      new GroupApiError("접근 권한이 없습니다.", 403, "FORBIDDEN"),
+    );
+
+    render(<GroupJoinScreen />);
+
+    enterCode("DENY99");
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "접근 권한이 없습니다.",
+    );
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(localStorage.getItem("mixmate_blocked_groups")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("명시적인 BLOCKED 응답은 차단 모달을 표시한다", async () => {
     vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
       new GroupApiError(
         "해당 그룹에서 차단되어 참여할 수 없습니다.",
@@ -207,9 +216,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     render(<GroupJoinScreen />);
 
     enterCode("BLCK99");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
       expect(
@@ -223,23 +230,16 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
 
   it("400 Bad Request 발생 시 2단계로 이동하지 않고 에러 메시지를 표시한다", async () => {
     vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
-      new GroupApiError(
-        "참여코드를 입력해 주세요.",
-        400,
-      ),
+      new GroupApiError("참여코드를 입력해 주세요.", 400),
     );
 
     render(<GroupJoinScreen />);
 
     enterCode("BAD123");
-
-    const submitBtn = screen.getByRole("button", { name: "입장하기" });
-    fireEvent.click(submitBtn);
+    fireEvent.click(screen.getByRole("button", { name: "입장하기" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("참여코드를 입력해 주세요."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("참여코드를 입력해 주세요.")).toBeInTheDocument();
     });
 
     expect(mockPush).not.toHaveBeenCalled();
