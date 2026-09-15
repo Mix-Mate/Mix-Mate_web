@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import {
   createGroupApi,
   joinGroupWithProfileApi,
+  isExplicitGroupBlockError,
   verifyInviteCodeApi,
   GroupApiError,
   type GroupProfileDto,
@@ -380,13 +381,7 @@ export default function GroupExtraInfoScreen({
           return;
         }
 
-        const isBlocked =
-          errStatus === 403 ||
-          errCode === "USER_BLOCKED" ||
-          errCode === "BANNED_USER" ||
-          errCode === "FORBIDDEN" ||
-          errCode === "BLOCKED" ||
-          errMsg.includes("차단");
+        const isBlocked = isExplicitGroupBlockError(err);
 
         if (isBlocked) {
           setErrorModal({
@@ -631,14 +626,7 @@ export default function GroupExtraInfoScreen({
         return;
       }
 
-      const isBlocked =
-        (error instanceof GroupApiError &&
-          (error.status === 403 ||
-            error.code === "USER_BLOCKED" ||
-            error.code === "BANNED_USER" ||
-            error.code === "FORBIDDEN" ||
-            error.code === "BLOCKED")) ||
-        (error instanceof Error && error.message.includes("차단"));
+      const isBlocked = isExplicitGroupBlockError(error);
 
       if (isBlocked) {
         let reason = error instanceof GroupApiError ? error.reason : undefined;

@@ -17,11 +17,55 @@ const errorMessages: Record<number, string> = {
 };
 
 export class GroupStatusStreamError extends Error {
-  constructor(public readonly status: number) {
+  constructor(
+    public readonly status: number,
+    details: {
+      code?: string;
+      message?: string;
+      reason?: string;
+      groupName?: string;
+    } = {},
+  ) {
     super(
-      errorMessages[status] ?? "그룹 상태 실시간 연결을 시작하지 못했습니다.",
+      details.message ??
+        errorMessages[status] ??
+        "그룹 상태 실시간 연결을 시작하지 못했습니다.",
     );
     this.name = "GroupStatusStreamError";
+    this.code = details.code;
+    this.reason = details.reason;
+    this.groupName = details.groupName;
+  }
+
+  readonly code?: string;
+  readonly reason?: string;
+  readonly groupName?: string;
+}
+
+async function readStreamErrorDetails(response: Response): Promise<{
+  code?: string;
+  message?: string;
+  reason?: string;
+  groupName?: string;
+}> {
+  try {
+    const body = (await response.clone().json()) as Record<string, unknown>;
+    const nestedData =
+      body.data && typeof body.data === "object"
+        ? (body.data as Record<string, unknown>)
+        : undefined;
+
+    const readString = (...values: unknown[]) =>
+      values.find((value): value is string => typeof value === "string");
+
+    return {
+      code: readString(body.code, nestedData?.code),
+      message: readString(body.message, nestedData?.message),
+      reason: readString(body.reason, nestedData?.reason),
+      groupName: readString(body.groupName, nestedData?.groupName),
+    };
+  } catch {
+    return {};
   }
 }
 
@@ -75,7 +119,8 @@ export function subscribeGroupStatus(
             response.status !== 408 &&
             response.status !== 429
           ) {
-            throw new GroupStatusStreamError(response.status);
+            const details = await readStreamErrorDetails(response);
+            throw new GroupStatusStreamError(response.status, details);
           }
           throw new Error("그룹 상태 연결을 다시 시도합니다.");
         }
