@@ -144,6 +144,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
 
   it("초대 링크(inviteCode 쿼리)로 들어오면 코드 입력 없이 바로 검증하고 2단계로 이동한다", async () => {
     mockSearchParams = new URLSearchParams({ inviteCode: "link99" });
+    window.localStorage.setItem("accessToken", "authenticated-test-token");
     vi.mocked(verifyInviteCodeApi).mockResolvedValueOnce({
       groupId: 99,
       groupName: "환상의 모임",
@@ -172,6 +173,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
 
   it("호스트 본인이 초대 링크로 재입장하면 참여 플로우 대신 모집 관리 화면으로 보낸다", async () => {
     mockSearchParams = new URLSearchParams({ inviteCode: "host99" });
+    window.localStorage.setItem("accessToken", "authenticated-test-token");
     vi.mocked(verifyInviteCodeApi).mockResolvedValueOnce({
       groupId: 99,
       groupName: "내가 만든 모임",
@@ -235,6 +237,7 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
 
   it("초대 링크 검증에 실패하면 직접 입력 화면으로 돌아간다", async () => {
     mockSearchParams = new URLSearchParams({ inviteCode: "BADCOD" });
+    window.localStorage.setItem("accessToken", "authenticated-test-token");
     vi.mocked(verifyInviteCodeApi).mockRejectedValueOnce(
       new GroupApiError(
         "유효하지 않은 초대코드입니다.",
@@ -252,6 +255,21 @@ describe("GroupJoinScreen 초대 코드 검증 및 마감 그룹 차단 플로�
     });
 
     expect(screen.getAllByRole("textbox")).toHaveLength(6);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("비로그인 사용자가 초대 링크로 들어오면 코드를 검증하지 않고 로그인 화면으로 보낸다", async () => {
+    mockSearchParams = new URLSearchParams({ inviteCode: "LOGIN1" });
+
+    render(<GroupJoinScreen />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledExactlyOnceWith(
+        "/login?next=%2Fgroups%2Fjoin%3FinviteCode%3DLOGIN1",
+      );
+    });
+
+    expect(verifyInviteCodeApi).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
   });
 
