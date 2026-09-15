@@ -463,7 +463,7 @@ describe("AdminRecruitmentScreen", () => {
       render(<AdminRecruitmentScreen />);
 
       expect(onboarding()).toBeInTheDocument();
-      expect(screen.getByText("1 / 5")).toBeInTheDocument();
+      expect(screen.getByText("1 / 7")).toBeInTheDocument();
       expect(
         screen.getByRole("dialog", { name: "모임의 진행 상태를 확인해요" }),
       ).toHaveTextContent("현재 모임이 어느 단계인지 한눈에 확인할 수 있어요.");
@@ -487,19 +487,55 @@ describe("AdminRecruitmentScreen", () => {
 
       fireEvent.click(onboarding());
 
-      expect(screen.getByText("2 / 5")).toBeInTheDocument();
+      expect(screen.getByText("2 / 7")).toBeInTheDocument();
+      expect(
+        screen.getByRole("dialog", {
+          name: "참가자를 초대해요",
+        }),
+      ).toHaveTextContent(
+        "그룹 코드를 복사해 공유하면 참가자가 모임에 참여할 수 있어요.",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+      expect(screen.getByText("3 / 7")).toBeInTheDocument();
+      expect(
+        screen.getByRole("dialog", {
+          name: "초대 링크로 바로 참여해요",
+        }),
+      ).toHaveTextContent(
+        "참가자는 초대 링크만 열면 코드를 입력하지 않고 바로 모임 참여를 시작할 수 있어요.",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "다음" }));
+
+      expect(screen.getByText("4 / 7")).toBeInTheDocument();
+      expect(
+        screen.getByRole("dialog", {
+          name: "필요하면 초대를 다시 발급해요",
+        }),
+      ).toHaveTextContent(
+        "참여 코드나 링크가 외부에 공유됐거나 유효기간이 지났다면 새 초대를 발급해 다시 공유할 수 있어요.",
+      );
       expect(pushMock).not.toHaveBeenCalled();
     });
 
     it("마지막 단계에서 시작하기를 누르면 온보딩이 끝나고 다시 열리지 않는다", () => {
       const { unmount } = render(<AdminRecruitmentScreen />);
 
-      for (const stepLabel of ["1 / 5", "2 / 5", "3 / 5", "4 / 5"]) {
+      for (const stepLabel of [
+        "1 / 7",
+        "2 / 7",
+        "3 / 7",
+        "4 / 7",
+        "5 / 7",
+        "6 / 7",
+      ]) {
         expect(screen.getByText(stepLabel)).toBeInTheDocument();
         fireEvent.click(screen.getByRole("button", { name: "다음" }));
       }
 
-      expect(screen.getByText("5 / 5")).toBeInTheDocument();
+      expect(screen.getByText("7 / 7")).toBeInTheDocument();
       expect(
         screen.getByRole("dialog", { name: "모두 모였다면 모집을 마감해요" }),
       ).toHaveTextContent(
