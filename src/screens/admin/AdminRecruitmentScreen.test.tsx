@@ -166,6 +166,40 @@ describe("AdminRecruitmentScreen", () => {
     );
   });
 
+  it("최근 참여자 목록에는 호스트 본인이 나오지 않는다", () => {
+    useParticipantListQueryMock.mockReturnValue({
+      data: {
+        participants: [
+          {
+            id: "1",
+            name: "호스트",
+            department: "소프트웨어학과",
+            visibility: "public",
+            role: "staff",
+            gender: "male",
+          },
+          {
+            id: "2",
+            name: "참가자A",
+            department: "경영학과",
+            visibility: "public",
+            role: "general",
+            gender: "female",
+          },
+        ],
+        teams: [],
+      },
+      isLoading: false,
+      isError: false,
+      refetch: participantRefetchMock,
+    });
+
+    render(<AdminRecruitmentScreen />);
+
+    expect(screen.queryByText("호스트")).not.toBeInTheDocument();
+    expect(screen.getByText("참가자A")).toBeInTheDocument();
+  });
+
   it("헤더 편집 버튼 대신 그룹 코드 카드의 수정 행으로 진입한다", () => {
     render(<AdminRecruitmentScreen />);
 
@@ -184,7 +218,7 @@ describe("AdminRecruitmentScreen", () => {
     expect(screen.getByText("참여 코드")).toBeInTheDocument();
     expect(screen.getByText("MixMate.invite")).toBeInTheDocument();
     expect(screen.getByText("0일 1시간 0분").parentElement).toHaveTextContent(
-      "참여코드 만료까지 0일 1시간 0분",
+      "참여코드/초대링크 만료까지 0일 1시간 0분",
     );
 
     await act(async () => {
