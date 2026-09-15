@@ -43,6 +43,11 @@ export interface CreateGroupResponse {
   inviteCode: string;
 }
 
+export interface GroupInvitationResponse {
+  inviteCode: string;
+  expiresAt: string;
+}
+
 export class GroupApiError extends Error {
   status?: number;
   code?: string;
@@ -353,7 +358,8 @@ export async function getMyGroupsApi(
   });
 
   if (!response.ok) {
-    let errorData: { message?: string; code?: string; reason?: string } | null = null;
+    let errorData: { message?: string; code?: string; reason?: string } | null =
+      null;
     try {
       errorData = await response.json();
     } catch {
@@ -388,16 +394,20 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
   let response: Response;
 
   try {
-    response = await apiFetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {
-    });
+    response = await apiFetch(`${API_BASE_URL}/api/v1/groups/${groupId}`, {});
   } catch {
     throw new GroupApiError("그룹 정보를 불러오지 못했습니다.");
   }
 
   if (!response.ok) {
-    let errorData: { message?: string; code?: string; reason?: string } | null = null;
+    let errorData: { message?: string; code?: string; reason?: string } | null =
+      null;
     try {
-      errorData = (await response.json()) as { message?: string; code?: string; reason?: string };
+      errorData = (await response.json()) as {
+        message?: string;
+        code?: string;
+        reason?: string;
+      };
     } catch {
       // Body may not be JSON
     }
@@ -427,6 +437,69 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
     saveKnownGroupName(detail.groupId, detail.groupName);
   }
   return detail;
+}
+
+async function getInvitationError(
+  response: Response,
+  fallback: string,
+): Promise<GroupApiError> {
+  let errorData: { message?: string; code?: string } | null = null;
+
+  try {
+    errorData = (await response.json()) as {
+      message?: string;
+      code?: string;
+    };
+  } catch {
+    // Body may not be JSON.
+  }
+
+  return new GroupApiError(
+    errorData?.message ?? fallback,
+    response.status,
+    errorData?.code,
+  );
+}
+
+/**
+ * 호스트 초대 정보 조회 API
+ * GET /api/v1/groups/{groupId}/invitation
+ */
+export async function getGroupInvitation(
+  groupId: string,
+): Promise<GroupInvitationResponse> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/invitation`,
+    { method: "GET" },
+  );
+
+  if (!response.ok) {
+    throw await getInvitationError(
+      response,
+      "초대 정보를 불러오지 못했습니다.",
+    );
+  }
+
+  return (await response.json()) as GroupInvitationResponse;
+}
+
+/**
+ * 호스트 참여 코드 재발급 API
+ * POST /api/v1/groups/{groupId}/invitation/reissue
+ */
+export async function reissueGroupInvitation(
+  groupId: string,
+): Promise<GroupInvitationResponse> {
+  const response = await apiFetch(
+    `${API_BASE_URL}/api/v1/groups/${groupId}/invitation/reissue`,
+    { method: "POST" },
+  );
+
+  if (!response.ok) {
+    throw await getInvitationError(response, "참여코드 재발급에 실패했습니다.");
+  }
+
+  return (await response.json()) as GroupInvitationResponse;
 }
 
 export async function closeRecruiting(groupId: string): Promise<void> {
@@ -734,15 +807,21 @@ export async function verifyInviteCodeApi(
   }
 
   const rawData = (await response.json()) as Record<string, unknown>;
-  const nestedData = (rawData?.data ?? rawData?.result ?? {}) as Record<string, unknown>;
+  const nestedData = (rawData?.data ?? rawData?.result ?? {}) as Record<
+    string,
+    unknown
+  >;
 
   const verified: VerifyInviteCodeResponse = {
     groupId: (rawData?.groupId ?? nestedData?.groupId) as number,
     groupName: (rawData?.groupName ?? nestedData?.groupName) as string,
-    status: (rawData?.status ?? nestedData?.status) as GroupStatus | string | undefined,
-    isBlocked: (rawData?.isBlocked ?? nestedData?.isBlocked) as boolean | undefined,
+    status: (rawData?.status ?? nestedData?.status) as
+      GroupStatus | string | undefined,
+    isBlocked: (rawData?.isBlocked ?? nestedData?.isBlocked) as
+      boolean | undefined,
     blocked: (rawData?.blocked ?? nestedData?.blocked) as boolean | undefined,
-    userStatus: (rawData?.userStatus ?? nestedData?.userStatus) as string | undefined,
+    userStatus: (rawData?.userStatus ?? nestedData?.userStatus) as
+      string | undefined,
   };
 
   if (verified?.groupId && verified?.groupName) {

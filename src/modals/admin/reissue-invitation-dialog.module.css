@@ -1,0 +1,52 @@
+.sheet {
+  --bottom-sheet-padding-top: 39px;
+  --bottom-sheet-padding-right: 26px;
+  --bottom-sheet-padding-bottom: 26px;
+  --bottom-sheet-padding-left: 26px;
+  --standard-dialog-icon-size: 72px;
+  --standard-dialog-icon-radius: 23px;
+  --standard-dialog-icon-margin-bottom: 36px;
+  --standard-dialog-title-size: 28px;
+  --standard-dialog-title-line-height: 42px;
+  --standard-dialog-description-size: 17px;
+  --standard-dialog-description-line-height: 28px;
+  --standard-dialog-actions-margin-top: 17px;
+
+  border-top-left-radius: 36px;
+  border-top-right-radius: 36px;
+  box-shadow: 0 -13px 52px rgba(0, 0, 0, 0.18);
+}
+
+.handle {
+  display: none;
+}
+
+.iconGraphic {
+  position: relative;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+}
+
+.refreshBadge {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 2px solid #eff6ff;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 8px;
+  background: #f4f4f5;
+}
