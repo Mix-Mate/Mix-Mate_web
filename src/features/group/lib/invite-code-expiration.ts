@@ -1,6 +1,6 @@
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export const INVITE_CODE_VALIDITY_MS = 3 * DAY_IN_MS;
+export const INVITE_CODE_VALIDITY_MS = 7 * DAY_IN_MS;
 export const INVITE_CODE_REFRESH_INTERVAL_MS = 60 * 1000;
 
 export interface InviteCodeRemainingTime {
@@ -13,12 +13,12 @@ export interface InviteCodeRemainingTime {
 export function calculateInviteCodeRemainingTime(
   createdAt: string,
   nowMs = Date.now(),
+  expiresAt?: string,
 ): InviteCodeRemainingTime {
-  const createdAtDate = new Date(createdAt);
-  const expiresAt = new Date(
-    createdAtDate.getTime() + INVITE_CODE_VALIDITY_MS,
-  );
-  const rawRemainingMs = expiresAt.getTime() - nowMs;
+  const expirationMs = expiresAt
+    ? new Date(expiresAt).getTime()
+    : new Date(createdAt).getTime() + INVITE_CODE_VALIDITY_MS;
+  const rawRemainingMs = expirationMs - nowMs;
   const remainingMs = Number.isFinite(rawRemainingMs)
     ? Math.max(0, rawRemainingMs)
     : 0;
