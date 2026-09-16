@@ -32,6 +32,39 @@ type MyPageProfile = Pick<
   "email" | "provider" | "userName" | "mvpCount"
 >;
 
+type NormalizedProvider = "local" | "kakao" | "google" | "social";
+
+function normalizeProvider(provider?: string | null): NormalizedProvider {
+  const rawProvider = provider?.trim();
+  const lowerProvider = rawProvider?.toLowerCase();
+
+  if (!rawProvider || lowerProvider === "local" || rawProvider === "로컬") {
+    return "local";
+  }
+  if (lowerProvider === "kakao" || rawProvider === "카카오") {
+    return "kakao";
+  }
+  if (lowerProvider === "google" || rawProvider === "구글") {
+    return "google";
+  }
+
+  return "social";
+}
+
+function getProviderLabel(provider: NormalizedProvider) {
+  switch (provider) {
+    case "kakao":
+      return "카카오";
+    case "google":
+      return "구글";
+    case "social":
+      return "소셜";
+    case "local":
+    default:
+      return "로컬";
+  }
+}
+
 const defaultProfile: MyPageProfile = {
   userName: "사용자",
   email: "user@mixmate.kr",
@@ -48,9 +81,9 @@ function getStoredProfile(): MyPageProfile {
       window.localStorage.getItem("displayName") ||
       defaultProfile.userName,
     email: window.localStorage.getItem("email") || defaultProfile.email,
-    provider: (
-      window.localStorage.getItem("provider") || defaultProfile.provider
-    ).toLowerCase(),
+    provider: normalizeProvider(
+      window.localStorage.getItem("provider") || defaultProfile.provider,
+    ),
     mvpCount: defaultProfile.mvpCount,
   };
 }
@@ -68,7 +101,7 @@ function rememberProfile(profile: Partial<MyPageUserProfile>) {
     window.localStorage.setItem("email", profile.email);
   }
   if (profile.provider) {
-    window.localStorage.setItem("provider", profile.provider.toLowerCase());
+    window.localStorage.setItem("provider", normalizeProvider(profile.provider));
   }
 
   window.dispatchEvent(new Event("storage"));
@@ -113,7 +146,12 @@ export default function MyPageScreen() {
   const [profile, setProfile] = useState<MyPageProfile>(defaultProfile);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState("");
-  const isSocialAccount = profile.provider.toLowerCase() !== "local";
+  const normalizedProvider = normalizeProvider(profile.provider);
+  const isSocialAccount = normalizedProvider !== "local";
+  const providerLabel = getProviderLabel(normalizedProvider);
+  const withdrawDescription = isSocialAccount
+    ? `${providerLabel} 로그인 계정은 비밀번호 확인 없이 탈퇴가 진행됩니다. 탈퇴 후 현재 계정으로 다시 로그인할 수 없습니다.`
+    : "회원 탈퇴를 위해 비밀번호를 입력해주세요. 탈퇴 후 현재 계정으로 다시 로그인할 수 없습니다.";
 
   // Edit Name states
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
@@ -146,7 +184,7 @@ export default function MyPageScreen() {
         setProfile({
           userName: nextProfile.userName,
           email: nextProfile.email || defaultProfile.email,
-          provider: nextProfile.provider.toLowerCase(),
+          provider: normalizeProvider(nextProfile.provider),
           mvpCount: nextProfile.mvpCount,
         });
         rememberProfile(nextProfile);
@@ -524,7 +562,7 @@ export default function MyPageScreen() {
         closeDisabled={isWithdrawing}
         icon={<UserX size={27} strokeWidth={2} />}
         title="정말 탈퇴하시겠습니까?"
-        description="회원 탈퇴 시 계정이 비활성화되며 현재 계정으로 다시 로그인할 수 없습니다."
+        description={withdrawDescription}
         actions={
           <>
             <Button
