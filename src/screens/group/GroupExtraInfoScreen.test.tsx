@@ -42,7 +42,7 @@ vi.mock("@/features/group/api/group.api", async (importOriginal) => {
       createdAt: "2026-09-02T00:00:00.000Z",
       memberCount: 1,
       myRole: "PARTICIPANT",
-      myParticipantId: null,
+      myParticipantId: 1,
     }),
     createGroupApi: vi.fn(),
     joinGroupWithProfileApi: vi.fn(),
@@ -82,7 +82,7 @@ describe("GroupExtraInfoScreen 프로필 prefill 연동", () => {
       createdAt: "2026-09-02T00:00:00.000Z",
       memberCount: 1,
       myRole: "PARTICIPANT",
-      myParticipantId: null,
+      myParticipantId: 1,
     });
   });
 
