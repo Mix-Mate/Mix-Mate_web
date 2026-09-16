@@ -1,0 +1,11 @@
+.viewport {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow-y: auto;
+}
+
+.phone {
+  height: auto;
+  min-height: var(--mobile-frame-height);
+  overflow: visible;
+}
