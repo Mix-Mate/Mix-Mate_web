@@ -148,6 +148,8 @@ export default function MyPageScreen() {
   const [profileError, setProfileError] = useState("");
   const normalizedProvider = normalizeProvider(profile.provider);
   const isSocialAccount = normalizedProvider !== "local";
+  const canChangePassword =
+    !isProfileLoading && !profileError && !isSocialAccount;
   const providerLabel = getProviderLabel(normalizedProvider);
   const withdrawDescription = isSocialAccount
     ? `${providerLabel} 로그인 계정은 비밀번호 확인 없이 탈퇴가 진행됩니다. 탈퇴 후 현재 계정으로 다시 로그인할 수 없습니다.`
@@ -219,6 +221,7 @@ export default function MyPageScreen() {
   };
 
   const handlePasswordChange = () => {
+    if (!canChangePassword) return;
     router.push(authRoutes.changePassword());
   };
 
@@ -377,6 +380,10 @@ export default function MyPageScreen() {
               type="button"
               className={styles.menuItem}
               onClick={handlePasswordChange}
+              disabled={!canChangePassword}
+              aria-describedby={
+                isSocialAccount ? "password-change-disabled-message" : undefined
+              }
             >
               <div className={styles.menuItemLeft}>
                 <span className={styles.menuItemIcon}>
@@ -388,6 +395,15 @@ export default function MyPageScreen() {
                 <ChevronRight size={18} aria-hidden="true" />
               </div>
             </button>
+            {isSocialAccount && !isProfileLoading && !profileError && (
+              <p
+                id="password-change-disabled-message"
+                className={styles.passwordChangeHint}
+                role="note"
+              >
+                {providerLabel} 계정으로 로그인되어 비밀번호 변경을 지원하지 않습니다.
+              </p>
+            )}
           </div>
         </section>
 

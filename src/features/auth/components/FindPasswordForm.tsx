@@ -175,6 +175,15 @@ export function FindPasswordForm() {
     } catch (error: unknown) {
       setVerificationStatus('IDLE');
       if (error instanceof AuthApiError) {
+        if (error.code === 'NOT_LOCAL_ACCOUNT') {
+          setFieldErrors((prev) => ({
+            ...prev,
+            email:
+              '카카오/구글로 가입된 소셜 계정입니다. 비밀번호 찾기는 지원하지 않습니다. 소셜 로그인을 이용해주세요.',
+          }));
+          return;
+        }
+
         setFieldErrors((prev) => ({
           ...prev,
           email: error.message,

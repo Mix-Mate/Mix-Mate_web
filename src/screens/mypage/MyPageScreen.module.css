@@ -191,6 +191,19 @@
   background: #f8fafc;
 }
 
+.menuItem:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.passwordChangeHint {
+  margin: 0;
+  padding: 0 18px 14px;
+  color: #b91c1c;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 .menuItemLeft {
   display: flex;
   align-items: center;
