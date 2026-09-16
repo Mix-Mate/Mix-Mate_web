@@ -16,6 +16,7 @@ import {
 import type { GroupDetail } from "@/features/group/types/group.types";
 import { getGroupEntryRoute } from "@/features/group/lib/group-entry-route";
 import { groupRoutes } from "@/shared/lib/navigation/routes";
+import { ensureValidAccessToken } from "@/shared/api/authToken";
 import {
   recordBlockedGroup,
   saveKnownGroupName,
@@ -33,9 +34,22 @@ interface ErrorModalState {
 export default function GroupJoinScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
+  // 초대 링크(?inviteCode=)로 들어온 경우, 코드 직접 입력 없이 바로 검증한다.
+  const linkInviteCode = useMemo(() => {
+    const raw = searchParams.get("inviteCode") ?? "";
+    return raw
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .slice(0, 6);
+  }, [searchParams]);
+  const isFromInviteLink = linkInviteCode.length === 6;
+  const [code, setCode] = useState<string[]>(() =>
+    isFromInviteLink
+      ? linkInviteCode.split("")
+      : ["", "", "", "", "", ""],
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(isFromInviteLink);
   const [errorModal, setErrorModal] = useState<ErrorModalState>({
     open: false,
     title: "",
@@ -47,15 +61,6 @@ export default function GroupJoinScreen() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const autoSubmittedRef = useRef(false);
 
-  // 초대 링크(?inviteCode=)로 들어온 경우, 코드 직접 입력 없이 바로 검증한다.
-  const linkInviteCode = useMemo(() => {
-    const raw = searchParams.get("inviteCode") ?? "";
-    return raw
-      .replace(/[^a-zA-Z0-9]/g, "")
-      .toUpperCase()
-      .slice(0, 6);
-  }, [searchParams]);
-  const isFromInviteLink = linkInviteCode.length === 6;
   const isVerifyingLink = isFromInviteLink && isSubmitting && !errorMessage;
 
   // Focus the first input on initial mount
@@ -411,9 +416,17 @@ export default function GroupJoinScreen() {
     if (!isFromInviteLink || autoSubmittedRef.current) return;
 
     autoSubmittedRef.current = true;
-    setCode(linkInviteCode.split(""));
+
+    if (!ensureValidAccessToken()) {
+      const invitePath = `${groupRoutes.join()}?inviteCode=${encodeURIComponent(linkInviteCode)}`;
+      router.replace(`/login?next=${encodeURIComponent(invitePath)}`);
+      return;
+    }
+
+    // URL의 초대 코드를 최초 진입 시 한 번 자동 제출해야 한다.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void submitCode(linkInviteCode);
-  }, [isFromInviteLink, linkInviteCode, submitCode]);
+  }, [isFromInviteLink, linkInviteCode, router, submitCode]);
 
   return (
     <MobileFrame

@@ -6,6 +6,7 @@ import MobileFrame from "@/shared/ui/MobileFrame";
 import { loginWithGoogleApi, AuthApiError } from "../api/auth.api";
 import { saveAuthSession } from "../utils/auth-session";
 import { GOOGLE_OAUTH_STATE_KEY } from "../utils/google-auth";
+import { consumePostLoginRedirect } from "../utils/post-login-redirect";
 import styles from "./GoogleCallbackScreen.module.css";
 
 export default function GoogleCallbackScreen() {
@@ -56,9 +57,9 @@ export default function GoogleCallbackScreen() {
       try {
         const response = await loginWithGoogleApi(code as string);
 
-        // 로그인 성공 시 세션 저장 후 메인 이동
+        // 로그인 전에 보던 초대 링크 등이 있으면 복귀하고, 없으면 메인으로 이동
         saveAuthSession(response);
-        router.replace("/home");
+        router.replace(consumePostLoginRedirect() ?? "/home");
       } catch (error: unknown) {
         if (error instanceof AuthApiError) {
           if (error.status === 409 || error.code === "EMAIL_CONFLICTED") {

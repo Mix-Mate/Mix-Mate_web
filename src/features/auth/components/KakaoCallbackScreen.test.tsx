@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import KakaoCallbackScreen from "./KakaoCallbackScreen";
 import { loginWithKakaoApi, AuthApiError } from "../api/auth.api";
 import { KAKAO_OAUTH_STATE_KEY } from "../utils/kakao-auth";
+import { POST_LOGIN_REDIRECT_KEY } from "../utils/post-login-redirect";
 
 const mockReplace = vi.fn();
 let mockSearchParams = new URLSearchParams();
@@ -116,6 +117,31 @@ describe("KakaoCallbackScreen", () => {
 
     // state가 사용 후 삭제되었는지 확인
     expect(window.sessionStorage.getItem(KAKAO_OAUTH_STATE_KEY)).toBeNull();
+  });
+
+  it("초대 링크에서 시작한 카카오 로그인은 성공 후 원래 초대 링크로 복귀한다", async () => {
+    const validState = "valid-state-invite";
+    const invitePath = "/groups/join?inviteCode=ABC123";
+    window.sessionStorage.setItem(KAKAO_OAUTH_STATE_KEY, validState);
+    window.sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, invitePath);
+    mockSearchParams = new URLSearchParams(
+      `code=auth-code-invite&state=${validState}`,
+    );
+
+    vi.mocked(loginWithKakaoApi).mockResolvedValueOnce({
+      userId: 42,
+      email: "kakao@example.com",
+      userName: "카카오사용자",
+      accessToken: "access-token-456",
+      refreshToken: "refresh-token-789",
+    });
+
+    render(<KakaoCallbackScreen />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(invitePath);
+    });
+    expect(window.sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY)).toBeNull();
   });
 
   it("409 EMAIL_CONFLICTED 에러 발생 시 안내 메시지와 함께 /login으로 이동한다", async () => {
